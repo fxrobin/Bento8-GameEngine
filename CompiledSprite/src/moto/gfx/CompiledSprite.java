@@ -15,9 +15,12 @@ public class CompiledSprite
 			CompiledSpriteModeB16 sprite = new CompiledSpriteModeB16(args[0]);		
 			
 			Path fichier = Paths.get(sprite.getName()+".asm");
+			Files.deleteIfExists(fichier);
+			Files.createFile(fichier);
 						
 			// Ecriture du fichier de sortie
-			Files.write(fichier, sprite.getCodeHeader(1), Charset.forName("UTF-8"), StandardOpenOption.CREATE);
+			Files.write(fichier, sprite.getCodeStart(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeHeader(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
@@ -25,7 +28,8 @@ public class CompiledSprite
 			Files.write(fichier, sprite.getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);	
-			Files.write(fichier, sprite.getCodePalette(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);				
+			Files.write(fichier, sprite.getCodePalette(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 		}
 		else {
 			System.out.println("Parametres invalides !");
