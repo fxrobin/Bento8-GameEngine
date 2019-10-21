@@ -14,7 +14,7 @@ public class CompiledSprite
 		if (args.length==1) {
 			CompiledSpriteModeB16 sprite = new CompiledSpriteModeB16(args[0]);		
 			
-			Path fichier = Paths.get(sprite.getName()+".asm");
+			Path fichier = Paths.get(sprite.getName().substring(0, Math.min(sprite.getName().length(), 8))+".asm");
 			Files.deleteIfExists(fichier);
 			Files.createFile(fichier);
 						

@@ -1,4 +1,242 @@
-(11) Bad File Name
-     11 (main)TEST1X100000.asm
-(212) Missing (main)
-    212        FDB $4444
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : TEST1X10.asm
+ * Fichier destination : TEST1X10.BIN
+ * Contenu :
+ *     Main     0:TEST1X10.asm 4123
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+     12        A000                      ORG $A000
+     13
+     14                           *****************************************>>
+     15                           * Constantes et variables
+     16                           *****************************************>>
+     17                  0000     DEBUTECRANA EQU $0000       * debut de la>>
+     18                  1F40     FINECRANA EQU $1F40  * fin de la RAM A vi>>
+     19                  2000     DEBUTECRANB EQU $2000       * debut de la>>
+     20                  3F40     FINECRANB EQU $3F40  * fin de la RAM B vi>>
+     21
+     22        A000 0000          SSAVE FDB $0000
+     23
+     24                           *****************************************>>
+     25                           * Debut du programme
+     26                           *****************************************>>
+     27  2     A002 1A   50              ORCC #$50     * a documenter (inte>>
+     28                            
+     29  2     A004 86   7B              LDA #$7B      * passage en mode 16>>
+     30  5     A006 B7   E7DC            STA $E7DC
+     31
+     32                           *****************************************>>
+     33                           * Initialisation de la palette de couleur>>
+     34                           *****************************************>>
+     35  4     A009 108E A0E2            LDY #TABPALETTE
+     36  2     A00D 4F                   CLRA
+     37        A00E               SETPALETTE
+     38  5+1   A00E 34   02              PSHS A
+     39  2     A010 48                   ASLA
+     40  5     A011 B7   E7DB            STA $E7DB
+     41  5+3   A014 EC   A1              LDD ,Y++
+     42  5     A016 F7   E7DA            STB $E7DA
+     43  5     A019 B7   E7DA            STA $E7DA
+     44  5+1   A01C 35   02              PULS A
+     45  2     A01E 4C                   INCA
+     46  5     A01F 108C A102            CMPY #FINTABPALETTE
+     47  3     A023 26   E9              BNE    SETPALETTE
+     48                            
+     49                           *****************************************>>
+     50                           * Initialisation de la couleur de bordure>>
+     51                           *****************************************>>
+     52        A025               INITBORD
+     53  2     A025 86   04              LDA    #$04   * couleur 4
+     54  5     A027 B7   E7DD            STA    $E7DD
+     55
+     56                           *****************************************>>
+     57                           * Initialisation de la routine de commuta>>
+     58                           *****************************************>>
+     59  5     A02A F6   6081            LDB $6081
+     60  2     A02D CA   10              ORB #$10
+     61  5     A02F F7   6081            STB $6081
+     62  5     A032 F7   E7E7            STB $E7E7
+     63
+     64                           *****************************************>>
+     65                           * Effacement ecran (les deux pages)
+     66                           *****************************************>>
+     67  8     A035 BD   A04C            JSR SCRC
+     68  8     A038 BD   A063            JSR EFF
+     69  8     A03B BD   A04C            JSR SCRC
+     70  8     A03E BD   A063            JSR EFF
+     71
+     72                           *****************************************>>
+     73                           * Boucle principale
+     74                           *****************************************>>
+     75        A041               MAIN
+     76  8     A041 BD   A072            JSR DRAWBCKGRN
+     77                                  *LDX >POS_TEST1X100000
+     78                                  *LEAX -1,X
+     79                                  *STX >POS_TEST1X100000
+     80  8     A044 BD   A0B5            JSR DRAW_TEST1X100000
+     81  8     A047 BD   A04C            JSR SCRC        * changement de pa>>
+     82  3     A04A 20   F5              BRA MAIN
+     83
+     84                           *****************************************>>
+     85                           * Changement de page ecran
+     86                           *****************************************>>
+     87        A04C               SCRC
+     88  5     A04C F6   A05A            LDB SCRC0+1
+     89  2     A04F C4   80              ANDB #$80          * BANK1 utilise>>
+     90  2     A051 CA   0A              ORB #$0A           * contour ecran>>
+     91  5     A053 F7   E7DD            STB $E7DD
+     92  7     A056 73   A05A            COM SCRC0+1
+     93        A059               SCRC0
+     94  2     A059 C6   00              LDB #$00
+     95  2     A05B C4   02              ANDB #$02          * page RAM no0 >>
+     96  2     A05D CA   60              ORB #$60           * espace cartou>>
+     97  5     A05F F7   E7E6            STB $E7E6
+     98  5     A062 39                   RTS
+     99
+    100                           *****************************************>>
+    101                           * Effacement de l ecran
+    102                           *****************************************>>
+    103        A063               EFF
+    104  2     A063 86   AA              LDA #$AA  * couleur fond
+    105  4     A065 108E 0000            LDY #$0000
+    106        A069               EFF_RAM
+    107  4+2   A069 A7   A0              STA ,Y+
+    108  5     A06B 108C 3FFF            CMPY #$3FFF
+    109  3     A06F 26   F8              BNE EFF_RAM
+    110  5     A071 39                   RTS
+    111
+    112                           *****************************************>>
+    113                           * Affichage de l arriere plan xxx cycles
+    114                           *****************************************>>
+    115        A072               DRAWBCKGRN
+    116  5+3   A072 34   48              PSHS U,DP            * sauvegarde >>
+    117  7     A074 10FF A000            STS >SSAVE
+    118                            
+    119  4     A078 10CE 1F40            LDS #FINECRANA       * init pointe>>
+    120  3     A07C CE   A102            LDU #TILEBCKGRNDA
+    121  5+7   A07F 37   3E              PULU X,Y,DP,D
+    122
+    123        A081               DRWBCKGRNDA
+    124  5+7   A081 34   3E              PSHS X,Y,DP,D
+    125  5+7   A083 34   3E              PSHS X,Y,DP,D
+    126  5+7   A085 34   3E              PSHS X,Y,DP,D
+    127  5+7   A087 34   3E              PSHS X,Y,DP,D
+    128  5+7   A089 34   3E              PSHS X,Y,DP,D
+    129  5+5   A08B 34   38              PSHS X,Y,DP
+    130  5     A08D 118C 0000            CMPS #DEBUTECRANA
+    131  3     A091 26   EE              BNE DRWBCKGRNDA
+    132                            
+    133  4     A093 10CE 3F40            LDS #FINECRANB       * init pointe>>
+    134  3     A097 CE   A10A            LDU #TILEBCKGRNDB
+    135  5+7   A09A 37   3E              PULU X,Y,DP,D
+    136
+    137        A09C               DRWBCKGRNDB
+    138  5+7   A09C 34   3E              PSHS X,Y,DP,D
+    139  5+7   A09E 34   3E              PSHS X,Y,DP,D
+    140  5+7   A0A0 34   3E              PSHS X,Y,DP,D
+    141  5+7   A0A2 34   3E              PSHS X,Y,DP,D
+    142  5+7   A0A4 34   3E              PSHS X,Y,DP,D
+    143  5+5   A0A6 34   38              PSHS X,Y,DP
+    144  5     A0A8 118C 2000            CMPS #DEBUTECRANB
+    145  3     A0AC 26   EE              BNE DRWBCKGRNDB
+    146                            
+    147  7     A0AE 10FE A000            LDS  >SSAVE          * rechargemen>>
+    148  5+3   A0B2 35   48              PULS U,DP
+    149  5     A0B4 39                   RTS
+    150
+    151                           *****************************************>>
+    152                           * Affiche un computed sprite en xxx cycle>>
+    153                           *****************************************>>
+    154        A0B5               DRAW_TEST1X100000
+    155  5+3   A0B5 34   48              PSHS U,DP
+    156  7     A0B7 10FF A000            STS >SSAVE
+    157
+    158  7     A0BB 10FE A0E0            LDS >POS_TEST1X100000
+    159  3     A0BF CE   A0DE            LDU #DATA_TEST1X100000_1
+    160
+    161
+    162  7     A0C2 10FE A0E0            LDS >POS_TEST1X100000
+    163  4+4   A0C6 32   E9 2000         LEAS 8192,S
+    164  3     A0CA CE   A0DE            LDU #DATA_TEST1X100000_2
+    165
+    166  4+1   A0CD 32   7F              LEAS -1,S
+    167  2     A0CF 86   F0              LDA  #$F0
+    168  4+0   A0D1 A4   E4              ANDA ,S
+    169  4+2   A0D3 AB   C0              ADDA ,U+
+    170  4+0   A0D5 A7   E4              STA  ,S-
+    171
+    172  7     A0D7 10FE A000            LDS  >SSAVE
+    173  5+3   A0DB 35   48              PULS U,DP
+    174  5     A0DD 39                   RTS
+    175
+    176        A0DE               DATA_TEST1X100000_1
+    177        A0DE               DATA_TEST1X100000_2
+    178        A0DE 0100                 FDB $0100
+    179        A0E0               POS_TEST1X100000
+    180        A0E0 1F40                 FDB $1F40
+    181
+    182        A0E2               TABPALETTE
+    183        A0E2 0FFF                 FDB $0fff     * index:0  R:255 V:2>>
+    184        A0E4 00FF                 FDB $00ff     * index:1  R:255 V:2>>
+    185        A0E6 00F0                 FDB $00f0     * index:2  R:0   V:2>>
+    186        A0E8 0111                 FDB $0111     * index:3  R:96  V:9>>
+    187        A0EA 0666                 FDB $0666     * index:4  R:192 V:1>>
+    188        A0EC 0020                 FDB $0020     * index:5  R:0   V:1>>
+    189        A0EE 0200                 FDB $0200     * index:6  R:0   V:6>>
+    190        A0F0 0200                 FDB $0200     * index:7  R:0   V:0>>
+    191        A0F2 0000                 FDB $0000     * index:8  R:0   V:0>>
+    192        A0F4 0002                 FDB $0002     * index:9  R:127 V:0>>
+    193        A0F6 0202                 FDB $0202     * index:10 R:127 V:0>>
+    194        A0F8 0F00                 FDB $0f00     * index:11 R:0   V:0>>
+    195        A0FA 0F0F                 FDB $0f0f     * index:12 R:255 V:0>>
+    196        A0FC 000F                 FDB $000f     * index:13 R:255 V:0>>
+    197        A0FE 001A                 FDB $001a     * index:14 R:220 V:9>>
+    198        A100 0F2F                 FDB $0f2f     * index:15 R:255 V:1>>
+    199        A102               FINTABPALETTE
+    200                           *****************************************>>
+    201                           * Tile arriere plan
+    202                           *****************************************>>
+    203        A102               TILEBCKGRNDA
+    204        A102 3333                 FDB $3333
+    205        A104 3333                 FDB $3333
+    206        A106 3333                 FDB $3333
+    207        A108 3333                 FDB $3333
+    208
+    209        A10A               TILEBCKGRNDB
+    210        A10A 4444                 FDB $4444
+    211        A10C 4444                 FDB $4444
+    212        A10E 4444                 FDB $4444
+    213        A110 4444                 FDB $4444
+
+000000 Total Errors
+
+000023 Total Symbols
+     1x          Label A0DE DATA_TEST1X100000_1
+     1x          Label A0DE DATA_TEST1X100000_2
+     1x          Equ   0000 DEBUTECRANA
+     1x          Equ   2000 DEBUTECRANB
+     1x          Label A072 DRAWBCKGRN
+     1x          Label A0B5 DRAW_TEST1X100000
+     1x          Label A081 DRWBCKGRNDA
+     1x          Label A09C DRWBCKGRNDB
+     2x          Label A063 EFF
+     1x          Label A069 EFF_RAM
+     1x          Equ   1F40 FINECRANA
+     1x          Equ   3F40 FINECRANB
+     1x          Label A102 FINTABPALETTE
+     0x          Label A025 INITBORD
+     1x          Label A041 MAIN
+     2x          Label A0E0 POS_TEST1X100000
+     3x          Label A04C SCRC
+     2x          Label A059 SCRC0
+     1x          Label A00E SETPALETTE
+     4x          Label A000 SSAVE
+     1x          Label A0E2 TABPALETTE
+     1x          Label A102 TILEBCKGRNDA
+     1x          Label A10A TILEBCKGRNDB
+

@@ -663,7 +663,7 @@ public class CompiledSpriteModeB16
 		code.add("*");
 		code.add("********************************************************************************");
 		code.add("");
-		code.add("(main)"+spriteName+".asm");
+		code.add("(main)"+spriteName.substring(0, Math.min(spriteName.length(), 8))+".asm");
 		code.add("\tORG $A000");
 		code.add("");
 		code.add("********************************************************************************  ");
