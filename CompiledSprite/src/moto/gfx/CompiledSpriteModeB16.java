@@ -9,13 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO
-// Ajout gÃ©nÃ©ration complete du code
+// Ajout optim LEAS ,--S au lieu de LEAS -2,S
+// Ajout génération complete du code
 // Modification de l'algo pour LD Ã  la place du PUL
 // Calcul nb cycles
 // Ajout gestion de l'avance par 1 pixel
 // Ajout methode d'effacement du fond d'ecran
 // Ajout gestion bit depth 4+Transparence ou bit depth 8+T
-// Ajout mode non indexÃ© avec Transparence
+// Ajout mode non indexé avec Transparence
 // Ajout GUI + gestion resize avec aspect ratio
 // Ajout diminution de palette et selection manuelle de la couleur Transparente
 // Mode batch
@@ -100,13 +101,13 @@ public class CompiledSpriteModeB16
 					pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 				}
 				
-				// GÃ©nÃ©ration du code Assembleur
+				// Génération du code Assembleur
 				generateCode();
 			}
 			else {
-				// PrÃ©sente les formats acceptÃ©s Ã  l'utilisateur en cas de fichier d'entrÃ©e incompatible
-				System.out.println("Le format de fichier de "+file+" n'est pas supportÃ©.");
-				System.out.println("Resolution: "+width+"x"+height+"px (doit Ãªtre infÃ©rieur ou Ã©gal Ã  160x200)");
+				// Présente les formats acceptés Ã  l'utilisateur en cas de fichier d'entrée incompatible
+				System.out.println("Le format de fichier de "+file+" n'est pas supporté.");
+				System.out.println("Resolution: "+width+"x"+height+"px (doit Ãªtre inférieur ou égal Ã  160x200)");
 				System.out.println("Taille pixel:  "+pixelSize+"Bytes (doit Ãªtre 8)");
 				//System.out.println("Nombre de composants: "+numComponents+" (doit Ãªtre 3)");
 			}
@@ -119,8 +120,7 @@ public class CompiledSpriteModeB16
 	}
 
 	public void generateCode() {
-		// GÃ©nÃ©ration du code source pour l'Ã©criture des images
-		// TODO *** GÃ©nÃ©ration d'un fichier en sortie en remplacement du System.out
+		// Génération du code source pour l'écriture des images
 
 		List<String>[] sprite = generateCodeArray(1);
 		spriteCode1 = sprite[0];
@@ -155,26 +155,24 @@ public class CompiledSpriteModeB16
 		// Lecture des pixels par paire pos=1 -> ..XX pos=3 -> XX..
 		// Index de couleur par pixel :
 		// 0-15 couleur utile
-		// 16-255 considÃ©rÃ© comme couleur transparente
+		// 16-255 considéré comme couleur transparente
 		// **************************************************************
 
 		for (int pixel = (width*height)-1; pixel >= 0; pixel = ((row-1)*width)+col-1) {
 			
-			// Initialisation en dÃ©but de paire
+			// Initialisation en début de paire
 			if (chunk == pos) {
 				rightAlphaPxl = false;
 				leftAlphaPxl = false;
 			}
 			
-			// Lecture des pixels une paire sur deux, la paire lue dÃ©pend du paramÃ¨tre d'entrÃ©e pos
+			// Lecture des pixels une paire sur deux, la paire lue dépend du paramètre d'entrée pos
 			if (chunk == pos || chunk == pos+1){
-				
-				System.out.println("pos <"+pos+"> pixel <"+pixel+"> valeur <"+pixels[pixel]+">");
 				
 				// On ignore les paires de pixel transparents
 				if (pixel > 0 && ((chunk == pos) && ((int) pixels[pixel]<0 || (int) pixels[pixel]>15) && ((int) pixels[pixel-1]<0 || (int) pixels[pixel-1]>15)) ) {
 					
-					// Gestion du LEAS de dÃ©but si on commence par du transparent
+					// Gestion du LEAS de début si on commence par du transparent
 					if (pixel > (width*height)-4) {
 						leas = -1;
 						fpixel = pixel; // intialisation des variables de travail
@@ -182,7 +180,7 @@ public class CompiledSpriteModeB16
 								
 						// si les pixels suivants sont transparents par paires on avance d'autant le LEAS
 						while (fpixel-5 >= 0 && ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15) &&  ((int) pixels[fpixel-5]<0 || (int) pixels[fpixel-5]>15)) {
-							if (fcol-3 <= 0) { // on gÃ¨re les sauts de ligne dans la suite de pixels transparents
+							if (fcol-3 <= 0) { // on gère les sauts de ligne dans la suite de pixels transparents
 								fcol = width-pos;
 								leas += -40+width/4;
 							}
@@ -198,7 +196,7 @@ public class CompiledSpriteModeB16
 						}
 							
 						// Ecriture du LEAS
-						if (fpixel > 3 && leas < 0) { //fpixel ? > 5
+						if (pixel > 3 && leas < 0) {
 							spriteCode.add("\tLEAS "+leas+",S");
 						}							
 					}
@@ -212,7 +210,7 @@ public class CompiledSpriteModeB16
 					} else {
 						fdbBytes.add("0"); // pixel transparent
 						
-						// DÃ©tection de la position du pixel transparent
+						// Détection de la position du pixel transparent
 						if (chunk == pos+1) {
 							leftAlphaPxl = true;
 						} else {
@@ -225,30 +223,70 @@ public class CompiledSpriteModeB16
 					// **************************************************************
 					
 					if (chunk == pos+1 && rightAlphaPxl == true) { // pixel transparent Ã  droite
-					
+
+						if (pixel >= (width*height)-4) {
+							spriteCode.add("\tLEAS -1,S"); // Si on commence l'image, il faut se positionner correctement
+
+						}						
+						
 						spriteCode.add("\tLDA  #$0F");
 						spriteCode.add("\tANDA ,S");
 						spriteCode.add("\tADDA ,U+");
 						
 						// compter jusqu'a fin de ligne (si <160) ou max 6 octets si TG et nb octet = leas
-						// on recherche une paire de pixel dont un transparent Ã©ventuellement prÃ©cÃ©dÃ© d'un maximum de 12 pixels continue
+						// on recherche une paire de pixel dont un transparent éventuellement précédé d'un maximum de 12 pixels continue
+						leas = -1;
+						fpixel = pixel;
+						fcol = col;
 						frpixel = fpixel;
-						fleas = leas;
-						fpixel -= 4;
-						fcol -= 4;
-						while (((fcol-3 > 0 && width < 160) || (width == 160)) && fpixel-3 >= 0 && frpixel-fpixel<=14 && ((((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15)) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15))) {
+
+						while (((fcol-3 > 0 && width < 160) || (width == 160)) && fpixel-4 >= 0 && frpixel-fpixel<=14 && ((((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15)) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15))) {
 							leas--;
 							fpixel -= 4;
 							fcol -= 4;
 						}
 
 						// S'il n'y a pas de pixel transparent Ã  gauche en fin de recherche on se repositionne en debut de PUL
-						if 	(frpixel-fpixel == 4 || frpixel-fpixel == 32
-						|| !(((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15) && ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15))) {
-							spriteCode.add("\tSTA  ,S-");
-						} else {
+						if 	((fpixel-4 >= 0 && (((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15) && ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15)))
+							 || (frpixel == fpixel && fpixel-4 >= 0 && (((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15) && ((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15)))) {
 							spriteCode.add("\tSTA  ,S");
-							spriteCode.add("\tLEAS "+(-(frpixel-fpixel)/4)+",S");
+							spriteCode.add("\tLEAS " + leas + ",S");
+						} else {
+							// Gestion de LEAS de fin de ligne
+							leas = 0;
+							fpixel = pixel; // intialisation des variables de travail
+							fcol = col;
+									
+							// Si on a atteint le début de ligne on effectue un saut en fonction de la largeur d'image
+							if (fcol-3 <= 0) {
+								fcol = width-pos;
+								leas += -40+(width/4); // Remarque : dans le cas d'une image plein ecran leas=0
+							}										
+									
+							// si les pixels suivants sont transparents par paires on avance d'autant le LEAS
+							while (fpixel-3 >= 0 && ((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15) &&  ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15)) {
+								if (fcol-3 <= 0) { // on gère les sauts de ligne dans la suite de pixels transparents
+									fcol = width-pos;
+									leas += -40+width/4;
+								}
+								leas--;
+								fpixel -= 4;
+								fcol -= 4;
+							}
+							
+							// S'il y a un pixel transparent (gauche ou droite) on avance de 1
+							if ((fpixel > 3) && ((((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15) && ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15)) ||
+								(((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15)))) {
+									leas--;
+							}
+								
+							// Ecriture du LEAS
+							if (pixel > 3 && leas < 0) {
+								spriteCode.add("\tSTA  ,S");
+								spriteCode.add("\tLEAS " + leas + ",S");
+							} else {
+								spriteCode.add("\tSTA  ,S");
+							}
 						}
 						
 						pulBytesOld[4] = fdbBytes.get(1)+fdbBytes.get(0);
@@ -262,7 +300,7 @@ public class CompiledSpriteModeB16
 						// **************************************************************
 					
 						if (leftAlphaPxl == true) { // pixel transparent Ã  gauche
-							if (fdbBytes.size() > 2 && pixel >= (width*height)-(fdbBytes.size()*2)) {
+							if (pixel >= (width*height)-(fdbBytes.size()*2)) {
 								spriteCode.add("\tLEAS -"+fdbBytes.size()/2+",S"); // Si on commence l'image, il faut se positionner correctement
 
 							}
@@ -270,17 +308,16 @@ public class CompiledSpriteModeB16
 							spriteCode.add("\tANDA ,S");
 							spriteCode.add("\tADDA ,U+");
 							if (fdbBytes.size() == 2) { // il n'y a pas d'ensemble PSH en cours on traite l'ecriture a part
-								spriteCode.add("\tSTA  ,S-");
 								pulBytesOld[4] = fdbBytes.get(1)+fdbBytes.get(0);
 								fdbBytesResultLigne += pulBytesOld[4];
 								fdbBytes.clear();
 								
 								// Gestion de LEAS de fin de ligne
-								leas = -1;
+								leas = 0;
 								fpixel = pixel; // intialisation des variables de travail
 								fcol = col;
 										
-								// Si on a atteint le dÃ©but de ligne on effectue un saut en fonction de la largeur d'image
+								// Si on a atteint le début de ligne on effectue un saut en fonction de la largeur d'image
 								if (fcol-3 <= 0) {
 									fcol = width-pos;
 									leas += -40+(width/4); // Remarque : dans le cas d'une image plein ecran leas=0
@@ -288,7 +325,7 @@ public class CompiledSpriteModeB16
 										
 								// si les pixels suivants sont transparents par paires on avance d'autant le LEAS
 								while (fpixel-3 >= 0 && ((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15) &&  ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15)) {
-									if (fcol-3 <= 0) { // on gÃ¨re les sauts de ligne dans la suite de pixels transparents
+									if (fcol-3 <= 0) { // on gère les sauts de ligne dans la suite de pixels transparents
 										fcol = width-pos;
 										leas += -40+width/4;
 									}
@@ -304,9 +341,12 @@ public class CompiledSpriteModeB16
 								}
 									
 								// Ecriture du LEAS
-								if (fpixel > 3 && leas < 0) {
-									spriteCode.add("\tLEAS "+leas+",S");
-								}									
+								if (pixel > 3 && leas < 0) {
+									spriteCode.add("\tSTA  ,S");
+									spriteCode.add("\tLEAS " + leas + ",S");
+								} else {
+									spriteCode.add("\tSTA  ,S");
+								}
 								
 							} else {
 								spriteCode.add("\tLEAS "+fdbBytes.size()/2+",S"); // il y a un ensemble PSH en cours on traite l'ecriture sur le PSH (Registre A)
@@ -317,12 +357,11 @@ public class CompiledSpriteModeB16
 						// Gestion d'une paire de pixels pleins
 						// **************************************************************
 						if (chunk == pos+1 && fdbBytes.size() > 0 &&
-							(fdbBytes.size() == 14 || // On a atteint le maximum de 7 octets gÃ©rable par un PSH
+							(fdbBytes.size() == 14 || // On a atteint le maximum de 7 octets gérable par un PSH
 							(pixel-3 <= -1) || // ou fin de l'image
 							(col-3 <= 0 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
-							(pixel-3 >= 0	&& ((int) pixels[pixel-3]<0 || (int) pixels[pixel-3]>15) &&
-											   ((int) pixels[pixel-4]<0 || (int) pixels[pixel-4]>15)) && // ou transparence 2 pixels dans chunk suivant
-							(pixel-3 >= 0	&& ((int) pixels[pixel-4]<0 || (int) pixels[pixel-4]>15)) )) { // ou transparence Ã  gauche dans chunk suivant
+							(pixel-3 >= 0	&& ((int) pixels[pixel-3]<0 || (int) pixels[pixel-3]>15) ||
+											   ((int) pixels[pixel-4]<0 || (int) pixels[pixel-4]>15)) )) { // ou paire de pixel non pleins qui suit
 							motif = optimisationPUL (fdbBytes, pulBytesOld, fdbBytes.size()/2, leftAlphaPxl);
 							String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, leftAlphaPxl);
 							if (!result[0][0].equals("")) {
@@ -341,7 +380,7 @@ public class CompiledSpriteModeB16
 							fpixel = pixel; // intialisation des variables de travail
 							fcol = col;
 
-							// Si on a atteint le dÃ©but de ligne on effectue un saut en fonction de la largeur d'image
+							// Si on a atteint le début de ligne on effectue un saut en fonction de la largeur d'image
 							if (fcol-3 <= 0) {
 								fcol = width-pos;
 								leas += -40+(width/4); // Remarque : dans le cas d'une image plein ecran leas=0
@@ -349,7 +388,7 @@ public class CompiledSpriteModeB16
 							
 							// si les pixels suivants sont transparents par paires on avance d'autant le LEAS
 							while (fpixel-3 >= 0 && ((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15) &&  ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15)) {
-								if (fcol-3 <= 0) { // on gÃ¨re les sauts de ligne dans la suite de pixels transparents
+								if (fcol-3 <= 0) { // on gère les sauts de ligne dans la suite de pixels transparents
 									fcol = width-pos;
 									leas += -40+width/4;
 								}
@@ -358,25 +397,28 @@ public class CompiledSpriteModeB16
 								fcol -= 4;
 							}
 							
-							// on recherche une paire de pixel dont un seul transparent (gauche ou droite) Ã©ventuellement prÃ©cÃ©dÃ© d'un maximum de 12 pixels continus
 							frpixel = fpixel;
-							fleas = leas;
-							while (((fcol-3 > 0 && width < 160) || (width == 160)) && fpixel-3 >= 0 && frpixel-fpixel<=28 && ((((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15)) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15))) {
-								leas--;
-								fpixel -= 4;
-								fcol -= 4;
+							if (fpixel == pixel) {
+								// on recherche une paire de pixel dont un seul transparent (gauche ou droite) éventuellement précédé d'un maximum de 12 pixels continus
+								fleas = leas;
+								while (((fcol-3 > 0 && width < 160) || (width == 160)) && fpixel-3 >= 0 && frpixel-fpixel<=28 && ((((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15)) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15))) {
+									leas--;
+									fpixel -= 4;
+									fcol -= 4;
+								}
+
+								// S'il n'y a pas de pixel transparent (gauche ou droite) on se repositionne en debut de PUL
+								if 	(fpixel <= 3 || ((fpixel > 3) && (frpixel-fpixel == 24 	|| (((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15) && ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15))
+										|| (((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15))))) {
+									leas = fleas;
+								}
 							}
-							
-							// S'il n'y a pas de pixel transparent (gauche ou droite) on se repositionne en debut de PUL
-							if 	((fpixel > 3) && (frpixel-fpixel == 24 	|| (((int) pixels[fpixel-3]<0 || (int) pixels[fpixel-3]>15) && ((int) pixels[fpixel-4]<0 || (int) pixels[fpixel-4]>15))
-														|| (((int) pixels[fpixel-3]>=0 && (int) pixels[fpixel-3]<=15) && ((int) pixels[fpixel-4]>=0 && (int) pixels[fpixel-4]<=15)))) {
-								leas = fleas;
-							}
-							
-							// Si on a atteint le dÃ©but de ligne on effectue un saut en fonction de la largeur d'image
-							if (frpixel-fpixel == 0 && fcol-3 <= 0) {
-								fcol = width-pos;
-								leas += -40+(width/4);
+
+							// Si on a atteint le début de ligne on effectue un saut en fonction de la
+							// largeur d'image
+							if (frpixel - fpixel == 0 && fcol - 3 <= 0) {
+								fcol = width - pos;
+								leas += -40 + (width / 4);
 							}
 							
 							// S'il y a un pixel transparent (gauche ou droite) on avance de 1
@@ -386,7 +428,7 @@ public class CompiledSpriteModeB16
 							}
 						
 							// Ecriture du LEAS
-							if (fpixel > 3 && leas < 0) {
+							if (pixel > 3 && leas < 0) {
 								spriteCode.add("\tLEAS "+leas+",S");
 							}
 						}
@@ -394,12 +436,11 @@ public class CompiledSpriteModeB16
 				}
 				
 				// **************************************************************
-				// Copie des donnÃ©es en fin de ligne
+				// Copie des données en fin de ligne
 				// **************************************************************
 				if ((col-3 <= 0 && width < 160) || (width == 160)) {
 					if (pixel>=0) {					
 						fdbBytesResult += fdbBytesResultLigne;	
-				System.out.println("fdbBytesResultLigne <"+fdbBytesResultLigne+">");
 						fdbBytesResultLigne = "";
 					}
 				}
@@ -423,10 +464,18 @@ public class CompiledSpriteModeB16
 			}
 		}
 		
+		// **************************************************************
+		// Copie des données en fin de ligne
+		// **************************************************************
+		if (!fdbBytesResultLigne.equals("")) {
+				fdbBytesResult += fdbBytesResultLigne;	
+				fdbBytesResultLigne = "";
+		}		
+		
 		@SuppressWarnings("unchecked")
 		List<String>[] sprite = new ArrayList[2];
 		sprite[0] = spriteCode;
-		sprite[1] = generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1); // Construction du code des donnÃ©es
+		sprite[1] = generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1); // Construction du code des données
 		return sprite;
 	}
 
@@ -511,8 +560,8 @@ public class CompiledSpriteModeB16
 				ilst += 2;
 			}
 
-			// Dans le cas d'un pixel transparent Ã  gauche traitÃ© dans le PSH
-			// on ne renseigne pas le registre sur le PUL car traitÃ© dans un LDA
+			// Dans le cas d'un pixel transparent Ã  gauche traité dans le PSH
+			// on ne renseigne pas le registre sur le PUL car traité dans un LDA
 			if (!pulBytes[indexReg].equals(pulBytesOld[indexReg]) && !(leftAlphaPxl == true && indexReg == 4)) {
 				if (pul.equals("")) {
 					pul += "\tPULU ";
@@ -535,7 +584,7 @@ public class CompiledSpriteModeB16
 			psh += pulReg[indexReg];
 		}
 		
-		// Enregistre les donnÃ©es FDB en sens inverse et filtrÃ©es
+		// Enregistre les données FDB en sens inverse et filtrées
 		for(int i = listeIndexReg.size()-1 ; i >=0 ; i--) {
 				fdbBytesResult += pulBytesFiltered[listeIndexReg.get(i)];
 		}
@@ -556,14 +605,14 @@ public class CompiledSpriteModeB16
 		// Construit un tableau dont l'indice est un nombre d'octet
 		// de 0 Ã  7. Chaque indice contient les listes de toutes les
 		// combinaisons des registres dont la taille totale correspond
-		// au nombre d'octets dÃ©fini dans l'indice.
+		// au nombre d'octets défini dans l'indice.
 		// **************************************************************	
 		
 		for (int i = 0; i < 8; i++) {
 			regCombos.add(new ArrayList<ArrayList<Integer>>());
 		}
 		
-		// gÃ©nÃ©ration des combinaisons binaires pour 5 bits
+		// génération des combinaisons binaires pour 5 bits
 		for (int nbe = 0, nbBytes = 0, x = 0; nbe < 32; nbe++) {
 			nbBytes = 0;
 			for (int i = 4, j = 0; i >= 0; i--) {
@@ -587,7 +636,7 @@ public class CompiledSpriteModeB16
 		String dataLine = new String();
 		
 		// **************************************************************
-		// Construit un tableau de donnÃ©es en assembleur
+		// Construit un tableau de données en assembleur
 		// **************************************************************	
 	
 		spriteData.add(dataLabel+"_"+x);
@@ -606,7 +655,7 @@ public class CompiledSpriteModeB16
 			}
 		}
 		
-		// On complete le mot pour la derniÃ¨re ligne de donnÃ©es
+		// On complete le mot pour la dernière ligne de données
 		if (bitIndex > 0 ) {
 			while (bitIndex < 4) {
 				dataLine += "0";
@@ -815,16 +864,16 @@ public class CompiledSpriteModeB16
 		code.add("* Tile arriere plan   ");
 		code.add("********************************************************************************");
 		code.add("TILEBCKGRNDA");
-		code.add("\tFDB $3333");
-		code.add("\tFDB $3333");
-		code.add("\tFDB $3333");
-		code.add("\tFDB $3333");
+		code.add("\tFDB $5555");
+		code.add("\tFDB $5555");
+		code.add("\tFDB $5555");
+		code.add("\tFDB $5555");
 		code.add("");
 		code.add("TILEBCKGRNDB");
-		code.add("\tFDB $4444");
-		code.add("\tFDB $4444");
-		code.add("\tFDB $4444");
-		code.add("\tFDB $4444");
+		code.add("\tFDB $6666");
+		code.add("\tFDB $6666");
+		code.add("\tFDB $6666");
+		code.add("\tFDB $6666");
 		return code;
 	}	
 	
