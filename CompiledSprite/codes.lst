@@ -4,7 +4,7 @@
  * Fichier source      : TEST1X10.asm
  * Fichier destination : TEST1X10.BIN
  * Contenu :
- *     Main     0:TEST1X10.asm 6055
+ *     Main     0:TEST1X10.asm 5733
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -33,7 +33,7 @@ Pass2
      32                           *****************************************>>
      33                           * Initialisation de la palette de couleur>>
      34                           *****************************************>>
-     35  4     A009 108E A247            LDY #TABPALETTE
+     35  4     A009 108E A200            LDY #TABPALETTE
      36  2     A00D 4F                   CLRA
      37        A00E               SETPALETTE
      38  5+1   A00E 34   02              PSHS A
@@ -44,7 +44,7 @@ Pass2
      43  5     A019 B7   E7DA            STA $E7DA
      44  5+1   A01C 35   02              PULS A
      45  2     A01E 4C                   INCA
-     46  5     A01F 108C A267            CMPY #FINTABPALETTE
+     46  5     A01F 108C A220            CMPY #FINTABPALETTE
      47  3     A023 26   E9              BNE    SETPALETTE
      48                            
      49                           *****************************************>>
@@ -118,7 +118,7 @@ Pass2
     117  7     A074 10FF A000            STS >SSAVE
     118                            
     119  4     A078 10CE 1F40            LDS #FINECRANA       * init pointe>>
-    120  3     A07C CE   A267            LDU #TILEBCKGRNDA
+    120  3     A07C CE   A220            LDU #TILEBCKGRNDA
     121  5+7   A07F 37   3E              PULU X,Y,DP,D
     122
     123        A081               DRWBCKGRNDA
@@ -132,7 +132,7 @@ Pass2
     131  3     A091 26   EE              BNE DRWBCKGRNDA
     132                            
     133  4     A093 10CE 3F40            LDS #FINECRANB       * init pointe>>
-    134  3     A097 CE   A26F            LDU #TILEBCKGRNDB
+    134  3     A097 CE   A228            LDU #TILEBCKGRNDB
     135  5+7   A09A 37   3E              PULU X,Y,DP,D
     136
     137        A09C               DRWBCKGRNDB
@@ -156,8 +156,8 @@ Pass2
     155  5+3   A0B5 34   48              PSHS U,DP
     156  7     A0B7 10FF A000            STS >SSAVE
     157
-    158  7     A0BB 10FE A245            LDS >POS_TEST1X100000
-    159  3     A0BF CE   A21F            LDU #DATA_TEST1X100000_1
+    158  7     A0BB 10FE A1FE            LDS >POS_TEST1X100000
+    159  3     A0BF CE   A1D8            LDU #DATA_TEST1X100000_1
     160
     161  4+1   A0C2 32   7F              LEAS -1,S
     162  2     A0C4 86   F0              LDA  #$F0
@@ -165,223 +165,192 @@ Pass2
     164  4+2   A0C8 AB   C0              ADDA ,U+
     165  4+0   A0CA A7   E4              STA  ,S
     166  4+1   A0CC 32   E8 D9           LEAS -39,S
-    167  5+1   A0CF 37   02              PULU A
-    168  5+1   A0D1 34   02              PSHS A
-    169  4+1   A0D3 32   E8 D9           LEAS -39,S
-    170  5+1   A0D6 34   02              PSHS A
-    171  4+1   A0D8 32   E8 D9           LEAS -39,S
-    172  5+1   A0DB 37   02              PULU A
-    173  5+1   A0DD 34   02              PSHS A
-    174  4+1   A0DF 32   E8 D9           LEAS -39,S
-    175  5+1   A0E2 37   02              PULU A
-    176  5+1   A0E4 34   02              PSHS A
-    177  4+1   A0E6 32   E8 8B           LEAS -117,S
-    178  2     A0E9 86   F0              LDA  #$F0
-    179  4+0   A0EB A4   E4              ANDA ,S
-    180  4+2   A0ED AB   C0              ADDA ,U+
-    181  4+0   A0EF A7   E4              STA  ,S
-    182  4+1   A0F1 32   E8 B2           LEAS -78,S
-    183  2     A0F4 86   F0              LDA  #$F0
-    184  4+0   A0F6 A4   E4              ANDA ,S
-    185  4+2   A0F8 AB   C0              ADDA ,U+
-    186  4+0   A0FA A7   E4              STA  ,S
-    187  4+1   A0FC 32   E8 D9           LEAS -39,S
-    188  5+1   A0FF 37   02              PULU A
-    189  5+1   A101 34   02              PSHS A
-    190  4+1   A103 32   E8 D9           LEAS -39,S
-    191  2     A106 86   F0              LDA  #$F0
-    192  4+0   A108 A4   E4              ANDA ,S
-    193  4+2   A10A AB   C0              ADDA ,U+
-    194  4+0   A10C A7   E4              STA  ,S
-    195  4+1   A10E 32   E8 D9           LEAS -39,S
-    196  5+1   A111 37   02              PULU A
-    197  5+1   A113 34   02              PSHS A
-    198  4+1   A115 32   7F              LEAS -1,S
-    199  5+1   A117 37   02              PULU A
-    200  5+1   A119 34   02              PSHS A
-    201  4+1   A11B 32   E8 D9           LEAS -39,S
-    202  2     A11E 86   F0              LDA  #$F0
-    203  4+0   A120 A4   E4              ANDA ,S
-    204  4+2   A122 AB   C0              ADDA ,U+
-    205  4+0   A124 A7   E4              STA  ,S
-    206  4+1   A126 32   E8 D9           LEAS -39,S
-    207  5+1   A129 37   02              PULU A
-    208  5+1   A12B 34   02              PSHS A
-    209  4+1   A12D 32   7F              LEAS -1,S
-    210  2     A12F 86   F0              LDA  #$F0
-    211  4+0   A131 A4   E4              ANDA ,S
-    212  4+2   A133 AB   C0              ADDA ,U+
-    213  4+0   A135 A7   E4              STA  ,S
-    214  4+1   A137 32   E8 D9           LEAS -39,S
-    215  5+1   A13A 37   02              PULU A
-    216  5+1   A13C 34   02              PSHS A
-    217  4+1   A13E 32   7F              LEAS -1,S
-    218  5+1   A140 37   02              PULU A
-    219  5+1   A142 34   02              PSHS A
-    220  4+1   A144 32   E8 D9           LEAS -39,S
-    221  5+1   A147 37   02              PULU A
-    222  5+1   A149 34   02              PSHS A
-    223  4+1   A14B 32   E8 D9           LEAS -39,S
-    224  2     A14E 86   0F              LDA  #$0F
-    225  4+0   A150 A4   E4              ANDA ,S
-    226  4+2   A152 AB   C0              ADDA ,U+
-    227  4+0   A154 A7   E4              STA  ,S
-    228  4+1   A156 32   E8 D9           LEAS -39,S
-    229
-    230  7     A159 10FE A245            LDS >POS_TEST1X100000
-    231  4+4   A15D 32   E9 2000         LEAS 8192,S
-    232  3     A161 CE   A231            LDU #DATA_TEST1X100000_2
-    233
-    234  4+1   A164 32   7F              LEAS -1,S
-    235  5+1   A166 37   02              PULU A
-    236  5+1   A168 34   02              PSHS A
-    237  4+1   A16A 32   E8 D8           LEAS -40,S *-40
-    238  2     A16D 86   F0              LDA  #$F0
-    239  4+0   A16F A4   E4              ANDA ,S
-    240  4+2   A171 AB   C0              ADDA ,U+
-    241  4+0   A173 A7   E4              STA  ,S
-    242  4+1   A175 32   E8 D9           LEAS -39,S
-    243  2     A178 86   F0              LDA  #$F0
-    244  4+0   A17A A4   E4              ANDA ,S
-    245  4+2   A17C AB   C0              ADDA ,U+
-    246  4+0   A17E A7   E4              STA  ,S
-    247  4+1   A180 32   E8 D9           LEAS -39,S
-    248  2     A183 86   0F              LDA  #$0F
-    249  4+0   A185 A4   E4              ANDA ,S
-    250  4+2   A187 AB   C0              ADDA ,U+
-    251  4+0   A189 A7   E4              STA  ,S
-    252  4+1   A18B 32   E8 D9           LEAS -39,S
-    253  2     A18E 86   0F              LDA  #$0F
-    254  4+0   A190 A4   E4              ANDA ,S
-    255  4+2   A192 AB   C0              ADDA ,U+
-    256  4+0   A194 A7   E4              STA  ,S
-    257  4+1   A196 32   7F              LEAS -1,S
-    258  2     A198 86   0F              LDA  #$0F
-    259  4+0   A19A A4   E4              ANDA ,S
-    260  4+2   A19C AB   C0              ADDA ,U+
-    261  4+0   A19E A7   E4              STA  ,S
-    262  4+1   A1A0 32   E8 D9           LEAS -39,S
-    263  2     A1A3 86   0F              LDA  #$0F
-    264  4+0   A1A5 A4   E4              ANDA ,S
-    265  4+2   A1A7 AB   C0              ADDA ,U+
-    266  4+0   A1A9 A7   E4              STA  ,S
-    267  4+1   A1AB 32   E8 D8           LEAS -40,S
-    268  2     A1AE 86   0F              LDA  #$0F
-    269  4+0   A1B0 A4   E4              ANDA ,S
-    270  4+2   A1B2 AB   C0              ADDA ,U+
-    271  4+0   A1B4 A7   E4              STA  ,S
-    272  4+1   A1B6 32   7F              LEAS -1,S
-    273  5+1   A1B8 37   02              PULU A
-    274  5+1   A1BA 34   02              PSHS A
-    275  4+1   A1BC 32   E8 D9           LEAS -39,S
-    276  2     A1BF 86   0F              LDA  #$0F
-    277  4+0   A1C1 A4   E4              ANDA ,S
-    278  4+2   A1C3 AB   C0              ADDA ,U+
-    279  4+0   A1C5 A7   E4              STA  ,S
-    280  4+1   A1C7 32   7F              LEAS -1,S
-    281  5+1   A1C9 37   02              PULU A
-    282  5+1   A1CB 34   02              PSHS A
-    283  4+1   A1CD 32   E8 D8           LEAS -40,S
-    284  5+1   A1D0 37   02              PULU A
-    285  5+1   A1D2 34   02              PSHS A
-    286  4+1   A1D4 32   7F              LEAS -1,S
-    287  5+1   A1D6 37   02              PULU A
-    288  5+1   A1D8 34   02              PSHS A
-    289  4+1   A1DA 32   E8 D8           LEAS -40,S
-    290  2     A1DD 86   0F              LDA  #$0F
-    291  4+0   A1DF A4   E4              ANDA ,S
-    292  4+2   A1E1 AB   C0              ADDA ,U+
-    293  4+0   A1E3 A7   E4              STA  ,S
-    294  4+1   A1E5 32   7F              LEAS -1,S
-    295  5+1   A1E7 37   02              PULU A
-    296  5+1   A1E9 34   02              PSHS A
-    297  4+1   A1EB 32   E8 D9           LEAS -39,S
-    298  5+1   A1EE 37   02              PULU A
-    299  5+1   A1F0 34   02              PSHS A
-    300  4+1   A1F2 32   7F              LEAS -1,S
-    301  5+1   A1F4 37   02              PULU A
-    302  5+1   A1F6 34   02              PSHS A
-    303  4+1   A1F8 32   E8 D9           LEAS -39,S
-    304  5+1   A1FB 37   02              PULU A
-    305  5+1   A1FD 34   02              PSHS A
-    306  4+1   A1FF 32   E8 D9           LEAS -39,S
-    307  2     A202 86   F0              LDA  #$F0
-    308  4+0   A204 A4   E4              ANDA ,S
-    309  4+2   A206 AB   C0              ADDA ,U+
-    310  4+0   A208 A7   E4              STA  ,S
-    311  4+1   A20A 32   E8 D9           LEAS -39,S
-    312  2     A20D 86   F0              LDA  #$F0
-    313  4+0   A20F A4   E4              ANDA ,S
-    314  4+2   A211 AB   C0              ADDA ,U+
-    315  4+0   A213 A7   E4              STA  ,S
-    316  4+1   A215 32   E8 8C           LEAS -116,S
-    317
-    318  7     A218 10FE A000            LDS  >SSAVE
-    319  5+3   A21C 35   48              PULS U,DP
-    320  5     A21E 39                   RTS
-    321
-    322        A21F               DATA_TEST1X100000_1
-    323        A21F 0566                 FDB $0566
-    324        A221 86A6                 FDB $86a6
-    325        A223 0305                 FDB $0305
-    326        A225 370A                 FDB $370a
-    327        A227 3783                 FDB $3783
-    328        A229 0888                 FDB $0888
-    329        A22B 0A88                 FDB $0a88
-    330        A22D 6714                 FDB $6714
-    331        A22F 2000                 FDB $2000
-    332        A231               DATA_TEST1X100000_2
-    333        A231 9509                 FDB $9509
-    334        A233 08A0                 FDB $08a0
-    335        A235 50A0                 FDB $50a0
-    336        A237 A030                 FDB $a030
-    337        A239 8A30                 FDB $8a30
-    338        A23B AA65                 FDB $aa65
-    339        A23D 3860                 FDB $3860
-    340        A23F 8866                 FDB $8866
-    341        A241 AA88                 FDB $aa88
-    342        A243 0A0B                 FDB $0a0b
-    343        A245               POS_TEST1X100000
-    344        A245 1F40                 FDB $1F40
-    345
-    346        A247               TABPALETTE
-    347        A247 0000                 FDB $0000     * index:0  R:0   V:0>>
-    348        A249 0500                 FDB $0500     * index:1  R:0   V:0>>
-    349        A24B 0F20                 FDB $0f20     * index:2  R:0   V:1>>
-    350        A24D 0000                 FDB $0000     * index:3  R:49  V:1>>
-    351        A24F 0FA0                 FDB $0fa0     * index:4  R:82  V:2>>
-    352        A251 0101                 FDB $0101     * index:5  R:99  V:8>>
-    353        A253 0002                 FDB $0002     * index:6  R:140 V:8>>
-    354        A255 0333                 FDB $0333     * index:7  R:156 V:1>>
-    355        A257 0016                 FDB $0016     * index:8  R:189 V:1>>
-    356        A259 0888                 FDB $0888     * index:9  R:206 V:2>>
-    357        A25B 036A                 FDB $036a     * index:10 R:222 V:1>>
-    358        A25D 0FFF                 FDB $0fff     * index:11 R:255 V:2>>
-    359        A25F 0FFF                 FDB $0fff     * index:12 R:255 V:2>>
-    360        A261 0FFF                 FDB $0fff     * index:13 R:255 V:2>>
-    361        A263 02AF                 FDB $02af     * index:14 R:255 V:2>>
-    362        A265 0146                 FDB $0146     * index:15 R:186 V:1>>
-    363        A267               FINTABPALETTE
-    364                           *****************************************>>
-    365                           * Tile arriere plan
-    366                           *****************************************>>
-    367        A267               TILEBCKGRNDA
-    368        A267 EEEE                 FDB $eeee
-    369        A269 EEEE                 FDB $eeee
-    370        A26B EEEE                 FDB $eeee
-    371        A26D EEEE                 FDB $eeee
-    372
-    373        A26F               TILEBCKGRNDB
-    374        A26F FFFF                 FDB $ffff
-    375        A271 FFFF                 FDB $ffff
-    376        A273 FFFF                 FDB $ffff
-    377        A275 FFFF                 FDB $ffff
+    167  2     A0CF 86   F0              LDA  #$F0
+    168  4+0   A0D1 A4   E4              ANDA ,S
+    169  4+2   A0D3 AB   C0              ADDA ,U+
+    170  4+1   A0D5 32   65              LEAS 5,S
+    171  5+4   A0D7 37   2C              PULU Y,DP,B
+    172  5+5   A0D9 34   2E              PSHS Y,DP,B,A
+    173  4+1   A0DB 32   E8 D8           LEAS -40,S
+    174  2     A0DE 86   F0              LDA  #$F0
+    175  4+0   A0E0 A4   E4              ANDA ,S
+    176  4+2   A0E2 AB   C0              ADDA ,U+
+    177  4+0   A0E4 A7   E4              STA  ,S
+    178  4+1   A0E6 32   E8 D7           LEAS -41,S
+    179  2     A0E9 86   F0              LDA  #$F0
+    180  4+0   A0EB A4   E4              ANDA ,S
+    181  4+2   A0ED AB   C0              ADDA ,U+
+    182  4+1   A0EF 32   62              LEAS 2,S
+    183  5+1   A0F1 37   04              PULU B
+    184  5+2   A0F3 34   06              PSHS B,A
+    185  4+1   A0F5 32   E8 DA           LEAS -38,S
+    186  2     A0F8 86   F0              LDA  #$F0
+    187  4+0   A0FA A4   E4              ANDA ,S
+    188  4+2   A0FC AB   C0              ADDA ,U+
+    189  4+1   A0FE 32   63              LEAS 3,S
+    190  5+2   A100 37   0C              PULU DP,B
+    191  5+3   A102 34   0E              PSHS DP,B,A
+    192  4+1   A104 32   E8 D8           LEAS -40,S
+    193  2     A107 86   F0              LDA  #$F0
+    194  4+0   A109 A4   E4              ANDA ,S
+    195  4+2   A10B AB   C0              ADDA ,U+
+    196  4+1   A10D 32   62              LEAS 2,S
+    197  5+1   A10F 37   04              PULU B
+    198  5+2   A111 34   06              PSHS B,A
+    199  4+1   A113 32   E8 DA           LEAS -38,S
+    200  2     A116 86   0F              LDA  #$0F
+    201  4+0   A118 A4   E4              ANDA ,S
+    202  4+2   A11A AB   C0              ADDA ,U+
+    203  4+1   A11C 32   64              LEAS 4,S
+    204  5+3   A11E 37   24              PULU Y,B
+    205  5+4   A120 34   26              PSHS Y,B,A
+    206  4+1   A122 32   E8 D8           LEAS -40,S
+    207
+    208  7     A125 10FE A1FE            LDS >POS_TEST1X100000
+    209  4+4   A129 32   E9 2000         LEAS 8192,S
+    210  3     A12D CE   A1EA            LDU #DATA_TEST1X100000_2
+    211
+    212  4+1   A130 32   7F              LEAS -1,S
+    213  5+1   A132 37   02              PULU A
+    214  5+1   A134 34   02              PSHS A
+    215  4+1   A136 32   E8 D8           LEAS -40,S
+    216  2     A139 86   F0              LDA  #$F0
+    217  4+0   A13B A4   E4              ANDA ,S
+    218  4+2   A13D AB   C0              ADDA ,U+
+    219  4+0   A13F A7   E4              STA  ,S
+    220  4+1   A141 32   E8 D8           LEAS -40,S
+    221  2     A144 86   F0              LDA  #$F0
+    222  4+0   A146 A4   E4              ANDA ,S
+    223  4+2   A148 AB   C0              ADDA ,U+
+    224  4+0   A14A A7   E4              STA  ,S
+    225  4+1   A14C 32   E8 B0           LEAS -80,S
+    226  2     A14F 86   0F              LDA  #$0F
+    227  4+0   A151 A4   E4              ANDA ,S
+    228  4+2   A153 AB   C0              ADDA ,U+
+    229  4+0   A155 A7   E4              STA  ,S
+    230  4+1   A157 32   E8 D9           LEAS -39,S
+    231  2     A15A 86   0F              LDA  #$0F
+    232  4+0   A15C A4   E4              ANDA ,S
+    233  4+2   A15E AB   C0              ADDA ,U+
+    234  4+0   A160 A7   E4              STA  ,S
+    235  4+1   A162 32   7F              LEAS -1,S
+    236  2     A164 86   0F              LDA  #$0F
+    237  4+0   A166 A4   E4              ANDA ,S
+    238  4+2   A168 AB   C0              ADDA ,U+
+    239  4+0   A16A A7   E4              STA  ,S
+    240  4+1   A16C 32   E8 D8           LEAS -40,S
+    241  2     A16F 86   0F              LDA  #$0F
+    242  4+0   A171 A4   E4              ANDA ,S
+    243  4+2   A173 AB   C0              ADDA ,U+
+    244  4+0   A175 A7   E4              STA  ,S
+    245  4+1   A177 32   E8 D9           LEAS -39,S
+    246  2     A17A 86   0F              LDA  #$0F
+    247  4+0   A17C A4   E4              ANDA ,S
+    248  4+2   A17E AB   C0              ADDA ,U+
+    249  4+0   A180 A7   E4              STA  ,S
+    250  4+1   A182 32   7E              LEAS -2,S
+    251  5+1   A184 37   02              PULU A
+    252  5+1   A186 34   02              PSHS A
+    253  4+1   A188 32   E8 D9           LEAS -39,S
+    254  2     A18B 86   0F              LDA  #$0F
+    255  4+0   A18D A4   E4              ANDA ,S
+    256  4+2   A18F AB   C0              ADDA ,U+
+    257  4+0   A191 A7   E4              STA  ,S
+    258  5+1   A193 37   02              PULU A
+    259  5+1   A195 34   02              PSHS A
+    260  4+1   A197 32   E8 D7           LEAS -41,S
+    261  5+2   A19A 37   06              PULU B,A
+    262  5+2   A19C 34   06              PSHS B,A
+    263  4+1   A19E 32   E8 D9           LEAS -39,S
+    264  2     A1A1 86   0F              LDA  #$0F
+    265  4+0   A1A3 A4   E4              ANDA ,S
+    266  4+2   A1A5 AB   C0              ADDA ,U+
+    267  4+0   A1A7 A7   E4              STA  ,S
+    268  5+1   A1A9 37   02              PULU A
+    269  5+1   A1AB 34   02              PSHS A
+    270  4+1   A1AD 32   E8 DA           LEAS -38,S
+    271  5+2   A1B0 37   06              PULU B,A
+    272  5+2   A1B2 34   06              PSHS B,A
+    273  4+1   A1B4 32   E8 D8           LEAS -40,S
+    274  2     A1B7 86   F0              LDA  #$F0
+    275  4+0   A1B9 A4   E4              ANDA ,S
+    276  4+2   A1BB AB   C0              ADDA ,U+
+    277  4+1   A1BD 32   62              LEAS 2,S
+    278  5+1   A1BF 37   04              PULU B
+    279  5+2   A1C1 34   06              PSHS B,A
+    280  4+1   A1C3 32   E8 D8           LEAS -40,S
+    281  2     A1C6 86   F0              LDA  #$F0
+    282  4+0   A1C8 A4   E4              ANDA ,S
+    283  4+2   A1CA AB   C0              ADDA ,U+
+    284  4+0   A1CC A7   E4              STA  ,S
+    285  4+1   A1CE 32   E8 B0           LEAS -80,S
+    286
+    287  7     A1D1 10FE A000            LDS  >SSAVE
+    288  5+3   A1D5 35   48              PULS U,DP
+    289  5     A1D7 39                   RTS
+    290
+    291        A1D8               DATA_TEST1X100000_1
+    292        A1D8 0503                 FDB $0503
+    293        A1DA A686                 FDB $a686
+    294        A1DC 6666                 FDB $6666
+    295        A1DE 050A                 FDB $050a
+    296        A1E0 3708                 FDB $3708
+    297        A1E2 8337                 FDB $8337
+    298        A1E4 0A88                 FDB $0a88
+    299        A1E6 2014                 FDB $2014
+    300        A1E8 6788                 FDB $6788
+    301        A1EA               DATA_TEST1X100000_2
+    302        A1EA 9509                 FDB $9509
+    303        A1EC 08A0                 FDB $08a0
+    304        A1EE 50A0                 FDB $50a0
+    305        A1F0 A030                 FDB $a030
+    306        A1F2 8A30                 FDB $8a30
+    307        A1F4 AA38                 FDB $aa38
+    308        A1F6 6560                 FDB $6560
+    309        A1F8 88AA                 FDB $88aa
+    310        A1FA 660A                 FDB $660a
+    311        A1FC 880B                 FDB $880b
+    312        A1FE               POS_TEST1X100000
+    313        A1FE 1F40                 FDB $1F40
+    314
+    315        A200               TABPALETTE
+    316        A200 0000                 FDB $0000     * index:0  R:0   V:0>>
+    317        A202 0500                 FDB $0500     * index:1  R:0   V:0>>
+    318        A204 0F20                 FDB $0f20     * index:2  R:0   V:1>>
+    319        A206 0000                 FDB $0000     * index:3  R:49  V:1>>
+    320        A208 0FA0                 FDB $0fa0     * index:4  R:82  V:2>>
+    321        A20A 0101                 FDB $0101     * index:5  R:99  V:8>>
+    322        A20C 0002                 FDB $0002     * index:6  R:140 V:8>>
+    323        A20E 0333                 FDB $0333     * index:7  R:156 V:1>>
+    324        A210 0016                 FDB $0016     * index:8  R:189 V:1>>
+    325        A212 0888                 FDB $0888     * index:9  R:206 V:2>>
+    326        A214 036A                 FDB $036a     * index:10 R:222 V:1>>
+    327        A216 0FFF                 FDB $0fff     * index:11 R:255 V:2>>
+    328        A218 0FFF                 FDB $0fff     * index:12 R:255 V:2>>
+    329        A21A 0FFF                 FDB $0fff     * index:13 R:255 V:2>>
+    330        A21C 02AF                 FDB $02af     * index:14 R:255 V:2>>
+    331        A21E 0146                 FDB $0146     * index:15 R:186 V:1>>
+    332        A220               FINTABPALETTE
+    333                           *****************************************>>
+    334                           * Tile arriere plan
+    335                           *****************************************>>
+    336        A220               TILEBCKGRNDA
+    337        A220 EEEE                 FDB $eeee
+    338        A222 EEEE                 FDB $eeee
+    339        A224 EEEE                 FDB $eeee
+    340        A226 EEEE                 FDB $eeee
+    341
+    342        A228               TILEBCKGRNDB
+    343        A228 FFFF                 FDB $ffff
+    344        A22A FFFF                 FDB $ffff
+    345        A22C FFFF                 FDB $ffff
+    346        A22E FFFF                 FDB $ffff
 
 000000 Total Errors
 
 000023 Total Symbols
-     1x          Label A21F DATA_TEST1X100000_1
-     1x          Label A231 DATA_TEST1X100000_2
+     1x          Label A1D8 DATA_TEST1X100000_1
+     1x          Label A1EA DATA_TEST1X100000_2
      1x          Equ   0000 DEBUTECRANA
      1x          Equ   2000 DEBUTECRANB
      1x          Label A072 DRAWBCKGRN
@@ -392,15 +361,15 @@ Pass2
      1x          Label A069 EFF_RAM
      1x          Equ   1F40 FINECRANA
      1x          Equ   3F40 FINECRANB
-     1x          Label A267 FINTABPALETTE
+     1x          Label A220 FINTABPALETTE
      0x          Label A025 INITBORD
      1x          Label A041 MAIN
-     2x          Label A245 POS_TEST1X100000
+     2x          Label A1FE POS_TEST1X100000
      3x          Label A04C SCRC
      2x          Label A059 SCRC0
      1x          Label A00E SETPALETTE
      4x          Label A000 SSAVE
-     1x          Label A247 TABPALETTE
-     1x          Label A267 TILEBCKGRNDA
-     1x          Label A26F TILEBCKGRNDB
+     1x          Label A200 TABPALETTE
+     1x          Label A220 TILEBCKGRNDA
+     1x          Label A228 TILEBCKGRNDB
 

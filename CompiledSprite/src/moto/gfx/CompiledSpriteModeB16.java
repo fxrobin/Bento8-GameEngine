@@ -132,13 +132,9 @@ public class CompiledSpriteModeB16 {
 
 	public List<String>[] generateCodeArray(int pos) {
 		int col = width;
-		int fcol = 0;
 		int row = height;
 		int chunk = 1;
 		int doubleFwd = 0;
-		int leas = 0;
-		int fpixel = 0;
-		int frpixel = 0;
 		boolean leftAlphaPxl = false;
 		boolean rightAlphaPxl = false;
 		String sLeas = "";
@@ -178,7 +174,7 @@ public class CompiledSpriteModeB16 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						sLeas = ComputeLEAS (pixel, col, pos);
+						sLeas = ComputeLEAS (pixel+3, col+3, pos+1);
 						if (!sLeas.equals("")) {
 							spriteCode.add(sLeas);
 						}
@@ -202,63 +198,29 @@ public class CompiledSpriteModeB16 {
 						}
 					}
 
-						// **************************************************************************
-						// Gestion du pixel transparent à gauche ou à droite dans une paire de pixels
-						// **************************************************************************
+					// **************************************************************************
+					// Gestion du pixel transparent à gauche ou à droite dans une paire de pixels
+					// **************************************************************************
 
-						if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
-							
-							if (pixel >= (width * height) - (fdbBytes.size() * 2)) {
-								spriteCode.add("\tLEAS -" + fdbBytes.size() / 2 + ",S");
-							}
-							
-							if (leftAlphaPxl == true) {
-								spriteCode.add("\tLDA  #$F0");
-							} else {
-								spriteCode.add("\tLDA  #$0F");
-							}
-							
-							spriteCode.add("\tANDA ,S");
-							spriteCode.add("\tADDA ,U+");
-							
-							if (fdbBytes.size() == 2) { // il n'y a pas d'ensemble PSH en cours on traite
-								spriteCode.add("\tSTA  ,S");
-								pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
-								fdbBytesResultLigne += fdbBytes.get(1) + fdbBytes.get(0);
-								fdbBytes.clear();
-								
-								// **************************************************************
-								// Gestion des sauts de ligne
-								// **************************************************************
-								sLeas = ComputeLEAS (pixel, col, pos);
-								if (!sLeas.equals("")) {
-									spriteCode.add(sLeas);
-								}
-								
-							} else {
-								// il y a un ensemble PSH en cours on traite l'ecriture sur le PSH (Registre A)
-								spriteCode.add("\tLEAS " + fdbBytes.size() / 2 + ",S"); 
-							}
+					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
+
+						if (pixel >= (width * height) - (fdbBytes.size() * 2)) {
+							spriteCode.add("\tLEAS -" + fdbBytes.size() / 2 + ",S");
 						}
 
-						// **************************************************************
-						// Gestion d'une paire de pixels pleins
-						// **************************************************************
-						if (chunk == pos + 1 && fdbBytes.size() > 0
-							 && (fdbBytes.size() == 14 || // 14px max par PUSH
-								(pixel <= 2) || // ou fin de l'image
-								(col >= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
-								!(pixel >= 4 && ((int) pixels[pixel - 3] >= 0 || (int) pixels[pixel - 3] <= 15)
-										     && ((int) pixels[pixel - 4] >= 0 || (int) pixels[pixel - 4] <= 15)))) { 
-							
-							motif = optimisationPUL(fdbBytes, pulBytesOld, fdbBytes.size() / 2, leftAlphaPxl!=rightAlphaPxl);
-							String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, leftAlphaPxl!=rightAlphaPxl);
-							if (!result[0][0].equals("")) {
-								spriteCode.add(result[0][0]); // PUL
-							}
-							spriteCode.add(result[1][0]); // PSH
-							fdbBytesResultLigne += result[2][0];
-							pulBytesOld = result[3];
+						if (leftAlphaPxl == true) {
+							spriteCode.add("\tLDA  #$F0");
+						} else {
+							spriteCode.add("\tLDA  #$0F");
+						}
+
+						spriteCode.add("\tANDA ,S");
+						spriteCode.add("\tADDA ,U+");
+
+						if (fdbBytes.size() == 2) { // il n'y a pas d'ensemble PSH en cours on traite
+							spriteCode.add("\tSTA  ,S");
+							pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
+							fdbBytesResultLigne += fdbBytes.get(1) + fdbBytes.get(0);
 							fdbBytes.clear();
 
 							// **************************************************************
@@ -268,7 +230,44 @@ public class CompiledSpriteModeB16 {
 							if (!sLeas.equals("")) {
 								spriteCode.add(sLeas);
 							}
+
+						} else {
+							// il y a un ensemble PSH en cours on traite l'ecriture sur le PSH (Registre A)
+							spriteCode.add("\tLEAS " + fdbBytes.size() / 2 + ",S"); 
 						}
+					}
+
+					// **************************************************************
+					// Gestion d'une paire de pixels pleins
+					// **************************************************************
+					
+					// TODO ajout d'un test pour voir s'il ne reste que des paires transparentes jusqu'a fin de ligne :
+					// alors on est fin de ligne
+					
+					if (chunk == pos + 1 && fdbBytes.size() > 0
+							&& (fdbBytes.size() == 14 || // 14px max par PUSH
+							(pixel <= 2) || // ou fin de l'image
+							(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
+							(leftAlphaPxl == true || rightAlphaPxl == true))) { 
+
+						motif = optimisationPUL(fdbBytes, pulBytesOld, fdbBytes.size() / 2, leftAlphaPxl!=rightAlphaPxl);
+						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, leftAlphaPxl!=rightAlphaPxl);
+						if (!result[0][0].equals("")) {
+							spriteCode.add(result[0][0]); // PUL
+						}
+						spriteCode.add(result[1][0]); // PSH
+						fdbBytesResultLigne += result[2][0];
+						pulBytesOld = result[3];
+						fdbBytes.clear();
+
+						// **************************************************************
+						// Gestion des sauts de ligne
+						// **************************************************************
+						sLeas = ComputeLEAS (pixel, col, pos);
+						if (!sLeas.equals("")) {
+							spriteCode.add(sLeas);
+						}
+					}
 				}
 
 				// **************************************************************
@@ -320,10 +319,11 @@ public class CompiledSpriteModeB16 {
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
 		String sLeas = "";
+		pos -= 1;
 
 		// On regarde ce qui suit ...
 		// *** CAS: Saut de ligne ***
-		if (fcol - 3 <= 0) {
+		if (fcol <= 3) {
 			fcol = width - pos;
 			leas += -40 + (width / 4); // Remarque : dans le cas d'une image plein ecran leas=0
 		}
@@ -334,22 +334,21 @@ public class CompiledSpriteModeB16 {
 
 		// *** CAS : Pixels transparents par paires ***
 		while (fpixel > 0 && ((int) pixels[fpixel]   < 0 || (int) pixels[fpixel]   > 15)
-				          && ((int) pixels[fpixel-1] < 0 || (int) pixels[fpixel-1] > 15)) {
-			if (fcol <= 3) {
+				          && ((int) pixels[fpixel+1] < 0 || (int) pixels[fpixel+1] > 15)) {
+			fcol -= 4;
+			leas--;			
+			if (fcol <= -1) {
 				fcol = width - pos;
 				leas += -40 + width / 4;
-			} else {
-				fcol -= 4;
-				leas--;
 			}
 			fpixel -= 4;
 		}
 
 		// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
 		if ((fpixel > 0) && ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
-				           && ((int) pixels[fpixel-1]  < 0 || (int) pixels[fpixel-1]  > 15))
+				           && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
 				          || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
-				           && ((int) pixels[fpixel-1] >= 0 && (int) pixels[fpixel-1] <= 15)))) {
+				           && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
 			leas--;
 		} else {
 			// on recherche une paire de pixel dont un seul transparent (gauche ou droite)
@@ -357,22 +356,22 @@ public class CompiledSpriteModeB16 {
 			int frpixel = fpixel;
 			int frcol = fcol;
 			int fleas = leas;
-			while ( ((frcol > 0 && width < 160) || (width == 160))
-			     	&& frpixel >= 0
-					&& fpixel - frpixel <= 28
-					&& ((((int) pixels[frpixel]   >= 0 && (int) pixels[frpixel]   <= 15))
-					  && ((int) pixels[frpixel-1] >= 0 && (int) pixels[frpixel-1] <= 15))) {
-				fleas--;
-				frpixel -= 4;
-				frcol -= 4;
+			while ( ((fcol > 0 && width < 160) || (width == 160))
+			     	&& fpixel >= 0
+					&& frpixel - fpixel <= 28
+					&& ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15))
+					  && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15))) {
+				leas--;
+				fpixel -= 4;
+				fcol -= 4;
 			}
 			
 			// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
-			if (fpixel - frpixel <= 28 && fpixel > 0
+			if (frpixel - fpixel <= 28 && fpixel > 0
 				&& ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
-				  && ((int) pixels[fpixel-1]  < 0 || (int) pixels[fpixel-1]  > 15))
+				  && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
 				 || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
-				  && ((int) pixels[fpixel-1] >= 0 && (int) pixels[fpixel-1] <= 15)))) {
+				  && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
 				leas--;
 			} else {
 				// on revient au point de départ
