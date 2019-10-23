@@ -50,7 +50,7 @@ SETPALETTE
 * Initialisation de la couleur de bordure
 ********************************************************************************
 INITBORD
-	LDA	#$04	* couleur 4
+	LDA	#$00	* couleur 0
 	STA	$E7DD
 
 ********************************************************************************
@@ -163,89 +163,200 @@ DRAW_TEST1X100000
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -7,S
-	LDA  #$F0
-	ANDA ,S
-	ADDA ,U+
-	LEAS 7,S
-	PULU X,Y,DP,B
-	PSHS X,Y,DP,B,A
 	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	PSHS A
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -2,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
+	LEAS -2,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -1,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	LEAS 2,S
+	PULU B
+	PSHS B,A
+	LEAS -38,S
+	PSHS B
+	LEAS -1,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	LEAS 2,S
+	PULU B
+	PSHS B,A
+	LEAS -38,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	LEAS 2,S
+	PULU B
+	PSHS B,A
+	LEAS -38,S
+	PSHS B
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -2,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -117,S
 
 	LDS >POS_TEST1X100000
 	LEAS 8192,S
 	LDU #DATA_TEST1X100000_2
 
 	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -7,S
+	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
-	LEAS 7,S
-	PULU X,Y,DP,B
-	PSHS X,Y,DP,B,A
+	STA  ,S
+	LEAS -118,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
 	LEAS -1,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -1,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -78,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -1,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -2,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	PULU A
+	PSHS A
+	LEAS -38,S
+	PULU B,A
+	PSHS B,A
+	LEAS -1,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	PULU A
+	PSHS A
+	LEAS -38,S
+	PULU B,A
+	PSHS B,A
+	LEAS -38,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	LEAS 2,S
+	PULU B
+	PSHS B,A
+	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
+	LEAS -156,S
 
 	LDS  >SSAVE
 	PULS U,DP
 	RTS
 
 DATA_TEST1X100000_1
-	FDB $0303
-	FDB $3333
-	FDB $3333
-	FDB $3333
-	FDB $0300
+	FDB $0566
+	FDB $86a6
+	FDB $0305
+	FDB $0a37
+	FDB $0883
+	FDB $0a88
+	FDB $6714
+	FDB $2000
 DATA_TEST1X100000_2
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
+	FDB $9509
+	FDB $08a0
+	FDB $50a0
+	FDB $a030
+	FDB $8a30
+	FDB $aa38
+	FDB $6560
+	FDB $88aa
+	FDB $660a
+	FDB $880b
 POS_TEST1X100000
 	FDB $1F40
 
 TABPALETTE
-	FDB $022f	* index:0  R:255 V:119 B:119
-	FDB $0fff	* index:1  R:255 V:255 B:255
-	FDB $00f0	* index:2  R:0   V:255 B:0  
-	FDB $00ff	* index:3  R:255 V:255 B:0  
-	FDB $0000	* index:4  R:0   V:0   B:0  
-	FDB $0333	* index:5  R:144 V:144 B:144
-	FDB $0111	* index:6  R:96  V:96  B:96 
-	FDB $0666	* index:7  R:192 V:192 B:192
-	FDB $0333	* index:8  R:144 V:144 B:144
-	FDB $0111	* index:9  R:96  V:96  B:96 
-	FDB $0666	* index:10 R:192 V:192 B:192
-	FDB $0333	* index:11 R:144 V:144 B:144
-	FDB $0111	* index:12 R:96  V:96  B:96 
-	FDB $0666	* index:13 R:192 V:192 B:192
-	FDB $0333	* index:14 R:144 V:144 B:144
-	FDB $0111	* index:15 R:96  V:96  B:96 
+	FDB $0000	* index:0  R:0   V:0   B:0  
+	FDB $0500	* index:1  R:0   V:0   B:173
+	FDB $0f20	* index:2  R:0   V:140 B:255
+	FDB $0000	* index:3  R:49  V:16  B:16 
+	FDB $0fa0	* index:4  R:82  V:222 B:255
+	FDB $0101	* index:5  R:99  V:82  B:99 
+	FDB $0002	* index:6  R:140 V:82  B:0  
+	FDB $0333	* index:7  R:156 V:156 B:156
+	FDB $0016	* index:8  R:189 V:115 B:82 
+	FDB $0888	* index:9  R:206 V:206 B:206
+	FDB $036a	* index:10 R:222 V:189 B:156
+	FDB $0fff	* index:11 R:255 V:255 B:255
+	FDB $0fff	* index:12 R:255 V:255 B:255
+	FDB $0fff	* index:13 R:255 V:255 B:255
+	FDB $02af	* index:14 R:255 V:224 B:128
+	FDB $0146	* index:15 R:186 V:163 B:93 
 FINTABPALETTE
 ********************************************************************************  
 * Tile arriere plan   
 ********************************************************************************
 TILEBCKGRNDA
-	FDB $5555
-	FDB $5555
-	FDB $5555
-	FDB $5555
+	FDB $eeee
+	FDB $eeee
+	FDB $eeee
+	FDB $eeee
 
 TILEBCKGRNDB
-	FDB $6666
-	FDB $6666
-	FDB $6666
-	FDB $6666
+	FDB $ffff
+	FDB $ffff
+	FDB $ffff
+	FDB $ffff
