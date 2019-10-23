@@ -50,7 +50,7 @@ SETPALETTE
 * Initialisation de la couleur de bordure
 ********************************************************************************
 INITBORD
-	LDA	#$00	* couleur 0
+	LDA	#$04	* couleur 4
 	STA	$E7DD
 
 ********************************************************************************
@@ -163,64 +163,69 @@ DRAW_TEST1X100000
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -1,S
+	LEAS -39,S
 	PULU A
 	PSHS A
-	LEAS -1,S
+	LEAS -39,S
 	PSHS A
-	LEAS -1,S
+	LEAS -39,S
 	PULU A
 	PSHS A
-	LEAS -1,S
+	LEAS -39,S
 	PULU A
 	PSHS A
-	LEAS -2,S
+	LEAS -117,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -2,S
+	LEAS -78,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -1,S
+	LEAS -39,S
+	PULU A
+	PSHS A
+	LEAS -39,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
-	LEAS 2,S
-	PULU B
-	PSHS B,A
-	LEAS -38,S
-	PSHS B
-	LEAS -1,S
-	LDA  #$F0
-	ANDA ,S
-	ADDA ,U+
-	LEAS 2,S
-	PULU B
-	PSHS B,A
-	LEAS -38,S
-	LDA  #$F0
-	ANDA ,S
-	ADDA ,U+
-	LEAS 2,S
-	PULU B
-	PSHS B,A
-	LEAS -38,S
-	PSHS B
-	LEAS -1,S
+	STA  ,S
+	LEAS -39,S
 	PULU A
 	PSHS A
 	LEAS -1,S
 	PULU A
 	PSHS A
-	LEAS -2,S
+	LEAS -39,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -39,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -39,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -39,S
+	PULU A
+	PSHS A
+	LEAS -39,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -117,S
+	LEAS -39,S
 
 	LDS >POS_TEST1X100000
 	LEAS 8192,S
@@ -229,17 +234,22 @@ DRAW_TEST1X100000
 	LEAS -1,S
 	PULU A
 	PSHS A
-	LEAS -40,S
+	LEAS -40,S *-40
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -40,S
+	LEAS -39,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -118,S
+	LEAS -39,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -39,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA ,U+
@@ -249,57 +259,61 @@ DRAW_TEST1X100000
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
+	LEAS -39,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -40,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
 	LEAS -1,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA ,U+
-	STA  ,S
-	LEAS -78,S
+	PULU A
+	PSHS A
+	LEAS -39,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
 	LEAS -1,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA ,U+
-	STA  ,S
-	LEAS -2,S
+	PULU A
+	PSHS A
+	LEAS -40,S
 	PULU A
 	PSHS A
 	LEAS -1,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA ,U+
-	STA  ,S
 	PULU A
 	PSHS A
-	LEAS -38,S
-	PULU B,A
-	PSHS B,A
-	LEAS -1,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA ,U+
-	STA  ,S
-	PULU A
-	PSHS A
-	LEAS -38,S
-	PULU B,A
-	PSHS B,A
-	LEAS -38,S
-	LDA  #$F0
-	ANDA ,S
-	ADDA ,U+
-	LEAS 2,S
-	PULU B
-	PSHS B,A
 	LEAS -40,S
+	LDA  #$0F
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -39,S
+	PULU A
+	PSHS A
+	LEAS -1,S
+	PULU A
+	PSHS A
+	LEAS -39,S
+	PULU A
+	PSHS A
+	LEAS -39,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA ,U+
 	STA  ,S
-	LEAS -156,S
+	LEAS -39,S
+	LDA  #$F0
+	ANDA ,S
+	ADDA ,U+
+	STA  ,S
+	LEAS -116,S
 
 	LDS  >SSAVE
 	PULS U,DP
@@ -309,8 +323,9 @@ DATA_TEST1X100000_1
 	FDB $0566
 	FDB $86a6
 	FDB $0305
-	FDB $0a37
-	FDB $0883
+	FDB $370a
+	FDB $3783
+	FDB $0888
 	FDB $0a88
 	FDB $6714
 	FDB $2000
@@ -320,11 +335,11 @@ DATA_TEST1X100000_2
 	FDB $50a0
 	FDB $a030
 	FDB $8a30
-	FDB $aa38
-	FDB $6560
-	FDB $88aa
-	FDB $660a
-	FDB $880b
+	FDB $aa65
+	FDB $3860
+	FDB $8866
+	FDB $aa88
+	FDB $0a0b
 POS_TEST1X100000
 	FDB $1F40
 

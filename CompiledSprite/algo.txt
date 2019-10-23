@@ -1,0 +1,39 @@
+FF Pixels transparents ******************************
+SI Premiere Ecriture (LEAS)
+   * Paire de pixels transparents à venir (et saut de ligne) (LEAS)
+   * Pixel Transparent G ou D à venir (LEAS)
+
+0F Pixel transparent à droite ***********************
+Premiere Ecriture (LEAS)
+*** Paire de pixel plein suivi de transparent G ou D (LEAS)
+SINON ** Debut de ligne (LEAS)
+      * Paire de pixels transparents à venir (et saut de ligne) (LEAS)
+      * Pixel Transparent G ou D à venir (LEAS)
+ECRITURE STA
+ECRITURE LEAS
+
+F0 Pixel transparent à gauche ***********************
+Premiere Ecriture (LEAS)
+SI pas d'ensemble de PSH en cours:
+Manque ***
+   ** Debut de ligne (LEAS)
+   * Paire de pixels transparents à venir (et saut de ligne) (LEAS)
+   * Pixel Transparent G ou D à venir (LEAS)
+   ECRITURE STA
+   ECRITURE LEAS
+
+Pixels pleins ***************************************
+Si deuxieme pixel de la paire ET quelque chose a lire ET
+   On a atteint la limite de 14 px OU
+   Début de l'image OU
+   Paire de pixels transparents à venir OU
+   Pixel Transparent G à venir
+   
+   ECRITURE PUL
+   ECRITURE PSH
+   ** Debut de ligne (LEAS)
+   * Paire de pixels transparents à venir (et saut de ligne) (LEAS)
+   ***** Pas de Pixel Transparent G ou D à venir on réinit le LEAS
+   **** Debut de ligne (LEAS)
+   * Pixel Transparent G ou D à venir (LEAS)
+   
