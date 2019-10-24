@@ -174,7 +174,7 @@ public class CompiledSpriteModeB16 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						sLeas = ComputeLEAS (pixel+3, col+3, pos+1);
+						sLeas = ComputeLEAS (pixel+3, col+3, pos);
 						if (!sLeas.equals("")) {
 							spriteCode.add(sLeas);
 						}
@@ -289,6 +289,7 @@ public class CompiledSpriteModeB16 {
 				if (col == 0) {
 					col = width;
 					row--;
+					chunk = 0;
 				}
 				if (chunk == 4) {
 					chunk = 1;
@@ -317,19 +318,33 @@ public class CompiledSpriteModeB16 {
 		int leas = 0;
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
+		int offset = 0;
 		String sLeas = "";
-		pos -= 1;
 
+		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le même
+		if (((width/2) == (width/4)*2) || pos == 3) {
+			offset = 0;
+		} else {
+			offset = 1;
+		}
+		
 		// On regarde ce qui suit ...
 		// *** CAS: Saut de ligne ***
 		if (fcol <= 3) {
 			fcol = width - pos;
-			leas += -40 + (width / 4); // Remarque : dans le cas d'une image plein ecran leas=0
+			leas += -40 + (width / 4) + offset; // Remarque : dans le cas d'une image plein ecran leas=0
+			if (((width/2) == (width/4)*2)) {
+				fpixel -= 4;
+			} else if (pos == 1) {
+				fpixel -= 2;
+			} else if (pos == 3) {
+				fpixel -= 6;
+			}
 		}
 		else {
 			fcol -= 4;
+			fpixel -= 4;
 		}
-		fpixel -= 4;
 
 		// *** CAS : Pixels transparents par paires ***
 		while (fpixel > 0 && ((int) pixels[fpixel]   < 0 || (int) pixels[fpixel]   > 15)
@@ -338,9 +353,17 @@ public class CompiledSpriteModeB16 {
 			leas--;			
 			if (fcol <= -1) {
 				fcol = width - pos;
-				leas += -40 + width / 4;
+				leas += -40 + (width / 4) + offset;
+				if (((width/2) == (width/4)*2)) {
+					fpixel -= 4;
+				} else if (pos == 1) {
+					fpixel -= 2;
+				} else if (pos == 3) {
+					fpixel -= 6;
+				}
+			} else {
+				fpixel -= 4;
 			}
-			fpixel -= 4;
 		}
 
 		// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
