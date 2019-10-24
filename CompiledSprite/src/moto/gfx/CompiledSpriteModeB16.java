@@ -241,14 +241,13 @@ public class CompiledSpriteModeB16 {
 					// Gestion d'une paire de pixels pleins
 					// **************************************************************
 					
-					// TODO ajout d'un test pour voir s'il ne reste que des paires transparentes jusqu'a fin de ligne :
-					// alors on est fin de ligne
-					
 					if (chunk == pos + 1 && fdbBytes.size() > 0
 							&& (fdbBytes.size() == 14 || // 14px max par PUSH
 							(pixel <= 2) || // ou fin de l'image
 							(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
-							(leftAlphaPxl == true || rightAlphaPxl == true))) { 
+							(leftAlphaPxl == true || rightAlphaPxl == true) ||
+							(pixel >= 4 && ((int) pixels[pixel-3] < 0 || (int) pixels[pixel-3] > 15)
+							            && ((int) pixels[pixel-4] < 0 || (int) pixels[pixel-4] > 15)) )) { 
 
 						motif = optimisationPUL(fdbBytes, pulBytesOld, fdbBytes.size() / 2, leftAlphaPxl!=rightAlphaPxl);
 						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, leftAlphaPxl!=rightAlphaPxl);
@@ -356,18 +355,20 @@ public class CompiledSpriteModeB16 {
 			int frpixel = fpixel;
 			int frcol = fcol;
 			int fleas = leas;
-			while ( ((fcol > 0 && width < 160) || (width == 160))
-			     	&& fpixel >= 0
-					&& frpixel - fpixel <= 28
-					&& ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15))
-					  && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15))) {
+			while (((fcol > 0 && width < 160) || (width == 160))
+			       && fpixel >= 0
+				   && frpixel - fpixel <= 28
+				   && ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15))
+					 && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15))) {
 				leas--;
 				fpixel -= 4;
 				fcol -= 4;
 			}
 			
 			// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
-			if (frpixel - fpixel <= 28 && fpixel > 0
+			if (((fcol > 0 && width < 160) || (width == 160))
+			    && fpixel >= 0
+				&& frpixel - fpixel <= 28
 				&& ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
 				  && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
 				 || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
