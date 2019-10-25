@@ -11,6 +11,7 @@ import java.util.List;
 
 // METAL SLUG : 3192 cycles - Taille : A0B5 (41141) a A69E (42654) = 1513 octets
 // optim ADDA : 3012 cycles - Taille : A0B5 (41141) a A670 (42608) = 1467 octets
+// suppr otim renversement : 3055 cycles - Taille : A0B5 (41141) a A695 (42645) = 1504 octets
 
 // TODO
 // Ajout optim LEAS ,--S au lieu de LEAS -2,S
@@ -32,7 +33,7 @@ import java.util.List;
 // effet de chaleur en variant les retours de ligne
 // clignotement
 
-public class CompiledSpriteModeB16 {
+public class CompiledSpriteModeB16v2 {
 	// Convertisseur d'image PNG en "Compiled Sprite"
 	// Thomson MO5NR, MO6, TO8, TO9 et TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
@@ -47,6 +48,10 @@ public class CompiledSpriteModeB16 {
 
 	// Calcul
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
+	final String[] pulReg    = { "Y", "X", "DP", "B", "A", "D" };
+	final int[] regCostPULx  = { 2, 2,  1, 1, 1, 2 };
+	final int[] regCostLDx   = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
+	final int[] regCostSTx   = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
@@ -58,7 +63,7 @@ public class CompiledSpriteModeB16 {
 	String drawLabel;
 	String dataLabel;
 
-	public CompiledSpriteModeB16(String file) {
+	public CompiledSpriteModeB16v2(String file) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -141,6 +146,7 @@ public class CompiledSpriteModeB16 {
 		boolean leftAlphaPxl = false;
 		boolean rightAlphaPxl = false;
 		String sLeas = "";
+		boolean bLeas = false;
 
 		List<String> spriteCode = new ArrayList<String>();
 		ArrayList<String> fdbBytes = new ArrayList<String>();
@@ -180,6 +186,9 @@ public class CompiledSpriteModeB16 {
 						sLeas = ComputeLEAS (pixel+3, col+3, pos);
 						if (!sLeas.equals("")) {
 							spriteCode.add(sLeas);
+							bLeas = true;
+						} else {
+							bLeas = false;
 						}
 					}
 					doubleFwd = 1;
@@ -207,35 +216,31 @@ public class CompiledSpriteModeB16 {
 
 					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
 
-						if (pixel >= (width * height) - (fdbBytes.size() * 2)) {
-							spriteCode.add("\tLEAS -" + fdbBytes.size() / 2 + ",S");
-						}
-
 						if (leftAlphaPxl == true) {
 							spriteCode.add("\tLDA  #$F0");
 						} else {
 							spriteCode.add("\tLDA  #$0F");
 						}
 
-						spriteCode.add("\tANDA ,S");
-						spriteCode.add("\tADDA #$"+fdbBytes.get(fdbBytes.size()-1)+fdbBytes.get(fdbBytes.size()-2));
-
-						if (fdbBytes.size() == 2) { // il n'y a pas d'ensemble PSH en cours on traite
-							spriteCode.add("\tSTA  ,S");
-							pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
-							fdbBytes.clear();
-
-							// **************************************************************
-							// Gestion des sauts de ligne
-							// **************************************************************
-							sLeas = ComputeLEAS (pixel, col, pos);
-							if (!sLeas.equals("")) {
-								spriteCode.add(sLeas);
-							}
-
+						if (bLeas) {
+							spriteCode.add("\tANDA ,S");
 						} else {
-							// il y a un ensemble PSH en cours on traite l'ecriture sur le PSH (Registre A)
-							spriteCode.add("\tLEAS " + fdbBytes.size() / 2 + ",S"); 
+							spriteCode.add("\tANDA ,-S");
+						}
+						spriteCode.add("\tADDA #$"+fdbBytes.get(fdbBytes.size()-1)+fdbBytes.get(fdbBytes.size()-2));
+						spriteCode.add("\tSTA  ,S");
+						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
+						fdbBytes.clear();
+
+						// **************************************************************
+						// Gestion des sauts de ligne
+						// **************************************************************
+						sLeas = ComputeLEAS (pixel, col, pos);
+						if (!sLeas.equals("")) {
+							spriteCode.add(sLeas);
+							bLeas = true;
+						} else {
+							bLeas = false;
 						}
 					}
 
@@ -244,15 +249,14 @@ public class CompiledSpriteModeB16 {
 					// **************************************************************
 					
 					if (chunk == pos + 1 && fdbBytes.size() > 0
-							&& (fdbBytes.size() == 14 || // 14px max par PUSH
-							(pixel <= 2) || // ou fin de l'image
-							(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
-							(leftAlphaPxl == true || rightAlphaPxl == true) ||
-							(pixel >= 4 && ((int) pixels[pixel-3] < 0 || (int) pixels[pixel-3] > 15)
-							            && ((int) pixels[pixel-4] < 0 || (int) pixels[pixel-4] > 15)) )) { 
+						&& (fdbBytes.size() == 14 || // 14px max par PSH
+						(pixel <= 2) || // ou fin de l'image
+						(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
+						(pixel >= 4 && (((int) pixels[pixel-3] < 0 || (int) pixels[pixel-3] > 15)
+						             || ((int) pixels[pixel-4] < 0 || (int) pixels[pixel-4] > 15))) )) { 
 
-						motif = optimisationPUL(fdbBytes, pulBytesOld, fdbBytes.size() / 2, leftAlphaPxl!=rightAlphaPxl);
-						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, leftAlphaPxl!=rightAlphaPxl);
+						motif = optimisationPUL(fdbBytes, pulBytesOld);
+						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif);
 						if (!result[0][0].equals("")) {
 							spriteCode.add(result[0][0]); // PUL
 						}
@@ -267,6 +271,9 @@ public class CompiledSpriteModeB16 {
 						sLeas = ComputeLEAS (pixel, col, pos);
 						if (!sLeas.equals("")) {
 							spriteCode.add(sLeas);
+							bLeas = true;
+						} else {
+							bLeas = false;
 						}
 					}
 				}
@@ -374,38 +381,8 @@ public class CompiledSpriteModeB16 {
 				          || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
 				           && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
 			leas--;
-		} else {
-			// on recherche une paire de pixel dont un seul transparent (gauche ou droite)
-			// précédée d'un maximum de 12 pixels pleins
-			int frpixel = fpixel;
-			int frcol = fcol;
-			int fleas = leas;
-			while (((fcol > 0 && width < 160) || (width == 160))
-			       && fpixel >= 0
-				   && frpixel - fpixel <= 28
-				   && ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15))
-					 && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15))) {
-				leas--;
-				fpixel -= 4;
-				fcol -= 4;
-			}
-			
-			// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
-			if (((fcol > 0 && width < 160) || (width == 160))
-			    && fpixel >= 0
-				&& frpixel - fpixel <= 28
-				&& ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
-				  && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
-				 || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
-				  && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
-				leas--;
-			} else {
-				// on revient au point de départ
-				fpixel = frpixel;
-				fcol = frcol;
-				leas = fleas;
-			}
 		}
+
 		// Ecriture du LEAS
 		if (fpixel > 3 && leas < 0) {
 			sLeas = "\tLEAS " + leas + ",S";
@@ -413,15 +390,14 @@ public class CompiledSpriteModeB16 {
 		return sLeas;
 	}
 	
-	public ArrayList<Integer> optimisationPUL(ArrayList<String> fdbBytes, String[] pulBytesOld, int nbBytes,
-			boolean leftAlphaPxl) {
+	public ArrayList<Integer> optimisationPUL(ArrayList<String> fdbBytes, String[] pulBytesOld) {
 		int somme = 0;
-		int minSomme = 15;
+		int minSomme = 99;
 		ArrayList<Integer> listeRegistres = new ArrayList<Integer>();
 		ArrayList<Integer> minlr = new ArrayList<Integer>();
 		int ilst = 0;
-		Integer scr = 0;
 		String[] pulBytes = new String[5];
+		int nbBytes = fdbBytes.size() / 2;
 
 		// **************************************************************
 		// Test de toutes les combinaisons de registres pour savoir
@@ -445,15 +421,25 @@ public class CompiledSpriteModeB16 {
 				}
 
 				if (!pulBytes[cr].equals(pulBytesOld[cr])) {
-					somme += pulBytes[cr].length();
+					if (nbBytes == 7) {
+						somme += regCostPULx[cr];
+					}
+					if (nbBytes >= 3 && nbBytes <= 6) {
+						somme += regCostLDx[cr];
+					}
+					if (nbBytes <= 2) {
+						somme += regCostLDx[cr];
+					}
 				}
+				
+				if (nbBytes <= 2) {
+					somme += regCostSTx[cr];
+				}
+				
 				listeRegistres.add(cr);
-				scr = cr;
 			}
 
-			// Dans le cas d'un pixel T a gauche on force la selection d'une combinaison
-			// comprenant A
-			if (somme < minSomme && ((leftAlphaPxl == false) || (leftAlphaPxl == true && scr == 4))) {
+			if (somme < minSomme) {
 				minlr = new ArrayList<>(listeRegistres);
 				minSomme = somme;
 			}
@@ -467,58 +453,103 @@ public class CompiledSpriteModeB16 {
 		return minlr;
 	}
 
-	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld,
-			ArrayList<Integer> listeIndexReg, boolean leftAlphaPxl) {
-		String pul = new String("");
-		String psh = new String("");
+	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld, ArrayList<Integer> listeIndexReg) {
+		String read = new String("");
+		String write = new String("");
 		String[] pulBytes = { "", "", "", "", "" };
 		String[] pulBytesFiltered = { "", "", "", "", "" };
 		String fdbBytesResult = new String("");
 		String[][] result = new String[4][];
-		final String[] pulReg = { "X", "Y", "DP", "B", "A" };
 		int ilst = 0;
+		int nbBytes = fdbBytes.size() / 2;
 
 		// **************************************************************
-		// Construction du PUL et du PSH
+		// Construction du PUL/LD et du PSH/ST
 		// **************************************************************
-
-		for (Integer indexReg : listeIndexReg) {
-			// Copie en sens inverse
-			
-			if (indexReg < 2) { // X ou Y
-				pulBytes[indexReg] += fdbBytes.get(ilst + 3);
-				pulBytes[indexReg] += fdbBytes.get(ilst + 2);
-				pulBytes[indexReg] += fdbBytes.get(ilst + 1);
-				pulBytes[indexReg] += fdbBytes.get(ilst);
-				ilst += 4;
-			} else if (!(leftAlphaPxl == true && indexReg == 4)){
-				pulBytes[indexReg] += fdbBytes.get(ilst + 1);
-				pulBytes[indexReg] += fdbBytes.get(ilst);
-				ilst += 2;
-			}
-
-			// Dans le cas d'un pixel transparent Ã  gauche traité dans le PSH
-			// on ne renseigne pas le registre sur le PUL car traité dans un LDA
-			if (!pulBytes[indexReg].equals(pulBytesOld[indexReg]) && !(leftAlphaPxl == true && indexReg == 4)) {
-				if (pul.equals("")) {
-					pul += "\tPULU ";
+		if (nbBytes >= 3 && nbBytes <= 7) {
+			for (int i = 0; i < listeIndexReg.size(); i++) {
+				if (listeIndexReg.get(i) < 2) {
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 3);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 2);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 4;
 				} else {
-					pul += ",";
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 2;
 				}
-				pul += pulReg[indexReg];
 			}
+		}
+		if (nbBytes <= 2) {
+			for (int i = listeIndexReg.size() - 1; i >= 0; i--) {
+				if (listeIndexReg.get(i) < 2) {
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 3);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 2);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 4;
+				} else {
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 2;
+				}
+			}
+		}
+		
+		for (Integer indexReg : listeIndexReg) {
+			if (nbBytes == 7) {
+				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+					if (read.equals("")) {
+						read += "\tPULU ";
+					} else {
+						read += ",";
+					}
+					read += pulReg[indexReg];
+					pulBytesOld[indexReg] = pulBytes[indexReg];
+					pulBytesFiltered[indexReg] += pulBytes[indexReg];
+				}
 
-			if (!pulBytes[indexReg].equals(pulBytesOld[indexReg]) || (leftAlphaPxl == true && indexReg == 4)) {
-				pulBytesOld[indexReg] = pulBytes[indexReg];
-				pulBytesFiltered[indexReg] += pulBytes[indexReg];
+				if (write.equals("")) {
+					write += "\tPSHS ";
+				} else {
+					write += ",";
+				}
+				write += pulReg[indexReg];
 			}
+			if (nbBytes >= 3 && nbBytes <= 6) {
+				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+					if (!read.equals("")) {
+						read = "\n" + read;
+					}
+					read = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read;
+					pulBytesOld[indexReg] = pulBytes[indexReg];
+				}
 
-			if (psh.equals("")) {
-				psh += "\tPSHS ";
-			} else {
-				psh += ",";
+				if (write.equals("")) {
+					write += "\tPSHS ";
+				} else {
+					write += ",";
+				}
+				write += pulReg[indexReg];
 			}
-			psh += pulReg[indexReg];
+			if (nbBytes <= 2) {
+				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+					if (!read.equals("")) {
+						read += "\n";
+					}
+					read += "\tLD"+pulReg[indexReg]+" #$"+pulBytes[indexReg];
+					pulBytesOld[indexReg] = pulBytes[indexReg];
+				}
+				if (!write.equals("")) {
+					write += "\n";
+				}
+				if (indexReg < 2) {
+					write += "\tST"+pulReg[indexReg]+" ,--S";
+				} else {
+					write += "\tST"+pulReg[indexReg]+" ,-S";
+				}
+			}
 		}
 
 		// Enregistre les données FDB en sens inverse et filtrées
@@ -526,8 +557,8 @@ public class CompiledSpriteModeB16 {
 			fdbBytesResult += pulBytesFiltered[listeIndexReg.get(i)];
 		}
 
-		result[0] = new String[] { pul };
-		result[1] = new String[] { psh };
+		result[0] = new String[] { read };
+		result[1] = new String[] { write };
 		result[2] = new String[] { fdbBytesResult };
 		result[3] = pulBytesOld;
 		return result;
