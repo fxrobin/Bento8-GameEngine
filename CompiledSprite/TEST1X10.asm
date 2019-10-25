@@ -177,7 +177,7 @@ DRAW_TEST1X100000
 	LEAS -34,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -202,7 +202,7 @@ DRAW_TEST1X100000
 	LEAS -3,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU B,A
 	PSHS B,A
@@ -215,14 +215,14 @@ DRAW_TEST1X100000
 	LEAS -34,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU B,A
 	PSHS B,A
 	LEAS -4,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 3,S
 	PULU DP,B
 	PSHS DP,B,A
@@ -235,26 +235,26 @@ DRAW_TEST1X100000
 	LEAS -41,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 6,S
 	PULU X,Y,B
 	PSHS X,Y,B,A
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	LEAS -5,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 5,S
 	PULU Y,DP,B
 	PSHS Y,DP,B,A
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU Y
 	PSHS Y,DP,B
@@ -267,7 +267,7 @@ DRAW_TEST1X100000
 	LEAS -41,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 5,S
 	PULU Y,DP,B
 	PSHS Y,DP,B,A
@@ -295,7 +295,7 @@ DRAW_TEST1X100000
 	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 6,S
 	PULU X,Y,B
 	PSHS X,Y,B,A
@@ -305,19 +305,19 @@ DRAW_TEST1X100000
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	LEAS -6,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 6,S
 	PULU X,Y,B
 	PSHS X,Y,B,A
 	LEAS -34,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU X,Y,B,A
 	PSHS X,Y,B,A
@@ -330,7 +330,7 @@ DRAW_TEST1X100000
 	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 7,S
 	PULU X,Y,DP,B
 	PSHS X,Y,DP,B,A
@@ -340,7 +340,7 @@ DRAW_TEST1X100000
 	LEAS -36,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -349,7 +349,7 @@ DRAW_TEST1X100000
 	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -358,7 +358,7 @@ DRAW_TEST1X100000
 	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -367,7 +367,7 @@ DRAW_TEST1X100000
 	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -382,14 +382,14 @@ DRAW_TEST1X100000
 	LEAS -39,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$b0
 	LEAS 3,S
 	PULU DP,B
 	PSHS DP,B,A
 	LEAS -1,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0b
 	STA  ,S
 	LEAS -36,S
 	PULU DP
@@ -397,7 +397,7 @@ DRAW_TEST1X100000
 	LEAS -41,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 3,S
 	PULU DP,B
 	PSHS DP,B,A
@@ -432,26 +432,26 @@ DRAW_TEST1X100000
 	LEAS -33,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU A
 	PSHS A
 	LEAS -4,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	LEAS -2,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
 	LEAS -35,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -470,14 +470,14 @@ DRAW_TEST1X100000
 	LEAS -2,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU B,A
 	PSHS B,A
 	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 3,S
 	PULU DP,B
 	PSHS DP,B,A
@@ -489,7 +489,7 @@ DRAW_TEST1X100000
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU Y,DP,B,A
 	PSHS Y,DP,B,A
@@ -505,14 +505,14 @@ DRAW_TEST1X100000
 	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 5,S
 	PULU Y,DP,B
 	PSHS Y,DP,B,A
 	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU Y,A
 	PSHS Y,B,A
@@ -522,19 +522,19 @@ DRAW_TEST1X100000
 	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU Y,A
 	PSHS Y,B,A
 	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	LEAS -5,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 5,S
 	PULU Y,DP,B
 	PSHS Y,DP,B,A
@@ -547,26 +547,26 @@ DRAW_TEST1X100000
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	LEAS -5,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 5,S
 	PULU Y,DP,B
 	PSHS Y,DP,B,A
 	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 5,S
 	PULU Y
 	PSHS Y,DP,B,A
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU Y,B,A
 	PSHS Y,B,A
@@ -591,7 +591,7 @@ DRAW_TEST1X100000
 	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$b0
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -606,7 +606,7 @@ DRAW_TEST1X100000
 	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$b0
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -615,7 +615,7 @@ DRAW_TEST1X100000
 	LEAS -37,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$b0
 	LEAS 2,S
 	PULU B
 	PSHS B,A
@@ -624,21 +624,21 @@ DRAW_TEST1X100000
 	LEAS -35,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU Y,DP,B,A
 	PSHS Y,DP,B,A
 	LEAS -40,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0b
 	LEAS 6,S
 	PULU X,Y,B
 	PSHS X,Y,B,A
 	LEAS -37,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$b0
 	LEAS 3,S
 	PULU DP,B
 	PSHS DP,B,A
@@ -653,7 +653,7 @@ DRAW_TEST1X100000
 	LEAS -38,S
 	LDA  #$F0
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$0c
 	LEAS 3,S
 	PULU DP,B
 	PSHS DP,B,A
@@ -662,7 +662,7 @@ DRAW_TEST1X100000
 	LEAS -37,S
 	LDA  #$0F
 	ANDA ,S
-	ADDA ,U+
+	ADDA #$c0
 	STA  ,S
 	PULU B,A
 	PSHS B,A
@@ -683,96 +683,85 @@ DATA_TEST1X100000_1
 	FDB $7a77
 	FDB $aca7
 	FDB $cccc
-	FDB $0cca
-	FDB $aacc
-	FDB $c7a7
-	FDB $aac7
-	FDB $cc73
-	FDB $a77c
-	FDB $c0c7
+	FDB $caaa
+	FDB $ccc7
+	FDB $a7aa
+	FDB $c7cc
+	FDB $73a7
+	FDB $7cc7
 	FDB $3acc
 	FDB $773c
 	FDB $c337
-	FDB $7cc0
-	FDB $aa73
-	FDB $0c33
+	FDB $7caa
+	FDB $7333
 	FDB $a7aa
 	FDB $7acc
 	FDB $a733
 	FDB $77aa
 	FDB $7a33
-	FDB $0c48
-	FDB $777a
-	FDB $733c
-	FDB $c00c
-	FDB $44aa
-	FDB $33a3
-	FDB $c077
+	FDB $4877
+	FDB $7a73
+	FDB $3c44
+	FDB $aa33
+	FDB $a377
 	FDB $a7cc
 	FDB $a7a7
 	FDB $c455
 	FDB $c70c
-	FDB $0cac
-	FDB $55cc
+	FDB $ac55
+	FDB $cccc
+	FDB $c47a
+	FDB $22c3
+	FDB $c244
+	FDB $cc55
+	FDB $c3c5
+	FDB $41c5
+	FDB $335c
+	FDB $14cc
+	FDB $77cc
+	FDB $8c7c
+	FDB $4144
+	FDB $48c4
 	FDB $ccc4
-	FDB $7a22
-	FDB $c3c2
-	FDB $44cc
-	FDB $55c3
-	FDB $c541
-	FDB $c533
-	FDB $5c14
-	FDB $cc77
-	FDB $cc8c
-	FDB $7c41
-	FDB $4448
-	FDB $c4cc
-	FDB $c444
-	FDB $524c
-	FDB $0c0c
+	FDB $4452
+	FDB $4c0c
 	FDB $1425
 	FDB $4ccb
 	FDB $cc2b
 	FDB $ccb8
-	FDB $88c0
-	FDB $0c88
+	FDB $8888
 	FDB $b8cc
 	FDB $8844
-	FDB $c0c7
-	FDB $ccb8
-	FDB $b3c8
-	FDB $48c3
-	FDB $22bc
-	FDB $88c8
-	FDB $848c
-	FDB $ccb4
-	FDB $11cc
-	FDB $814c
-	FDB $0c77
+	FDB $c7cc
+	FDB $b8b3
+	FDB $c848
+	FDB $c322
+	FDB $bc88
+	FDB $c884
+	FDB $8ccc
+	FDB $b411
+	FDB $cc81
+	FDB $4c77
 	FDB $b11c
 	FDB $40c1
 	FDB $cccc
 	FDB $9b4c
 	FDB $1bc4
-	FDB $ac0c
-	FDB $7c66
-	FDB $bcb9
-	FDB $0ccc
+	FDB $ac7c
+	FDB $66bc
+	FDB $b9cc
 	FDB $996b
-	FDB $0c88
-	FDB $966b
-	FDB $bb0c
+	FDB $8896
+	FDB $6bbb
 	FDB $4899
 	FDB $966b
 	FDB $bb46
 	FDB $46c4
 	FDB $bcb4
 	FDB $bbc4
-	FDB $4bb0
-	FDB $4b44
-	FDB $0b14
-	FDB $0ccc
-	FDB $cc00
+	FDB $4b4b
+	FDB $4414
+	FDB $cccc
 DATA_TEST1X100000_2
 	FDB $cccc
 	FDB $ccca
@@ -780,40 +769,34 @@ DATA_TEST1X100000_2
 	FDB $773a
 	FDB $accc
 	FDB $3cc7
-	FDB $c0ca
-	FDB $c00c
-	FDB $ac0c
+	FDB $caac
 	FDB $7ccc
 	FDB $acca
 	FDB $a733
 	FDB $7aca
-	FDB $33c0
-	FDB $3777
-	FDB $0cac
+	FDB $3337
+	FDB $77ac
 	FDB $3770
 	FDB $aa7c
 	FDB $ca37
 	FDB $aaca
 	FDB $770c
-	FDB $c0cc
-	FDB $a377
-	FDB $7a77
-	FDB $84ca
-	FDB $7a3a
-	FDB $a34c
-	FDB $8ca7
-	FDB $a3a7
-	FDB $cc73
-	FDB $a337
-	FDB $0c4c
+	FDB $cca3
+	FDB $777a
+	FDB $7784
+	FDB $ca7a
+	FDB $3aa3
+	FDB $4c8c
+	FDB $a7a3
+	FDB $a7cc
+	FDB $73a3
+	FDB $374c
 	FDB $aa7a
-	FDB $7cc0
-	FDB $cacc
-	FDB $c3c7
-	FDB $c255
-	FDB $ccc0
+	FDB $7cca
+	FDB $ccc3
+	FDB $c7c2
+	FDB $55cc
 	FDB $4c55
-	FDB $0cc0
 	FDB $0c14
 	FDB $2555
 	FDB $30c1
@@ -821,11 +804,9 @@ DATA_TEST1X100000_2
 	FDB $5c7c
 	FDB $88c5
 	FDB $5ccc
-	FDB $c00c
 	FDB $44cc
 	FDB $5c44
-	FDB $0cc7
-	FDB $8cc0
+	FDB $c78c
 	FDB $148c
 	FDB $cc30
 	FDB $41c8
@@ -843,30 +824,26 @@ DATA_TEST1X100000_2
 	FDB $4437
 	FDB $cb84
 	FDB $48cc
-	FDB $44b0
-	FDB $4c03
-	FDB $bbb4
-	FDB $c4c7
-	FDB $ccb9
-	FDB $bbcc
-	FDB $b077
+	FDB $444c
+	FDB $03bb
+	FDB $b4c4
+	FDB $c7cc
+	FDB $b9bb
+	FDB $cc77
 	FDB $b966
-	FDB $ccb0
-	FDB $7cb9
-	FDB $9641
-	FDB $c0b9
+	FDB $cc7c
+	FDB $b996
+	FDB $41b9
 	FDB $694b
 	FDB $9bc8
-	FDB $0b64
-	FDB $bb6b
-	FDB $448c
-	FDB $b04b
+	FDB $64bb
+	FDB $6b44
+	FDB $8c4b
 	FDB $8cb6
 	FDB $bbb8
 	FDB $4cbb
-	FDB $140c
-	FDB $484c
-	FDB $bbc0
+	FDB $1448
+	FDB $4cbb
 	FDB $c444
 	FDB $4111
 	FDB $cccc
@@ -884,7 +861,7 @@ TABPALETTE
 	FDB $0012	* index:7  R:136 V:104 B:56 
 	FDB $0002	* index:8  R:136 V:80  B:16 
 	FDB $0002	* index:9  R:128 V:56  B:0  
-	FDB $0000	* index:10 R:80  V:48  B:8  
+	FDB $0001	* index:10 R:89  V:53  B:9  
 	FDB $0000	* index:11 R:64  V:32  B:0  
 	FDB $0000	* index:12 R:24  V:16  B:8  
 	FDB $0000	* index:13 R:0   V:0   B:0  

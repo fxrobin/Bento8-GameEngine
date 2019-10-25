@@ -9,6 +9,9 @@ import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
 
+// METAL SLUG : 3192 cycles - Taille : A0B5 (41141) a A69E (42654) = 1513 octets
+// optim ADDA : 3012 cycles - Taille : A0B5 (41141) a A670 (42608) = 1467 octets
+
 // TODO
 // Ajout optim LEAS ,--S au lieu de LEAS -2,S
 // Ajout génération complete du code
@@ -215,12 +218,11 @@ public class CompiledSpriteModeB16 {
 						}
 
 						spriteCode.add("\tANDA ,S");
-						spriteCode.add("\tADDA ,U+");
+						spriteCode.add("\tADDA #$"+fdbBytes.get(fdbBytes.size()-1)+fdbBytes.get(fdbBytes.size()-2));
 
 						if (fdbBytes.size() == 2) { // il n'y a pas d'ensemble PSH en cours on traite
 							spriteCode.add("\tSTA  ,S");
 							pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
-							fdbBytesResultLigne += fdbBytes.get(1) + fdbBytes.get(0);
 							fdbBytes.clear();
 
 							// **************************************************************
@@ -481,16 +483,15 @@ public class CompiledSpriteModeB16 {
 		// **************************************************************
 
 		for (Integer indexReg : listeIndexReg) {
-			// Copie en sens inverse: 2 octets pour les deux premiers registres, 1 octet
-			// pour les 3 derniers
-			// On ne copie pas le registre A si on a un pixel transparent Ã  gauche
-			if (indexReg == 0 || indexReg == 1) {
+			// Copie en sens inverse
+			
+			if (indexReg < 2) { // X ou Y
 				pulBytes[indexReg] += fdbBytes.get(ilst + 3);
 				pulBytes[indexReg] += fdbBytes.get(ilst + 2);
 				pulBytes[indexReg] += fdbBytes.get(ilst + 1);
 				pulBytes[indexReg] += fdbBytes.get(ilst);
 				ilst += 4;
-			} else {
+			} else if (!(leftAlphaPxl == true && indexReg == 4)){
 				pulBytes[indexReg] += fdbBytes.get(ilst + 1);
 				pulBytes[indexReg] += fdbBytes.get(ilst);
 				ilst += 2;
