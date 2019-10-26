@@ -14,6 +14,7 @@ import java.util.List;
 // suppr otim renversement : 3055 cycles - Taille : A0B5 (41141) a A695 (42645) = 1504 octets
 // Version 2 : 2814 cycles - Taille : A0B5 (41141) a A6C4 (42692) = 1551 octets
 // optim offet ST : 2529 cycles - Taille : A0B5 (41141) a A68D (42637) = 1496 octets
+// optim offet ST sur TR et -127 : 2513 cycles - Taille :  A0B5 (41141) a A6A0 (42656) = 1515 octets
 
 // TODO
 // Ajout optim LEAS ,--S au lieu de LEAS -2,S
@@ -183,7 +184,7 @@ public class CompiledSpriteModeB16v2 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						computeLEAS(pixel+3, col+3, pos);
+						computeLEAS(pixel+3, col+3, pos, spriteCode);
 						writeLEAS(pixel, spriteCode);
 					}
 					doubleFwd = 1;
@@ -209,7 +210,6 @@ public class CompiledSpriteModeB16v2 {
 					// **************************************************************************
 
 					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
-						writeLEAS(pixel, spriteCode);
 						
 						if (leftAlphaPxl == true) {
 							spriteCode.add("\tLDA  #$F0");
@@ -217,17 +217,14 @@ public class CompiledSpriteModeB16v2 {
 							spriteCode.add("\tLDA  #$0F");
 						}
 
-						if (leas < 0) {
-							spriteCode.add("\tANDA ,S");
-						} else {
-							spriteCode.add("\tANDA ,-S");
-						}
+						spriteCode.add("\tANDA "+stOffset+",S");
 						spriteCode.add("\tADDA #$"+fdbBytes.get(fdbBytes.size()-1)+fdbBytes.get(fdbBytes.size()-2));
-						spriteCode.add("\tSTA  ,S");
+						spriteCode.add("\tSTA "+stOffset+",S");
+						
 						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
 						fdbBytes.clear();
 
-						computeLEAS(pixel, col, pos);
+						computeLEAS(pixel, col, pos, spriteCode);
 					}
 
 					// **************************************************************
@@ -254,7 +251,7 @@ public class CompiledSpriteModeB16v2 {
 						pulBytesOld = result[3];
 						fdbBytes.clear();
 
-						computeLEAS(pixel, col, pos);
+						computeLEAS(pixel, col, pos, spriteCode);
 					}
 				}
 
@@ -299,7 +296,7 @@ public class CompiledSpriteModeB16v2 {
 		generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1, spriteData); // Construction du code des données
 	}
 
-	public void computeLEAS(int pixel, int col, int pos) {
+	public void computeLEAS(int pixel, int col, int pos, List<String> spriteCode) {
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
 		int offset = 0;
@@ -361,16 +358,17 @@ public class CompiledSpriteModeB16v2 {
 		}
 		stOffset += leas;
 		leas = stOffset;
+		
+		if (stOffset < -127) {
+			writeLEAS(fpixel, spriteCode);
+		}
 	}
 	
 	public void writeLEAS(int pixel, List<String> spriteCode) {
-		String sLeas = "";
-		stOffset=0;
-		
-		// Ecriture du LEAS
 		if (pixel > 3 && leas < 0) {
-			sLeas = "\tLEAS " + leas + ",S";
-			spriteCode.add(sLeas);
+			spriteCode.add("\tLEAS " + leas + ",S");
+			stOffset = 0;
+			leas = 0;
 		}
 	}
 	
