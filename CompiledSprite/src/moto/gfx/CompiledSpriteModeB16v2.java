@@ -12,6 +12,7 @@ import java.util.List;
 // METAL SLUG : 3192 cycles - Taille : A0B5 (41141) a A69E (42654) = 1513 octets
 // optim ADDA : 3012 cycles - Taille : A0B5 (41141) a A670 (42608) = 1467 octets
 // suppr otim renversement : 3055 cycles - Taille : A0B5 (41141) a A695 (42645) = 1504 octets
+// Version 2 : 2814 cycles - Taille : A0B5 (41141) a A6C4 (42692) = 1551 octets
 
 // TODO
 // Ajout optim LEAS ,--S au lieu de LEAS -2,S
@@ -52,6 +53,7 @@ public class CompiledSpriteModeB16v2 {
 	final int[] regCostPULx  = { 2, 2,  1, 1, 1, 2 };
 	final int[] regCostLDx   = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
 	final int[] regCostSTx   = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
+	private int leas = 0;
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
@@ -128,27 +130,22 @@ public class CompiledSpriteModeB16v2 {
 
 	public void generateCode() {
 		// Génération du code source pour l'écriture des images
-
-		List<String>[] sprite = generateCodeArray(1);
-		spriteCode1 = sprite[0];
-		spriteData1 = sprite[1];
-		sprite = generateCodeArray(3);
-		spriteCode2 = sprite[0];
-		spriteData2 = sprite[1];
+		generateCodeArray(1, spriteCode1, spriteData1);
+		generateCodeArray(3, spriteCode2, spriteData2);
 		return;
 	}
 
-	public List<String>[] generateCodeArray(int pos) {
+	public void generateCodeArray(int pos, List<String> spriteCode, List<String> spriteData) {
 		int col = width;
 		int row = height;
 		int chunk = 1;
 		int doubleFwd = 0;
 		boolean leftAlphaPxl = false;
 		boolean rightAlphaPxl = false;
-		String sLeas = "";
-		boolean bLeas = false;
+		
+		// Initialisation des variables globales
+		leas = 0;
 
-		List<String> spriteCode = new ArrayList<String>();
 		ArrayList<String> fdbBytes = new ArrayList<String>();
 		String fdbBytesResult = new String();
 		String fdbBytesResultLigne = new String();
@@ -183,13 +180,8 @@ public class CompiledSpriteModeB16v2 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						sLeas = ComputeLEAS (pixel+3, col+3, pos);
-						if (!sLeas.equals("")) {
-							spriteCode.add(sLeas);
-							bLeas = true;
-						} else {
-							bLeas = false;
-						}
+						computeLEAS(pixel+3, col+3, pos);
+						writeLEAS(pixel, spriteCode);
 					}
 					doubleFwd = 1;
 				} else {
@@ -222,7 +214,7 @@ public class CompiledSpriteModeB16v2 {
 							spriteCode.add("\tLDA  #$0F");
 						}
 
-						if (bLeas) {
+						if (leas < 0) {
 							spriteCode.add("\tANDA ,S");
 						} else {
 							spriteCode.add("\tANDA ,-S");
@@ -235,13 +227,8 @@ public class CompiledSpriteModeB16v2 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						sLeas = ComputeLEAS (pixel, col, pos);
-						if (!sLeas.equals("")) {
-							spriteCode.add(sLeas);
-							bLeas = true;
-						} else {
-							bLeas = false;
-						}
+						computeLEAS(pixel, col, pos);
+						writeLEAS(pixel, spriteCode);
 					}
 
 					// **************************************************************
@@ -268,13 +255,8 @@ public class CompiledSpriteModeB16v2 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						sLeas = ComputeLEAS (pixel, col, pos);
-						if (!sLeas.equals("")) {
-							spriteCode.add(sLeas);
-							bLeas = true;
-						} else {
-							bLeas = false;
-						}
+						computeLEAS(pixel, col, pos);
+						writeLEAS(pixel, spriteCode);
 					}
 				}
 
@@ -316,19 +298,16 @@ public class CompiledSpriteModeB16v2 {
 			fdbBytesResultLigne = "";
 		}
 
-		@SuppressWarnings("unchecked")
-		List<String>[] sprite = new ArrayList[2];
-		sprite[0] = spriteCode;
-		sprite[1] = generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1); // Construction du code des données
-		return sprite;
+		generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1, spriteData); // Construction du code des données
 	}
 
-	public String ComputeLEAS(int pixel, int col, int pos) {
-		int leas = 0;
+	public void computeLEAS(int pixel, int col, int pos) {
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
 		int offset = 0;
-		String sLeas = "";
+		
+		// Initialisation variable globale
+		leas = 0;
 
 		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le même
 		if (((width/2) == (width/4)*2) || pos == 3) {
@@ -382,12 +361,16 @@ public class CompiledSpriteModeB16v2 {
 				           && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
 			leas--;
 		}
-
+	}
+	
+	public void writeLEAS(int pixel, List<String> spriteCode) {
+		String sLeas = "";
+		
 		// Ecriture du LEAS
-		if (fpixel > 3 && leas < 0) {
+		if (pixel > 3 && leas < 0) {
 			sLeas = "\tLEAS " + leas + ",S";
+			spriteCode.add(sLeas);
 		}
-		return sLeas;
 	}
 	
 	public ArrayList<Integer> optimisationPUL(ArrayList<String> fdbBytes, String[] pulBytesOld) {
@@ -600,9 +583,8 @@ public class CompiledSpriteModeB16v2 {
 		return;
 	}
 
-	public List<String> generateDataFDB(String pixels, int x) {
+	public void generateDataFDB(String pixels, int x, List<String> spriteData) {
 		int bitIndex = 0;
-		List<String> spriteData = new ArrayList<String>();
 		String dataLine = new String();
 
 		// **************************************************************
@@ -633,8 +615,6 @@ public class CompiledSpriteModeB16v2 {
 			}
 			spriteData.add(dataLine);
 		}
-
-		return spriteData;
 	}
 
 	public String removeExtension(String s) {
