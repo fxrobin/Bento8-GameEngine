@@ -159,55 +159,43 @@ DRAW_TEST1X100000
 	LDU #DATA_TEST1X100000_1
 
 	LDX #$cccc
-	STX ,--S
-	LEAS -5,S
-	STX ,--S
-	LEAS -31,S
+	STX -2,S
+	STX -9,S
 	LDX #$cc7a
-	STX ,--S
-	LEAS -5,S
+	STX -42,S
 	LDX #$77ac
-	STX ,--S
-	LEAS -31,S
+	STX -49,S
 	LDX #$a7cc
-	STX ,--S
-	LEAS -5,S
+	STX -82,S
 	LDX #$cccc
-	STX ,--S
-	LEAS -32,S
+	STX -89,S
 	LDA #$ca
-	STA ,-S
-	LEAS -1,S
+	STA -122,S
+	LEAS -123,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
 	STA  ,S
-	LEAS -3,S
 	LDX #$aacc
-	STX ,--S
-	LEAS -33,S
+	STX -5,S
 	LDX #$c7a7
-	STX ,--S
-	LEAS -3,S
+	STX -40,S
 	LDX #$aac7
-	STX ,--S
-	LEAS -33,S
+	STX -45,S
 	LDX #$aacc
-	STX ,--S
-	LEAS -3,S
+	STX -80,S
 	LDX #$cc73
-	STX ,--S
-	LEAS -33,S
+	STX -85,S
 	LDX #$a77c
-	STX ,--S
-	LEAS -3,S
+	STX -120,S
+	LEAS -123,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$c0
 	STA  ,S
 	LDX #$c73a
-	STX ,--S
-	LEAS -33,S
+	STX -2,S
+	LEAS -35,S
 	LDA #$cc
 	LDX #$773c
 	PSHS X,A
@@ -221,11 +209,10 @@ DRAW_TEST1X100000
 	ADDA #$c0
 	STA  ,S
 	LDX #$aa73
-	STX ,--S
-	LEAS -1,S
+	STX -2,S
 	LDX #$33a7
-	STX ,--S
-	LEAS -1,S
+	STX -5,S
+	LEAS -6,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
@@ -386,10 +373,9 @@ DRAW_TEST1X100000
 	LDX #$4c1b
 	LDY #$c4ac
 	PSHS Y,X,B,A
-	LEAS -34,S
 	LDA #$7c
-	STA ,-S
-	LEAS -1,S
+	STA -35,S
+	LEAS -36,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
@@ -397,10 +383,9 @@ DRAW_TEST1X100000
 	LDA #$66
 	LDX #$bcb9
 	PSHS X,A
-	LEAS -35,S
 	LDA #$cc
-	STA ,-S
-	LEAS -1,S
+	STA -36,S
+	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
@@ -408,10 +393,9 @@ DRAW_TEST1X100000
 	LDA #$99
 	LDX #$6bb9
 	PSHS X,A
-	LEAS -35,S
 	LDA #$88
-	STA ,-S
-	LEAS -1,S
+	STA -36,S
+	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
@@ -419,10 +403,9 @@ DRAW_TEST1X100000
 	LDA #$96
 	LDX #$6bbb
 	PSHS X,A
-	LEAS -35,S
 	LDA #$48
-	STA ,-S
-	LEAS -1,S
+	STA -36,S
+	LEAS -37,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
@@ -440,10 +423,9 @@ DRAW_TEST1X100000
 	LDB #$bb
 	LDX #$c44b
 	PSHS X,B,A
-	LEAS -36,S
 	LDX #$4b44
-	STX ,--S
-	LEAS -1,S
+	STX -38,S
+	LEAS -39,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$b0
@@ -453,18 +435,15 @@ DRAW_TEST1X100000
 	ANDA ,S
 	ADDA #$0b
 	STA  ,S
-	LEAS -36,S
 	LDX #$4b14
-	STX ,--S
-	LEAS -38,S
+	STX -38,S
 	LDX #$cccc
-	STX ,--S
-	LEAS -1,S
+	STX -78,S
+	LEAS -79,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
 	STA  ,S
-	LEAS -76,S
 
 	LDS >POS_TEST1X100000
 	LEAS 8192,S
@@ -482,68 +461,58 @@ DRAW_TEST1X100000
 	LEAS -4,S
 	LDA #$cc
 	PSHS X,A
-	LEAS -31,S
 	LDX #$cc77
-	STX ,--S
-	LEAS -4,S
+	STX -33,S
 	LDX #$3aac
-	STX ,--S
-	LEAS -32,S
+	STX -39,S
 	LDX #$cc3c
-	STX ,--S
-	LEAS -4,S
+	STX -73,S
 	LDX #$c7cc
-	STX ,--S
-	LEAS -33,S
+	STX -79,S
+	LEAS -112,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$c0
 	STA  ,S
 	LDA #$ca
-	STA ,-S
-	LEAS -4,S
+	STA -1,S
+	LEAS -5,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$c0
 	STA  ,S
 	LDA #$ac
-	STA ,-S
-	LEAS -1,S
+	STA -1,S
+	LEAS -2,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
 	STA  ,S
-	LEAS -33,S
 	LDA #$7c
-	STA ,-S
-	LEAS -1,S
+	STA -34,S
+	LEAS -35,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
 	STA  ,S
-	LEAS -2,S
 	LDX #$ccac
-	STX ,--S
-	LEAS -34,S
+	STX -4,S
 	LDX #$caa7
-	STX ,--S
-	LEAS -2,S
+	STX -40,S
 	LDX #$337a
-	STX ,--S
-	LEAS -34,S
+	STX -44,S
 	LDX #$ca33
-	STX ,--S
-	LEAS -2,S
+	STX -80,S
+	LEAS -82,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$c0
 	STA  ,S
 	LDX #$3777
-	STX ,--S
-	LEAS -34,S
+	STX -2,S
 	LDX #$ac37
-	STX ,--S
-	LEAS -1,S
+	STX -38,S
+	LEAS -39,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
@@ -701,10 +670,9 @@ DRAW_TEST1X100000
 	LDX #$8448
 	LDY #$cc44
 	PSHS Y,X,B,A
-	LEAS -34,S
 	LDA #$4c
-	STA ,-S
-	LEAS -1,S
+	STA -35,S
+	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$b0
@@ -713,28 +681,25 @@ DRAW_TEST1X100000
 	LDB #$bb
 	LDX #$b4c4
 	PSHS X,B,A
-	LEAS -34,S
 	LDA #$c7
-	STA ,-S
-	LEAS -1,S
+	STA -35,S
+	LEAS -36,S
 	LDA #$cc
 	LDB #$b9
 	LDX #$bbcc
 	PSHS X,B,A
-	LEAS -34,S
 	LDA #$77
-	STA ,-S
-	LEAS -1,S
+	STA -35,S
+	LEAS -36,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$b0
 	STA  ,S
 	LDX #$66cc
 	PSHS X,B
-	LEAS -35,S
 	LDA #$7c
-	STA ,-S
-	LEAS -1,S
+	STA -36,S
+	LEAS -37,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$b0
@@ -759,46 +724,39 @@ DRAW_TEST1X100000
 	ANDA ,S
 	ADDA #$0b
 	STA  ,S
-	LEAS -34,S
 	LDX #$4b8c
-	STX ,--S
-	LEAS -1,S
+	STX -36,S
+	LEAS -37,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$b0
 	STA  ,S
 	LDX #$b6bb
-	STX ,--S
-	LEAS -35,S
+	STX -2,S
 	LDX #$b84c
-	STX ,--S
-	LEAS -1,S
+	STX -39,S
 	LDX #$bb14
-	STX ,--S
-	LEAS -35,S
+	STX -42,S
 	LDX #$484c
-	STX ,--S
-	LEAS -1,S
+	STX -79,S
+	LEAS -80,S
 	LDA  #$F0
 	ANDA ,S
 	ADDA #$0c
 	STA  ,S
 	LDA #$bb
-	STA ,-S
-	LEAS -37,S
+	STA -1,S
+	LEAS -38,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$c0
 	STA  ,S
 	LDX #$c444
-	STX ,--S
-	LEAS -38,S
+	STX -2,S
 	LDX #$4111
-	STX ,--S
-	LEAS -38,S
+	STX -42,S
 	LDX #$cccc
-	STX ,--S
-	LEAS -5,S
+	STX -82,S
 
 	LDS  >SSAVE
 	PULS U,DP

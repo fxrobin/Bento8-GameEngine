@@ -13,6 +13,7 @@ import java.util.List;
 // optim ADDA : 3012 cycles - Taille : A0B5 (41141) a A670 (42608) = 1467 octets
 // suppr otim renversement : 3055 cycles - Taille : A0B5 (41141) a A695 (42645) = 1504 octets
 // Version 2 : 2814 cycles - Taille : A0B5 (41141) a A6C4 (42692) = 1551 octets
+// optim offet ST : 2529 cycles - Taille : A0B5 (41141) a A68D (42637) = 1496 octets
 
 // TODO
 // Ajout optim LEAS ,--S au lieu de LEAS -2,S
@@ -54,6 +55,7 @@ public class CompiledSpriteModeB16v2 {
 	final int[] regCostLDx   = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
 	final int[] regCostSTx   = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
 	private int leas = 0;
+	private int stOffset=0;
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
@@ -145,6 +147,7 @@ public class CompiledSpriteModeB16v2 {
 		
 		// Initialisation des variables globales
 		leas = 0;
+		stOffset=0;
 
 		ArrayList<String> fdbBytes = new ArrayList<String>();
 		String fdbBytesResult = new String();
@@ -187,8 +190,7 @@ public class CompiledSpriteModeB16v2 {
 				} else {
 					doubleFwd = 0;
 
-					// Construction d'une liste de pixels et transformation des pixels transparents
-					// en 0
+					// Construction d'une liste de pixels et transformation des pixels transparents en 0
 					if ((int) pixels[pixel] >= 0 && (int) pixels[pixel] <= 15) {
 						fdbBytes.add(Integer.toHexString((int) pixels[pixel])); // pixel plein
 					} else {
@@ -207,7 +209,8 @@ public class CompiledSpriteModeB16v2 {
 					// **************************************************************************
 
 					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
-
+						writeLEAS(pixel, spriteCode);
+						
 						if (leftAlphaPxl == true) {
 							spriteCode.add("\tLDA  #$F0");
 						} else {
@@ -224,11 +227,7 @@ public class CompiledSpriteModeB16v2 {
 						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
 						fdbBytes.clear();
 
-						// **************************************************************
-						// Gestion des sauts de ligne
-						// **************************************************************
 						computeLEAS(pixel, col, pos);
-						writeLEAS(pixel, spriteCode);
 					}
 
 					// **************************************************************
@@ -244,6 +243,9 @@ public class CompiledSpriteModeB16v2 {
 
 						motif = optimisationPUL(fdbBytes, pulBytesOld);
 						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif);
+						if (fdbBytes.size() / 2 > 2) {
+							writeLEAS(pixel, spriteCode);
+						}
 						if (!result[0][0].equals("")) {
 							spriteCode.add(result[0][0]); // PUL
 						}
@@ -252,11 +254,7 @@ public class CompiledSpriteModeB16v2 {
 						pulBytesOld = result[3];
 						fdbBytes.clear();
 
-						// **************************************************************
-						// Gestion des sauts de ligne
-						// **************************************************************
 						computeLEAS(pixel, col, pos);
-						writeLEAS(pixel, spriteCode);
 					}
 				}
 
@@ -361,10 +359,13 @@ public class CompiledSpriteModeB16v2 {
 				           && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
 			leas--;
 		}
+		stOffset += leas;
+		leas = stOffset;
 	}
 	
 	public void writeLEAS(int pixel, List<String> spriteCode) {
 		String sLeas = "";
+		stOffset=0;
 		
 		// Ecriture du LEAS
 		if (pixel > 3 && leas < 0) {
@@ -528,9 +529,13 @@ public class CompiledSpriteModeB16v2 {
 					write += "\n";
 				}
 				if (indexReg < 2) {
-					write += "\tST"+pulReg[indexReg]+" ,--S";
+					stOffset -= 2;
+					leas -= 2;
+					write += "\tST"+pulReg[indexReg]+" "+stOffset+",S";
 				} else {
-					write += "\tST"+pulReg[indexReg]+" ,-S";
+					stOffset -= 1;
+					leas -= 1;
+					write += "\tST"+pulReg[indexReg]+" "+stOffset+",S";
 				}
 			}
 		}
