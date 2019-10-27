@@ -82,20 +82,39 @@ MAIN
 	BRA MAIN
 
 ********************************************************************************
-* Changement de page ecran
+* Changement de page ESPACE ECRAN (affichage du buffer visible)
+*	$E7DD determine la page affichee dans ESPACE ECRAN (4000 a 5FFF)
+*	D7=0 D6=0 D5=0 D4=0 (#$0_) : page 0
+*	D7=0 D6=1 D5=0 D4=0 (#$4_) : page 1
+*	D7=1 D6=0 D5=0 D4=0 (#$8_) : page 2
+*	D7=1 D6=1 D5=0 D4=0 (#$C_) : page 3
+*   D3 D2 D1 D0  (#$_0 a #$_F) : couleur du cadre
+*   Remarque : D5 et D4 utilisable uniquement en mode MO
+*
+* Changement de page ESPACE CARTOUCHE (ecriture dans buffer invisible)
+*	$E7E6 determine la page affichee dans ESPACE CARTOUCHE (0000 a 3FFF)
+*   D5 : 1 = espace cartouche recouvert par de la RAM
+*   D4 : 0 = CAS1N valide : banques 0-15 / 1 = CAS2N valide : banques 16-31
+*	D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$60) : page 0
+*   ...
+*	D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6F) : page 15
+*	D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$70) : page 16
+*   ...
+*	D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7F) : page 31
 ********************************************************************************
 SCRC
-	LDB SCRC0+1
-	ANDB #$80          * BANK1 utilisee ou pas pour l affichage / fond couleur 0
-	ORB #$0A           * contour ecran = couleur A
-	STB $E7DD
-	COM SCRC0+1
+	LDB SCRC0+1        * charge la valeur du LDB suivant SCRC0 en lisant directeent dans le code
+	ANDB #$80          * permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0
+	ORB #$0A           * recharger la couleur de cadre si diff de 0 car effacee juste au dessus (couleur A)
+	STB $E7DD          * changement page dans ESPACE ECRAN
+	COM SCRC0+1        * modification du code alterne 00 et FF sur le LDB suivant SCRC0
 SCRC0
 	LDB #$00
-	ANDB #$02          * page RAM no0 ou no2 utilisee dans l espace cartouche
+	ANDB #$02          * permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF)
 	ORB #$60           * espace cartouche recouvert par RAM / ecriture autorisee
-	STB $E7E6
-	RTS
+	STB $E7E6          * changement page dans ESPACE CARTOUCHE permute 60/62 dans E7E6 pour demander affectation banque 0 ou 2 dans espace cartouche 
+	RTS                * E7E6 D5=1 pour autoriser affectation banque
+	                   * CAS1N : banques 0-15 CAS2N : banques 16-31
 
 ********************************************************************************
 * Effacement de l ecran
