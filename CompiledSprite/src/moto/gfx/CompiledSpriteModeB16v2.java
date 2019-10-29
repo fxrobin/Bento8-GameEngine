@@ -51,12 +51,12 @@ public class CompiledSpriteModeB16v2 {
 
 	// Calcul
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
-	final String[] pulReg    = { "Y", "X", "DP", "B", "A", "D" };
-	final int[] regCostPULx  = { 2, 2,  1, 1, 1, 2 };
-	final int[] regCostLDx   = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
-	final int[] regCostSTx   = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
+	final String[] pulReg = { "Y", "X", "DP", "B", "A", "D" };
+	final int[] regCostPULx = { 2, 2, 1, 1, 1, 2 };
+	final int[] regCostLDx = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
+	final int[] regCostSTx = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
 	private int leas = 0;
-	private int stOffset=0;
+	private int stOffset = 0;
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
@@ -64,7 +64,8 @@ public class CompiledSpriteModeB16v2 {
 	List<String> spriteData1 = new ArrayList<String>();
 	List<String> spriteData2 = new ArrayList<String>();
 
-	String posLabel;
+	String posALabel;
+	String posBLabel;
 	String drawLabel;
 	String dataLabel;
 
@@ -83,7 +84,8 @@ public class CompiledSpriteModeB16v2 {
 			spriteName = removeExtension(file).toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 
 			// Initialisation du code statique
-			posLabel = "POS_" + spriteName;
+			posALabel = "POSA_" + spriteName;
+			posBLabel = "POSB_" + spriteName;
 			drawLabel = "DRAW_" + spriteName;
 			dataLabel = "DATA_" + spriteName;
 
@@ -145,10 +147,10 @@ public class CompiledSpriteModeB16v2 {
 		int doubleFwd = 0;
 		boolean leftAlphaPxl = false;
 		boolean rightAlphaPxl = false;
-		
+
 		// Initialisation des variables globales
 		leas = 0;
-		stOffset=0;
+		stOffset = 0;
 
 		ArrayList<String> fdbBytes = new ArrayList<String>();
 		String fdbBytesResult = new String();
@@ -184,14 +186,15 @@ public class CompiledSpriteModeB16v2 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						computeLEAS(pixel+3, col+3, pos, spriteCode);
+						computeLEAS(pixel + 3, col + 3, pos, spriteCode);
 						writeLEAS(pixel, spriteCode);
 					}
 					doubleFwd = 1;
 				} else {
 					doubleFwd = 0;
 
-					// Construction d'une liste de pixels et transformation des pixels transparents en 0
+					// Construction d'une liste de pixels et transformation des pixels transparents
+					// en 0
 					if ((int) pixels[pixel] >= 0 && (int) pixels[pixel] <= 15) {
 						fdbBytes.add(Integer.toHexString((int) pixels[pixel])); // pixel plein
 					} else {
@@ -210,17 +213,18 @@ public class CompiledSpriteModeB16v2 {
 					// **************************************************************************
 
 					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
-						
+
 						if (leftAlphaPxl == true) {
 							spriteCode.add("\tLDA  #$F0");
 						} else {
 							spriteCode.add("\tLDA  #$0F");
 						}
 
-						spriteCode.add("\tANDA "+stOffset+",S");
-						spriteCode.add("\tADDA #$"+fdbBytes.get(fdbBytes.size()-1)+fdbBytes.get(fdbBytes.size()-2));
-						spriteCode.add("\tSTA "+stOffset+",S");
-						
+						spriteCode.add("\tANDA " + stOffset + ",S");
+						spriteCode.add(
+								"\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
+						spriteCode.add("\tSTA " + stOffset + ",S");
+
 						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
 						fdbBytes.clear();
 
@@ -230,13 +234,12 @@ public class CompiledSpriteModeB16v2 {
 					// **************************************************************
 					// Gestion d'une paire de pixels pleins
 					// **************************************************************
-					
-					if (chunk == pos + 1 && fdbBytes.size() > 0
-						&& (fdbBytes.size() == 14 || // 14px max par PSH
-						(pixel <= 2) || // ou fin de l'image
-						(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
-						(pixel >= 4 && (((int) pixels[pixel-3] < 0 || (int) pixels[pixel-3] > 15)
-						             || ((int) pixels[pixel-4] < 0 || (int) pixels[pixel-4] > 15))) )) { 
+
+					if (chunk == pos + 1 && fdbBytes.size() > 0 && (fdbBytes.size() == 14 || // 14px max par PSH
+							(pixel <= 2) || // ou fin de l'image
+							(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
+							(pixel >= 4 && (((int) pixels[pixel - 3] < 0 || (int) pixels[pixel - 3] > 15)
+									|| ((int) pixels[pixel - 4] < 0 || (int) pixels[pixel - 4] > 15))))) {
 
 						motif = optimisationPUL(fdbBytes, pulBytesOld);
 						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif);
@@ -300,44 +303,44 @@ public class CompiledSpriteModeB16v2 {
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
 		int offset = 0;
-		
+
 		// Initialisation variable globale
 		leas = 0;
 
-		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le même
-		if (((width/2) == (width/4)*2) || pos == 3) {
+		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le
+		// même
+		if (((width / 2) == (width / 4) * 2) || pos == 3) {
 			offset = 0;
 		} else {
 			offset = 1;
 		}
-		
+
 		// On regarde ce qui suit ...
 		// *** CAS: Saut de ligne ***
 		if (fcol <= 3) {
 			fcol = width - pos;
 			leas += -40 + (width / 4) + offset; // Remarque : dans le cas d'une image plein ecran leas=0
-			if (((width/2) == (width/4)*2)) {
+			if (((width / 2) == (width / 4) * 2)) {
 				fpixel -= 4;
 			} else if (pos == 1) {
 				fpixel -= 2;
 			} else if (pos == 3) {
 				fpixel -= 6;
 			}
-		}
-		else {
+		} else {
 			fcol -= 4;
 			fpixel -= 4;
 		}
 
 		// *** CAS : Pixels transparents par paires ***
-		while (fpixel > 0 && ((int) pixels[fpixel]   < 0 || (int) pixels[fpixel]   > 15)
-				          && ((int) pixels[fpixel+1] < 0 || (int) pixels[fpixel+1] > 15)) {
+		while (fpixel > 0 && ((int) pixels[fpixel] < 0 || (int) pixels[fpixel] > 15)
+				&& ((int) pixels[fpixel + 1] < 0 || (int) pixels[fpixel + 1] > 15)) {
 			fcol -= 4;
-			leas--;			
+			leas--;
 			if (fcol <= -1) {
 				fcol = width - pos;
 				leas += -40 + (width / 4) + offset;
-				if (((width/2) == (width/4)*2)) {
+				if (((width / 2) == (width / 4) * 2)) {
 					fpixel -= 4;
 				} else if (pos == 1) {
 					fpixel -= 2;
@@ -350,20 +353,20 @@ public class CompiledSpriteModeB16v2 {
 		}
 
 		// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
-		if ((fpixel > 0) && ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
-				           && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
-				          || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
-				           && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
+		if ((fpixel > 0) && ((((int) pixels[fpixel] >= 0 && (int) pixels[fpixel] <= 15)
+				&& ((int) pixels[fpixel + 1] < 0 || (int) pixels[fpixel + 1] > 15))
+				|| (((int) pixels[fpixel] < 0 || (int) pixels[fpixel] > 15)
+						&& ((int) pixels[fpixel + 1] >= 0 && (int) pixels[fpixel + 1] <= 15)))) {
 			leas--;
 		}
 		stOffset += leas;
 		leas = stOffset;
-		
+
 		if (stOffset < -127) {
 			writeLEAS(fpixel, spriteCode);
 		}
 	}
-	
+
 	public void writeLEAS(int pixel, List<String> spriteCode) {
 		if (pixel > 3 && leas < 0) {
 			spriteCode.add("\tLEAS " + leas + ",S");
@@ -371,7 +374,7 @@ public class CompiledSpriteModeB16v2 {
 			leas = 0;
 		}
 	}
-	
+
 	public ArrayList<Integer> optimisationPUL(ArrayList<String> fdbBytes, String[] pulBytesOld) {
 		int somme = 0;
 		int minSomme = 99;
@@ -413,11 +416,11 @@ public class CompiledSpriteModeB16v2 {
 						somme += regCostLDx[cr];
 					}
 				}
-				
+
 				if (nbBytes <= 2) {
 					somme += regCostSTx[cr];
 				}
-				
+
 				listeRegistres.add(cr);
 			}
 
@@ -435,7 +438,8 @@ public class CompiledSpriteModeB16v2 {
 		return minlr;
 	}
 
-	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld, ArrayList<Integer> listeIndexReg) {
+	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld,
+			ArrayList<Integer> listeIndexReg) {
 		String read = new String("");
 		String write = new String("");
 		String[] pulBytes = { "", "", "", "", "" };
@@ -478,7 +482,7 @@ public class CompiledSpriteModeB16v2 {
 				}
 			}
 		}
-		
+
 		for (Integer indexReg : listeIndexReg) {
 			if (nbBytes == 7) {
 				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
@@ -520,7 +524,7 @@ public class CompiledSpriteModeB16v2 {
 					if (!read.equals("")) {
 						read += "\n";
 					}
-					read += "\tLD"+pulReg[indexReg]+" #$"+pulBytes[indexReg];
+					read += "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg];
 					pulBytesOld[indexReg] = pulBytes[indexReg];
 				}
 				if (!write.equals("")) {
@@ -529,11 +533,11 @@ public class CompiledSpriteModeB16v2 {
 				if (indexReg < 2) {
 					stOffset -= 2;
 					leas -= 2;
-					write += "\tST"+pulReg[indexReg]+" "+stOffset+",S";
+					write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
 				} else {
 					stOffset -= 1;
 					leas -= 1;
-					write += "\tST"+pulReg[indexReg]+" "+stOffset+",S";
+					write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
 				}
 			}
 		}
@@ -598,8 +602,10 @@ public class CompiledSpriteModeB16v2 {
 
 		for (int i = 0; i < pixels.length(); i++) {
 			bitIndex++;
-			if (bitIndex == 1) {
+			if (bitIndex == 1 && i < pixels.length() - 2) {
 				dataLine = "\tFDB $";
+			} else if (bitIndex == 1) {
+				dataLine = "\tFCB $";
 			}
 
 			dataLine += pixels.charAt(i);
@@ -610,12 +616,9 @@ public class CompiledSpriteModeB16v2 {
 			}
 		}
 
-		// On complete le mot pour la dernière ligne de données
-		if (bitIndex > 0) {
-			while (bitIndex < 4) {
-				dataLine += "0";
-				bitIndex++;
-			}
+		// On complete le FCB ou FDB pour la dernière ligne de données
+		if (dataLine.length() == 7 || dataLine.length() == 9) {
+			dataLine += "0";
 			spriteData.add(dataLine);
 		}
 	}
@@ -729,12 +732,14 @@ public class CompiledSpriteModeB16v2 {
 		code.add("********************************************************************************");
 		code.add("* Boucle principale");
 		code.add("********************************************************************************");
-		code.add("MAIN");
 		code.add("\tJSR DRAWBCKGRN");
-		code.add("\t*LDX >" + posLabel);
-		code.add("\t*LEAX -1,X");
-		code.add("\t*STX >" + posLabel);
+		code.add("MAIN");
 		code.add("\tJSR " + drawLabel);
+		code.add("\tLDX " + posALabel + "\t* avance de 2 px a gauche");
+		code.add("\tLDY " + posBLabel);
+		code.add("\tSTX " + posBLabel);
+		code.add("\tLEAY -1,Y");
+		code.add("\tSTY " + posALabel);
 		code.add("\tJSR SCRC        * changement de page ecran");
 		code.add("\tBRA MAIN");
 		code.add("");
@@ -836,7 +841,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tPSHS U,DP");
 		code.add("\tSTS >SSAVE");
 		code.add("");
-		code.add("\tLDS >" + posLabel);
+		code.add("\tLDS " + posALabel);
 		code.add("\tLDU #" + dataLabel + "_" + pos);
 		code.add("");
 		return code;
@@ -845,8 +850,7 @@ public class CompiledSpriteModeB16v2 {
 	public List<String> getCodeSwitchData(int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS >" + posLabel);
-		code.add("\tLEAS 8192,S");
+		code.add("\tLDS " + posBLabel);
 		code.add("\tLDU #" + dataLabel + "_" + pos);
 		code.add("");
 		return code;
@@ -864,24 +868,32 @@ public class CompiledSpriteModeB16v2 {
 
 	public List<String> getCodeDataPos() {
 		List<String> code = new ArrayList<String>();
-		code.add(posLabel);
-		code.add("\tFDB $1F40");
+		code.add(posALabel);
+		code.add("\tFDB FINECRANA");
+		code.add(posBLabel);
+		code.add("\tFDB FINECRANB");
 		code.add("");
 		return code;
 	}
 
-	public List<String> getCodePalette() {
+	public List<String> getCodePalette(int gamma) {
+		// std gamma: 3
+		// suggestion : 2 pour couleurs pastel
 		List<String> code = new ArrayList<String>();
 
 		code.add("TABPALETTE");
 		// Construction de la palette de couleur
 		for (int j = 0; j < 16; j++) {
 			Color couleur = new Color(colorModel.getRGB(j));
-			code.add("\tFDB $0" + Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getBlue() / 255.0), 3)))
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getGreen() / 255.0), 3)))
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getRed() / 255.0), 3))) + "\t* index:"
-					+ String.format("%-2.2s", j) + " R:" + String.format("%-3.3s", couleur.getRed()) + " V:"
-					+ String.format("%-3.3s", couleur.getGreen()) + " B:" + String.format("%-3.3s", couleur.getBlue()));
+			code.add("\tFDB $0"
+					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getBlue() / 255.0), gamma)))
+					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getGreen() / 255.0), gamma)))
+					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getRed() / 255.0), gamma)))
+					+ "\t* index:"
+					+ String.format("%-2.2s", j)
+					+ " R:" + String.format("%-3.3s", couleur.getRed())
+					+ " V:" + String.format("%-3.3s", couleur.getGreen())
+					+ " B:" + String.format("%-3.3s", couleur.getBlue()));
 		}
 		code.add("FINTABPALETTE");
 		return code;

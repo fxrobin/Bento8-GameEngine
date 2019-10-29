@@ -28,7 +28,7 @@ public class CompiledSprite
 			Files.write(fichier, sprite.getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);	
-			Files.write(fichier, sprite.getCodePalette(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodePalette(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCodeEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 		}
 		else {
