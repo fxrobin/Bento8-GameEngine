@@ -38,7 +38,7 @@ import java.util.List;
 
 public class CompiledSpriteModeB16v2 {
 	// Convertisseur d'image PNG en "Compiled Sprite"
-	// Thomson MO5NR, MO6, TO8, TO9 et TO9+
+	// Thomson TO8/TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
 
 	// Image
@@ -592,6 +592,7 @@ public class CompiledSpriteModeB16v2 {
 
 	public void generateDataFDB(String pixels, int x, List<String> spriteData) {
 		int bitIndex = 0;
+		int bitIndexEnd = 4;
 		String dataLine = new String();
 
 		// **************************************************************
@@ -606,11 +607,12 @@ public class CompiledSpriteModeB16v2 {
 				dataLine = "\tFDB $";
 			} else if (bitIndex == 1) {
 				dataLine = "\tFCB $";
+				bitIndexEnd = 2;				
 			}
 
 			dataLine += pixels.charAt(i);
 
-			if (bitIndex == 4) {
+			if (bitIndex == bitIndexEnd) {
 				spriteData.add(dataLine);
 				bitIndex = 0;
 			}
@@ -710,7 +712,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("* Initialisation de la couleur de bordure");
 		code.add("********************************************************************************");
 		code.add("INITBORD");
-		code.add("\tLDA	#$04	* couleur 4");
+		code.add("\tLDA	#$0F	* couleur 15");
 		code.add("\tSTA	$E7DD");
 		code.add("");
 		code.add("********************************************************************************");
@@ -722,12 +724,23 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tSTB $E7E7");
 		code.add("");
 		code.add("********************************************************************************");
-		code.add("* Effacement ecran (les deux pages)");
+		code.add("* Construction de la reference d arriere plan en page 0,2,3");
 		code.add("********************************************************************************");
-		code.add("\tJSR SCRC");
-		code.add("\tJSR EFF");
-		code.add("\tJSR SCRC");
-		code.add("\tJSR EFF");
+		code.add("\tLDB $E7E6");
+		code.add("\tSTB RESTORE_PAGE+1	* Sauvegarde la page a restaurer apres traitement");
+		code.add("\tLDB #$60");
+		code.add("\tSTB $E7E6			* chargement page 0 en zone cartouche");
+		code.add("\tJSR DRAWBCKGRN");
+		code.add("\tLDB #$62");
+		code.add("\tSTB $E7E6			* chargement page 2 en zone cartouche");
+		code.add("\tJSR DRAWBCKGRN");
+		code.add("\tLDB #$63");
+		code.add("\tSTB $E7E6			* chargement page 3 en zone cartouche");
+		code.add("\tJSR DRAWBCKGRN");
+		code.add("");
+		code.add("RESTORE_PAGE");
+		code.add("\tLDB #$00");
+		code.add("\tSTB $E7E6");
 		code.add("");
 		code.add("********************************************************************************");
 		code.add("* Boucle principale");
@@ -745,21 +758,40 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tBRA MAIN");
 		code.add("");
 		code.add("********************************************************************************");
-		code.add("* Changement de page ecran");
+		code.add("* Changement de page ESPACE ECRAN (affichage du buffer visible)");
+		code.add("*	$E7DD determine la page affichee dans ESPACE ECRAN (4000 a 5FFF)");
+		code.add("*	D7=0 D6=0 D5=0 D4=0 (#$0_) : page 0");
+		code.add("*	D7=0 D6=1 D5=0 D4=0 (#$4_) : page 1");
+		code.add("*	D7=1 D6=0 D5=0 D4=0 (#$8_) : page 2");
+		code.add("*	D7=1 D6=1 D5=0 D4=0 (#$C_) : page 3");
+		code.add("*   D3 D2 D1 D0  (#$_0 a #$_F) : couleur du cadre");
+		code.add("*   Remarque : D5 et D4 utilisable uniquement en mode MO");
+		code.add("*");
+		code.add("* Changement de page ESPACE CARTOUCHE (ecriture dans buffer invisible)");
+		code.add("*	$E7E6 determine la page affichee dans ESPACE CARTOUCHE (0000 a 3FFF)");
+		code.add("*   D5 : 1 = espace cartouche recouvert par de la RAM");
+		code.add("*   D4 : 0 = CAS1N valide : banques 0-15 / 1 = CAS2N valide : banques 16-31");
+		code.add("*	D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$60) : page 0");
+		code.add("*   ...");
+		code.add("*	D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6F) : page 15");
+		code.add("*	D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$70) : page 16");
+		code.add("*   ...");
+		code.add("*	D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7F) : page 31");
 		code.add("********************************************************************************");
 		code.add("SCRC");
-		code.add("\tLDB SCRC0+1");
-		code.add("\tANDB #$80          * BANK1 utilisee ou pas pour l affichage / fond couleur 0");
-		code.add("\tORB #$0A           * contour ecran = couleur A");
-		code.add("\tSTB $E7DD");
-		code.add("\tCOM SCRC0+1");
+		code.add("\tLDB SCRC0+1\t* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code");
+		code.add("\tANDB #$80\t* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0");
+		code.add("\tORB #$0F\t* recharger la couleur de cadre si diff de 0 car effacee juste au dessus (couleur F)");
+		code.add("\tSTB $E7DD\t* changement page dans ESPACE ECRAN");
+		code.add("\tCOM SCRC0+1\t* modification du code alterne 00 et FF sur le LDB suivant SCRC0");
 		code.add("SCRC0");
 		code.add("\tLDB #$00");
-		code.add("\tANDB #$02          * page RAM no0 ou no2 utilisee dans l espace cartouche");
-		code.add("\tORB #$60           * espace cartouche recouvert par RAM / ecriture autorisee");
-		code.add("\tSTB $E7E6");
-		code.add("\tRTS");
-		code.add("");
+		code.add("\tANDB #$02\t* permute #$60 ou #$62 (suivant la valeur B #$00 ou #$FF)");
+		code.add("\tORB #$60\t* espace cartouche recouvert par RAM / ecriture autorisee");
+		code.add("\tSTB $E7E6\t* changement page dans ESPACE CARTOUCHE permute 60/62 dans E7E6 pour demander affectation banque 0 ou 2 dans espace cartouche"); 
+		code.add("\tRTS\t\t\t* E7E6 D5=1 pour autoriser affectation banque");
+		code.add("\t\t\t\t* CAS1N : banques 0-15 CAS2N : banques 16-31");
+		code.add("");		
 		code.add("********************************************************************************");
 		code.add("* Attente VBL");
 		code.add("********************************************************************************");
@@ -770,18 +802,6 @@ public class CompiledSpriteModeB16v2 {
 		code.add("VSYNC_2");
 		code.add("\tTST	$E7E7");
 		code.add("\tBMI	VSYNC_2");
-		code.add("\tRTS");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Effacement de l ecran");
-		code.add("********************************************************************************");
-		code.add("EFF");
-		code.add("\tLDA #$AA  * couleur fond");
-		code.add("\tLDY #$0000");
-		code.add("EFF_RAM");
-		code.add("\tSTA ,Y+");
-		code.add("\tCMPY #$3FFF");
-		code.add("\tBNE EFF_RAM");
 		code.add("\tRTS");
 		code.add("");
 		code.add("********************************************************************************  ");
@@ -835,10 +855,10 @@ public class CompiledSpriteModeB16v2 {
 		code.add("* Tile arriere plan   ");
 		code.add("********************************************************************************");
 		code.add("TILEBCKGRNDA");
-		code.add("\tFDB $ffff");
-		code.add("\tFDB $ffff");
-		code.add("\tFDB $ffff");
-		code.add("\tFDB $ffff");
+		code.add("\tFDB $eeee");
+		code.add("\tFDB $eeee");
+		code.add("\tFDB $eeee");
+		code.add("\tFDB $eeee");
 		code.add("");
 		code.add("TILEBCKGRNDB");
 		code.add("\tFDB $ffff");
@@ -882,9 +902,9 @@ public class CompiledSpriteModeB16v2 {
 	public List<String> getCodeDataPos() {
 		List<String> code = new ArrayList<String>();
 		code.add(posALabel);
-		code.add("\tFDB FINECRANA");
+		code.add("\tFDB $1F40");
 		code.add(posBLabel);
-		code.add("\tFDB FINECRANB");
+		code.add("\tFDB $3F40");
 		code.add("");
 		return code;
 	}
