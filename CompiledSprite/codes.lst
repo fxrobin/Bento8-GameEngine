@@ -4,848 +4,851 @@
  * Fichier source      : TEST1X10.asm
  * Fichier destination : TEST1X10.BIN
  * Contenu :
- *     Main     0:TEST1X10.asm 12741
+ *     Main     0:TEST1X10.asm 12820
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-     12        A000                      ORG $A000
+     12        8000                      ORG $8000
      13
      14                           *****************************************>>
      15                           * Constantes et variables
      16                           *****************************************>>
-     17                  0000     DEBUTECRANA EQU $0000       * debut de la>>
+     17                  0014     DEBUTECRANA EQU $0014       * test pour f>>
      18                  1F40     FINECRANA EQU $1F40  * fin de la RAM A vi>>
-     19                  2000     DEBUTECRANB EQU $2000       * debut de la>>
+     19                  2014     DEBUTECRANB EQU $2014       * test pour f>>
      20                  3F40     FINECRANB EQU $3F40  * fin de la RAM B vi>>
      21
-     22        A000 0000          SSAVE FDB $0000
+     22        8000 0000          SSAVE FDB $0000
      23
      24                           *****************************************>>
      25                           * Debut du programme
      26                           *****************************************>>
-     27  2     A002 1A   50              ORCC #$50     * a documenter (inte>>
+     27  2     8002 1A   50              ORCC #$50     * a documenter (inte>>
      28                            
-     29  2     A004 86   7B              LDA #$7B      * passage en mode 16>>
-     30  5     A006 B7   E7DC            STA $E7DC
+     29  2     8004 86   7B              LDA #$7B      * passage en mode 16>>
+     30  5     8006 B7   E7DC            STA $E7DC
      31
      32                           *****************************************>>
      33                           * Initialisation de la palette de couleur>>
      34                           *****************************************>>
-     35  4     A009 108E A6C5            LDY #TABPALETTE
-     36  2     A00D 4F                   CLRA
-     37        A00E               SETPALETTE
-     38  5+1   A00E 34   02              PSHS A
-     39  2     A010 48                   ASLA
-     40  5     A011 B7   E7DB            STA $E7DB
-     41  5+3   A014 EC   A1              LDD ,Y++
-     42  5     A016 F7   E7DA            STB $E7DA
-     43  5     A019 B7   E7DA            STA $E7DA
-     44  5+1   A01C 35   02              PULS A
-     45  2     A01E 4C                   INCA
-     46  5     A01F 108C A6E5            CMPY #FINTABPALETTE
-     47  3     A023 26   E9              BNE    SETPALETTE
+     35  4     8009 108E 86DB            LDY #TABPALETTE
+     36  2     800D 4F                   CLRA
+     37        800E               SETPALETTE
+     38  5+1   800E 34   02              PSHS A
+     39  2     8010 48                   ASLA
+     40  5     8011 B7   E7DB            STA $E7DB
+     41  5+3   8014 EC   A1              LDD ,Y++
+     42  5     8016 F7   E7DA            STB $E7DA
+     43  5     8019 B7   E7DA            STA $E7DA
+     44  5+1   801C 35   02              PULS A
+     45  2     801E 4C                   INCA
+     46  5     801F 108C 86FB            CMPY #FINTABPALETTE
+     47  3     8023 26   E9              BNE    SETPALETTE
      48                            
      49                           *****************************************>>
      50                           * Initialisation de la couleur de bordure>>
      51                           *****************************************>>
-     52        A025               INITBORD
-     53  2     A025 86   0F              LDA    #$0F   * couleur 15
-     54  5     A027 B7   E7DD            STA    $E7DD
+     52        8025               INITBORD
+     53  2     8025 86   0F              LDA    #$0F   * couleur 15
+     54  5     8027 B7   E7DD            STA    $E7DD
      55
      56                           *****************************************>>
      57                           * Initialisation de la routine de commuta>>
      58                           *****************************************>>
-     59  5     A02A F6   6081            LDB $6081
-     60  2     A02D CA   10              ORB #$10
-     61  5     A02F F7   6081            STB $6081
-     62  5     A032 F7   E7E7            STB $E7E7
+     59  5     802A F6   6081            LDB $6081
+     60  2     802D CA   10              ORB #$10
+     61  5     802F F7   6081            STB $6081
+     62  5     8032 F7   E7E7            STB $E7E7
      63
      64                           *****************************************>>
-     65                           * Construction de la reference d arriere >>
+     65                           * Effacement ecran (les deux pages)
      66                           *****************************************>>
-     67  5     A035 F6   E7E6            LDB $E7E6
-     68  5     A038 F7   A054            STB RESTORE_PAGE+1   * Sauvegarde >>
-     69  2     A03B C6   60              LDB #$60
-     70  5     A03D F7   E7E6            STB $E7E6                   * char>>
-     71  8     A040 BD   A098            JSR DRAWBCKGRN
-     72  2     A043 C6   62              LDB #$62
-     73  5     A045 F7   E7E6            STB $E7E6                   * char>>
-     74  8     A048 BD   A098            JSR DRAWBCKGRN
-     75  2     A04B C6   63              LDB #$63
-     76  5     A04D F7   E7E6            STB $E7E6                   * char>>
-     77  8     A050 BD   A098            JSR DRAWBCKGRN
-     78
-     79        A053               RESTORE_PAGE
-     80  2     A053 C6   00              LDB #$00
-     81  5     A055 F7   E7E6            STB $E7E6
-     82
-     83                           *****************************************>>
-     84                           * Boucle principale
-     85                           *****************************************>>
-     86        A058               MAIN
-     87  8     A058 BD   A098            JSR DRAWBCKGRN
-     88  8     A05B BD   A0DB            JSR DRAW_TEST1X100000
-     89  6     A05E BE   A6C1            LDX POSA_TEST1X100000       * avan>>
-     90  7     A061 10BE A6C3            LDY POSB_TEST1X100000
-     91  6     A065 BF   A6C3            STX POSB_TEST1X100000
-     92  4+1   A068 31   3F              LEAY -1,Y
-     93  7     A06A 10BF A6C1            STY POSA_TEST1X100000
-     94  8     A06E BD   A08D            JSR VSYNC
-     95  8     A071 BD   A076            JSR SCRC        * changement de pa>>
-     96  3     A074 20   E2              BRA MAIN
-     97
-     98                           *****************************************>>
-     99                           * Changement de page ESPACE ECRAN (affich>>
-    100                           *      $E7DD determine la page affichee d>>
-    101                           *      D7=0 D6=0 D5=0 D4=0 (#$0_) : page >>
-    102                           *      D7=0 D6=1 D5=0 D4=0 (#$4_) : page >>
-    103                           *      D7=1 D6=0 D5=0 D4=0 (#$8_) : page >>
-    104                           *      D7=1 D6=1 D5=0 D4=0 (#$C_) : page >>
-    105                           *   D3 D2 D1 D0  (#$_0 a #$_F) : couleur >>
-    106                           *   Remarque : D5 et D4 utilisable unique>>
-    107                           *
-    108                           * Changement de page ESPACE CARTOUCHE (ec>>
-    109                           *      $E7E6 determine la page affichee d>>
-    110                           *   D5 : 1 = espace cartouche recouvert p>>
-    111                           *   D4 : 0 = CAS1N valide : banques 0-15 >>
-    112                           *      D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$6>>
-    113                           *   ...
-    114                           *      D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6>>
-    115                           *      D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$7>>
-    116                           *   ...
-    117                           *      D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7>>
-    118                           *****************************************>>
-    119        A076               SCRC
-    120  5     A076 F6   A084            LDB SCRC0+1   * charge la valeur d>>
-    121  2     A079 C4   80              ANDB #$80     * permute #$00 ou #$>>
-    122  2     A07B CA   0F              ORB #$0F      * recharger la coule>>
-    123  5     A07D F7   E7DD            STB $E7DD     * changement page da>>
-    124  7     A080 73   A084            COM SCRC0+1   * modification du co>>
-    125        A083               SCRC0
-    126  2     A083 C6   00              LDB #$00
-    127  2     A085 C4   02              ANDB #$02     * permute #$60 ou #$>>
-    128  2     A087 CA   60              ORB #$60      * espace cartouche r>>
-    129  5     A089 F7   E7E6            STB $E7E6     * changement page da>>
-    130  5     A08C 39                   RTS                  * E7E6 D5=1 p>>
-    131                                                       * CAS1N : ban>>
-    132
-    133                           *****************************************>>
-    134                           * Attente VBL
-    135                           *****************************************>>
-    136        A08D               VSYNC
-    137        A08D               VSYNC_1
-    138  7     A08D 7D   E7E7            TST    $E7E7
-    139  3     A090 2A   FB              BPL    VSYNC_1
-    140        A092               VSYNC_2
-    141  7     A092 7D   E7E7            TST    $E7E7
-    142  3     A095 2B   FB              BMI    VSYNC_2
-    143  5     A097 39                   RTS
-    144
-    145                           *****************************************>>
-    146                           * Affichage de l arriere plan xxx cycles
-    147                           *****************************************>>
-    148        A098               DRAWBCKGRN
-    149  5+3   A098 34   48              PSHS U,DP            * sauvegarde >>
-    150  7     A09A 10FF A000            STS >SSAVE
-    151                            
-    152  4     A09E 10CE 1F40            LDS #FINECRANA       * init pointe>>
-    153  3     A0A2 CE   A6E5            LDU #TILEBCKGRNDA
-    154  5+7   A0A5 37   3E              PULU X,Y,DP,D
-    155
-    156        A0A7               DRWBCKGRNDA
-    157  5+7   A0A7 34   3E              PSHS X,Y,DP,D
-    158  5+7   A0A9 34   3E              PSHS X,Y,DP,D
-    159  5+7   A0AB 34   3E              PSHS X,Y,DP,D
-    160  5+7   A0AD 34   3E              PSHS X,Y,DP,D
-    161  5+7   A0AF 34   3E              PSHS X,Y,DP,D
-    162  5+5   A0B1 34   38              PSHS X,Y,DP
-    163  5     A0B3 118C 0000            CMPS #DEBUTECRANA
-    164  3     A0B7 26   EE              BNE DRWBCKGRNDA
-    165                            
-    166  4     A0B9 10CE 3F40            LDS #FINECRANB       * init pointe>>
-    167  3     A0BD CE   A6ED            LDU #TILEBCKGRNDB
-    168  5+7   A0C0 37   3E              PULU X,Y,DP,D
-    169
-    170        A0C2               DRWBCKGRNDB
-    171  5+7   A0C2 34   3E              PSHS X,Y,DP,D
-    172  5+7   A0C4 34   3E              PSHS X,Y,DP,D
-    173  5+7   A0C6 34   3E              PSHS X,Y,DP,D
-    174  5+7   A0C8 34   3E              PSHS X,Y,DP,D
-    175  5+7   A0CA 34   3E              PSHS X,Y,DP,D
-    176  5+5   A0CC 34   38              PSHS X,Y,DP
-    177  5     A0CE 118C 2000            CMPS #DEBUTECRANB
-    178  3     A0D2 26   EE              BNE DRWBCKGRNDB
-    179                            
-    180  7     A0D4 10FE A000            LDS  >SSAVE          * rechargemen>>
-    181  5+3   A0D8 35   48              PULS U,DP
-    182  5     A0DA 39                   RTS
-    183
-    184                           *****************************************>>
-    185                           * Affiche un computed sprite en xxx cycle>>
-    186                           *****************************************>>
-    187        A0DB               DRAW_TEST1X100000
-    188  5+3   A0DB 34   48              PSHS U,DP
-    189  7     A0DD 10FF A000            STS >SSAVE
-    190
-    191  7     A0E1 10FE A6C1            LDS POSA_TEST1X100000
-    192  3     A0E5 CE   A6B4            LDU #DATA_TEST1X100000_1
-    193
-    194  3     A0E8 8E   CCCC            LDX #$cccc
-    195  5+1   A0EB AF   7E              STX -2,S
-    196  5+1   A0ED AF   77              STX -9,S
-    197  3     A0EF 8E   CC7A            LDX #$cc7a
-    198  5+1   A0F2 AF   E8 D6           STX -42,S
-    199  3     A0F5 8E   77AC            LDX #$77ac
-    200  5+1   A0F8 AF   E8 CF           STX -49,S
-    201  3     A0FB 8E   A7CC            LDX #$a7cc
-    202  5+1   A0FE AF   E8 AE           STX -82,S
-    203  3     A101 8E   CCCC            LDX #$cccc
-    204  5+1   A104 AF   E8 A7           STX -89,S
-    205  2     A107 86   CA              LDA #$ca
-    206  4+1   A109 A7   E8 86           STA -122,S
-    207  2     A10C 86   F0              LDA  #$F0
-    208  4+1   A10E A4   E8 85           ANDA -123,S
-    209  2     A111 8B   0C              ADDA #$0c
-    210  4+1   A113 A7   E8 85           STA -123,S
-    211  3     A116 8E   AACC            LDX #$aacc
-    212  5+1   A119 AF   E8 80           STX -128,S
-    213  4+4   A11C 32   E9 FF5F         LEAS -161,S
-    214  3     A120 8E   C7A7            LDX #$c7a7
-    215  5+1   A123 AF   7E              STX -2,S
-    216  3     A125 8E   AAC7            LDX #$aac7
-    217  5+1   A128 AF   79              STX -7,S
-    218  3     A12A 8E   AACC            LDX #$aacc
-    219  5+1   A12D AF   E8 D6           STX -42,S
-    220  3     A130 8E   CC73            LDX #$cc73
-    221  5+1   A133 AF   E8 D1           STX -47,S
-    222  3     A136 8E   A77C            LDX #$a77c
-    223  5+1   A139 AF   E8 AE           STX -82,S
-    224  2     A13C 86   0F              LDA  #$0F
-    225  4+1   A13E A4   E8 AB           ANDA -85,S
-    226  2     A141 8B   C0              ADDA #$c0
-    227  4+1   A143 A7   E8 AB           STA -85,S
-    228  3     A146 8E   C73A            LDX #$c73a
-    229  5+1   A149 AF   E8 A9           STX -87,S
-    230  4+1   A14C 32   E8 88           LEAS -120,S
-    231  2     A14F 86   CC              LDA #$cc
-    232  3     A151 8E   773C            LDX #$773c
-    233  5+3   A154 34   12              PSHS X,A
-    234  4+1   A156 32   7F              LEAS -1,S
-    235  2     A158 86   C3              LDA #$c3
-    236  3     A15A 8E   377C            LDX #$377c
-    237  5+3   A15D 34   12              PSHS X,A
-    238  2     A15F 86   0F              LDA  #$0F
-    239  4+1   A161 A4   E8 DE           ANDA -34,S
-    240  2     A164 8B   C0              ADDA #$c0
-    241  4+1   A166 A7   E8 DE           STA -34,S
-    242  3     A169 8E   AA73            LDX #$aa73
-    243  5+1   A16C AF   E8 DC           STX -36,S
-    244  3     A16F 8E   33A7            LDX #$33a7
-    245  5+1   A172 AF   E8 D9           STX -39,S
-    246  2     A175 86   F0              LDA  #$F0
-    247  4+1   A177 A4   E8 D8           ANDA -40,S
-    248  2     A17A 8B   0C              ADDA #$0c
-    249  4+1   A17C A7   E8 D8           STA -40,S
-    250  4+1   A17F 32   E8 B6           LEAS -74,S
-    251  2     A182 86   AA              LDA #$aa
-    252  3     A184 8E   7ACC            LDX #$7acc
-    253  4     A187 108E A733            LDY #$a733
-    254  5+5   A18B 34   32              PSHS Y,X,A
-    255  4+1   A18D 32   E8 DD           LEAS -35,S
-    256  2     A190 86   CC              LDA #$cc
-    257  3     A192 8E   77AA            LDX #$77aa
-    258  4     A195 108E 7A33            LDY #$7a33
-    259  5+5   A199 34   32              PSHS Y,X,A
-    260  4+1   A19B 32   E8 DD           LEAS -35,S
-    261  2     A19E 86   48              LDA #$48
-    262  3     A1A0 8E   777A            LDX #$777a
-    263  4     A1A3 108E 733C            LDY #$733c
-    264  5+5   A1A7 34   32              PSHS Y,X,A
-    265  2     A1A9 86   F0              LDA  #$F0
-    266  4+1   A1AB A4   7F              ANDA -1,S
-    267  2     A1AD 8B   0C              ADDA #$0c
-    268  4+1   A1AF A7   7F              STA -1,S
-    269  2     A1B1 86   0F              LDA  #$0F
-    270  4+1   A1B3 A4   E8 DC           ANDA -36,S
-    271  2     A1B6 8B   C0              ADDA #$c0
-    272  4+1   A1B8 A7   E8 DC           STA -36,S
-    273  4+1   A1BB 32   E8 DC           LEAS -36,S
-    274  2     A1BE 86   44              LDA #$44
-    275  2     A1C0 C6   AA              LDB #$aa
-    276  3     A1C2 8E   33A3            LDX #$33a3
-    277  5+4   A1C5 34   16              PSHS X,B,A
-    278  2     A1C7 86   F0              LDA  #$F0
-    279  4+1   A1C9 A4   7F              ANDA -1,S
-    280  2     A1CB 8B   0C              ADDA #$0c
-    281  4+1   A1CD A7   7F              STA -1,S
-    282  2     A1CF 86   0F              LDA  #$0F
-    283  4+1   A1D1 A4   E8 DC           ANDA -36,S
-    284  2     A1D4 8B   C0              ADDA #$c0
-    285  4+1   A1D6 A7   E8 DC           STA -36,S
-    286  4+1   A1D9 32   E8 DC           LEAS -36,S
-    287  2     A1DC 86   44              LDA #$44
-    288  3     A1DE 8E   77A7            LDX #$77a7
-    289  5+4   A1E1 34   16              PSHS X,B,A
-    290  4+1   A1E3 32   E8 DC           LEAS -36,S
-    291  2     A1E6 C6   CC              LDB #$cc
-    292  3     A1E8 8E   A7A7            LDX #$a7a7
-    293  5+4   A1EB 34   16              PSHS X,B,A
-    294  4+1   A1ED 32   E8 DC           LEAS -36,S
-    295  2     A1F0 86   C4              LDA #$c4
-    296  2     A1F2 C6   55              LDB #$55
-    297  3     A1F4 8E   C70C            LDX #$c70c
-    298  5+4   A1F7 34   16              PSHS X,B,A
-    299  4+1   A1F9 32   E8 DC           LEAS -36,S
-    300  2     A1FC 86   AC              LDA #$ac
-    301  3     A1FE 8E   CCCC            LDX #$cccc
-    302  5+4   A201 34   16              PSHS X,B,A
-    303  2     A203 86   F0              LDA  #$F0
-    304  4+1   A205 A4   7F              ANDA -1,S
-    305  2     A207 8B   0C              ADDA #$0c
-    306  4+1   A209 A7   7F              STA -1,S
-    307  4+1   A20B 32   E8 DC           LEAS -36,S
-    308  2     A20E 86   C4              LDA #$c4
-    309  3     A210 8E   7A22            LDX #$7a22
-    310  4     A213 108E C3C2            LDY #$c3c2
-    311  5+5   A217 34   32              PSHS Y,X,A
-    312  4+1   A219 32   E8 DD           LEAS -35,S
-    313  2     A21C 86   44              LDA #$44
-    314  3     A21E 8E   CC55            LDX #$cc55
-    315  4     A221 108E C3C5            LDY #$c3c5
-    316  5+5   A225 34   32              PSHS Y,X,A
-    317  4+1   A227 32   E8 DD           LEAS -35,S
-    318  2     A22A 86   41              LDA #$41
-    319  3     A22C 8E   C555            LDX #$c555
-    320  4     A22F 108E 335C            LDY #$335c
-    321  5+5   A233 34   32              PSHS Y,X,A
-    322  4+1   A235 32   E8 DD           LEAS -35,S
-    323  2     A238 86   14              LDA #$14
-    324  3     A23A 8E   CC55            LDX #$cc55
-    325  4     A23D 108E 77CC            LDY #$77cc
-    326  5+5   A241 34   32              PSHS Y,X,A
-    327  4+1   A243 32   E8 DD           LEAS -35,S
-    328  3     A246 8E   8C55            LDX #$8c55
-    329  4     A249 108E 7C41            LDY #$7c41
-    330  5+5   A24D 34   32              PSHS Y,X,A
-    331  4+1   A24F 32   E8 DD           LEAS -35,S
-    332  2     A252 86   44              LDA #$44
-    333  3     A254 8E   4855            LDX #$4855
-    334  4     A257 108E C4CC            LDY #$c4cc
-    335  5+5   A25B 34   32              PSHS Y,X,A
-    336  4+1   A25D 32   E8 DD           LEAS -35,S
-    337  2     A260 86   C4              LDA #$c4
-    338  3     A262 8E   4452            LDX #$4452
-    339  4     A265 108E 4C0C            LDY #$4c0c
-    340  5+5   A269 34   32              PSHS Y,X,A
-    341  4+1   A26B 32   E8 DE           LEAS -34,S
-    342  2     A26E 86   14              LDA #$14
-    343  3     A270 8E   254C            LDX #$254c
-    344  4     A273 108E CBCC            LDY #$cbcc
-    345  5+5   A277 34   32              PSHS Y,X,A
-    346  2     A279 86   F0              LDA  #$F0
-    347  4+1   A27B A4   7F              ANDA -1,S
-    348  2     A27D 8B   0C              ADDA #$0c
-    349  4+1   A27F A7   7F              STA -1,S
-    350  4+1   A281 32   E8 DD           LEAS -35,S
-    351  2     A284 86   14              LDA #$14
-    352  3     A286 8E   2BCC            LDX #$2bcc
-    353  4     A289 108E B888            LDY #$b888
-    354  5+5   A28D 34   32              PSHS Y,X,A
-    355  2     A28F 86   0F              LDA  #$0F
-    356  4+1   A291 A4   E8 DD           ANDA -35,S
-    357  2     A294 8B   C0              ADDA #$c0
-    358  4+1   A296 A7   E8 DD           STA -35,S
-    359  4+1   A299 32   E8 DD           LEAS -35,S
-    360  2     A29C 86   88              LDA #$88
-    361  3     A29E 8E   B8CC            LDX #$b8cc
-    362  4     A2A1 108E 8844            LDY #$8844
-    363  5+5   A2A5 34   32              PSHS Y,X,A
-    364  2     A2A7 86   F0              LDA  #$F0
-    365  4+1   A2A9 A4   7F              ANDA -1,S
-    366  2     A2AB 8B   0C              ADDA #$0c
-    367  4+1   A2AD A7   7F              STA -1,S
-    368  2     A2AF 86   0F              LDA  #$0F
-    369  4+1   A2B1 A4   E8 DD           ANDA -35,S
-    370  2     A2B4 8B   C0              ADDA #$c0
-    371  4+1   A2B6 A7   E8 DD           STA -35,S
-    372  4+1   A2B9 32   E8 DD           LEAS -35,S
-    373  2     A2BC 86   C7              LDA #$c7
-    374  2     A2BE C6   CC              LDB #$cc
-    375  3     A2C0 8E   B8B3            LDX #$b8b3
-    376  4     A2C3 108E C848            LDY #$c848
-    377  5+6   A2C7 34   36              PSHS Y,X,B,A
-    378  4+1   A2C9 32   E8 DF           LEAS -33,S
-    379  5+7   A2CC 37   3E              PULU Y,X,DP,B,A
-    380  5+7   A2CE 34   3E              PSHS Y,X,DP,B,A
-    381  4+1   A2D0 32   E8 DF           LEAS -33,S
-    382  5+6   A2D3 37   3C              PULU Y,X,DP,B
-    383  5+7   A2D5 34   3E              PSHS Y,X,DP,B,A
-    384  4+1   A2D7 32   E8 DF           LEAS -33,S
-    385  2     A2DA 86   77              LDA #$77
-    386  2     A2DC C6   B1              LDB #$b1
-    387  3     A2DE 8E   1C40            LDX #$1c40
-    388  4     A2E1 108E C1CC            LDY #$c1cc
-    389  5+6   A2E5 34   36              PSHS Y,X,B,A
-    390  2     A2E7 86   F0              LDA  #$F0
-    391  4+1   A2E9 A4   7F              ANDA -1,S
-    392  2     A2EB 8B   0C              ADDA #$0c
-    393  4+1   A2ED A7   7F              STA -1,S
-    394  4+1   A2EF 32   E8 DE           LEAS -34,S
-    395  2     A2F2 86   CC              LDA #$cc
-    396  2     A2F4 C6   9B              LDB #$9b
-    397  3     A2F6 8E   4C1B            LDX #$4c1b
-    398  4     A2F9 108E C4AC            LDY #$c4ac
-    399  5+6   A2FD 34   36              PSHS Y,X,B,A
-    400  2     A2FF 86   7C              LDA #$7c
-    401  4+1   A301 A7   E8 DD           STA -35,S
-    402  2     A304 86   F0              LDA  #$F0
-    403  4+1   A306 A4   E8 DC           ANDA -36,S
-    404  2     A309 8B   0C              ADDA #$0c
-    405  4+1   A30B A7   E8 DC           STA -36,S
-    406  4+1   A30E 32   E8 DC           LEAS -36,S
-    407  2     A311 86   66              LDA #$66
-    408  3     A313 8E   BCB9            LDX #$bcb9
-    409  5+3   A316 34   12              PSHS X,A
-    410  2     A318 86   CC              LDA #$cc
-    411  4+1   A31A A7   E8 DC           STA -36,S
-    412  2     A31D 86   F0              LDA  #$F0
-    413  4+1   A31F A4   E8 DB           ANDA -37,S
-    414  2     A322 8B   0C              ADDA #$0c
-    415  4+1   A324 A7   E8 DB           STA -37,S
-    416  4+1   A327 32   E8 DB           LEAS -37,S
-    417  2     A32A 86   99              LDA #$99
-    418  3     A32C 8E   6BB9            LDX #$6bb9
-    419  5+3   A32F 34   12              PSHS X,A
-    420  2     A331 86   88              LDA #$88
-    421  4+1   A333 A7   E8 DC           STA -36,S
-    422  2     A336 86   F0              LDA  #$F0
-    423  4+1   A338 A4   E8 DB           ANDA -37,S
-    424  2     A33B 8B   0C              ADDA #$0c
-    425  4+1   A33D A7   E8 DB           STA -37,S
-    426  4+1   A340 32   E8 DB           LEAS -37,S
-    427  2     A343 86   96              LDA #$96
-    428  3     A345 8E   6BBB            LDX #$6bbb
-    429  5+3   A348 34   12              PSHS X,A
-    430  2     A34A 86   48              LDA #$48
-    431  4+1   A34C A7   E8 DC           STA -36,S
-    432  2     A34F 86   F0              LDA  #$F0
-    433  4+1   A351 A4   E8 DB           ANDA -37,S
-    434  2     A354 8B   0C              ADDA #$0c
-    435  4+1   A356 A7   E8 DB           STA -37,S
-    436  4+1   A359 32   E8 DB           LEAS -37,S
-    437  2     A35C 86   99              LDA #$99
-    438  3     A35E 8E   966B            LDX #$966b
-    439  5+3   A361 34   12              PSHS X,A
-    440  4+1   A363 32   E8 DD           LEAS -35,S
-    441  2     A366 86   BB              LDA #$bb
-    442  3     A368 8E   4646            LDX #$4646
-    443  4     A36B 108E C4BC            LDY #$c4bc
-    444  5+5   A36F 34   32              PSHS Y,X,A
-    445  4+1   A371 32   E8 DD           LEAS -35,S
-    446  2     A374 86   B4              LDA #$b4
-    447  2     A376 C6   BB              LDB #$bb
-    448  3     A378 8E   C44B            LDX #$c44b
-    449  5+4   A37B 34   16              PSHS X,B,A
-    450  3     A37D 8E   4B44            LDX #$4b44
-    451  5+1   A380 AF   E8 DA           STX -38,S
-    452  2     A383 86   0F              LDA  #$0F
-    453  4+1   A385 A4   E8 D9           ANDA -39,S
-    454  2     A388 8B   B0              ADDA #$b0
-    455  4+1   A38A A7   E8 D9           STA -39,S
-    456  2     A38D 86   F0              LDA  #$F0
-    457  4+1   A38F A4   E8 D8           ANDA -40,S
-    458  2     A392 8B   0B              ADDA #$0b
-    459  4+1   A394 A7   E8 D8           STA -40,S
-    460  3     A397 8E   4B14            LDX #$4b14
-    461  5+1   A39A AF   E8 B2           STX -78,S
-    462  3     A39D 8E   CCCC            LDX #$cccc
-    463  5+1   A3A0 AF   E8 8A           STX -118,S
-    464  2     A3A3 86   F0              LDA  #$F0
-    465  4+1   A3A5 A4   E8 89           ANDA -119,S
-    466  2     A3A8 8B   0C              ADDA #$0c
-    467  4+1   A3AA A7   E8 89           STA -119,S
-    468
-    469  7     A3AD 10FE A6C3            LDS POSB_TEST1X100000
-    470  3     A3B1 CE   A6C1            LDU #DATA_TEST1X100000_2
-    471
-    472  2     A3B4 86   CC              LDA #$cc
-    473  3     A3B6 8E   CCCC            LDX #$cccc
-    474  5+3   A3B9 34   12              PSHS X,A
-    475  4+1   A3BB 32   7C              LEAS -4,S
-    476  5+3   A3BD 34   12              PSHS X,A
-    477  4+1   A3BF 32   E8 E2           LEAS -30,S
-    478  2     A3C2 86   CA              LDA #$ca
-    479  3     A3C4 8E   AACC            LDX #$aacc
-    480  5+3   A3C7 34   12              PSHS X,A
-    481  4+1   A3C9 32   7C              LEAS -4,S
-    482  2     A3CB 86   CC              LDA #$cc
-    483  5+3   A3CD 34   12              PSHS X,A
-    484  3     A3CF 8E   CC77            LDX #$cc77
-    485  5+1   A3D2 AF   E8 DF           STX -33,S
-    486  3     A3D5 8E   3AAC            LDX #$3aac
-    487  5+1   A3D8 AF   E8 D9           STX -39,S
-    488  3     A3DB 8E   CC3C            LDX #$cc3c
-    489  5+1   A3DE AF   E8 B7           STX -73,S
-    490  3     A3E1 8E   C7CC            LDX #$c7cc
-    491  5+1   A3E4 AF   E8 B1           STX -79,S
-    492  2     A3E7 86   0F              LDA  #$0F
-    493  4+1   A3E9 A4   E8 90           ANDA -112,S
-    494  2     A3EC 8B   C0              ADDA #$c0
-    495  4+1   A3EE A7   E8 90           STA -112,S
-    496  2     A3F1 86   CA              LDA #$ca
-    497  4+1   A3F3 A7   E8 8F           STA -113,S
-    498  2     A3F6 86   0F              LDA  #$0F
-    499  4+1   A3F8 A4   E8 8B           ANDA -117,S
-    500  2     A3FB 8B   C0              ADDA #$c0
-    501  4+1   A3FD A7   E8 8B           STA -117,S
-    502  2     A400 86   AC              LDA #$ac
-    503  4+1   A402 A7   E8 8A           STA -118,S
-    504  2     A405 86   F0              LDA  #$F0
-    505  4+1   A407 A4   E8 89           ANDA -119,S
-    506  2     A40A 8B   0C              ADDA #$0c
-    507  4+1   A40C A7   E8 89           STA -119,S
-    508  4+4   A40F 32   E9 FF68         LEAS -152,S
-    509  2     A413 86   7C              LDA #$7c
-    510  4+1   A415 A7   7F              STA -1,S
-    511  2     A417 86   F0              LDA  #$F0
-    512  4+1   A419 A4   7E              ANDA -2,S
-    513  2     A41B 8B   0C              ADDA #$0c
-    514  4+1   A41D A7   7E              STA -2,S
-    515  3     A41F 8E   CCAC            LDX #$ccac
-    516  5+1   A422 AF   7A              STX -6,S
-    517  3     A424 8E   CAA7            LDX #$caa7
-    518  5+1   A427 AF   E8 D6           STX -42,S
-    519  3     A42A 8E   337A            LDX #$337a
-    520  5+1   A42D AF   E8 D2           STX -46,S
-    521  3     A430 8E   CA33            LDX #$ca33
-    522  5+1   A433 AF   E8 AE           STX -82,S
-    523  2     A436 86   0F              LDA  #$0F
-    524  4+1   A438 A4   E8 AC           ANDA -84,S
-    525  2     A43B 8B   C0              ADDA #$c0
-    526  4+1   A43D A7   E8 AC           STA -84,S
-    527  3     A440 8E   3777            LDX #$3777
-    528  5+1   A443 AF   E8 AA           STX -86,S
-    529  3     A446 8E   AC37            LDX #$ac37
-    530  5+1   A449 AF   E8 86           STX -122,S
-    531  2     A44C 86   F0              LDA  #$F0
-    532  4+1   A44E A4   E8 85           ANDA -123,S
-    533  2     A451 8B   0C              ADDA #$0c
-    534  4+1   A453 A7   E8 85           STA -123,S
-    535  4+1   A456 32   E8 85           LEAS -123,S
-    536  2     A459 86   70              LDA #$70
-    537  3     A45B 8E   AA7C            LDX #$aa7c
-    538  5+3   A45E 34   12              PSHS X,A
-    539  4+1   A460 32   E8 DE           LEAS -34,S
-    540  2     A463 86   CA              LDA #$ca
-    541  2     A465 C6   37              LDB #$37
-    542  3     A467 8E   AACA            LDX #$aaca
-    543  4     A46A 108E 770C            LDY #$770c
-    544  5+6   A46E 34   36              PSHS Y,X,B,A
-    545  2     A470 86   0F              LDA  #$0F
-    546  4+1   A472 A4   E8 DD           ANDA -35,S
-    547  2     A475 8B   C0              ADDA #$c0
-    548  4+1   A477 A7   E8 DD           STA -35,S
-    549  4+1   A47A 32   E8 DD           LEAS -35,S
-    550  2     A47D 86   CC              LDA #$cc
-    551  3     A47F 8E   A377            LDX #$a377
-    552  4     A482 108E 7A77            LDY #$7a77
-    553  5+5   A486 34   32              PSHS Y,X,A
-    554  4+1   A488 32   E8 DD           LEAS -35,S
-    555  2     A48B 86   84              LDA #$84
-    556  3     A48D 8E   CA7A            LDX #$ca7a
-    557  4     A490 108E 3AA3            LDY #$3aa3
-    558  5+5   A494 34   32              PSHS Y,X,A
-    559  4+1   A496 32   E8 DD           LEAS -35,S
-    560  2     A499 86   4C              LDA #$4c
-    561  3     A49B 8E   8CA7            LDX #$8ca7
-    562  4     A49E 108E A3A7            LDY #$a3a7
-    563  5+5   A4A2 34   32              PSHS Y,X,A
-    564  4+1   A4A4 32   E8 DD           LEAS -35,S
-    565  2     A4A7 86   CC              LDA #$cc
-    566  3     A4A9 8E   8C73            LDX #$8c73
-    567  4     A4AC 108E A337            LDY #$a337
-    568  5+5   A4B0 34   32              PSHS Y,X,A
-    569  4+1   A4B2 32   E8 DD           LEAS -35,S
-    570  2     A4B5 86   4C              LDA #$4c
-    571  2     A4B7 C6   AA              LDB #$aa
-    572  3     A4B9 8E   7A7C            LDX #$7a7c
-    573  5+4   A4BC 34   16              PSHS X,B,A
-    574  2     A4BE 86   F0              LDA  #$F0
-    575  4+1   A4C0 A4   7F              ANDA -1,S
-    576  2     A4C2 8B   0C              ADDA #$0c
-    577  4+1   A4C4 A7   7F              STA -1,S
-    578  2     A4C6 86   0F              LDA  #$0F
-    579  4+1   A4C8 A4   E8 DB           ANDA -37,S
-    580  2     A4CB 8B   C0              ADDA #$c0
-    581  4+1   A4CD A7   E8 DB           STA -37,S
-    582  4+1   A4D0 32   E8 DB           LEAS -37,S
-    583  2     A4D3 86   CA              LDA #$ca
-    584  2     A4D5 C6   4C              LDB #$4c
-    585  3     A4D7 8E   CCC3            LDX #$ccc3
-    586  5+4   A4DA 34   16              PSHS X,B,A
-    587  4+1   A4DC 32   E8 DC           LEAS -36,S
-    588  2     A4DF 86   C7              LDA #$c7
-    589  2     A4E1 C6   C2              LDB #$c2
-    590  3     A4E3 8E   55CC            LDX #$55cc
-    591  5+4   A4E6 34   16              PSHS X,B,A
-    592  2     A4E8 86   0F              LDA  #$0F
-    593  4+1   A4EA A4   E8 DC           ANDA -36,S
-    594  2     A4ED 8B   C0              ADDA #$c0
-    595  4+1   A4EF A7   E8 DC           STA -36,S
-    596  4+1   A4F2 32   E8 DC           LEAS -36,S
-    597  2     A4F5 86   4C              LDA #$4c
-    598  3     A4F7 8E   550C            LDX #$550c
-    599  5+4   A4FA 34   16              PSHS X,B,A
-    600  2     A4FC 86   0F              LDA  #$0F
-    601  4+1   A4FE A4   E8 DC           ANDA -36,S
-    602  2     A501 8B   C0              ADDA #$c0
-    603  4+1   A503 A7   E8 DC           STA -36,S
-    604  4+1   A506 32   E8 DC           LEAS -36,S
-    605  2     A509 86   14              LDA #$14
-    606  2     A50B C6   25              LDB #$25
-    607  3     A50D 8E   5530            LDX #$5530
-    608  5+4   A510 34   16              PSHS X,B,A
-    609  2     A512 86   F0              LDA  #$F0
-    610  4+1   A514 A4   7F              ANDA -1,S
-    611  2     A516 8B   0C              ADDA #$0c
-    612  4+1   A518 A7   7F              STA -1,S
-    613  4+1   A51A 32   E8 DC           LEAS -36,S
-    614  2     A51D 86   C1              LDA #$c1
-    615  3     A51F 8E   4455            LDX #$4455
-    616  4     A522 108E 5C7C            LDY #$5c7c
-    617  5+5   A526 34   32              PSHS Y,X,A
-    618  4+1   A528 32   E8 DD           LEAS -35,S
-    619  3     A52B 8E   88C5            LDX #$88c5
-    620  4     A52E 108E 5CCC            LDY #$5ccc
-    621  5+5   A532 34   32              PSHS Y,X,A
-    622  2     A534 86   0F              LDA  #$0F
-    623  4+1   A536 A4   E8 DD           ANDA -35,S
-    624  2     A539 8B   C0              ADDA #$c0
-    625  4+1   A53B A7   E8 DD           STA -35,S
-    626  4+1   A53E 32   E8 DD           LEAS -35,S
-    627  2     A541 86   44              LDA #$44
-    628  2     A543 C6   CC              LDB #$cc
-    629  3     A545 8E   5C44            LDX #$5c44
-    630  5+4   A548 34   16              PSHS X,B,A
-    631  2     A54A 86   F0              LDA  #$F0
-    632  4+1   A54C A4   7F              ANDA -1,S
-    633  2     A54E 8B   0C              ADDA #$0c
-    634  4+1   A550 A7   7F              STA -1,S
-    635  4+1   A552 32   E8 DC           LEAS -36,S
-    636  2     A555 86   44              LDA #$44
-    637  3     A557 8E   C78C            LDX #$c78c
-    638  5+4   A55A 34   16              PSHS X,B,A
-    639  2     A55C 86   F0              LDA  #$F0
-    640  4+1   A55E A4   7F              ANDA -1,S
-    641  2     A560 8B   0C              ADDA #$0c
-    642  4+1   A562 A7   7F              STA -1,S
-    643  2     A564 86   0F              LDA  #$0F
-    644  4+1   A566 A4   E8 DC           ANDA -36,S
-    645  2     A569 8B   C0              ADDA #$c0
-    646  4+1   A56B A7   E8 DC           STA -36,S
-    647  4+1   A56E 32   E8 DC           LEAS -36,S
-    648  2     A571 86   14              LDA #$14
-    649  2     A573 C6   8C              LDB #$8c
-    650  3     A575 8E   CC30            LDX #$cc30
-    651  5+4   A578 34   16              PSHS X,B,A
-    652  4+1   A57A 32   E8 DD           LEAS -35,S
-    653  2     A57D 86   41              LDA #$41
-    654  3     A57F 8E   8CC8            LDX #$8cc8
-    655  4     A582 108E CC8C            LDY #$cc8c
-    656  5+5   A586 34   32              PSHS Y,X,A
-    657  4+1   A588 32   E8 DE           LEAS -34,S
-    658  2     A58B 86   C0              LDA #$c0
-    659  3     A58D 8E   C4CC            LDX #$c4cc
-    660  4     A590 108E 88CC            LDY #$88cc
-    661  5+6   A594 34   36              PSHS Y,X,B,A
-    662  4+1   A596 32   E8 DE           LEAS -34,S
-    663  2     A599 86   CC              LDA #$cc
-    664  2     A59B C6   C2              LDB #$c2
-    665  4     A59D 108E 4488            LDY #$4488
-    666  5+6   A5A1 34   36              PSHS Y,X,B,A
-    667  4+1   A5A3 32   E8 DE           LEAS -34,S
-    668  2     A5A6 86   C5              LDA #$c5
-    669  2     A5A8 C6   25              LDB #$25
-    670  3     A5AA 8E   C400            LDX #$c400
-    671  4     A5AD 108E 4448            LDY #$4448
-    672  5+6   A5B1 34   36              PSHS Y,X,B,A
-    673  4+1   A5B3 32   E8 DE           LEAS -34,S
-    674  2     A5B6 86   7C              LDA #$7c
-    675  2     A5B8 C6   5C              LDB #$5c
-    676  3     A5BA 8E   8444            LDX #$8444
-    677  4     A5BD 108E 8444            LDY #$8444
-    678  5+6   A5C1 34   36              PSHS Y,X,B,A
-    679  4+1   A5C3 32   E8 DE           LEAS -34,S
-    680  2     A5C6 86   37              LDA #$37
-    681  2     A5C8 C6   CB              LDB #$cb
-    682  3     A5CA 8E   8448            LDX #$8448
-    683  4     A5CD 108E CC44            LDY #$cc44
-    684  5+6   A5D1 34   36              PSHS Y,X,B,A
-    685  2     A5D3 86   4C              LDA #$4c
-    686  4+1   A5D5 A7   E8 DD           STA -35,S
-    687  2     A5D8 86   0F              LDA  #$0F
-    688  4+1   A5DA A4   E8 DC           ANDA -36,S
-    689  2     A5DD 8B   B0              ADDA #$b0
-    690  4+1   A5DF A7   E8 DC           STA -36,S
-    691  4+1   A5E2 32   E8 DC           LEAS -36,S
-    692  2     A5E5 86   03              LDA #$03
-    693  2     A5E7 C6   BB              LDB #$bb
-    694  3     A5E9 8E   B4C4            LDX #$b4c4
-    695  5+4   A5EC 34   16              PSHS X,B,A
-    696  2     A5EE 86   C7              LDA #$c7
-    697  4+1   A5F0 A7   E8 DD           STA -35,S
-    698  4+1   A5F3 32   E8 DC           LEAS -36,S
-    699  2     A5F6 86   CC              LDA #$cc
-    700  2     A5F8 C6   B9              LDB #$b9
-    701  3     A5FA 8E   BBCC            LDX #$bbcc
-    702  5+4   A5FD 34   16              PSHS X,B,A
-    703  2     A5FF 86   77              LDA #$77
-    704  4+1   A601 A7   E8 DD           STA -35,S
-    705  2     A604 86   0F              LDA  #$0F
-    706  4+1   A606 A4   E8 DC           ANDA -36,S
-    707  2     A609 8B   B0              ADDA #$b0
-    708  4+1   A60B A7   E8 DC           STA -36,S
-    709  4+1   A60E 32   E8 DC           LEAS -36,S
-    710  3     A611 8E   66CC            LDX #$66cc
-    711  5+3   A614 34   14              PSHS X,B
-    712  2     A616 86   7C              LDA #$7c
-    713  4+1   A618 A7   E8 DC           STA -36,S
-    714  2     A61B 86   0F              LDA  #$0F
-    715  4+1   A61D A4   E8 DB           ANDA -37,S
-    716  2     A620 8B   B0              ADDA #$b0
-    717  4+1   A622 A7   E8 DB           STA -37,S
-    718  4+1   A625 32   E8 DB           LEAS -37,S
-    719  3     A628 8E   9641            LDX #$9641
-    720  5+3   A62B 34   14              PSHS X,B
-    721  2     A62D 86   0F              LDA  #$0F
-    722  4+1   A62F A4   E8 DD           ANDA -35,S
-    723  2     A632 8B   C0              ADDA #$c0
-    724  4+1   A634 A7   E8 DD           STA -35,S
-    725  4+1   A637 32   E8 DD           LEAS -35,S
-    726  3     A63A 8E   694B            LDX #$694b
-    727  4     A63D 108E 9BC8            LDY #$9bc8
-    728  5+5   A641 34   34              PSHS Y,X,B
-    729  4+1   A643 32   E8 DE           LEAS -34,S
-    730  2     A646 86   64              LDA #$64
-    731  3     A648 8E   BB6B            LDX #$bb6b
-    732  4     A64B 108E 448C            LDY #$448c
-    733  5+5   A64F 34   32              PSHS Y,X,A
-    734  2     A651 86   F0              LDA  #$F0
-    735  4+1   A653 A4   7F              ANDA -1,S
-    736  2     A655 8B   0B              ADDA #$0b
-    737  4+1   A657 A7   7F              STA -1,S
-    738  3     A659 8E   4B8C            LDX #$4b8c
-    739  5+1   A65C AF   E8 DB           STX -37,S
-    740  2     A65F 86   0F              LDA  #$0F
-    741  4+1   A661 A4   E8 DA           ANDA -38,S
-    742  2     A664 8B   B0              ADDA #$b0
-    743  4+1   A666 A7   E8 DA           STA -38,S
-    744  3     A669 8E   B6BB            LDX #$b6bb
-    745  5+1   A66C AF   E8 D8           STX -40,S
-    746  3     A66F 8E   B84C            LDX #$b84c
-    747  5+1   A672 AF   E8 B3           STX -77,S
-    748  3     A675 8E   BB14            LDX #$bb14
-    749  5+1   A678 AF   E8 B0           STX -80,S
-    750  3     A67B 8E   484C            LDX #$484c
-    751  5+1   A67E AF   E8 8B           STX -117,S
-    752  2     A681 86   F0              LDA  #$F0
-    753  4+1   A683 A4   E8 8A           ANDA -118,S
-    754  2     A686 8B   0C              ADDA #$0c
-    755  4+1   A688 A7   E8 8A           STA -118,S
-    756  2     A68B 86   BB              LDA #$bb
-    757  4+1   A68D A7   E8 89           STA -119,S
-    758  4+4   A690 32   E9 FF64         LEAS -156,S
-    759  2     A694 86   0F              LDA  #$0F
-    760  4+1   A696 A4   60              ANDA 0,S
-    761  2     A698 8B   C0              ADDA #$c0
-    762  4+1   A69A A7   60              STA 0,S
-    763  3     A69C 8E   C444            LDX #$c444
-    764  5+1   A69F AF   7E              STX -2,S
-    765  3     A6A1 8E   4111            LDX #$4111
-    766  5+1   A6A4 AF   E8 D6           STX -42,S
-    767  3     A6A7 8E   CCCC            LDX #$cccc
-    768  5+1   A6AA AF   E8 AE           STX -82,S
-    769
-    770  7     A6AD 10FE A000            LDS  >SSAVE
-    771  5+3   A6B1 35   48              PULS U,DP
-    772  5     A6B3 39                   RTS
-    773
-    774        A6B4               DATA_TEST1X100000_1
-    775        A6B4 C322                 FDB $c322
-    776        A6B6 BC88                 FDB $bc88
-    777        A6B8 C884                 FDB $c884
-    778        A6BA 8CCC                 FDB $8ccc
-    779        A6BC B411                 FDB $b411
-    780        A6BE CC81                 FDB $cc81
-    781        A6C0 4C                   FCB $4c
-    782        A6C1               DATA_TEST1X100000_2
-    783        A6C1               POSA_TEST1X100000
-    784        A6C1 1F40                 FDB $1F40
-    785        A6C3               POSB_TEST1X100000
-    786        A6C3 3F40                 FDB $3F40
+     67  8     8035 BD   8051            JSR SCRC
+     68  8     8038 BD   8073            JSR EFF
+     69  8     803B BD   8051            JSR SCRC
+     70  8     803E BD   8073            JSR EFF
+     71  8     8041 BD   8051            JSR SCRC        * changement de pa>>
+     72                           *****************************************>>
+     73                           * Boucle principale
+     74                           *****************************************>>
+     75  2     8044 C6   03              LDB #$03
+     76  5     8046 F7   E7E5            STB $E7E5
+     77  8     8049 BD   8082            JSR DRAWBCKGRN
+     78  8     804C BD   8051            JSR SCRC
+     79        804F               MAIN
+     80  3     804F 20   FE              BRA MAIN
+     81
+     82                           *****************************************>>
+     83                           * Changement de page ESPACE ECRAN (affich>>
+     84                           *      $E7DD determine la page affichee d>>
+     85                           *      D7=0 D6=0 D5=0 D4=0 (#$0_) : page >>
+     86                           *      D7=0 D6=1 D5=0 D4=0 (#$4_) : page >>
+     87                           *      D7=1 D6=0 D5=0 D4=0 (#$8_) : page >>
+     88                           *      D7=1 D6=1 D5=0 D4=0 (#$C_) : page >>
+     89                           *   D3 D2 D1 D0  (#$_0 a #$_F) : couleur >>
+     90                           *   Remarque : D5 et D4 utilisable unique>>
+     91                           *
+     92                           * Changement de page ESPACE CARTOUCHE (ec>>
+     93                           *      $E7E6 determine la page affichee d>>
+     94                           *   D5 : 1 = espace cartouche recouvert p>>
+     95                           *   D4 : 0 = CAS1N valide : banques 0-15 >>
+     96                           *      D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$6>>
+     97                           *   ...
+     98                           *      D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6>>
+     99                           *      D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$7>>
+    100                           *   ...
+    101                           *      D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7>>
+    102                           *****************************************>>
+    103        8051               SCRC
+    104  5     8051 F6   805F            LDB SCRC0+1   * charge la valeur d>>
+    105  2     8054 C4   80              ANDB #$80     * permute #$00 ou #$>>
+    106  2     8056 CA   0F              ORB #$0F      * recharger la coule>>
+    107  5     8058 F7   E7DD            STB $E7DD     * changement page da>>
+    108  7     805B 73   805F            COM SCRC0+1   * modification du co>>
+    109        805E               SCRC0
+    110  2     805E C6   00              LDB #$00
+    111  2     8060 C4   02              ANDB #$02     * permute #$60 ou #$>>
+    112  2     8062 CA   60              ORB #$60      * espace cartouche r>>
+    113  5     8064 F7   E7E6            STB $E7E6     * changement page da>>
+    114  5     8067 39                   RTS                  * E7E6 D5=1 p>>
+    115                                                       * CAS1N : ban>>
+    116
+    117                           *****************************************>>
+    118                           * Attente VBL
+    119                           *****************************************>>
+    120        8068               VSYNC
+    121        8068               VSYNC_1
+    122  7     8068 7D   E7E7            TST    $E7E7
+    123  3     806B 2A   FB              BPL    VSYNC_1
+    124        806D               VSYNC_2
+    125  7     806D 7D   E7E7            TST    $E7E7
+    126  3     8070 2B   FB              BMI    VSYNC_2
+    127  5     8072 39                   RTS
+    128
+    129                           *****************************************>>
+    130                           * Effacement de l ecran
+    131                           *****************************************>>
+    132        8073               EFF
+    133  2     8073 86   AA              LDA #$AA  * couleur fond
+    134  4     8075 108E 0000            LDY #$0000
+    135        8079               EFF_RAM
+    136  4+2   8079 A7   A0              STA ,Y+
+    137  5     807B 108C 3FFF            CMPY #$3FFF
+    138  3     807F 26   F8              BNE EFF_RAM
+    139  5     8081 39                   RTS
+    140
+    141                           *****************************************>>
+    142                           * Affichage de l arriere plan xxx cycles
+    143                           *****************************************>>
+    144        8082               DRAWBCKGRN
+    145  5+3   8082 34   48              PSHS U,DP            * sauvegarde >>
+    146  7     8084 10FF 8000            STS >SSAVE
+    147                            
+    148  4     8088 10CE 1F40            LDS #FINECRANA       * init pointe>>
+    149  3     808C CE   A000            LDU #$A000
+    150
+    151        808F               DRWBCKGRNDA
+    152  5+7   808F 37   3E              PULU A,B,DP,X,Y
+    153  5+7   8091 34   3E              PSHS Y,X,DP,B,A
+    154  5+7   8093 37   3E              PULU A,B,DP,X,Y
+    155  5+7   8095 34   3E              PSHS Y,X,DP,B,A
+    156  5+7   8097 37   3E              PULU A,B,DP,X,Y
+    157  5+7   8099 34   3E              PSHS Y,X,DP,B,A
+    158  5+7   809B 37   3E              PULU A,B,DP,X,Y
+    159  5+7   809D 34   3E              PSHS Y,X,DP,B,A
+    160  5+7   809F 37   3E              PULU A,B,DP,X,Y
+    161  5+7   80A1 34   3E              PSHS Y,X,DP,B,A
+    162  5+7   80A3 37   3E              PULU A,B,DP,X,Y
+    163  5+7   80A5 34   3E              PSHS Y,X,DP,B,A
+    164  5     80A7 118C 0014            CMPS #DEBUTECRANA
+    165  3     80AB 26   E2              BNE DRWBCKGRNDA
+    166  5+7   80AD 37   3E              PULU A,B,DP,X,Y
+    167  5+7   80AF 34   3E              PSHS Y,X,DP,B,A
+    168  5+7   80B1 37   3E              PULU A,B,DP,X,Y
+    169  5+7   80B3 34   3E              PSHS Y,X,DP,B,A
+    170  5+6   80B5 37   3C              PULU B,DP,X,Y
+    171  5+6   80B7 34   3C              PSHS Y,X,DP,B
+    172
+    173  4     80B9 10CE 3F40            LDS #FINECRANB       * init pointe>>
+    174  3     80BD CE   C000            LDU #$C000
+    175
+    176        80C0               DRWBCKGRNDB
+    177  5+7   80C0 37   3E              PULU A,B,DP,X,Y
+    178  5+7   80C2 34   3E              PSHS Y,X,DP,B,A
+    179  5+7   80C4 37   3E              PULU A,B,DP,X,Y
+    180  5+7   80C6 34   3E              PSHS Y,X,DP,B,A
+    181  5+7   80C8 37   3E              PULU A,B,DP,X,Y
+    182  5+7   80CA 34   3E              PSHS Y,X,DP,B,A
+    183  5+7   80CC 37   3E              PULU A,B,DP,X,Y
+    184  5+7   80CE 34   3E              PSHS Y,X,DP,B,A
+    185  5+7   80D0 37   3E              PULU A,B,DP,X,Y
+    186  5+7   80D2 34   3E              PSHS Y,X,DP,B,A
+    187  5+7   80D4 37   3E              PULU A,B,DP,X,Y
+    188  5+7   80D6 34   3E              PSHS Y,X,DP,B,A
+    189  5     80D8 118C 2014            CMPS #DEBUTECRANB
+    190  3     80DC 26   E2              BNE DRWBCKGRNDB
+    191  5+7   80DE 37   3E              PULU A,B,DP,X,Y
+    192  5+7   80E0 34   3E              PSHS Y,X,DP,B,A
+    193  5+7   80E2 37   3E              PULU A,B,DP,X,Y
+    194  5+7   80E4 34   3E              PSHS Y,X,DP,B,A
+    195  5+6   80E6 37   3C              PULU B,DP,X,Y
+    196  5+6   80E8 34   3C              PSHS Y,X,DP,B
+    197
+    198  7     80EA 10FE 8000            LDS  >SSAVE          * rechargemen>>
+    199  5+3   80EE 35   48              PULS U,DP
+    200  5     80F0 39                   RTS
+    201
+    202                           *****************************************>>
+    203                           * Affiche un computed sprite en xxx cycle>>
+    204                           *****************************************>>
+    205        80F1               DRAW_TEST1X100000
+    206  5+3   80F1 34   48              PSHS U,DP
+    207  7     80F3 10FF 8000            STS >SSAVE
+    208
+    209  7     80F7 10FE 86D7            LDS POSA_TEST1X100000
+    210  3     80FB CE   86CA            LDU #DATA_TEST1X100000_1
+    211
+    212  3     80FE 8E   CCCC            LDX #$cccc
+    213  5+1   8101 AF   7E              STX -2,S
+    214  5+1   8103 AF   77              STX -9,S
+    215  3     8105 8E   CC7A            LDX #$cc7a
+    216  5+1   8108 AF   E8 D6           STX -42,S
+    217  3     810B 8E   77AC            LDX #$77ac
+    218  5+1   810E AF   E8 CF           STX -49,S
+    219  3     8111 8E   A7CC            LDX #$a7cc
+    220  5+1   8114 AF   E8 AE           STX -82,S
+    221  3     8117 8E   CCCC            LDX #$cccc
+    222  5+1   811A AF   E8 A7           STX -89,S
+    223  2     811D 86   CA              LDA #$ca
+    224  4+1   811F A7   E8 86           STA -122,S
+    225  2     8122 86   F0              LDA  #$F0
+    226  4+1   8124 A4   E8 85           ANDA -123,S
+    227  2     8127 8B   0C              ADDA #$0c
+    228  4+1   8129 A7   E8 85           STA -123,S
+    229  3     812C 8E   AACC            LDX #$aacc
+    230  5+1   812F AF   E8 80           STX -128,S
+    231  4+4   8132 32   E9 FF5F         LEAS -161,S
+    232  3     8136 8E   C7A7            LDX #$c7a7
+    233  5+1   8139 AF   7E              STX -2,S
+    234  3     813B 8E   AAC7            LDX #$aac7
+    235  5+1   813E AF   79              STX -7,S
+    236  3     8140 8E   AACC            LDX #$aacc
+    237  5+1   8143 AF   E8 D6           STX -42,S
+    238  3     8146 8E   CC73            LDX #$cc73
+    239  5+1   8149 AF   E8 D1           STX -47,S
+    240  3     814C 8E   A77C            LDX #$a77c
+    241  5+1   814F AF   E8 AE           STX -82,S
+    242  2     8152 86   0F              LDA  #$0F
+    243  4+1   8154 A4   E8 AB           ANDA -85,S
+    244  2     8157 8B   C0              ADDA #$c0
+    245  4+1   8159 A7   E8 AB           STA -85,S
+    246  3     815C 8E   C73A            LDX #$c73a
+    247  5+1   815F AF   E8 A9           STX -87,S
+    248  4+1   8162 32   E8 88           LEAS -120,S
+    249  2     8165 86   CC              LDA #$cc
+    250  3     8167 8E   773C            LDX #$773c
+    251  5+3   816A 34   12              PSHS X,A
+    252  4+1   816C 32   7F              LEAS -1,S
+    253  2     816E 86   C3              LDA #$c3
+    254  3     8170 8E   377C            LDX #$377c
+    255  5+3   8173 34   12              PSHS X,A
+    256  2     8175 86   0F              LDA  #$0F
+    257  4+1   8177 A4   E8 DE           ANDA -34,S
+    258  2     817A 8B   C0              ADDA #$c0
+    259  4+1   817C A7   E8 DE           STA -34,S
+    260  3     817F 8E   AA73            LDX #$aa73
+    261  5+1   8182 AF   E8 DC           STX -36,S
+    262  3     8185 8E   33A7            LDX #$33a7
+    263  5+1   8188 AF   E8 D9           STX -39,S
+    264  2     818B 86   F0              LDA  #$F0
+    265  4+1   818D A4   E8 D8           ANDA -40,S
+    266  2     8190 8B   0C              ADDA #$0c
+    267  4+1   8192 A7   E8 D8           STA -40,S
+    268  4+1   8195 32   E8 B6           LEAS -74,S
+    269  2     8198 86   AA              LDA #$aa
+    270  3     819A 8E   7ACC            LDX #$7acc
+    271  4     819D 108E A733            LDY #$a733
+    272  5+5   81A1 34   32              PSHS Y,X,A
+    273  4+1   81A3 32   E8 DD           LEAS -35,S
+    274  2     81A6 86   CC              LDA #$cc
+    275  3     81A8 8E   77AA            LDX #$77aa
+    276  4     81AB 108E 7A33            LDY #$7a33
+    277  5+5   81AF 34   32              PSHS Y,X,A
+    278  4+1   81B1 32   E8 DD           LEAS -35,S
+    279  2     81B4 86   48              LDA #$48
+    280  3     81B6 8E   777A            LDX #$777a
+    281  4     81B9 108E 733C            LDY #$733c
+    282  5+5   81BD 34   32              PSHS Y,X,A
+    283  2     81BF 86   F0              LDA  #$F0
+    284  4+1   81C1 A4   7F              ANDA -1,S
+    285  2     81C3 8B   0C              ADDA #$0c
+    286  4+1   81C5 A7   7F              STA -1,S
+    287  2     81C7 86   0F              LDA  #$0F
+    288  4+1   81C9 A4   E8 DC           ANDA -36,S
+    289  2     81CC 8B   C0              ADDA #$c0
+    290  4+1   81CE A7   E8 DC           STA -36,S
+    291  4+1   81D1 32   E8 DC           LEAS -36,S
+    292  2     81D4 86   44              LDA #$44
+    293  2     81D6 C6   AA              LDB #$aa
+    294  3     81D8 8E   33A3            LDX #$33a3
+    295  5+4   81DB 34   16              PSHS X,B,A
+    296  2     81DD 86   F0              LDA  #$F0
+    297  4+1   81DF A4   7F              ANDA -1,S
+    298  2     81E1 8B   0C              ADDA #$0c
+    299  4+1   81E3 A7   7F              STA -1,S
+    300  2     81E5 86   0F              LDA  #$0F
+    301  4+1   81E7 A4   E8 DC           ANDA -36,S
+    302  2     81EA 8B   C0              ADDA #$c0
+    303  4+1   81EC A7   E8 DC           STA -36,S
+    304  4+1   81EF 32   E8 DC           LEAS -36,S
+    305  2     81F2 86   44              LDA #$44
+    306  3     81F4 8E   77A7            LDX #$77a7
+    307  5+4   81F7 34   16              PSHS X,B,A
+    308  4+1   81F9 32   E8 DC           LEAS -36,S
+    309  2     81FC C6   CC              LDB #$cc
+    310  3     81FE 8E   A7A7            LDX #$a7a7
+    311  5+4   8201 34   16              PSHS X,B,A
+    312  4+1   8203 32   E8 DC           LEAS -36,S
+    313  2     8206 86   C4              LDA #$c4
+    314  2     8208 C6   55              LDB #$55
+    315  3     820A 8E   C70C            LDX #$c70c
+    316  5+4   820D 34   16              PSHS X,B,A
+    317  4+1   820F 32   E8 DC           LEAS -36,S
+    318  2     8212 86   AC              LDA #$ac
+    319  3     8214 8E   CCCC            LDX #$cccc
+    320  5+4   8217 34   16              PSHS X,B,A
+    321  2     8219 86   F0              LDA  #$F0
+    322  4+1   821B A4   7F              ANDA -1,S
+    323  2     821D 8B   0C              ADDA #$0c
+    324  4+1   821F A7   7F              STA -1,S
+    325  4+1   8221 32   E8 DC           LEAS -36,S
+    326  2     8224 86   C4              LDA #$c4
+    327  3     8226 8E   7A22            LDX #$7a22
+    328  4     8229 108E C3C2            LDY #$c3c2
+    329  5+5   822D 34   32              PSHS Y,X,A
+    330  4+1   822F 32   E8 DD           LEAS -35,S
+    331  2     8232 86   44              LDA #$44
+    332  3     8234 8E   CC55            LDX #$cc55
+    333  4     8237 108E C3C5            LDY #$c3c5
+    334  5+5   823B 34   32              PSHS Y,X,A
+    335  4+1   823D 32   E8 DD           LEAS -35,S
+    336  2     8240 86   41              LDA #$41
+    337  3     8242 8E   C555            LDX #$c555
+    338  4     8245 108E 335C            LDY #$335c
+    339  5+5   8249 34   32              PSHS Y,X,A
+    340  4+1   824B 32   E8 DD           LEAS -35,S
+    341  2     824E 86   14              LDA #$14
+    342  3     8250 8E   CC55            LDX #$cc55
+    343  4     8253 108E 77CC            LDY #$77cc
+    344  5+5   8257 34   32              PSHS Y,X,A
+    345  4+1   8259 32   E8 DD           LEAS -35,S
+    346  3     825C 8E   8C55            LDX #$8c55
+    347  4     825F 108E 7C41            LDY #$7c41
+    348  5+5   8263 34   32              PSHS Y,X,A
+    349  4+1   8265 32   E8 DD           LEAS -35,S
+    350  2     8268 86   44              LDA #$44
+    351  3     826A 8E   4855            LDX #$4855
+    352  4     826D 108E C4CC            LDY #$c4cc
+    353  5+5   8271 34   32              PSHS Y,X,A
+    354  4+1   8273 32   E8 DD           LEAS -35,S
+    355  2     8276 86   C4              LDA #$c4
+    356  3     8278 8E   4452            LDX #$4452
+    357  4     827B 108E 4C0C            LDY #$4c0c
+    358  5+5   827F 34   32              PSHS Y,X,A
+    359  4+1   8281 32   E8 DE           LEAS -34,S
+    360  2     8284 86   14              LDA #$14
+    361  3     8286 8E   254C            LDX #$254c
+    362  4     8289 108E CBCC            LDY #$cbcc
+    363  5+5   828D 34   32              PSHS Y,X,A
+    364  2     828F 86   F0              LDA  #$F0
+    365  4+1   8291 A4   7F              ANDA -1,S
+    366  2     8293 8B   0C              ADDA #$0c
+    367  4+1   8295 A7   7F              STA -1,S
+    368  4+1   8297 32   E8 DD           LEAS -35,S
+    369  2     829A 86   14              LDA #$14
+    370  3     829C 8E   2BCC            LDX #$2bcc
+    371  4     829F 108E B888            LDY #$b888
+    372  5+5   82A3 34   32              PSHS Y,X,A
+    373  2     82A5 86   0F              LDA  #$0F
+    374  4+1   82A7 A4   E8 DD           ANDA -35,S
+    375  2     82AA 8B   C0              ADDA #$c0
+    376  4+1   82AC A7   E8 DD           STA -35,S
+    377  4+1   82AF 32   E8 DD           LEAS -35,S
+    378  2     82B2 86   88              LDA #$88
+    379  3     82B4 8E   B8CC            LDX #$b8cc
+    380  4     82B7 108E 8844            LDY #$8844
+    381  5+5   82BB 34   32              PSHS Y,X,A
+    382  2     82BD 86   F0              LDA  #$F0
+    383  4+1   82BF A4   7F              ANDA -1,S
+    384  2     82C1 8B   0C              ADDA #$0c
+    385  4+1   82C3 A7   7F              STA -1,S
+    386  2     82C5 86   0F              LDA  #$0F
+    387  4+1   82C7 A4   E8 DD           ANDA -35,S
+    388  2     82CA 8B   C0              ADDA #$c0
+    389  4+1   82CC A7   E8 DD           STA -35,S
+    390  4+1   82CF 32   E8 DD           LEAS -35,S
+    391  2     82D2 86   C7              LDA #$c7
+    392  2     82D4 C6   CC              LDB #$cc
+    393  3     82D6 8E   B8B3            LDX #$b8b3
+    394  4     82D9 108E C848            LDY #$c848
+    395  5+6   82DD 34   36              PSHS Y,X,B,A
+    396  4+1   82DF 32   E8 DF           LEAS -33,S
+    397  5+7   82E2 37   3E              PULU Y,X,DP,B,A
+    398  5+7   82E4 34   3E              PSHS Y,X,DP,B,A
+    399  4+1   82E6 32   E8 DF           LEAS -33,S
+    400  5+6   82E9 37   3C              PULU Y,X,DP,B
+    401  5+7   82EB 34   3E              PSHS Y,X,DP,B,A
+    402  4+1   82ED 32   E8 DF           LEAS -33,S
+    403  2     82F0 86   77              LDA #$77
+    404  2     82F2 C6   B1              LDB #$b1
+    405  3     82F4 8E   1C40            LDX #$1c40
+    406  4     82F7 108E C1CC            LDY #$c1cc
+    407  5+6   82FB 34   36              PSHS Y,X,B,A
+    408  2     82FD 86   F0              LDA  #$F0
+    409  4+1   82FF A4   7F              ANDA -1,S
+    410  2     8301 8B   0C              ADDA #$0c
+    411  4+1   8303 A7   7F              STA -1,S
+    412  4+1   8305 32   E8 DE           LEAS -34,S
+    413  2     8308 86   CC              LDA #$cc
+    414  2     830A C6   9B              LDB #$9b
+    415  3     830C 8E   4C1B            LDX #$4c1b
+    416  4     830F 108E C4AC            LDY #$c4ac
+    417  5+6   8313 34   36              PSHS Y,X,B,A
+    418  2     8315 86   7C              LDA #$7c
+    419  4+1   8317 A7   E8 DD           STA -35,S
+    420  2     831A 86   F0              LDA  #$F0
+    421  4+1   831C A4   E8 DC           ANDA -36,S
+    422  2     831F 8B   0C              ADDA #$0c
+    423  4+1   8321 A7   E8 DC           STA -36,S
+    424  4+1   8324 32   E8 DC           LEAS -36,S
+    425  2     8327 86   66              LDA #$66
+    426  3     8329 8E   BCB9            LDX #$bcb9
+    427  5+3   832C 34   12              PSHS X,A
+    428  2     832E 86   CC              LDA #$cc
+    429  4+1   8330 A7   E8 DC           STA -36,S
+    430  2     8333 86   F0              LDA  #$F0
+    431  4+1   8335 A4   E8 DB           ANDA -37,S
+    432  2     8338 8B   0C              ADDA #$0c
+    433  4+1   833A A7   E8 DB           STA -37,S
+    434  4+1   833D 32   E8 DB           LEAS -37,S
+    435  2     8340 86   99              LDA #$99
+    436  3     8342 8E   6BB9            LDX #$6bb9
+    437  5+3   8345 34   12              PSHS X,A
+    438  2     8347 86   88              LDA #$88
+    439  4+1   8349 A7   E8 DC           STA -36,S
+    440  2     834C 86   F0              LDA  #$F0
+    441  4+1   834E A4   E8 DB           ANDA -37,S
+    442  2     8351 8B   0C              ADDA #$0c
+    443  4+1   8353 A7   E8 DB           STA -37,S
+    444  4+1   8356 32   E8 DB           LEAS -37,S
+    445  2     8359 86   96              LDA #$96
+    446  3     835B 8E   6BBB            LDX #$6bbb
+    447  5+3   835E 34   12              PSHS X,A
+    448  2     8360 86   48              LDA #$48
+    449  4+1   8362 A7   E8 DC           STA -36,S
+    450  2     8365 86   F0              LDA  #$F0
+    451  4+1   8367 A4   E8 DB           ANDA -37,S
+    452  2     836A 8B   0C              ADDA #$0c
+    453  4+1   836C A7   E8 DB           STA -37,S
+    454  4+1   836F 32   E8 DB           LEAS -37,S
+    455  2     8372 86   99              LDA #$99
+    456  3     8374 8E   966B            LDX #$966b
+    457  5+3   8377 34   12              PSHS X,A
+    458  4+1   8379 32   E8 DD           LEAS -35,S
+    459  2     837C 86   BB              LDA #$bb
+    460  3     837E 8E   4646            LDX #$4646
+    461  4     8381 108E C4BC            LDY #$c4bc
+    462  5+5   8385 34   32              PSHS Y,X,A
+    463  4+1   8387 32   E8 DD           LEAS -35,S
+    464  2     838A 86   B4              LDA #$b4
+    465  2     838C C6   BB              LDB #$bb
+    466  3     838E 8E   C44B            LDX #$c44b
+    467  5+4   8391 34   16              PSHS X,B,A
+    468  3     8393 8E   4B44            LDX #$4b44
+    469  5+1   8396 AF   E8 DA           STX -38,S
+    470  2     8399 86   0F              LDA  #$0F
+    471  4+1   839B A4   E8 D9           ANDA -39,S
+    472  2     839E 8B   B0              ADDA #$b0
+    473  4+1   83A0 A7   E8 D9           STA -39,S
+    474  2     83A3 86   F0              LDA  #$F0
+    475  4+1   83A5 A4   E8 D8           ANDA -40,S
+    476  2     83A8 8B   0B              ADDA #$0b
+    477  4+1   83AA A7   E8 D8           STA -40,S
+    478  3     83AD 8E   4B14            LDX #$4b14
+    479  5+1   83B0 AF   E8 B2           STX -78,S
+    480  3     83B3 8E   CCCC            LDX #$cccc
+    481  5+1   83B6 AF   E8 8A           STX -118,S
+    482  2     83B9 86   F0              LDA  #$F0
+    483  4+1   83BB A4   E8 89           ANDA -119,S
+    484  2     83BE 8B   0C              ADDA #$0c
+    485  4+1   83C0 A7   E8 89           STA -119,S
+    486
+    487  7     83C3 10FE 86D9            LDS POSB_TEST1X100000
+    488  3     83C7 CE   86D7            LDU #DATA_TEST1X100000_2
+    489
+    490  2     83CA 86   CC              LDA #$cc
+    491  3     83CC 8E   CCCC            LDX #$cccc
+    492  5+3   83CF 34   12              PSHS X,A
+    493  4+1   83D1 32   7C              LEAS -4,S
+    494  5+3   83D3 34   12              PSHS X,A
+    495  4+1   83D5 32   E8 E2           LEAS -30,S
+    496  2     83D8 86   CA              LDA #$ca
+    497  3     83DA 8E   AACC            LDX #$aacc
+    498  5+3   83DD 34   12              PSHS X,A
+    499  4+1   83DF 32   7C              LEAS -4,S
+    500  2     83E1 86   CC              LDA #$cc
+    501  5+3   83E3 34   12              PSHS X,A
+    502  3     83E5 8E   CC77            LDX #$cc77
+    503  5+1   83E8 AF   E8 DF           STX -33,S
+    504  3     83EB 8E   3AAC            LDX #$3aac
+    505  5+1   83EE AF   E8 D9           STX -39,S
+    506  3     83F1 8E   CC3C            LDX #$cc3c
+    507  5+1   83F4 AF   E8 B7           STX -73,S
+    508  3     83F7 8E   C7CC            LDX #$c7cc
+    509  5+1   83FA AF   E8 B1           STX -79,S
+    510  2     83FD 86   0F              LDA  #$0F
+    511  4+1   83FF A4   E8 90           ANDA -112,S
+    512  2     8402 8B   C0              ADDA #$c0
+    513  4+1   8404 A7   E8 90           STA -112,S
+    514  2     8407 86   CA              LDA #$ca
+    515  4+1   8409 A7   E8 8F           STA -113,S
+    516  2     840C 86   0F              LDA  #$0F
+    517  4+1   840E A4   E8 8B           ANDA -117,S
+    518  2     8411 8B   C0              ADDA #$c0
+    519  4+1   8413 A7   E8 8B           STA -117,S
+    520  2     8416 86   AC              LDA #$ac
+    521  4+1   8418 A7   E8 8A           STA -118,S
+    522  2     841B 86   F0              LDA  #$F0
+    523  4+1   841D A4   E8 89           ANDA -119,S
+    524  2     8420 8B   0C              ADDA #$0c
+    525  4+1   8422 A7   E8 89           STA -119,S
+    526  4+4   8425 32   E9 FF68         LEAS -152,S
+    527  2     8429 86   7C              LDA #$7c
+    528  4+1   842B A7   7F              STA -1,S
+    529  2     842D 86   F0              LDA  #$F0
+    530  4+1   842F A4   7E              ANDA -2,S
+    531  2     8431 8B   0C              ADDA #$0c
+    532  4+1   8433 A7   7E              STA -2,S
+    533  3     8435 8E   CCAC            LDX #$ccac
+    534  5+1   8438 AF   7A              STX -6,S
+    535  3     843A 8E   CAA7            LDX #$caa7
+    536  5+1   843D AF   E8 D6           STX -42,S
+    537  3     8440 8E   337A            LDX #$337a
+    538  5+1   8443 AF   E8 D2           STX -46,S
+    539  3     8446 8E   CA33            LDX #$ca33
+    540  5+1   8449 AF   E8 AE           STX -82,S
+    541  2     844C 86   0F              LDA  #$0F
+    542  4+1   844E A4   E8 AC           ANDA -84,S
+    543  2     8451 8B   C0              ADDA #$c0
+    544  4+1   8453 A7   E8 AC           STA -84,S
+    545  3     8456 8E   3777            LDX #$3777
+    546  5+1   8459 AF   E8 AA           STX -86,S
+    547  3     845C 8E   AC37            LDX #$ac37
+    548  5+1   845F AF   E8 86           STX -122,S
+    549  2     8462 86   F0              LDA  #$F0
+    550  4+1   8464 A4   E8 85           ANDA -123,S
+    551  2     8467 8B   0C              ADDA #$0c
+    552  4+1   8469 A7   E8 85           STA -123,S
+    553  4+1   846C 32   E8 85           LEAS -123,S
+    554  2     846F 86   70              LDA #$70
+    555  3     8471 8E   AA7C            LDX #$aa7c
+    556  5+3   8474 34   12              PSHS X,A
+    557  4+1   8476 32   E8 DE           LEAS -34,S
+    558  2     8479 86   CA              LDA #$ca
+    559  2     847B C6   37              LDB #$37
+    560  3     847D 8E   AACA            LDX #$aaca
+    561  4     8480 108E 770C            LDY #$770c
+    562  5+6   8484 34   36              PSHS Y,X,B,A
+    563  2     8486 86   0F              LDA  #$0F
+    564  4+1   8488 A4   E8 DD           ANDA -35,S
+    565  2     848B 8B   C0              ADDA #$c0
+    566  4+1   848D A7   E8 DD           STA -35,S
+    567  4+1   8490 32   E8 DD           LEAS -35,S
+    568  2     8493 86   CC              LDA #$cc
+    569  3     8495 8E   A377            LDX #$a377
+    570  4     8498 108E 7A77            LDY #$7a77
+    571  5+5   849C 34   32              PSHS Y,X,A
+    572  4+1   849E 32   E8 DD           LEAS -35,S
+    573  2     84A1 86   84              LDA #$84
+    574  3     84A3 8E   CA7A            LDX #$ca7a
+    575  4     84A6 108E 3AA3            LDY #$3aa3
+    576  5+5   84AA 34   32              PSHS Y,X,A
+    577  4+1   84AC 32   E8 DD           LEAS -35,S
+    578  2     84AF 86   4C              LDA #$4c
+    579  3     84B1 8E   8CA7            LDX #$8ca7
+    580  4     84B4 108E A3A7            LDY #$a3a7
+    581  5+5   84B8 34   32              PSHS Y,X,A
+    582  4+1   84BA 32   E8 DD           LEAS -35,S
+    583  2     84BD 86   CC              LDA #$cc
+    584  3     84BF 8E   8C73            LDX #$8c73
+    585  4     84C2 108E A337            LDY #$a337
+    586  5+5   84C6 34   32              PSHS Y,X,A
+    587  4+1   84C8 32   E8 DD           LEAS -35,S
+    588  2     84CB 86   4C              LDA #$4c
+    589  2     84CD C6   AA              LDB #$aa
+    590  3     84CF 8E   7A7C            LDX #$7a7c
+    591  5+4   84D2 34   16              PSHS X,B,A
+    592  2     84D4 86   F0              LDA  #$F0
+    593  4+1   84D6 A4   7F              ANDA -1,S
+    594  2     84D8 8B   0C              ADDA #$0c
+    595  4+1   84DA A7   7F              STA -1,S
+    596  2     84DC 86   0F              LDA  #$0F
+    597  4+1   84DE A4   E8 DB           ANDA -37,S
+    598  2     84E1 8B   C0              ADDA #$c0
+    599  4+1   84E3 A7   E8 DB           STA -37,S
+    600  4+1   84E6 32   E8 DB           LEAS -37,S
+    601  2     84E9 86   CA              LDA #$ca
+    602  2     84EB C6   4C              LDB #$4c
+    603  3     84ED 8E   CCC3            LDX #$ccc3
+    604  5+4   84F0 34   16              PSHS X,B,A
+    605  4+1   84F2 32   E8 DC           LEAS -36,S
+    606  2     84F5 86   C7              LDA #$c7
+    607  2     84F7 C6   C2              LDB #$c2
+    608  3     84F9 8E   55CC            LDX #$55cc
+    609  5+4   84FC 34   16              PSHS X,B,A
+    610  2     84FE 86   0F              LDA  #$0F
+    611  4+1   8500 A4   E8 DC           ANDA -36,S
+    612  2     8503 8B   C0              ADDA #$c0
+    613  4+1   8505 A7   E8 DC           STA -36,S
+    614  4+1   8508 32   E8 DC           LEAS -36,S
+    615  2     850B 86   4C              LDA #$4c
+    616  3     850D 8E   550C            LDX #$550c
+    617  5+4   8510 34   16              PSHS X,B,A
+    618  2     8512 86   0F              LDA  #$0F
+    619  4+1   8514 A4   E8 DC           ANDA -36,S
+    620  2     8517 8B   C0              ADDA #$c0
+    621  4+1   8519 A7   E8 DC           STA -36,S
+    622  4+1   851C 32   E8 DC           LEAS -36,S
+    623  2     851F 86   14              LDA #$14
+    624  2     8521 C6   25              LDB #$25
+    625  3     8523 8E   5530            LDX #$5530
+    626  5+4   8526 34   16              PSHS X,B,A
+    627  2     8528 86   F0              LDA  #$F0
+    628  4+1   852A A4   7F              ANDA -1,S
+    629  2     852C 8B   0C              ADDA #$0c
+    630  4+1   852E A7   7F              STA -1,S
+    631  4+1   8530 32   E8 DC           LEAS -36,S
+    632  2     8533 86   C1              LDA #$c1
+    633  3     8535 8E   4455            LDX #$4455
+    634  4     8538 108E 5C7C            LDY #$5c7c
+    635  5+5   853C 34   32              PSHS Y,X,A
+    636  4+1   853E 32   E8 DD           LEAS -35,S
+    637  3     8541 8E   88C5            LDX #$88c5
+    638  4     8544 108E 5CCC            LDY #$5ccc
+    639  5+5   8548 34   32              PSHS Y,X,A
+    640  2     854A 86   0F              LDA  #$0F
+    641  4+1   854C A4   E8 DD           ANDA -35,S
+    642  2     854F 8B   C0              ADDA #$c0
+    643  4+1   8551 A7   E8 DD           STA -35,S
+    644  4+1   8554 32   E8 DD           LEAS -35,S
+    645  2     8557 86   44              LDA #$44
+    646  2     8559 C6   CC              LDB #$cc
+    647  3     855B 8E   5C44            LDX #$5c44
+    648  5+4   855E 34   16              PSHS X,B,A
+    649  2     8560 86   F0              LDA  #$F0
+    650  4+1   8562 A4   7F              ANDA -1,S
+    651  2     8564 8B   0C              ADDA #$0c
+    652  4+1   8566 A7   7F              STA -1,S
+    653  4+1   8568 32   E8 DC           LEAS -36,S
+    654  2     856B 86   44              LDA #$44
+    655  3     856D 8E   C78C            LDX #$c78c
+    656  5+4   8570 34   16              PSHS X,B,A
+    657  2     8572 86   F0              LDA  #$F0
+    658  4+1   8574 A4   7F              ANDA -1,S
+    659  2     8576 8B   0C              ADDA #$0c
+    660  4+1   8578 A7   7F              STA -1,S
+    661  2     857A 86   0F              LDA  #$0F
+    662  4+1   857C A4   E8 DC           ANDA -36,S
+    663  2     857F 8B   C0              ADDA #$c0
+    664  4+1   8581 A7   E8 DC           STA -36,S
+    665  4+1   8584 32   E8 DC           LEAS -36,S
+    666  2     8587 86   14              LDA #$14
+    667  2     8589 C6   8C              LDB #$8c
+    668  3     858B 8E   CC30            LDX #$cc30
+    669  5+4   858E 34   16              PSHS X,B,A
+    670  4+1   8590 32   E8 DD           LEAS -35,S
+    671  2     8593 86   41              LDA #$41
+    672  3     8595 8E   8CC8            LDX #$8cc8
+    673  4     8598 108E CC8C            LDY #$cc8c
+    674  5+5   859C 34   32              PSHS Y,X,A
+    675  4+1   859E 32   E8 DE           LEAS -34,S
+    676  2     85A1 86   C0              LDA #$c0
+    677  3     85A3 8E   C4CC            LDX #$c4cc
+    678  4     85A6 108E 88CC            LDY #$88cc
+    679  5+6   85AA 34   36              PSHS Y,X,B,A
+    680  4+1   85AC 32   E8 DE           LEAS -34,S
+    681  2     85AF 86   CC              LDA #$cc
+    682  2     85B1 C6   C2              LDB #$c2
+    683  4     85B3 108E 4488            LDY #$4488
+    684  5+6   85B7 34   36              PSHS Y,X,B,A
+    685  4+1   85B9 32   E8 DE           LEAS -34,S
+    686  2     85BC 86   C5              LDA #$c5
+    687  2     85BE C6   25              LDB #$25
+    688  3     85C0 8E   C400            LDX #$c400
+    689  4     85C3 108E 4448            LDY #$4448
+    690  5+6   85C7 34   36              PSHS Y,X,B,A
+    691  4+1   85C9 32   E8 DE           LEAS -34,S
+    692  2     85CC 86   7C              LDA #$7c
+    693  2     85CE C6   5C              LDB #$5c
+    694  3     85D0 8E   8444            LDX #$8444
+    695  4     85D3 108E 8444            LDY #$8444
+    696  5+6   85D7 34   36              PSHS Y,X,B,A
+    697  4+1   85D9 32   E8 DE           LEAS -34,S
+    698  2     85DC 86   37              LDA #$37
+    699  2     85DE C6   CB              LDB #$cb
+    700  3     85E0 8E   8448            LDX #$8448
+    701  4     85E3 108E CC44            LDY #$cc44
+    702  5+6   85E7 34   36              PSHS Y,X,B,A
+    703  2     85E9 86   4C              LDA #$4c
+    704  4+1   85EB A7   E8 DD           STA -35,S
+    705  2     85EE 86   0F              LDA  #$0F
+    706  4+1   85F0 A4   E8 DC           ANDA -36,S
+    707  2     85F3 8B   B0              ADDA #$b0
+    708  4+1   85F5 A7   E8 DC           STA -36,S
+    709  4+1   85F8 32   E8 DC           LEAS -36,S
+    710  2     85FB 86   03              LDA #$03
+    711  2     85FD C6   BB              LDB #$bb
+    712  3     85FF 8E   B4C4            LDX #$b4c4
+    713  5+4   8602 34   16              PSHS X,B,A
+    714  2     8604 86   C7              LDA #$c7
+    715  4+1   8606 A7   E8 DD           STA -35,S
+    716  4+1   8609 32   E8 DC           LEAS -36,S
+    717  2     860C 86   CC              LDA #$cc
+    718  2     860E C6   B9              LDB #$b9
+    719  3     8610 8E   BBCC            LDX #$bbcc
+    720  5+4   8613 34   16              PSHS X,B,A
+    721  2     8615 86   77              LDA #$77
+    722  4+1   8617 A7   E8 DD           STA -35,S
+    723  2     861A 86   0F              LDA  #$0F
+    724  4+1   861C A4   E8 DC           ANDA -36,S
+    725  2     861F 8B   B0              ADDA #$b0
+    726  4+1   8621 A7   E8 DC           STA -36,S
+    727  4+1   8624 32   E8 DC           LEAS -36,S
+    728  3     8627 8E   66CC            LDX #$66cc
+    729  5+3   862A 34   14              PSHS X,B
+    730  2     862C 86   7C              LDA #$7c
+    731  4+1   862E A7   E8 DC           STA -36,S
+    732  2     8631 86   0F              LDA  #$0F
+    733  4+1   8633 A4   E8 DB           ANDA -37,S
+    734  2     8636 8B   B0              ADDA #$b0
+    735  4+1   8638 A7   E8 DB           STA -37,S
+    736  4+1   863B 32   E8 DB           LEAS -37,S
+    737  3     863E 8E   9641            LDX #$9641
+    738  5+3   8641 34   14              PSHS X,B
+    739  2     8643 86   0F              LDA  #$0F
+    740  4+1   8645 A4   E8 DD           ANDA -35,S
+    741  2     8648 8B   C0              ADDA #$c0
+    742  4+1   864A A7   E8 DD           STA -35,S
+    743  4+1   864D 32   E8 DD           LEAS -35,S
+    744  3     8650 8E   694B            LDX #$694b
+    745  4     8653 108E 9BC8            LDY #$9bc8
+    746  5+5   8657 34   34              PSHS Y,X,B
+    747  4+1   8659 32   E8 DE           LEAS -34,S
+    748  2     865C 86   64              LDA #$64
+    749  3     865E 8E   BB6B            LDX #$bb6b
+    750  4     8661 108E 448C            LDY #$448c
+    751  5+5   8665 34   32              PSHS Y,X,A
+    752  2     8667 86   F0              LDA  #$F0
+    753  4+1   8669 A4   7F              ANDA -1,S
+    754  2     866B 8B   0B              ADDA #$0b
+    755  4+1   866D A7   7F              STA -1,S
+    756  3     866F 8E   4B8C            LDX #$4b8c
+    757  5+1   8672 AF   E8 DB           STX -37,S
+    758  2     8675 86   0F              LDA  #$0F
+    759  4+1   8677 A4   E8 DA           ANDA -38,S
+    760  2     867A 8B   B0              ADDA #$b0
+    761  4+1   867C A7   E8 DA           STA -38,S
+    762  3     867F 8E   B6BB            LDX #$b6bb
+    763  5+1   8682 AF   E8 D8           STX -40,S
+    764  3     8685 8E   B84C            LDX #$b84c
+    765  5+1   8688 AF   E8 B3           STX -77,S
+    766  3     868B 8E   BB14            LDX #$bb14
+    767  5+1   868E AF   E8 B0           STX -80,S
+    768  3     8691 8E   484C            LDX #$484c
+    769  5+1   8694 AF   E8 8B           STX -117,S
+    770  2     8697 86   F0              LDA  #$F0
+    771  4+1   8699 A4   E8 8A           ANDA -118,S
+    772  2     869C 8B   0C              ADDA #$0c
+    773  4+1   869E A7   E8 8A           STA -118,S
+    774  2     86A1 86   BB              LDA #$bb
+    775  4+1   86A3 A7   E8 89           STA -119,S
+    776  4+4   86A6 32   E9 FF64         LEAS -156,S
+    777  2     86AA 86   0F              LDA  #$0F
+    778  4+1   86AC A4   60              ANDA 0,S
+    779  2     86AE 8B   C0              ADDA #$c0
+    780  4+1   86B0 A7   60              STA 0,S
+    781  3     86B2 8E   C444            LDX #$c444
+    782  5+1   86B5 AF   7E              STX -2,S
+    783  3     86B7 8E   4111            LDX #$4111
+    784  5+1   86BA AF   E8 D6           STX -42,S
+    785  3     86BD 8E   CCCC            LDX #$cccc
+    786  5+1   86C0 AF   E8 AE           STX -82,S
     787
-    788        A6C5               TABPALETTE
-    789        A6C5 0CEE                 FDB $0cee     * index:0  R:248 V:2>>
-    790        A6C7 04BE                 FDB $04be     * index:1  R:248 V:2>>
-    791        A6C9 00CE                 FDB $00ce     * index:2  R:248 V:2>>
-    792        A6CB 037A                 FDB $037a     * index:3  R:208 V:1>>
-    793        A6CD 015A                 FDB $015a     * index:4  R:208 V:1>>
-    794        A6CF 005C                 FDB $005c     * index:5  R:224 V:1>>
-    795        A6D1 0029                 FDB $0029     * index:6  R:192 V:1>>
-    796        A6D3 0124                 FDB $0124     * index:7  R:136 V:1>>
-    797        A6D5 0014                 FDB $0014     * index:8  R:136 V:8>>
-    798        A6D7 0014                 FDB $0014     * index:9  R:128 V:5>>
-    799        A6D9 0011                 FDB $0011     * index:10 R:80  V:4>>
-    800        A6DB 0001                 FDB $0001     * index:11 R:64  V:3>>
-    801        A6DD 0000                 FDB $0000     * index:12 R:24  V:1>>
-    802        A6DF 0000                 FDB $0000     * index:13 R:0   V:0>>
-    803        A6E1 0222                 FDB $0222     * index:14 R:96  V:9>>
-    804        A6E3 0999                 FDB $0999     * index:15 R:192 V:1>>
-    805        A6E5               FINTABPALETTE
-    806                           *****************************************>>
-    807                           * Tile arriere plan
-    808                           *****************************************>>
-    809        A6E5               TILEBCKGRNDA
-    810        A6E5 EEEE                 FDB $eeee
-    811        A6E7 EEEE                 FDB $eeee
-    812        A6E9 EEEE                 FDB $eeee
-    813        A6EB EEEE                 FDB $eeee
-    814
-    815        A6ED               TILEBCKGRNDB
-    816        A6ED FFFF                 FDB $ffff
-    817        A6EF FFFF                 FDB $ffff
-    818        A6F1 FFFF                 FDB $ffff
-    819        A6F3 FFFF                 FDB $ffff
+    788  7     86C3 10FE 8000            LDS  >SSAVE
+    789  5+3   86C7 35   48              PULS U,DP
+    790  5     86C9 39                   RTS
+    791
+    792        86CA               DATA_TEST1X100000_1
+    793        86CA C322                 FDB $c322
+    794        86CC BC88                 FDB $bc88
+    795        86CE C884                 FDB $c884
+    796        86D0 8CCC                 FDB $8ccc
+    797        86D2 B411                 FDB $b411
+    798        86D4 CC81                 FDB $cc81
+    799        86D6 4C                   FCB $4c
+    800        86D7               DATA_TEST1X100000_2
+    801        86D7               POSA_TEST1X100000
+    802        86D7 1F40                 FDB $1F40
+    803        86D9               POSB_TEST1X100000
+    804        86D9 3F40                 FDB $3F40
+    805
+    806        86DB               TABPALETTE
+    807        86DB 0111                 FDB $0111     * index:0  R:51  V:5>>
+    808        86DD 0143                 FDB $0143     * index:1  R:108 V:1>>
+    809        86DF 0113                 FDB $0113     * index:2  R:107 V:5>>
+    810        86E1 0484                 FDB $0484     * index:3  R:132 V:1>>
+    811        86E3 0112                 FDB $0112     * index:4  R:92  V:6>>
+    812        86E5 0247                 FDB $0247     * index:5  R:180 V:1>>
+    813        86E7 0233                 FDB $0233     * index:6  R:116 V:1>>
+    814        86E9 0177                 FDB $0177     * index:7  R:172 V:1>>
+    815        86EB 0111                 FDB $0111     * index:8  R:60  V:5>>
+    816        86ED 0016                 FDB $0016     * index:9  R:164 V:6>>
+    817        86EF 0698                 FDB $0698     * index:10 R:187 V:1>>
+    818        86F1 0344                 FDB $0344     * index:11 R:132 V:1>>
+    819        86F3 0221                 FDB $0221     * index:12 R:68  V:9>>
+    820        86F5 0452                 FDB $0452     * index:13 R:92  V:1>>
+    821        86F7 0356                 FDB $0356     * index:14 R:164 V:1>>
+    822        86F9 0125                 FDB $0125     * index:15 R:140 V:1>>
+    823        86FB               FINTABPALETTE
 
 000000 Total Errors
 
-000026 Total Symbols
-     1x          Label A6B4 DATA_TEST1X100000_1
-     1x          Label A6C1 DATA_TEST1X100000_2
-     1x          Equ   0000 DEBUTECRANA
-     1x          Equ   2000 DEBUTECRANB
-     4x          Label A098 DRAWBCKGRN
-     1x          Label A0DB DRAW_TEST1X100000
-     1x          Label A0A7 DRWBCKGRNDA
-     1x          Label A0C2 DRWBCKGRNDB
+000025 Total Symbols
+     1x          Label 86CA DATA_TEST1X100000_1
+     1x          Label 86D7 DATA_TEST1X100000_2
+     1x          Equ   0014 DEBUTECRANA
+     1x          Equ   2014 DEBUTECRANB
+     1x          Label 8082 DRAWBCKGRN
+     0x          Label 80F1 DRAW_TEST1X100000
+     1x          Label 808F DRWBCKGRNDA
+     1x          Label 80C0 DRWBCKGRNDB
+     2x          Label 8073 EFF
+     1x          Label 8079 EFF_RAM
      1x          Equ   1F40 FINECRANA
      1x          Equ   3F40 FINECRANB
-     1x          Label A6E5 FINTABPALETTE
-     0x          Label A025 INITBORD
-     1x          Label A058 MAIN
-     3x          Label A6C1 POSA_TEST1X100000
-     3x          Label A6C3 POSB_TEST1X100000
-     1x          Label A053 RESTORE_PAGE
-     1x          Label A076 SCRC
-     2x          Label A083 SCRC0
-     1x          Label A00E SETPALETTE
-     4x          Label A000 SSAVE
-     1x          Label A6C5 TABPALETTE
-     1x          Label A6E5 TILEBCKGRNDA
-     1x          Label A6ED TILEBCKGRNDB
-     1x          Label A08D VSYNC
-     1x          Label A08D VSYNC_1
-     1x          Label A092 VSYNC_2
+     1x          Label 86FB FINTABPALETTE
+     0x          Label 8025 INITBORD
+     1x          Label 804F MAIN
+     1x          Label 86D7 POSA_TEST1X100000
+     1x          Label 86D9 POSB_TEST1X100000
+     4x          Label 8051 SCRC
+     2x          Label 805E SCRC0
+     1x          Label 800E SETPALETTE
+     4x          Label 8000 SSAVE
+     1x          Label 86DB TABPALETTE
+     0x          Label 8068 VSYNC
+     1x          Label 8068 VSYNC_1
+     1x          Label 806D VSYNC_2
 

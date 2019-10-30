@@ -9,14 +9,14 @@
 ********************************************************************************
 
 (main)TEST1X10.asm
-	ORG $A000
+	ORG $8000
 
 ********************************************************************************  
 * Constantes et variables
 ********************************************************************************
-DEBUTECRANA EQU $0000	* debut de la RAM A video
+DEBUTECRANA EQU $0014	* test pour fin stack blasting
 FINECRANA EQU $1F40	* fin de la RAM A video
-DEBUTECRANB EQU $2000	* debut de la RAM B video
+DEBUTECRANB EQU $2014	* test pour fin stack blasting
 FINECRANB EQU $3F40	* fin de la RAM B video
 
 SSAVE FDB $0000
@@ -62,37 +62,21 @@ INITBORD
 	STB $E7E7
 
 ********************************************************************************
-* Construction de la reference d arriere plan en page 0,2,3
+* Effacement ecran (les deux pages)
 ********************************************************************************
-	LDB $E7E6
-	STB RESTORE_PAGE+1	* Sauvegarde la page a restaurer apres traitement
-	LDB #$60
-	STB $E7E6			* chargement page 0 en zone cartouche
-	JSR DRAWBCKGRN
-	LDB #$62
-	STB $E7E6			* chargement page 2 en zone cartouche
-	JSR DRAWBCKGRN
-	LDB #$63
-	STB $E7E6			* chargement page 3 en zone cartouche
-	JSR DRAWBCKGRN
-
-RESTORE_PAGE
-	LDB #$00
-	STB $E7E6
-
+	JSR SCRC
+	JSR EFF
+	JSR SCRC
+	JSR EFF
+	JSR SCRC        * changement de page ecran
 ********************************************************************************
 * Boucle principale
 ********************************************************************************
-MAIN
+	LDB #$03
+	STB $E7E5
 	JSR DRAWBCKGRN
-	JSR DRAW_TEST1X100000
-	LDX POSA_TEST1X100000	* avance de 2 px a gauche
-	LDY POSB_TEST1X100000
-	STX POSB_TEST1X100000
-	LEAY -1,Y
-	STY POSA_TEST1X100000
-	JSR VSYNC
-	JSR SCRC        * changement de page ecran
+	JSR SCRC
+MAIN
 	BRA MAIN
 
 ********************************************************************************
@@ -142,6 +126,18 @@ VSYNC_2
 	BMI	VSYNC_2
 	RTS
 
+********************************************************************************
+* Effacement de l ecran
+********************************************************************************
+EFF
+	LDA #$AA  * couleur fond
+	LDY #$0000
+EFF_RAM
+	STA ,Y+
+	CMPY #$3FFF
+	BNE EFF_RAM
+	RTS
+
 ********************************************************************************  
 * Affichage de l arriere plan xxx cycles
 ********************************************************************************	
@@ -150,33 +146,55 @@ DRAWBCKGRN
 	STS >SSAVE
 	
 	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
-	LDU #TILEBCKGRNDA
-	PULU X,Y,DP,D
+	LDU #$A000
 
 DRWBCKGRNDA
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
 	CMPS #DEBUTECRANA
 	BNE DRWBCKGRNDA
-	
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU B,DP,X,Y
+	PSHS Y,X,DP,B
+
 	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
-	LDU #TILEBCKGRNDB
-	PULU X,Y,DP,D
+	LDU #$C000
 
 DRWBCKGRNDB
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP,D
-	PSHS X,Y,DP
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
 	CMPS #DEBUTECRANB
 	BNE DRWBCKGRNDB
-	
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU B,DP,X,Y
+	PSHS Y,X,DP,B
+
 	LDS  >SSAVE		* rechargement des registres
 	PULS U,DP
 	RTS
@@ -786,34 +804,20 @@ POSB_TEST1X100000
 	FDB $3F40
 
 TABPALETTE
-	FDB $0cee	* index:0  R:248 V:248 B:232
-	FDB $04be	* index:1  R:248 V:216 B:128
-	FDB $00ce	* index:2  R:248 V:224 B:0  
-	FDB $037a	* index:3  R:208 V:176 B:112
-	FDB $015a	* index:4  R:208 V:144 B:64 
-	FDB $005c	* index:5  R:224 V:152 B:0  
-	FDB $0029	* index:6  R:192 V:104 B:0  
-	FDB $0124	* index:7  R:136 V:104 B:56 
-	FDB $0014	* index:8  R:136 V:80  B:16 
-	FDB $0014	* index:9  R:128 V:56  B:0  
-	FDB $0011	* index:10 R:80  V:48  B:8  
-	FDB $0001	* index:11 R:64  V:32  B:0  
-	FDB $0000	* index:12 R:24  V:16  B:8  
-	FDB $0000	* index:13 R:0   V:0   B:0  
-	FDB $0222	* index:14 R:96  V:96  B:96 
-	FDB $0999	* index:15 R:192 V:192 B:192
+	FDB $0111	* index:0  R:51  V:51  B:51 
+	FDB $0143	* index:1  R:108 V:126 B:60 
+	FDB $0113	* index:2  R:107 V:55  B:65 
+	FDB $0484	* index:3  R:132 V:182 B:124
+	FDB $0112	* index:4  R:92  V:66  B:60 
+	FDB $0247	* index:5  R:180 V:138 B:84 
+	FDB $0233	* index:6  R:116 V:106 B:84 
+	FDB $0177	* index:7  R:172 V:178 B:60 
+	FDB $0111	* index:8  R:60  V:50  B:60 
+	FDB $0016	* index:9  R:164 V:66  B:44 
+	FDB $0698	* index:10 R:187 V:197 B:163
+	FDB $0344	* index:11 R:132 V:126 B:108
+	FDB $0221	* index:12 R:68  V:94  B:92 
+	FDB $0452	* index:13 R:92  V:142 B:124
+	FDB $0356	* index:14 R:164 V:154 B:116
+	FDB $0125	* index:15 R:140 V:102 B:76 
 FINTABPALETTE
-********************************************************************************  
-* Tile arriere plan   
-********************************************************************************
-TILEBCKGRNDA
-	FDB $eeee
-	FDB $eeee
-	FDB $eeee
-	FDB $eeee
-
-TILEBCKGRNDB
-	FDB $ffff
-	FDB $ffff
-	FDB $ffff
-	FDB $ffff

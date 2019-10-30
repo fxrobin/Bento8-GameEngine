@@ -3,12 +3,8 @@ package moto.gfx;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.ColorModel;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,53 +37,63 @@ public class PngToBinModeB16 {
 			spriteName = removeExtension(file).toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 
 			// Contrôle du format d'image
-			if (width <= 160 && height <= 200 && pixelSize == 8) { // && numComponents==3
-
-				// Si la largeur d'image est impaire, on ajoute une colonne de pixel transparent
-				// a gauche de l'image
-				if (width % 2 != 0) {
-					pixels = new byte[(width + 1) * height];
-					for (int iSource = 0, iCol = 0, iDest = 0; iDest < (width + 1) * height; iDest++) {
-						if (iCol == 0) {
-							pixels[iDest] = 16;
-						} else {
-							pixels[iDest] = (byte) ((DataBufferByte) image.getRaster().getDataBuffer())
-									.getElem(iSource);
-							iSource++;
-						}
-
-						iCol++;
-						if (iCol == width + 1) {
-							iCol = 0;
-						}
-					}
-					width = width + 1;
-				} else { // Sinon construction du tableau de pixels Ã  partir de l'image
-					pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-				}
-
+			if (width == 160 && height == 200 && pixelSize == 8) { // && numComponents==3
+				
+				pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+				
 				// Construction de la RAM A et la RAM B
 				int i,j;
-				pixelsAB = new byte[16384]; //Determine la taille du fichier de sortie
-				for (i = 0, j = 0; i < (width*height) - 8; i += 8) {
-					pixelsAB[j]      = (byte)(pixels[i]   << 4 | pixels[i+1] & 0x0F );
-					pixelsAB[j+1]    = (byte)(pixels[i+2] << 4 | pixels[i+3] & 0x0F );
-					pixelsAB[j+8192] = (byte)(pixels[i+4] << 4 | pixels[i+5] & 0x0F );
-					pixelsAB[j+8193] = (byte)(pixels[i+6] << 4 | pixels[i+7] & 0x0F );
-					j += 2;
+				pixelsAB = new byte[16394]; //Determine la taille du fichier de sortie
+				// Header pour LOADM
+				pixelsAB[0] = (byte) 0x00;
+				pixelsAB[1] = (byte) 0x40; // Taille sur 16bits
+				pixelsAB[2] = (byte) 0x00;
+				pixelsAB[3] = (byte) 0xA0; // Adresse de chargement sur 16bits
+				pixelsAB[4] = (byte) 0x00;
+				// Data - Ecriture en sens inverse pour PUL/PSH
+				for (i = (width*height)-1, j = 5; i >= 28; i -= 28) {
+					pixelsAB[j]   = (byte)(pixels[i-27] << 4 | pixels[i-26] & 0x0F );
+					pixelsAB[j+1] = (byte)(pixels[i-23] << 4 | pixels[i-22] & 0x0F );
+					pixelsAB[j+2] = (byte)(pixels[i-19] << 4 | pixels[i-18] & 0x0F );
+					pixelsAB[j+3] = (byte)(pixels[i-15] << 4 | pixels[i-14] & 0x0F );
+					pixelsAB[j+4] = (byte)(pixels[i-11] << 4 | pixels[i-10] & 0x0F );
+					pixelsAB[j+5] = (byte)(pixels[i-7]  << 4 | pixels[i-6]  & 0x0F );
+					pixelsAB[j+6] = (byte)(pixels[i-3]  << 4 | pixels[i-2]  & 0x0F );
+					j += 8192;
+					pixelsAB[j]   = (byte)(pixels[i-25] << 4 | pixels[i-24] & 0x0F );
+					pixelsAB[j+1] = (byte)(pixels[i-21] << 4 | pixels[i-20] & 0x0F );
+					pixelsAB[j+2] = (byte)(pixels[i-17] << 4 | pixels[i-16] & 0x0F );
+					pixelsAB[j+3] = (byte)(pixels[i-13] << 4 | pixels[i-12] & 0x0F );
+					pixelsAB[j+4] = (byte)(pixels[i-9]  << 4 | pixels[i-8]  & 0x0F );
+					pixelsAB[j+5] = (byte)(pixels[i-5]  << 4 | pixels[i-4]  & 0x0F );
+					pixelsAB[j+6] = (byte)(pixels[i-1]  << 4 | pixels[i]    & 0x0F );
+					j -= 8192;
+					j += 7;
 				}
-				if (i < (width*height) - 4) {
-					pixelsAB[j]      = (byte)(pixels[i]   << 4 | pixels[i+1] & 0x0F );
-					pixelsAB[j+1]    = (byte)(pixels[i+2] << 4 | pixels[i+3] & 0x0F );
-				}
+				pixelsAB[j]   = (byte)(pixels[i-23] << 4 | pixels[i-22] & 0x0F );
+				pixelsAB[j+1] = (byte)(pixels[i-19] << 4 | pixels[i-18] & 0x0F );
+				pixelsAB[j+2] = (byte)(pixels[i-15] << 4 | pixels[i-14] & 0x0F );
+				pixelsAB[j+3] = (byte)(pixels[i-11] << 4 | pixels[i-10] & 0x0F );
+				pixelsAB[j+4] = (byte)(pixels[i-7]  << 4 | pixels[i-6]  & 0x0F );
+				pixelsAB[j+5] = (byte)(pixels[i-3]  << 4 | pixels[i-2]  & 0x0F );
+				j += 8192;
+				pixelsAB[j]   = (byte)(pixels[i-21] << 4 | pixels[i-20] & 0x0F );
+				pixelsAB[j+1] = (byte)(pixels[i-17] << 4 | pixels[i-16] & 0x0F );
+				pixelsAB[j+2] = (byte)(pixels[i-13] << 4 | pixels[i-12] & 0x0F );
+				pixelsAB[j+3] = (byte)(pixels[i-9]  << 4 | pixels[i-8]  & 0x0F );
+				pixelsAB[j+4] = (byte)(pixels[i-5]  << 4 | pixels[i-4]  & 0x0F );
+				pixelsAB[j+5] = (byte)(pixels[i-1]  << 4 | pixels[i]    & 0x0F );
+				// Trailer pour LOADM
+				pixelsAB[16389] = (byte) 0xFF;
+				pixelsAB[16390] = (byte) 0x00;
+				pixelsAB[16391] = (byte) 0x00;
+				pixelsAB[16392] = (byte) 0x00; 
+				pixelsAB[16393] = (byte) 0x00;				
 			} else {
-				// Présente les formats acceptés Ã  l'utilisateur en cas de fichier d'entrée
-				// incompatible
 				System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
 				System.out.println(
-						"Resolution: " + width + "x" + height + "px (doit Ãªtre inférieur ou égal Ã  160x200)");
-				System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit Ãªtre 8)");
-				// System.out.println("Nombre de composants: "+numComponents+" (doit Ãªtre 3)");
+						"Resolution: " + width + "x" + height + "px (doit être égal à  160x200)");
+				System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -137,5 +143,9 @@ public class PngToBinModeB16 {
 	
 	void writeBIN(String outputFileName){
 		writeBIN(getBIN(), outputFileName);
+	}
+	
+	public ColorModel getColorModel() {
+		return colorModel;
 	}
 }
