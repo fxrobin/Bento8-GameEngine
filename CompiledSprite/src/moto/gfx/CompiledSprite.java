@@ -12,6 +12,7 @@ public class CompiledSprite
 	try
 	{
 		if (args.length==1) {
+			// Génération d'un Sprite Compilé à partir d'un PNG
 			CompiledSpriteModeB16v2 sprite = new CompiledSpriteModeB16v2(args[0]);		
 			
 			Path fichier = Paths.get(sprite.getName().substring(0, Math.min(sprite.getName().length(), 8))+".asm");
@@ -30,6 +31,10 @@ public class CompiledSprite
 			Files.write(fichier, sprite.getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);	
 			Files.write(fichier, sprite.getCodePalette(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCodeEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			
+			// Génération d'un fichier BIN a partir d'un PNG
+			PngToBinModeB16 background = new PngToBinModeB16(".\\images\\Foret.png");	
+			background.writeBIN(background.getName().substring(0, Math.min(background.getName().length(), 7))+".BIN");
 		}
 		else {
 			System.out.println("Parametres invalides !");

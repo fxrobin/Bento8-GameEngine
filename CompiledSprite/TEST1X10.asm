@@ -86,15 +86,15 @@ RESTORE_PAGE
 MAIN
 	JSR DRAWBCKGRN
 	JSR DRAW_TEST1X100000
-	JSR VSYNC
-	JSR SCRC        * changement de page ecran
-	BRA MAIN
-	
 	LDX POSA_TEST1X100000	* avance de 2 px a gauche
 	LDY POSB_TEST1X100000
 	STX POSB_TEST1X100000
 	LEAY -1,Y
 	STY POSA_TEST1X100000
+	JSR VSYNC
+	JSR SCRC        * changement de page ecran
+	BRA MAIN
+
 ********************************************************************************
 * Changement de page ESPACE ECRAN (affichage du buffer visible)
 *	$E7DD determine la page affichee dans ESPACE ECRAN (4000 a 5FFF)

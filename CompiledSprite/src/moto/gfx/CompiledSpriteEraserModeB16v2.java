@@ -8,6 +8,8 @@ import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO : charger dans les 192x2 octets en trop de la page arriere plan la routine de erase background
+
 public class CompiledSpriteEraserModeB16v2 {
 	// "Compiled Sprite" pour effacer un sprite
 	// Thomson TO8/TO9+
@@ -39,7 +41,6 @@ public class CompiledSpriteEraserModeB16v2 {
 	String posALabel;
 	String posBLabel;
 	String drawLabel;
-	String dataLabel;
 
 	public CompiledSpriteEraserModeB16v2(String file) {
 		try {
@@ -59,7 +60,6 @@ public class CompiledSpriteEraserModeB16v2 {
 			posALabel = "POSA_" + spriteName;
 			posBLabel = "POSB_" + spriteName;
 			drawLabel = "ERASE_" + spriteName;
-			dataLabel = "EDATA_" + spriteName;
 
 			// System.out.println("Type image:"+image.getType());
 			// Contrôle du format d'image
@@ -556,7 +556,7 @@ public class CompiledSpriteEraserModeB16v2 {
 		code.add("\tSTS >SSAVE");
 		code.add("");
 		code.add("\tLDS " + posALabel);
-		code.add("\tLDU #" + dataLabel + "_" + pos);
+		code.add("\tLDU #" + "_" + pos);
 		code.add("");
 		return code;
 	}
@@ -565,7 +565,7 @@ public class CompiledSpriteEraserModeB16v2 {
 		List<String> code = new ArrayList<String>();
 		code.add("");
 		code.add("\tLDS " + posBLabel);
-		code.add("\tLDU #" + dataLabel + "_" + pos);
+		code.add("\tLDU #" + "_" + pos);
 		code.add("");
 		return code;
 	}
