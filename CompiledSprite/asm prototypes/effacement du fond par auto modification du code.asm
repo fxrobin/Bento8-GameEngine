@@ -46,87 +46,45 @@ SETPALETTE
 	CMPY #FINTABPALETTE
 	BNE	SETPALETTE
 	
-********************************************************************************  
-* Initialisation de la couleur de bordure
-********************************************************************************
-INITBORD
-	LDA	#$0F	* couleur 15
-	STA	$E7DD
-
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
 ********************************************************************************
-	LDB $6081
-	ORB #$10
+	LDB $6081 * A documenter
+	ORB #$10  * mettre le bit d4 a 1
 	STB $6081
 	STB $E7E7
-
-********************************************************************************
-* Effacement ecran (les deux pages)
-********************************************************************************
-	LDB #$03
-	STB $E7E5
-	JSR SCRC
-	JSR DRAWBCKGRN
-	JSR SCRC
-	JSR DRAWBCKGRN
-	JSR SCRC        * changement de page ecran
-********************************************************************************
+	JSR SCRC * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+	
+*-------------------------------------------------------------------------------
+* Initialisation des deux pages videos avec Fond et sprites
+*-------------------------------------------------------------------------------
+	LDB #$03  * On monte la page 3
+	STB $E7E5 * en RAM Donnees (A000-DFFF)
+	
+	JSR DRAW_RAM_DATA_TO_CART_160x200
+	JSR DRAW_TEST1X100000               * TODO Boucle sur tous les sprites visibles
+	JSR SCRC                            * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
+	JSR DRAW_RAM_DATA_TO_CART_160x200
+	JSR DRAW_TEST1X100000               * TODO Boucle sur tous les sprites visibles
+	JSR SCRC                            * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+	
+*-------------------------------------------------------------------------------
 * Boucle principale
-********************************************************************************
-	JSR DRAW_TEST1X100000
-	
-	LDX POS_TEST1X100000	* save des positions
-	LDY DRAW_EREF_TEST1X100000_1
-	STX 45,Y
-	LDX POS_TEST1X100000+2
-	LDY DRAW_EREF_TEST1X100000_1
-	STX 47,Y
-	
-	LDX DRAW_EREF_TEST1X100000_1
-	LDY DRAW_EREF_TEST1X100000_1+2
-	STY DRAW_EREF_TEST1X100000_1
-	STX DRAW_EREF_TEST1X100000_1+2
-	JSR SCRC
-	
-	JSR DRAW_TEST1X100000
-	
-	LDX POS_TEST1X100000	* save des positions
-	LDY DRAW_EREF_TEST1X100000_1
-	STX 45,Y
-	LDX POS_TEST1X100000+2
-	LDY DRAW_EREF_TEST1X100000_1
-	STX 47,Y
-	
-	LDX DRAW_EREF_TEST1X100000_1
-	LDY DRAW_EREF_TEST1X100000_1+2
-	STY DRAW_EREF_TEST1X100000_1
-	STX DRAW_EREF_TEST1X100000_1+2
-	JSR SCRC
-	
+*-------------------------------------------------------------------------------
 MAIN
-	JSR [DRAW_EREF_TEST1X100000_1]
-	JSR DRAW_TEST1X100000
+	* Effacement et affichage des sprites
+	JSR [DRAW_EREF_TEST1X100000_1] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
+	JSR DRAW_TEST1X100000 * TODO boulcuer sur tous les sprites visibles dans le bon ordre
 	
-	LDX POS_TEST1X100000	* save des positions
-	LDY DRAW_EREF_TEST1X100000_1
-	STX 45,Y
-	LDX POS_TEST1X100000+2
-	LDY DRAW_EREF_TEST1X100000_1
-	STX 47,Y
+	* Gestion des deplacements
+	JSR JOY_READ
 	
-	LDX DRAW_EREF_TEST1X100000_1	* permute les deux routines pour effacer le sprite
-	LDY DRAW_EREF_TEST1X100000_1+2
-	STY DRAW_EREF_TEST1X100000_1
-	STX DRAW_EREF_TEST1X100000_1+2
-
 	LDX POS_TEST1X100000	* avance de 2 px a gauche
-	LDY POS_TEST1X100000+2
+	LDD POS_TEST1X100000+2
 	STX POS_TEST1X100000+2
-	LEAY -1,Y
-	STY POS_TEST1X100000
+	SUBD JOY_STATUS
+	STD POS_TEST1X100000
 
-	JSR VSYNC
 	JSR SCRC        * changement de page ecran
 	BRA MAIN
 
@@ -152,6 +110,13 @@ MAIN
 *	D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7F) : page 31
 ********************************************************************************
 SCRC
+	JSR VSYNC
+	
+	LDX DRAW_EREF_TEST1X100000_1	* permute les routines
+	LDY DRAW_EREF_TEST1X100000_1+2  * d effacement
+	STY DRAW_EREF_TEST1X100000_1    * des sprites
+	STX DRAW_EREF_TEST1X100000_1+2  * TODO faire boucle sur tous les sprites VISIBLES
+	
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
 	ANDB #$80	* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0
 	ORB #$0F	* recharger la couleur de cadre si diff de 0 car effacee juste au dessus (couleur F)
@@ -180,14 +145,14 @@ VSYNC_2
 ********************************************************************************  
 * Affichage de l arriere plan xxx cycles
 ********************************************************************************	
-DRAWBCKGRN
+DRAW_RAM_DATA_TO_CART_160x200
 	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
 	STS >SSAVE
 	
 	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
 	LDU #$A000
 
-DRWBCKGRNDA
+DRAW_RAM_DATA_TO_CART_160x200A
 	PULU A,B,DP,X,Y
 	PSHS Y,X,DP,B,A
 	PULU A,B,DP,X,Y
@@ -201,7 +166,7 @@ DRWBCKGRNDA
 	PULU A,B,DP,X,Y
 	PSHS Y,X,DP,B,A
 	CMPS #DEBUTECRANA
-	BNE DRWBCKGRNDA
+	BNE DRAW_RAM_DATA_TO_CART_160x200A
 	PULU A,B,DP,X,Y
 	PSHS Y,X,DP,B,A
 	PULU A,B,DP,X,Y
@@ -212,7 +177,7 @@ DRWBCKGRNDA
 	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
 	LDU #$C000
 
-DRWBCKGRNDB
+DRAW_RAM_DATA_TO_CART_160x200B
 	PULU A,B,DP,X,Y
 	PSHS Y,X,DP,B,A
 	PULU A,B,DP,X,Y
@@ -226,7 +191,7 @@ DRWBCKGRNDB
 	PULU A,B,DP,X,Y
 	PSHS Y,X,DP,B,A
 	CMPS #DEBUTECRANB
-	BNE DRWBCKGRNDB
+	BNE DRAW_RAM_DATA_TO_CART_160x200B
 	PULU A,B,DP,X,Y
 	PSHS Y,X,DP,B,A
 	PULU A,B,DP,X,Y
@@ -272,6 +237,13 @@ DRAW_TEST1X100000
 	STA 34,X
 	LDA #$98
 	STA -41,S
+
+	LDX POS_TEST1X100000	* save des positions pour effacement
+	LDY DRAW_EREF_TEST1X100000_1
+	STX 45,Y
+	LDX POS_TEST1X100000+2
+	LDY DRAW_EREF_TEST1X100000_1
+	STX 47,Y
 
 	LDS  >SSAVE
 	PULS U,DP
@@ -345,6 +317,34 @@ E2DATA_TEST1X100000_2
 E2POS_TEST1X100000
 	FDB $1F40
 	FDB $3F40
+	
+*---------------------------------------
+* Get joystick parameters
+*---------------------------------------
+JOY_READ
+	ldx    #$e7cf
+	ldy    #$e7cd
+	ldu    #JOY_TABLE
+	ldd    #$400f 
+	andb   >$e7cc  * Read position
+	ldb    b,u     * Read orientation
+	stb    JOY_STATUS * Orientation
+	anda   ,y      * Read button
+	eora   #$40    * status
+	sta    JOY_STATUS+1 * Boutton
+	RTS
+JOY_STATUS
+	FCB $00 * Pos Joystick
+	FCB $00 * 40 Bouton A enfonce
+JOY_TABLE * Utilise pour orientation a voir si on conserve
+	FDB $0000
+	FDB $0000
+	FDB $0005 * 05 Bas Droite
+	FDB $0607 * 06 Haut Droite 07 Droite
+	FDB $0009 * 09 Bas Gauche
+	FDB $0A01 * 0A Haut Gauche 0B Gauche
+	FDB $000D * 0D Bas
+	FDB $0E00 * 0E Haut 0F Rien
 
 TABPALETTE
 	FDB $0111	* index:0  R:51  V:51  B:51 

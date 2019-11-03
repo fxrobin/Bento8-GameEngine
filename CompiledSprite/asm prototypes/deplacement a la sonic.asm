@@ -193,41 +193,19 @@ where if it then passes over 0, it's set back to 0.
 	RTS
 	
 Hero_MoveLeft * XREF: Hero_Move
+	LDA #$04 * Charge animation WALK L
+	STA TEST1X10_ANIMATION
+	gsp decreases by acc every step.
 	RTS
 	
-if (the player is pressing left)
-{
-    if (gsp > 0)
-    {
-        gsp -= dec;
-        if (gsp <= 0)
-            gsp = -0.5;
-    }
-    else if (gsp > -top)
-    {
-        gsp -= acc;
-        if (gsp <= -top)
-            gsp = -top;
-    }
-}
-
-
 Hero_MoveRight * XREF: Hero_NotLeft
 	LDD TEST1X10_G_SPEED
 	ADDD TEST1X10_ACCELERATION 	* gsp increases by acc every step
-	STD TEST1X10_G_SPEED
 	CMPD TEST1X10_TOP_SPEED
 	BLS Hero_MoveRight_00 * if gsp exceeds top it's set to top
-	LDA #$05 * Charge animation RUN R
-	STA TEST1X10_ANIMATION
 	LDD TEST1X10_TOP_SPEED
+Hero_MoveRight_00	
 	STD TEST1X10_G_SPEED
-	BRA Hero_MoveRight_01
-Hero_MoveRight_00
-	LDA #$03 * Charge animation WALK R
-	STA TEST1X10_ANIMATION
-	LDD TEST1X10_G_SPEED
-Hero_MoveRight_01
 	STD TEST1X10_X_SPEED * TODO xsp = gsp*cos(angle)
 	ADDD TEST1X10_X_POS
 	STD TEST1X10_X_POS
@@ -235,48 +213,23 @@ Hero_MoveRight_01
 	STD TEST1X10_Y_SPEED
 	ADDD TEST1X10_Y_POS
 	STD TEST1X10_Y_POS
+
+	LDA #$03 * Charge animation WALK R
+	STA TEST1X10_ANIMATION
+	* TODO si speed =6 alors running
+
+In Sonic 1, if Sonic is already running at a higher speed than he can possibly achieve on his own (such as having been impelled by a spring), if you press in the direction he's moving, the computer will add acc to gsp, notice that gsp exceeds top, and set gsp to top. Thus it is possible to curtail your forward momentum by pressing in the very direction of your motion. This can be solved in your engine (and was fixed in Sonic 2 and beyond) by checking to see if gsp is less than top before adding acc. Only if gsp is already less than top will it check if gsp exceeds top.
+
 	RTS
 
-if (the player is pressing right)
-{
-    if (gsp < 0)
-    {
-        gsp += dec;
-        if (gsp >= 0)
-            gsp = 0.5;
-    }
-    else if (gsp < top)
-    {
-        gsp += acc;
-        if (gsp >= top)
-            gsp = top;
-    }
-}
+Deceleration
+If Sonic is already moving when you press Left or Right, rather than at a standstill, the computer checks whether you are holding the direction he's already moving. If so, acc is added to his gsp as normal. However if you are pressing in the opposite direction than he's already moving, the deceleration constant (dec) is added instead. Thus Sonic can turn around quickly. If no distinction is made between acc and dec, Sonic takes too long to overcome his current velocity, frustrating the player. A good engine must not make such a day one mistake.
+One might think that if gsp happened to equal 0.1, and you pressed Left, dec would be subtracted, resulting in an gsp value of -0.4. Oddly, this is not the case in any of the original games. Instead, at any time an addition or subtraction of dec results in gsp changing sign, gsp is set to 0.5. For example, in the instance above, gsp would become -0.5. The bizarre result of this is that you can press Left for one step, and then press Right (or vice versa), and start running faster than if you had just pressed Right alone! Now, the resulting speed is still lower than one pixel per step, so it isn't very noticeable, but nonetheless it is true.
 
-if (the player is not pressing left or right)
-    gsp -= minimum(absolute(gsp), frc) * sign(gsp);
-
-* Deceleration
-* If Sonic is already moving when you press Left or Right, rather than at a standstill,
-* the computer checks whether you are holding the direction he's already moving.
-* If so, acc is added to his gsp as normal.
-* However if you are pressing in the opposite direction than he's already moving, the deceleration constant (dec) is added instead.
-* Thus Sonic can turn around quickly. If no distinction is made between acc and dec, Sonic takes too long to overcome his current velocity,
-* frustrating the player. A good engine must not make such a day one mistake.
-* One might think that if gsp happened to equal 0.1, and you pressed Left, dec would be subtracted,
-* resulting in an gsp value of -0.4. Oddly, this is not the case in any of the original games.
-* Instead, at any time an addition or subtraction of dec results in gsp changing sign, gsp is set to 0.5.
-* For example, in the instance above, gsp would become -0.5. The bizarre result of this is that you can press Left for one step,
-* and then press Right (or vice versa), and start running faster than if you had just pressed Right alone!
-* Now, the resulting speed is still lower than one pixel per step, so it isn't very noticeable, but nonetheless it is true.
-
-* Braking Animation
-* Sonic enters his braking animation when you turn around only if his absolute gsp is equal to or more than 4.
-* In Sonic 1 and Sonic CD, he then stays in the braking animation until gsp reaches zero or changes sign.
-* In the other 3 games, Sonic returns to his walking animation after the braking animation finishes displaying all of its frames.
+Braking Animation
+Sonic enters his braking animation when you turn around only if his absolute gsp is equal to or more than 4. In Sonic 1 and Sonic CD, he then stays in the braking animation until gsp reaches zero or changes sign. In the other 3 games, Sonic returns to his walking animation after the braking animation finishes displaying all of its frames.
 
 Compute_Position
-* Doit calculer ici les deux positions POS_TEST1X100000 pour RAMA et RAMB en fonction de TEST1X10_X_POS et TEST1X10_Y_POS
 	*LDX POS_TEST1X100000	* avance de 2 px a gauche
 	*LDD POS_TEST1X100000+2
 	*STX POS_TEST1X100000+2
