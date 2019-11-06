@@ -167,69 +167,117 @@ JOY_BTN_STATUS
 *---------------------------------------------------------------------------
 * Subroutine to	make hero walk/run
 *---------------------------------------------------------------------------
+
 Hero_Move
 	LDA JOY_G
 	CMPA JOY_DIR_STATUS
 	BNE Hero_NotLeft
-	JSR Hero_MoveLeft
-	RTS
+	BSR Hero_MoveLeft
 
-Hero_NotLeft * XREF: Hero_Move
+Hero_NotLeft                   * XREF: Hero_Move
 	LDA JOY_D
 	CMPA JOY_DIR_STATUS
 	BNE Hero_NotRight
-	JSR Hero_MoveRight
+	BSR Hero_MoveRight
 
-Hero_NotRight * XREF: Hero_NotLeft
-	* Test terrain en pente
-	* Test inertie
-If you are not pressing Left or Right, friction (frc) kicks in.
-In any step in which the game recieves no horizontal input,
-frc is subtracted from gsp (depending on the sign of gsp),
-where if it then passes over 0, it's set back to 0.
-
-	LDA #$01 * Charge animation STOP R
-	STA TEST1X10_ANIMATION
-	RTS
-	
-Hero_MoveLeft * XREF: Hero_Move
-	LDA #$04 * Charge animation WALK L
-	STA TEST1X10_ANIMATION
-	gsp decreases by acc every step.
-	RTS
-	
-Hero_MoveRight * XREF: Hero_NotLeft
+Hero_NotRight                  * XREF: Hero_NotLeft
 	LDD TEST1X10_G_SPEED
-	ADDD TEST1X10_ACCELERATION 	* gsp increases by acc every step
-	CMPD TEST1X10_TOP_SPEED
-	BLS Hero_MoveRight_00 * if gsp exceeds top it's set to top
-	LDD TEST1X10_TOP_SPEED
-Hero_MoveRight_00	
+	CMPD #$0000
+	BLO Hero_NotRight_00
+	SUBD TEST1X10_ACCELERATION * If you are not pressing Left or Right, friction (frc) kicks in. In any step in which the game recieves no horizontal input,
+	BCC Hero_NotRight_01       * frc is subtracted from gsp (depending on the sign of gsp), where if it then passes over 0, it's set back to 0.
+	LDA #$01                   * Charge animation STOP R
+Hero_NotRight_02
+	STA TEST1X10_ANIMATION
+	LDD	#$0000
+Hero_NotRight_01
 	STD TEST1X10_G_SPEED
-	STD TEST1X10_X_SPEED * TODO xsp = gsp*cos(angle)
+	RTS
+Hero_NotRight_00
+	ADDD TEST1X10_ACCELERATION 
+	BCC Hero_NotRight_01      
+	LDA #$02                   * Charge animation STOP L     
+    BRA Hero_NotRight_02	
+	
+Hero_MoveLeft                  * XREF: Hero_Move
+	LDD TEST1X10_G_SPEED
+	CMPD #$0000
+	BLT Hero_MoveLeft_00       * BRANCH si la vitesse actuelle est negative
+	SUBD TEST1X10_DECELERATION * gsp decrease by deceleration
+	BCC Hero_MoveLeft_03       * BRANCH si la vitesse actuelle est positive
+    LDD TEST1X10_DECELERATION  * si la vitesse est devenue negative on la force a la va leur de DECELERATION
+Hero_MoveLeft_03	
+	STD TEST1X10_G_SPEED       * la vitesse actuelle est negative, Hero va a gauche
+	BRA Hero_MoveLeft_02	
+Hero_MoveLeft_00		
+	CMPD TEST1X10_NEG_TOP_SPEED
+	BEQ Hero_MoveLeft_02       * gsp est deja au maximum
+	SUBD TEST1X10_ACCELERATION * gsp increases by acc every step
+	CMPD TEST1X10_NEG_TOP_SPEED
+	BLE Hero_MoveLeft_01       * if gsp exceeds top it's set to top
+	LDA #$06                   * Charge animation RUN L
+	STA TEST1X10_ANIMATION
+	LDD TEST1X10_NEG_TOP_SPEED
+	STD TEST1X10_G_SPEED
+	BRA Hero_MoveLeft_02
+Hero_MoveLeft_01
+	STD TEST1X10_G_SPEED
+	LDA #$04                   * Charge animation WALK L
+	STA TEST1X10_ANIMATION
+	LDD TEST1X10_G_SPEED
+Hero_MoveLeft_02
+	STD TEST1X10_X_SPEED       * TODO xsp = gsp*cos(angle)
 	ADDD TEST1X10_X_POS
 	STD TEST1X10_X_POS
-	LDD #$0000           * TODO ysp = gsp*-sin(angle)
+	LDD #$0000                 * TODO ysp = gsp*-sin(angle)
 	STD TEST1X10_Y_SPEED
 	ADDD TEST1X10_Y_POS
 	STD TEST1X10_Y_POS
-
-	LDA #$03 * Charge animation WALK R
+	RTS
+	
+Hero_MoveRight                  * XREF: Hero_NotLeft
+	LDD TEST1X10_G_SPEED
+	CMPD #$0000
+	BGE Hero_MoveRight_00       * BRANCH si la vitesse actuelle est nulle ou positive
+	ADDD TEST1X10_DECELERATION 	* gsp decrease by deceleration
+	BCC Hero_MoveRight_03       * BRANCH si la vitesse actuelle est negative
+    LDD TEST1X10_DECELERATION   * si la vitesse est devenue positive on la force a la va leur de DECELERATION
+Hero_MoveRight_03	
+	STD TEST1X10_G_SPEED        * la vitesse actuelle est negative, Hero va a gauche
+	BRA Hero_MoveRight_02	
+Hero_MoveRight_00		
+	CMPD TEST1X10_TOP_SPEED
+	BEQ Hero_MoveRight_02       * gsp est deja au maximum
+	ADDD TEST1X10_ACCELERATION 	* gsp increases by acc every step
+	CMPD TEST1X10_TOP_SPEED
+	BLE Hero_MoveRight_01       * if gsp exceeds top it's set to top
+	LDA #$05                    * Charge animation RUN R
 	STA TEST1X10_ANIMATION
-	* TODO si speed =6 alors running
-
-In Sonic 1, if Sonic is already running at a higher speed than he can possibly achieve on his own (such as having been impelled by a spring), if you press in the direction he's moving, the computer will add acc to gsp, notice that gsp exceeds top, and set gsp to top. Thus it is possible to curtail your forward momentum by pressing in the very direction of your motion. This can be solved in your engine (and was fixed in Sonic 2 and beyond) by checking to see if gsp is less than top before adding acc. Only if gsp is already less than top will it check if gsp exceeds top.
-
+	LDD TEST1X10_TOP_SPEED
+	STD TEST1X10_G_SPEED
+	BRA Hero_MoveRight_02
+Hero_MoveRight_01
+	STD TEST1X10_G_SPEED
+	LDA #$03                    * Charge animation WALK R
+	STA TEST1X10_ANIMATION
+	LDD TEST1X10_G_SPEED
+Hero_MoveRight_02
+	STD TEST1X10_X_SPEED        * TODO xsp = gsp*cos(angle)
+	ADDD TEST1X10_X_POS
+	STD TEST1X10_X_POS
+	LDD #$0000                  * TODO ysp = gsp*-sin(angle)
+	STD TEST1X10_Y_SPEED
+	ADDD TEST1X10_Y_POS
+	STD TEST1X10_Y_POS
 	RTS
 
-Deceleration
-If Sonic is already moving when you press Left or Right, rather than at a standstill, the computer checks whether you are holding the direction he's already moving. If so, acc is added to his gsp as normal. However if you are pressing in the opposite direction than he's already moving, the deceleration constant (dec) is added instead. Thus Sonic can turn around quickly. If no distinction is made between acc and dec, Sonic takes too long to overcome his current velocity, frustrating the player. A good engine must not make such a day one mistake.
-One might think that if gsp happened to equal 0.1, and you pressed Left, dec would be subtracted, resulting in an gsp value of -0.4. Oddly, this is not the case in any of the original games. Instead, at any time an addition or subtraction of dec results in gsp changing sign, gsp is set to 0.5. For example, in the instance above, gsp would become -0.5. The bizarre result of this is that you can press Left for one step, and then press Right (or vice versa), and start running faster than if you had just pressed Right alone! Now, the resulting speed is still lower than one pixel per step, so it isn't very noticeable, but nonetheless it is true.
-
-Braking Animation
-Sonic enters his braking animation when you turn around only if his absolute gsp is equal to or more than 4. In Sonic 1 and Sonic CD, he then stays in the braking animation until gsp reaches zero or changes sign. In the other 3 games, Sonic returns to his walking animation after the braking animation finishes displaying all of its frames.
+* TODO : Braking Animation
+* Sonic enters his braking animation when you turn around only if his absolute gsp is equal to or more than 4.
+* In Sonic 1 and Sonic CD, he then stays in the braking animation until gsp reaches zero or changes sign.
+* In the other 3 games, Sonic returns to his walking animation after the braking animation finishes displaying all of its frames.
 
 Compute_Position
+* Doit calculer ici les deux positions POS_TEST1X100000 pour RAMA et RAMB en fonction de TEST1X10_X_POS et TEST1X10_Y_POS
 	*LDX POS_TEST1X100000	* avance de 2 px a gauche
 	*LDD POS_TEST1X100000+2
 	*STX POS_TEST1X100000+2
@@ -251,13 +299,15 @@ TEST1X10_X_SPEED
 TEST1X10_Y_SPEED
 	FDB $0000        * vitesse verticale
 TEST1X10_TOP_SPEED
-	FDB $0600        * vitesse maximum autorisee
+	FDB $0600        * vitesse maximum autorisee 6 = 1536/256
+TEST1X10_NEG_TOP_SPEED
+	FDB $FA00        * vitesse maximum autorisee -6 = -1536/256
 TEST1X10_ACCELERATION
-	FDB $0600        * constante acceleration 0.046875
+	FDB $000C        * constante acceleration 0.046875 = 12/256
 TEST1X10_DECELERATION
-	FDB $0600        * constante deceleration 0.5
+	FDB $0080        * constante deceleration 0.5 = 128/256
 TEST1X10_FRICTION
-	FDB $0600        * constante de friction 0.046875
+	FDB $000C        * constante de friction 0.046875 = 12/256
 TEST1X10_ANIMATION
 	FCB $00          * Animation courante
 TEST1X10_REF_ANIMATIONS

@@ -214,20 +214,29 @@ if (the player is pressing left)
 
 Hero_MoveRight * XREF: Hero_NotLeft
 	LDD TEST1X10_G_SPEED
+	CMPD #$0000
+	BGE Hero_MoveRight_00 * BRANCH si la vitesse actuelle est nulle ou positive
+	ADDD TEST1X10_DECELERATION 	* gsp decrease by deceleration
+	STD TEST1X10_G_SPEED
+	blah blah blah * la vitesse actuelle est negative, Hero va a gauche
+		
+	RTS	
+		
+Hero_MoveRight_00		
 	ADDD TEST1X10_ACCELERATION 	* gsp increases by acc every step
 	STD TEST1X10_G_SPEED
 	CMPD TEST1X10_TOP_SPEED
-	BLS Hero_MoveRight_00 * if gsp exceeds top it's set to top
+	BLS Hero_MoveRight_01 * if gsp exceeds top it's set to top
 	LDA #$05 * Charge animation RUN R
 	STA TEST1X10_ANIMATION
 	LDD TEST1X10_TOP_SPEED
 	STD TEST1X10_G_SPEED
-	BRA Hero_MoveRight_01
-Hero_MoveRight_00
+	BRA Hero_MoveRight_02
+Hero_MoveRight_01
 	LDA #$03 * Charge animation WALK R
 	STA TEST1X10_ANIMATION
 	LDD TEST1X10_G_SPEED
-Hero_MoveRight_01
+Hero_MoveRight_02
 	STD TEST1X10_X_SPEED * TODO xsp = gsp*cos(angle)
 	ADDD TEST1X10_X_POS
 	STD TEST1X10_X_POS
@@ -298,13 +307,13 @@ TEST1X10_X_SPEED
 TEST1X10_Y_SPEED
 	FDB $0000        * vitesse verticale
 TEST1X10_TOP_SPEED
-	FDB $0600        * vitesse maximum autorisee
+	FDB $0600        * vitesse maximum autorisee 6
 TEST1X10_ACCELERATION
 	FDB $0600        * constante acceleration 0.046875
 TEST1X10_DECELERATION
-	FDB $0600        * constante deceleration 0.5
+	FDB $3800        * constante deceleration 0.5 (IEEE 754) http://weitz.de/ieee/
 TEST1X10_FRICTION
-	FDB $0600        * constante de friction 0.046875
+	FDB $2A00        * constante de friction 0.046875 (IEEE 754) http://weitz.de/ieee/
 TEST1X10_ANIMATION
 	FCB $00          * Animation courante
 TEST1X10_REF_ANIMATIONS
