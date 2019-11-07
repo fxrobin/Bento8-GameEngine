@@ -63,11 +63,16 @@ public class CompiledSpriteModeB16v2 {
 	List<String> spriteCode2 = new ArrayList<String>();
 	List<String> spriteData1 = new ArrayList<String>();
 	List<String> spriteData2 = new ArrayList<String>();
-
 	String posALabel;
 	String posBLabel;
 	String drawLabel;
 	String dataLabel;
+	int cyclesCode = 0;
+	int octetsCode = 0;
+	int cyclesCode1 = 0;
+	int octetsCode1 = 0;
+	int cyclesCode2 = 0;
+	int octetsCode2 = 0;
 
 	public CompiledSpriteModeB16v2(String file) {
 		try {
@@ -135,8 +140,25 @@ public class CompiledSpriteModeB16v2 {
 
 	public void generateCode() {
 		// Génération du code source pour l'écriture des images
+		
+		cyclesCode = 0;
+		octetsCode = 0;
 		generateCodeArray(1, spriteCode1, spriteData1);
+		cyclesCode1 = cyclesCode;
+		octetsCode1 = octetsCode;
+		
+		System.out.println("Cycles:  " + cyclesCode1);
+		System.out.println("Octets:  " + octetsCode1);
+		
+		cyclesCode = 0;
+		octetsCode = 0;
 		generateCodeArray(3, spriteCode2, spriteData2);
+		cyclesCode2 = cyclesCode;
+		octetsCode2 = octetsCode;
+		
+		System.out.println("Cycles:  " + cyclesCode2);
+		System.out.println("Octets:  " + octetsCode2);
+		
 		return;
 	}
 
@@ -219,11 +241,28 @@ public class CompiledSpriteModeB16v2 {
 						} else {
 							spriteCode.add("\tLDA  #$0F");
 						}
-
-						spriteCode.add("\tANDA " + stOffset + ",S");
-						spriteCode.add(
-								"\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
-						spriteCode.add("\tSTA " + stOffset + ",S");
+						computeStats8b();
+						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
+ 
+						if (stOffset == 0) {
+							spriteCode.add("\tANDA ,S");
+						} else {
+							spriteCode.add("\tANDA " + stOffset + ",S");
+						}
+						computeStats8b(stOffset);
+						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
+						
+						spriteCode.add("\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
+						computeStats8b();
+						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
+						
+						if (stOffset == 0) {
+							spriteCode.add("\tSTA ,S");
+						} else {
+							spriteCode.add("\tSTA " + stOffset + ",S");
+						}
+						computeStats8b(stOffset);
+						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
 
 						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
 						fdbBytes.clear();
@@ -299,6 +338,52 @@ public class CompiledSpriteModeB16v2 {
 		generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1, spriteData); // Construction du code des données
 	}
 
+	public void computeStats8b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCode += 4;
+			} else {
+				cyclesCode += 5;
+			}
+			if (offset > -17) {
+				octetsCode += 2;
+			} else {
+				octetsCode += 3;
+			}
+		} else {
+			cyclesCode += 8;
+			octetsCode += 4;
+		}
+	}
+	
+	public void computeStats8b() {
+			cyclesCode += 2;
+			octetsCode += 2;
+	}
+
+	public void computeStats16b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCode += 5;
+			} else {
+				cyclesCode += 6;
+			}
+			if (offset > -17) {
+				octetsCode += 2;
+			} else {
+				octetsCode += 3;
+			}
+		} else {
+			cyclesCode += 9;
+			octetsCode += 4;
+		}
+	}
+	
+	public void computeStats16b() {
+			cyclesCode += 3;
+			octetsCode += 3;
+	}
+	
 	public void computeLEAS(int pixel, int col, int pos, List<String> spriteCode) {
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
@@ -370,6 +455,8 @@ public class CompiledSpriteModeB16v2 {
 	public void writeLEAS(int pixel, List<String> spriteCode) {
 		if (pixel > 3 && leas < 0) {
 			spriteCode.add("\tLEAS " + leas + ",S");
+			computeStats8b(leas);
+			spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
 			stOffset = 0;
 			leas = 0;
 		}
@@ -488,20 +575,34 @@ public class CompiledSpriteModeB16v2 {
 				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
 					if (read.equals("")) {
 						read += "\tPULU ";
+						cyclesCode += 5;
+						octetsCode += 2;
 					} else {
 						read += ",";
 					}
 					read += pulReg[indexReg];
 					pulBytesOld[indexReg] = pulBytes[indexReg];
 					pulBytesFiltered[indexReg] += pulBytes[indexReg];
+					if (indexReg < 2) {
+						cyclesCode += 2;
+					} else {
+						cyclesCode += 1;
+					}
 				}
 
 				if (write.equals("")) {
 					write += "\tPSHS ";
+					cyclesCode += 5;
+					octetsCode += 2;
 				} else {
 					write += ",";
 				}
 				write += pulReg[indexReg];
+				if (indexReg < 2) {
+					cyclesCode += 2;
+				} else {
+					cyclesCode += 1;
+				}
 			}
 			if (nbBytes >= 3 && nbBytes <= 6) {
 				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
@@ -510,14 +611,26 @@ public class CompiledSpriteModeB16v2 {
 					}
 					read = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read;
 					pulBytesOld[indexReg] = pulBytes[indexReg];
+					if (indexReg < 2) {
+						computeStats16b();
+					} else {
+						computeStats8b();
+					}
 				}
 
 				if (write.equals("")) {
 					write += "\tPSHS ";
+					cyclesCode += 5;
+					octetsCode += 2;
 				} else {
 					write += ",";
 				}
 				write += pulReg[indexReg];
+				if (indexReg < 2) {
+					cyclesCode += 2;
+				} else {
+					cyclesCode += 1;
+				}
 			}
 			if (nbBytes <= 2) {
 				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
@@ -526,6 +639,11 @@ public class CompiledSpriteModeB16v2 {
 					}
 					read += "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg];
 					pulBytesOld[indexReg] = pulBytes[indexReg];
+					if (indexReg < 2) {
+						computeStats16b();
+					} else {
+						computeStats8b();
+					}
 				}
 				if (!write.equals("")) {
 					write += "\n";
@@ -534,10 +652,12 @@ public class CompiledSpriteModeB16v2 {
 					stOffset -= 2;
 					leas -= 2;
 					write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
+					computeStats16b(stOffset);
 				} else {
 					stOffset -= 1;
 					leas -= 1;
 					write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
+					computeStats8b(stOffset);
 				}
 			}
 		}
@@ -546,7 +666,7 @@ public class CompiledSpriteModeB16v2 {
 		for (int i = listeIndexReg.size() - 1; i >= 0; i--) {
 			fdbBytesResult += pulBytesFiltered[listeIndexReg.get(i)];
 		}
-
+		write += "\n* "+cyclesCode+" "+octetsCode;
 		result[0] = new String[] { read };
 		result[1] = new String[] { write };
 		result[2] = new String[] { fdbBytesResult };
