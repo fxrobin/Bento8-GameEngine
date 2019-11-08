@@ -242,7 +242,6 @@ public class CompiledSpriteModeB16v2 {
 							spriteCode.add("\tLDA  #$0F");
 						}
 						computeStats8b();
-						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
  
 						if (stOffset == 0) {
 							spriteCode.add("\tANDA ,S");
@@ -250,11 +249,9 @@ public class CompiledSpriteModeB16v2 {
 							spriteCode.add("\tANDA " + stOffset + ",S");
 						}
 						computeStats8b(stOffset);
-						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
 						
 						spriteCode.add("\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
 						computeStats8b();
-						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
 						
 						if (stOffset == 0) {
 							spriteCode.add("\tSTA ,S");
@@ -262,7 +259,6 @@ public class CompiledSpriteModeB16v2 {
 							spriteCode.add("\tSTA " + stOffset + ",S");
 						}
 						computeStats8b(stOffset);
-						spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
 
 						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
 						fdbBytes.clear();
@@ -456,7 +452,6 @@ public class CompiledSpriteModeB16v2 {
 		if (pixel > 3 && leas < 0) {
 			spriteCode.add("\tLEAS " + leas + ",S");
 			computeStats8b(leas);
-			spriteCode.add("\n* "+cyclesCode+" "+octetsCode);
 			stOffset = 0;
 			leas = 0;
 		}
@@ -666,7 +661,7 @@ public class CompiledSpriteModeB16v2 {
 		for (int i = listeIndexReg.size() - 1; i >= 0; i--) {
 			fdbBytesResult += pulBytesFiltered[listeIndexReg.get(i)];
 		}
-		write += "\n* "+cyclesCode+" "+octetsCode;
+
 		result[0] = new String[] { read };
 		result[1] = new String[] { write };
 		result[2] = new String[] { fdbBytesResult };
