@@ -63,16 +63,23 @@ public class CompiledSpriteModeB16v2 {
 	List<String> spriteCode2 = new ArrayList<String>();
 	List<String> spriteData1 = new ArrayList<String>();
 	List<String> spriteData2 = new ArrayList<String>();
+	List<String> spriteECode1 = new ArrayList<String>();
+	List<String> spriteECode2 = new ArrayList<String>();
+	List<String> spriteEData1 = new ArrayList<String>();
+	List<String> spriteEData2 = new ArrayList<String>();
 	String posALabel;
 	String posBLabel;
-	String drawLabel;
+	String drawLabel, drawELabel;
 	String dataLabel;
 	int cyclesCode = 0;
 	int octetsCode = 0;
-	int cyclesCode1 = 0;
-	int octetsCode1 = 0;
-	int cyclesCode2 = 0;
-	int octetsCode2 = 0;
+	int cyclesECode1 = 0;
+	int octetsECode1 = 0;
+	int cyclesECode2 = 0;
+	int octetsECode2 = 0;
+	boolean isSelfModifying = false;
+	int offsetCodeSwitchData = 7;
+	int offsetCodeHeader = 13;
 
 	public CompiledSpriteModeB16v2(String file) {
 		try {
@@ -93,6 +100,7 @@ public class CompiledSpriteModeB16v2 {
 			posBLabel = "POSB_" + spriteName;
 			drawLabel = "DRAW_" + spriteName;
 			dataLabel = "DATA_" + spriteName;
+			drawELabel = "DRAW_EREF_" + spriteName;
 
 			// System.out.println("Type image:"+image.getType());
 			// ContrÃ´le du format d'image
@@ -139,26 +147,41 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 	public void generateCode() {
-		// Génération du code source pour l'écriture des images
+		// Génération du code source pour l'effacement des images
+		isSelfModifying = false;
+		cyclesCode = 0;
+		octetsCode = 0;
+		generateCodeArray(1, spriteECode1, spriteEData1);
+		cyclesECode1 = cyclesCode;
+		octetsECode1 = octetsCode;
+		System.out.println("E2 Cycles:  " + cyclesECode1);
+		System.out.println("E2 Octets:  " + octetsECode1);
 		
 		cyclesCode = 0;
 		octetsCode = 0;
-		generateCodeArray(1, spriteCode1, spriteData1);
-		cyclesCode1 = cyclesCode;
-		octetsCode1 = octetsCode;
+		generateCodeArray(3, spriteECode2, spriteEData2);
+		cyclesECode2 = cyclesCode;
+		octetsECode2 = octetsCode;
+		System.out.println("E1 Cycles:  " + cyclesECode2);
+		System.out.println("E1 Octets:  " + octetsECode2);
 		
-		System.out.println("Cycles:  " + cyclesCode1);
-		System.out.println("Octets:  " + octetsCode1);
+		// Génération du code source pour l'écriture des images
+		isSelfModifying = true;
+		cyclesCode = 0;
+		octetsCode = 0;
+		generateCodeArray(1, spriteCode1, spriteData1);
+		cyclesECode1 = cyclesCode;
+		octetsECode1 = octetsCode;
+		System.out.println("E2 Cycles:  " + cyclesECode1);
+		System.out.println("E2 Octets:  " + octetsECode1);
 		
 		cyclesCode = 0;
 		octetsCode = 0;
 		generateCodeArray(3, spriteCode2, spriteData2);
-		cyclesCode2 = cyclesCode;
-		octetsCode2 = octetsCode;
-		
-		System.out.println("Cycles:  " + cyclesCode2);
-		System.out.println("Octets:  " + octetsCode2);
-		
+		cyclesECode2 = cyclesCode;
+		octetsECode2 = octetsCode;
+		System.out.println("E1 Cycles:  " + cyclesECode2);
+		System.out.println("E1 Octets:  " + octetsECode2);
 		return;
 	}
 
@@ -187,6 +210,10 @@ public class CompiledSpriteModeB16v2 {
 		// 16-255 considéré comme couleur transparente
 		// **************************************************************
 
+		if (isSelfModifying) {
+			spriteCode.add("\tLDY " + drawELabel);
+		}		
+		
 		for (int pixel = (width * height) - 1; pixel >= 0; pixel = ((row - 1) * width) + col - 1) {
 
 			// Initialisation en début de paire
@@ -643,6 +670,9 @@ public class CompiledSpriteModeB16v2 {
 				if (!write.equals("")) {
 					write += "\n";
 				}
+				if (isSelfModifying) {
+					write += "\tST" + pulReg[indexReg] + " "+ octetsCode +",Y\n";
+				}
 				if (indexReg < 2) {
 					stOffset -= 2;
 					leas -= 2;
@@ -1037,7 +1067,6 @@ public class CompiledSpriteModeB16v2 {
 		code.add("");
 		code.add("\tLDS " + posALabel);
 		code.add("\tLDU #" + dataLabel + "_" + pos);
-		code.add("");
 		return code;
 	}
 
