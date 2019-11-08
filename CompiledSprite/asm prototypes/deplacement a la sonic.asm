@@ -82,7 +82,7 @@ SETPALETTE
 *-------------------------------------------------------------------------------
 MAIN
 	* Effacement et affichage des sprites
-	JSR [DRAW_EREF_TEST1X100000_1] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
+	JSR [DRAW_EREF_TEST1X100000] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
 	JSR DRAW_TEST1X100000 * TODO boulcuer sur tous les sprites visibles dans le bon ordre
 	
 	* Gestion des deplacements
@@ -116,10 +116,10 @@ MAIN
 SCRC
 	JSR VSYNC
 	
-	LDX DRAW_EREF_TEST1X100000_1	* permute les routines
-	LDY DRAW_EREF_TEST1X100000_1+2  * d effacement
-	STY DRAW_EREF_TEST1X100000_1    * des sprites
-	STX DRAW_EREF_TEST1X100000_1+2  * TODO faire boucle sur tous les sprites VISIBLES
+	LDX DRAW_EREF_TEST1X100000	* permute les routines
+	LDY DRAW_EREF_TEST1X100000+2  * d effacement
+	STY DRAW_EREF_TEST1X100000    * des sprites
+	STX DRAW_EREF_TEST1X100000+2  * TODO faire boucle sur tous les sprites VISIBLES
 	
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
 	ANDB #$80	* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0
@@ -327,12 +327,12 @@ DRAW_TEST1X100000
 	LDU #DATA_TEST1X100000_1
 
 	LDA -1,S
-	LDX DRAW_EREF_TEST1X100000_1
+	LDX DRAW_EREF_TEST1X100000
 	STA 14,X
 	LDA #$98
 	STA -1,S
 	LDA -41,S
-	LDX DRAW_EREF_TEST1X100000_1
+	LDX DRAW_EREF_TEST1X100000
 	STA 18,X
 	LDA #$89
 	STA -41,S
@@ -341,21 +341,21 @@ DRAW_TEST1X100000
 	LDU #DATA_TEST1X100000_2
 
 	LDA -1,S
-	LDX DRAW_EREF_TEST1X100000_1
+	LDX DRAW_EREF_TEST1X100000
 	STA 30,X
 	LDA #$89
 	STA -1,S
 	LDA -41,S
-	LDX DRAW_EREF_TEST1X100000_1
+	LDX DRAW_EREF_TEST1X100000
 	STA 34,X
 	LDA #$98
 	STA -41,S
 
 	LDX POS_TEST1X100000	* save des positions pour effacement
-	LDY DRAW_EREF_TEST1X100000_1
+	LDY DRAW_EREF_TEST1X100000
 	STX 45,Y
 	LDX POS_TEST1X100000+2
-	LDY DRAW_EREF_TEST1X100000_1
+	LDY DRAW_EREF_TEST1X100000
 	STX 47,Y
 
 	LDS  >SSAVE
@@ -367,7 +367,7 @@ DATA_TEST1X100000_2
 POS_TEST1X100000
 	FDB $1F40
 	FDB $3F40
-DRAW_EREF_TEST1X100000_1
+DRAW_EREF_TEST1X100000
 	FDB E1DRAW_TEST1X100000
 	FDB E2DRAW_TEST1X100000
 

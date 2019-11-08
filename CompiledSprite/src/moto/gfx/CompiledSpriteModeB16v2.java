@@ -14,7 +14,7 @@ import java.util.List;
 // suppr otim renversement : 3055 cycles - Taille : A0B5 (41141) a A695 (42645) = 1504 octets
 // Version 2 : 2814 cycles - Taille : A0B5 (41141) a A6C4 (42692) = 1551 octets
 // optim offet ST : 2529 cycles - Taille : A0B5 (41141) a A68D (42637) = 1496 octets
-// optim offet ST sur TR et -127 : 2513 cycles - Taille :  A0B5 (41141) a A6A0 (42656) = 1515 octets
+// optim offet ST sur TR et -128 : 2513 cycles - Taille :  A0B5 (41141) a A6A0 (42656) = 1515 octets
 
 // TODO
 // Ajout optim LEAS ,--S au lieu de LEAS -2,S
@@ -63,20 +63,33 @@ public class CompiledSpriteModeB16v2 {
 	List<String> spriteCode2 = new ArrayList<String>();
 	List<String> spriteData1 = new ArrayList<String>();
 	List<String> spriteData2 = new ArrayList<String>();
-	List<String> spriteECode1 = new ArrayList<String>();
-	List<String> spriteECode2 = new ArrayList<String>();
-	List<String> spriteEData1 = new ArrayList<String>();
-	List<String> spriteEData2 = new ArrayList<String>();
-	String posALabel;
-	String posBLabel;
+	List<String> spriteE1Code1 = new ArrayList<String>();
+	List<String> spriteE1Code2 = new ArrayList<String>();
+	List<String> spriteE1Data1 = new ArrayList<String>();
+	List<String> spriteE1Data2 = new ArrayList<String>();
+	List<String> spriteE2Code1 = new ArrayList<String>();
+	List<String> spriteE2Code2 = new ArrayList<String>();
+	List<String> spriteE2Data1 = new ArrayList<String>();
+	List<String> spriteE2Data2 = new ArrayList<String>();
+	
 	String drawLabel, drawELabel;
 	String dataLabel;
+	String posLabel;
+	
 	int cyclesCode = 0;
 	int octetsCode = 0;
-	int cyclesECode1 = 0;
-	int octetsECode1 = 0;
-	int cyclesECode2 = 0;
-	int octetsECode2 = 0;
+	int cyclesWCode1 = 0;
+	int octetsWCode1 = 0;
+	int cyclesWCode2 = 0;
+	int octetsWCode2 = 0;
+	int cyclesE1Code1 = 0;
+	int octetsE1Code1 = 0;
+	int cyclesE1Code2 = 0;
+	int octetsE1Code2 = 0;
+	int cyclesE2Code1 = 0;
+	int octetsE2Code1 = 0;
+	int cyclesE2Code2 = 0;
+	int octetsE2Code2 = 0;
 	boolean isSelfModifying = false;
 	int offsetCodeSwitchData = 7;
 	int offsetCodeHeader = 13;
@@ -96,11 +109,10 @@ public class CompiledSpriteModeB16v2 {
 			spriteName = removeExtension(file).toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 
 			// Initialisation du code statique
-			posALabel = "POSA_" + spriteName;
-			posBLabel = "POSB_" + spriteName;
-			drawLabel = "DRAW_" + spriteName;
-			dataLabel = "DATA_" + spriteName;
-			drawELabel = "DRAW_EREF_" + spriteName;
+			drawLabel   = "DRAW_" + spriteName;
+			dataLabel   = "DATA_" + spriteName;
+			posLabel    = "POS_" + spriteName;
+			drawELabel  = "DRAW_EREF_" + spriteName;
 
 			// System.out.println("Type image:"+image.getType());
 			// ContrÃ´le du format d'image
@@ -147,41 +159,59 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 	public void generateCode() {
-		// Génération du code source pour l'effacement des images
-		isSelfModifying = false;
-		cyclesCode = 0;
-		octetsCode = 0;
-		generateCodeArray(1, spriteECode1, spriteEData1);
-		cyclesECode1 = cyclesCode;
-		octetsECode1 = octetsCode;
-		System.out.println("E2 Cycles:  " + cyclesECode1);
-		System.out.println("E2 Octets:  " + octetsECode1);
-		
-		cyclesCode = 0;
-		octetsCode = 0;
-		generateCodeArray(3, spriteECode2, spriteEData2);
-		cyclesECode2 = cyclesCode;
-		octetsECode2 = octetsCode;
-		System.out.println("E1 Cycles:  " + cyclesECode2);
-		System.out.println("E1 Octets:  " + octetsECode2);
-		
 		// Génération du code source pour l'écriture des images
 		isSelfModifying = true;
 		cyclesCode = 0;
 		octetsCode = 0;
 		generateCodeArray(1, spriteCode1, spriteData1);
-		cyclesECode1 = cyclesCode;
-		octetsECode1 = octetsCode;
-		System.out.println("E2 Cycles:  " + cyclesECode1);
-		System.out.println("E2 Octets:  " + octetsECode1);
+		cyclesWCode1 = cyclesCode;
+		octetsWCode1 = octetsCode;
+		System.out.println("W Cycles 1:  " + cyclesCode);
+		System.out.println("W Octets 1:  " + octetsCode);
 		
 		cyclesCode = 0;
 		octetsCode = 0;
 		generateCodeArray(3, spriteCode2, spriteData2);
-		cyclesECode2 = cyclesCode;
-		octetsECode2 = octetsCode;
-		System.out.println("E1 Cycles:  " + cyclesECode2);
-		System.out.println("E1 Octets:  " + octetsECode2);
+		cyclesWCode2 = cyclesCode;
+		octetsWCode2 = octetsCode;
+		System.out.println("W Cycles 2:  " + cyclesCode);
+		System.out.println("W Octets 2:  " + octetsCode);
+
+		// Génération du code source pour l'effacement des images
+		isSelfModifying = false;
+		cyclesCode = 0;
+		octetsCode = 0;
+		generateCodeArray(1, spriteE1Code1, spriteE1Data1);
+		cyclesE1Code1 = cyclesCode;
+		octetsE1Code1 = octetsCode;
+		System.out.println("E1 Cycles 1:  " + cyclesCode);
+		System.out.println("E1 Octets 1:  " + octetsCode);
+		
+		cyclesCode = 0;
+		octetsCode = 0;
+		generateCodeArray(3, spriteE1Code2, spriteE1Data2);
+		cyclesE1Code2 = cyclesCode;
+		octetsE1Code2 = octetsCode;
+		System.out.println("E1 Cycles 2:  " + cyclesCode);
+		System.out.println("E1 Octets 2:  " + octetsCode);
+
+		// Génération du code source pour l'effacement des images
+		isSelfModifying = false;
+		cyclesCode = 0;
+		octetsCode = 0;
+		generateCodeArray(1, spriteE2Code1, spriteE2Data1);
+		cyclesE2Code1 = cyclesCode;
+		octetsE2Code1 = octetsCode;
+		System.out.println("E2 Cycles 1:  " + cyclesCode);
+		System.out.println("E2 Octets 1:  " + octetsCode);
+		
+		cyclesCode = 0;
+		octetsCode = 0;
+		generateCodeArray(3, spriteE2Code2, spriteE2Data2);
+		cyclesE2Code2 = cyclesCode;
+		octetsE2Code2 = octetsCode;
+		System.out.println("E2 Cycles 2:  " + cyclesCode);
+		System.out.println("E2 Octets 2:  " + octetsCode);
 		return;
 	}
 
@@ -358,7 +388,7 @@ public class CompiledSpriteModeB16v2 {
 			fdbBytesResultLigne = "";
 		}
 
-		generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1, spriteData); // Construction du code des données
+		generateDataFDB(fdbBytesResult, spriteData); // Construction du code des données
 	}
 
 	public void computeStats8b(int offset) {
@@ -470,7 +500,7 @@ public class CompiledSpriteModeB16v2 {
 		stOffset += leas;
 		leas = stOffset;
 
-		if (stOffset < -127) {
+		if (stOffset < -128) {
 			writeLEAS(fpixel, spriteCode);
 		}
 	}
@@ -735,7 +765,7 @@ public class CompiledSpriteModeB16v2 {
 		return;
 	}
 
-	public void generateDataFDB(String pixels, int x, List<String> spriteData) {
+	public void generateDataFDB(String pixels, List<String> spriteData) {
 		int bitIndex = 0;
 		int bitIndexEnd = 4;
 		String dataLine = new String();
@@ -744,7 +774,7 @@ public class CompiledSpriteModeB16v2 {
 		// Construit un tableau de données en assembleur
 		// **************************************************************
 
-		spriteData.add(dataLabel + "_" + x);
+		spriteData.add("");
 
 		for (int i = 0; i < pixels.length(); i++) {
 			bitIndex++;
@@ -800,6 +830,15 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 	public List<String> getCompiledData(int i) {
+		return getCompiledData("", i);
+	}	
+	
+	public List<String> getCompiledData(String prefix, int i) {
+		if (i == 1) {
+			spriteData2.set(0, prefix + dataLabel + "_2");
+		} else {
+			spriteData1.set(0, prefix + dataLabel + "_1");
+		}
 		return (i == 1) ? spriteData2 : spriteData1;
 	}
 
@@ -822,9 +861,18 @@ public class CompiledSpriteModeB16v2 {
 		code.add("* Constantes et variables");
 		code.add("********************************************************************************");
 		code.add("DEBUTECRANA EQU $0014	* test pour fin stack blasting");
-		code.add("FINECRANA EQU $1F40	* fin de la RAM A video");
+		code.add("FINECRANA   EQU $1F40	* fin de la RAM A video");
 		code.add("DEBUTECRANB EQU $2014	* test pour fin stack blasting");
-		code.add("FINECRANB EQU $3F40	* fin de la RAM B video");
+		code.add("FINECRANB   EQU $3F40	* fin de la RAM B video");
+		code.add("JOY_BD EQU $05       * Bas Droite");
+		code.add("JOY_HD EQU $06       * Haut Droite");
+		code.add("JOY_D  EQU $07       * Droite");
+		code.add("JOY_BG EQU $09       * Bas Gauche");
+		code.add("JOY_HG EQU $0A       * Haut Gauche");
+		code.add("JOY_G  EQU $0B       * Gauche");
+		code.add("JOY_B  EQU $0D       * Bas");
+		code.add("JOY_H  EQU $0E       * Haut");
+		code.add("JOY_C  EQU $0F       * Centre");
 		code.add("");
 		code.add("SSAVE FDB $0000");
 		code.add("");
@@ -868,49 +916,31 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tSTB $6081");
 		code.add("\tSTB $E7E7");
 		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Effacement ecran (les deux pages)");
-		code.add("********************************************************************************");
-		code.add("\tJSR SCRC");
-		code.add("\tJSR EFF");
-		code.add("\tJSR SCRC");
-		code.add("\tJSR EFF");
-//		code.add("********************************************************************************");
-//		code.add("* Construction de la reference d arriere plan en page 0,2,3");
-//		code.add("********************************************************************************");
-//		code.add("\tLDB $E7E6");
-//		code.add("\tSTB RESTORE_PAGE+1	* Sauvegarde la page a restaurer apres traitement");
-//		code.add("\tLDB #$60");
-//		code.add("\tSTB $E7E6			* chargement page 0 en zone cartouche");
-//		code.add("\tJSR DRAWBCKGRN");
-//		code.add("\tLDB #$62");
-//		code.add("\tSTB $E7E6			* chargement page 2 en zone cartouche");
-//		code.add("\tJSR DRAWBCKGRN");
-//		code.add("\tLDB #$63");
-//		code.add("\tSTB $E7E6			* chargement page 3 en zone cartouche");
-//		code.add("\tJSR DRAWBCKGRN");
-//		code.add("");
-//		code.add("RESTORE_PAGE");
-//		code.add("\tLDB #$00");
-//		code.add("\tSTB $E7E6");
-//		code.add("");
-		code.add("\tJSR SCRC        * changement de page ecran");
-		code.add("********************************************************************************");
+		code.add("*-------------------------------------------------------------------------------");
+		code.add("* Initialisation des deux pages videos avec Fond et sprites");
+		code.add("*-------------------------------------------------------------------------------");
+		code.add("\tLDB #$03  * On monte la page 3");
+		code.add("\tSTB $E7E5 * en RAM Donnees (A000-DFFF)");
+		code.add("");
+		code.add("\tJSR DRAW_RAM_DATA_TO_CART_160x200");
+		code.add("\tJSR DRAW_TEST1X100000               * TODO Boucle sur tous les sprites visibles");
+		code.add("\tJSR SCRC                            * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)");
+		code.add("\tJSR DRAW_RAM_DATA_TO_CART_160x200");
+		code.add("\tJSR DRAW_TEST1X100000               * TODO Boucle sur tous les sprites visibles");
+		code.add("\tJSR SCRC                            * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)");
+		code.add("");
+		code.add("*-------------------------------------------------------------------------------");
 		code.add("* Boucle principale");
-		code.add("********************************************************************************");
-		code.add("\tLDB #$03");
-		code.add("\tSTB $E7E5");
-//		code.add("\tJSR DRAWBCKGRN");
-//		code.add("\tJSR SCRC");
+		code.add("*-------------------------------------------------------------------------------");
 		code.add("MAIN");
-		code.add("\tJSR DRAWBCKGRN");
-		code.add("\tJSR " + drawLabel);
-		code.add("\tLDX " + posALabel + "\t* avance de 2 px a gauche");
-		code.add("\tLDY " + posBLabel);
-		code.add("\tSTX " + posBLabel);
-		code.add("\tLEAY -1,Y");
-		code.add("\tSTY " + posALabel);
-		code.add("\tJSR VSYNC");
+		code.add("\t* Effacement et affichage des sprites");
+		code.add("\tJSR ["+ drawELabel +"] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre");
+		code.add("\tJSR "+ drawLabel +" * TODO boulcuer sur tous les sprites visibles dans le bon ordre");
+		code.add("");
+		code.add("\t* Gestion des deplacements");
+		code.add("\tJSR JOY_READ");
+		code.add("\tJSR Hero_Move");
+		code.add("");
 		code.add("\tJSR SCRC        * changement de page ecran");
 		code.add("\tBRA MAIN");
 		code.add("");
@@ -936,6 +966,13 @@ public class CompiledSpriteModeB16v2 {
 		code.add("*	D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7F) : page 31");
 		code.add("********************************************************************************");
 		code.add("SCRC");
+		code.add("\tJSR VSYNC");
+		code.add("");
+		code.add("\tLDX DRAW_EREF_TEST1X100000	* permute les routines");
+		code.add("\tLDY DRAW_EREF_TEST1X100000+2  * d effacement");
+		code.add("\tSTY DRAW_EREF_TEST1X100000    * des sprites");
+		code.add("\tSTX DRAW_EREF_TEST1X100000+2  * TODO faire boucle sur tous les sprites VISIBLES");
+		code.add("");
 		code.add("\tLDB SCRC0+1\t* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code");
 		code.add("\tANDB #$80\t* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0");
 		code.add("\tORB #$0F\t* recharger la couleur de cadre si diff de 0 car effacee juste au dessus (couleur F)");
@@ -961,29 +998,155 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tBMI	VSYNC_2");
 		code.add("\tRTS");
 		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Effacement de l ecran");
-		code.add("********************************************************************************");
-		code.add("EFF");
-		code.add("\tLDA #$AA  * couleur fond");
-		code.add("\tLDY #$0000");
-		code.add("EFF_RAM");
-		code.add("\tSTA ,Y+");
-		code.add("\tCMPY #$3FFF");
-		code.add("\tBNE EFF_RAM");
+		code.add("*---------------------------------------");
+		code.add("* Get joystick parameters");
+		code.add("*---------------------------------------");
+		code.add("JOY_READ");
+		code.add("\tldx    #$e7cf");
+		code.add("\tldy    #$e7cd");
+		code.add("\tldd    #$400f ");
+		code.add("\tandb   >$e7cc     * Read position");
+		code.add("\tstb    JOY_DIR_STATUS");
+		code.add("\tanda   ,y         * Read button");
+		code.add("\teora   #$40");
+		code.add("\tsta    JOY_BTN_STATUS");
+		code.add("\tRTS");
+		code.add("JOY_DIR_STATUS");
+		code.add("\tFCB $00 * Position Pad");
+		code.add("JOY_BTN_STATUS");
+		code.add("\tFCB $00 * 40 Bouton A enfonce");
+		code.add("");
+		code.add("*---------------------------------------------------------------------------");
+		code.add("* Subroutine to	make hero walk/run");
+		code.add("*---------------------------------------------------------------------------");
+		code.add("");
+		code.add("Hero_Move");
+		code.add("\tLDA JOY_G");
+		code.add("\tCMPA JOY_DIR_STATUS");
+		code.add("\tBNE Hero_NotLeft");
+		code.add("\tBSR Hero_MoveLeft");
+		code.add("");
+		code.add("Hero_NotLeft                   * XREF: Hero_Move");
+		code.add("\tLDA JOY_D");
+		code.add("\tCMPA JOY_DIR_STATUS");
+		code.add("\tBNE Hero_NotRight");
+		code.add("\tBSR Hero_MoveRight");
+		code.add("");
+		code.add("Hero_NotRight                  * XREF: Hero_NotLeft");
+		code.add("\tLDD TEST1X10_G_SPEED");
+		code.add("\tCMPD #$0000");
+		code.add("\tBLO Hero_NotRight_00");
+		code.add("\tSUBD TEST1X10_ACCELERATION * If you are not pressing Left or Right, friction (frc) kicks in. In any step in which the game recieves no horizontal input,");
+		code.add("\tBCC Hero_NotRight_01       * frc is subtracted from gsp (depending on the sign of gsp), where if it then passes over 0, it's set back to 0.");
+		code.add("\tLDA #$01                   * Charge animation STOP R");
+		code.add("Hero_NotRight_02");
+		code.add("\tSTA TEST1X10_ANIMATION");
+		code.add("\tLDD	#$0000");
+		code.add("Hero_NotRight_01");
+		code.add("\tSTD TEST1X10_G_SPEED");
+		code.add("\tRTS");
+		code.add("Hero_NotRight_00");
+		code.add("\tADDD TEST1X10_ACCELERATION ");
+		code.add("\tBCC Hero_NotRight_01      ");
+		code.add("\tLDA #$02                   * Charge animation STOP L     ");
+		code.add("\tBRA Hero_NotRight_02	");
+		code.add("");
+		code.add("Hero_MoveLeft                  * XREF: Hero_Move");
+		code.add("\tLDD TEST1X10_G_SPEED");
+		code.add("\tCMPD #$0000");
+		code.add("\tBLT Hero_MoveLeft_00       * BRANCH si la vitesse actuelle est negative");
+		code.add("\tSUBD TEST1X10_DECELERATION * gsp decrease by deceleration");
+		code.add("\tBCC Hero_MoveLeft_03       * BRANCH si la vitesse actuelle est positive");
+		code.add("\tLDD TEST1X10_DECELERATION  * si la vitesse est devenue negative on la force a la va leur de DECELERATION");
+		code.add("Hero_MoveLeft_03	");
+		code.add("\tSTD TEST1X10_G_SPEED       * la vitesse actuelle est negative, Hero va a gauche");
+		code.add("\tBRA Hero_MoveLeft_02	");
+		code.add("Hero_MoveLeft_00		");
+		code.add("\tCMPD TEST1X10_NEG_TOP_SPEED");
+		code.add("\tBEQ Hero_MoveLeft_02       * gsp est deja au maximum");
+		code.add("\tSUBD TEST1X10_ACCELERATION * gsp increases by acc every step");
+		code.add("\tCMPD TEST1X10_NEG_TOP_SPEED");
+		code.add("\tBLE Hero_MoveLeft_01       * if gsp exceeds top it's set to top");
+		code.add("\tLDA #$06                   * Charge animation RUN L");
+		code.add("\tSTA TEST1X10_ANIMATION");
+		code.add("\tLDD TEST1X10_NEG_TOP_SPEED");
+		code.add("\tSTD TEST1X10_G_SPEED");
+		code.add("\tBRA Hero_MoveLeft_02");
+		code.add("Hero_MoveLeft_01");
+		code.add("\tSTD TEST1X10_G_SPEED");
+		code.add("\tLDA #$04                   * Charge animation WALK L");
+		code.add("\tSTA TEST1X10_ANIMATION");
+		code.add("\tLDD TEST1X10_G_SPEED");
+		code.add("Hero_MoveLeft_02");
+		code.add("\tSTD TEST1X10_X_SPEED       * TODO xsp = gsp*cos(angle)");
+		code.add("\tADDD TEST1X10_X_POS");
+		code.add("\tSTD TEST1X10_X_POS");
+		code.add("\tLDD #$0000                 * TODO ysp = gsp*-sin(angle)");
+		code.add("\tSTD TEST1X10_Y_SPEED");
+		code.add("\tADDD TEST1X10_Y_POS");
+		code.add("\tSTD TEST1X10_Y_POS");
 		code.add("\tRTS");
 		code.add("");
+		code.add("Hero_MoveRight                  * XREF: Hero_NotLeft");
+		code.add("\tLDD TEST1X10_G_SPEED");
+		code.add("\tCMPD #$0000");
+		code.add("\tBGE Hero_MoveRight_00       * BRANCH si la vitesse actuelle est nulle ou positive");
+		code.add("\tADDD TEST1X10_DECELERATION 	* gsp decrease by deceleration");
+		code.add("\tBCC Hero_MoveRight_03       * BRANCH si la vitesse actuelle est negative");
+		code.add("\tLDD TEST1X10_DECELERATION   * si la vitesse est devenue positive on la force a la va leur de DECELERATION");
+		code.add("Hero_MoveRight_03	");
+		code.add("\tSTD TEST1X10_G_SPEED        * la vitesse actuelle est negative, Hero va a gauche");
+		code.add("\tBRA Hero_MoveRight_02	");
+		code.add("Hero_MoveRight_00		");
+		code.add("\tCMPD TEST1X10_TOP_SPEED");
+		code.add("\tBEQ Hero_MoveRight_02       * gsp est deja au maximum");
+		code.add("\tADDD TEST1X10_ACCELERATION 	* gsp increases by acc every step");
+		code.add("\tCMPD TEST1X10_TOP_SPEED");
+		code.add("\tBLE Hero_MoveRight_01       * if gsp exceeds top it's set to top");
+		code.add("\tLDA #$05                    * Charge animation RUN R");
+		code.add("\tSTA TEST1X10_ANIMATION");
+		code.add("\tLDD TEST1X10_TOP_SPEED");
+		code.add("\tSTD TEST1X10_G_SPEED");
+		code.add("\tBRA Hero_MoveRight_02");
+		code.add("Hero_MoveRight_01");
+		code.add("\tSTD TEST1X10_G_SPEED");
+		code.add("\tLDA #$03                    * Charge animation WALK R");
+		code.add("\tSTA TEST1X10_ANIMATION");
+		code.add("\tLDD TEST1X10_G_SPEED");
+		code.add("Hero_MoveRight_02");
+		code.add("\tSTD TEST1X10_X_SPEED        * TODO xsp = gsp*cos(angle)");
+		code.add("\tADDD TEST1X10_X_POS");
+		code.add("\tSTD TEST1X10_X_POS");
+		code.add("\tLDD #$0000                  * TODO ysp = gsp*-sin(angle)");
+		code.add("\tSTD TEST1X10_Y_SPEED");
+		code.add("\tADDD TEST1X10_Y_POS");
+		code.add("\tSTD TEST1X10_Y_POS");
+		code.add("\tRTS");
+		code.add("");
+		code.add("* TODO : Braking Animation");
+		code.add("* Sonic enters his braking animation when you turn around only if his absolute gsp is equal to or more than 4.");
+		code.add("* In Sonic 1 and Sonic CD, he then stays in the braking animation until gsp reaches zero or changes sign.");
+		code.add("* In the other 3 games, Sonic returns to his walking animation after the braking animation finishes displaying all of its frames.");
+		code.add("");
+		code.add("Compute_Position");
+		code.add("* Doit calculer ici les deux positions POS_TEST1X100000 pour RAMA et RAMB en fonction de TEST1X10_X_POS et TEST1X10_Y_POS");
+		code.add("\t*LDX POS_TEST1X100000	* avance de 2 px a gauche");
+		code.add("\t*LDD POS_TEST1X100000+2");
+		code.add("\t*STX POS_TEST1X100000+2");
+		code.add("\t*SUBD JOY_STATUS");
+		code.add("\t*STD POS_TEST1X100000");
+		code.add("\tRTS");
 		code.add("********************************************************************************  ");
 		code.add("* Affichage de l arriere plan xxx cycles");
 		code.add("********************************************************************************	");
-		code.add("DRAWBCKGRN");
+		code.add("DRAW_RAM_DATA_TO_CART_160x200");
 		code.add("\tPSHS U,DP		* sauvegarde des registres pour utilisation du stack blast");
 		code.add("\tSTS >SSAVE");
 		code.add("\t");
 		code.add("\tLDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)");
 		code.add("\tLDU #$A000");
 		code.add("");
-		code.add("DRWBCKGRNDA");
+		code.add("DRAW_RAM_DATA_TO_CART_160x200A");
 		code.add("\tPULU A,B,DP,X,Y");
 		code.add("\tPSHS Y,X,DP,B,A");
 		code.add("\tPULU A,B,DP,X,Y");
@@ -997,7 +1160,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tPULU A,B,DP,X,Y");
 		code.add("\tPSHS Y,X,DP,B,A");
 		code.add("\tCMPS #DEBUTECRANA");
-		code.add("\tBNE DRWBCKGRNDA");
+		code.add("\tBNE DRAW_RAM_DATA_TO_CART_160x200A");
 		code.add("\tPULU A,B,DP,X,Y");
 		code.add("\tPSHS Y,X,DP,B,A");
 		code.add("\tPULU A,B,DP,X,Y");
@@ -1008,7 +1171,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tLDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)");
 		code.add("\tLDU #$C000");
 		code.add("");
-		code.add("DRWBCKGRNDB");
+		code.add("DRAW_RAM_DATA_TO_CART_160x200B");
 		code.add("\tPULU A,B,DP,X,Y");
 		code.add("\tPSHS Y,X,DP,B,A");
 		code.add("\tPULU A,B,DP,X,Y");
@@ -1022,7 +1185,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tPULU A,B,DP,X,Y");
 		code.add("\tPSHS Y,X,DP,B,A");
 		code.add("\tCMPS #DEBUTECRANB");
-		code.add("\tBNE DRWBCKGRNDB");
+		code.add("\tBNE DRAW_RAM_DATA_TO_CART_160x200B");
 		code.add("\tPULU A,B,DP,X,Y");
 		code.add("\tPSHS Y,X,DP,B,A");
 		code.add("\tPULU A,B,DP,X,Y");
@@ -1037,44 +1200,68 @@ public class CompiledSpriteModeB16v2 {
 		code.add("********************************************************************************");
 		code.add("* Affiche un computed sprite en xxx cycles");
 		code.add("********************************************************************************");
-		return code;
-	}
-
-	public List<String> getCodeEnd() {
-		List<String> code = new ArrayList<String>();
-//		code.add("********************************************************************************  ");
-//		code.add("* Tile arriere plan   ");
-//		code.add("********************************************************************************");
-//		code.add("TILEBCKGRNDA");
-//		code.add("\tFDB $eeee");
-//		code.add("\tFDB $eeee");
-//		code.add("\tFDB $eeee");
-//		code.add("\tFDB $eeee");
-//		code.add("");
-//		code.add("TILEBCKGRNDB");
-//		code.add("\tFDB $ffff");
-//		code.add("\tFDB $ffff");
-//		code.add("\tFDB $ffff");
-//		code.add("\tFDB $ffff");
+		code.add("TEST1X10_X_POS");
+		code.add("\tFDB $0000        * position horizontale");
+		code.add("TEST1X10_Y_POS");
+		code.add("\tFDB $0000        * position verticale");
+		code.add("TEST1X10_G_SPEED");
+		code.add("\tFDB $0000        * vitesse au sol");
+		code.add("TEST1X10_X_SPEED");
+		code.add("\tFDB $0000        * vitesse horizontale");
+		code.add("TEST1X10_Y_SPEED");
+		code.add("\tFDB $0000        * vitesse verticale");
+		code.add("TEST1X10_TOP_SPEED");
+		code.add("\tFDB $0600        * vitesse maximum autorisee 6 = 1536/256");
+		code.add("TEST1X10_NEG_TOP_SPEED");
+		code.add("\tFDB $FA00        * vitesse maximum autorisee -6 = -1536/256");
+		code.add("TEST1X10_ACCELERATION");
+		code.add("\tFDB $000C        * constante acceleration 0.046875 = 12/256");
+		code.add("TEST1X10_DECELERATION");
+		code.add("\tFDB $0080        * constante deceleration 0.5 = 128/256");
+		code.add("TEST1X10_FRICTION");
+		code.add("\tFDB $000C        * constante de friction 0.046875 = 12/256");
+		code.add("TEST1X10_ANIMATION");
+		code.add("\tFCB $00          * Animation courante");
+//		code.add("TEST1X10_REF_ANIMATIONS");
+//		code.add("\tFDB DRAW_TEST1X10_NULL * sprite invisible");
+//		code.add("\tFDB DRAW_TEST1X10_IDLE_R * sprite immobile Droite");
+//		code.add("\tFDB DRAW_TEST1X10_IDLE_L * sprite immobile Gauche");
+//		code.add("\tFDB DRAW_TEST1X10_WALK_R * sprite marche Droite");
+//		code.add("\tFDB DRAW_TEST1X10_WALK_L * sprite marche Gauche");
+//		code.add("\tFDB DRAW_TEST1X10_JOG_R * sprite cours Droite");
+//		code.add("\tFDB DRAW_TEST1X10_JOG_L * sprite cours Gauche");
+//		code.add("\tFDB DRAW_TEST1X10_SKID_R * sprite freine Droite");
+//		code.add("\tFDB DRAW_TEST1X10_SKID_L * sprite freine Gauche");
+//		code.add("\tFDB DRAW_TEST1X10_SKIDTURN_R * sprite se retourne Droite");
+//		code.add("\tFDB DRAW_TEST1X10_SKIDTURN_L * sprite se retourne Gauche");
+		code.add("");
 		return code;
 	}
 
 	public List<String> getCodeHeader(int pos) {
+		return getCodeHeader("", pos);
+	}	
+	
+	public List<String> getCodeHeader(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
-		code.add(drawLabel);
+		code.add(prefix + drawLabel);
 		code.add("\tPSHS U,DP");
 		code.add("\tSTS >SSAVE");
 		code.add("");
-		code.add("\tLDS " + posALabel);
-		code.add("\tLDU #" + dataLabel + "_" + pos);
+		code.add("\tLDS " + prefix + posLabel);
+		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		return code;
 	}
-
+	
 	public List<String> getCodeSwitchData(int pos) {
+		return getCodeSwitchData("", pos);
+	}
+
+	public List<String> getCodeSwitchData(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS " + posBLabel);
-		code.add("\tLDU #" + dataLabel + "_" + pos);
+		code.add("\tLDS " + prefix + posLabel + "+2");
+		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		code.add("");
 		return code;
 	}
@@ -1090,11 +1277,23 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 	public List<String> getCodeDataPos() {
+		return getCodeDataPos("");
+	}
+	
+	public List<String> getCodeDataPos(String prefix) {
 		List<String> code = new ArrayList<String>();
-		code.add(posALabel);
+		code.add(prefix + posLabel);
 		code.add("\tFDB $1F40");
-		code.add(posBLabel);
 		code.add("\tFDB $3F40");
+		code.add("");
+		return code;
+	}
+
+	public List<String> getCodeEREFLabel(String e1, String e2) {
+		List<String> code = new ArrayList<String>();
+		code.add(drawELabel);
+		code.add("\tFDB " + e1 + drawLabel);
+		code.add("\tFDB " + e2 + drawLabel);
 		code.add("");
 		return code;
 	}
@@ -1125,34 +1324,4 @@ public class CompiledSpriteModeB16v2 {
 		code.add("FINTABPALETTE");
 		return code;
 	}
-
-	// public static BufferedImage rgbaToIndexedBufferedImage(BufferedImage
-	// sourceBufferedImage) {
-	// //With this constructor we create an indexed bufferedimage with the same
-	// dimensiosn and with a default 256 color model
-	// BufferedImage indexedImage= new
-	// BufferedImage(sourceBufferedImage.getWidth(),sourceBufferedImage.getHeight(),BufferedImage.TYPE_BYTE_INDEXED);
-	//
-	//
-	// ColorModel cm = indexedImage.getColorModel();
-	// IndexColorModel icm=(IndexColorModel) cm;
-	//
-	// int size=icm.getMapSize();
-	//
-	// byte[] reds = new byte[size];
-	// byte[] greens = new byte[size];
-	// byte[] blues = new byte[size];
-	// icm.getReds(reds);
-	// icm.getGreens(greens);
-	// icm.getBlues(blues);
-	//
-	// WritableRaster raster=indexedImage.getRaster();
-	// int pixel = raster.getSample(0, 0, 0);
-	// IndexColorModel icm2 = new IndexColorModel(8, size, reds, greens,
-	// blues,pixel);
-	// indexedImage=new BufferedImage(icm2,
-	// raster,sourceBufferedImage.isAlphaPremultiplied(), null);
-	// indexedImage.getGraphics().drawImage(sourceBufferedImage, 0, 0, null);
-	// return indexedImage;
-	// }
 }

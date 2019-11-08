@@ -25,6 +25,7 @@ public class CompiledSprite
 			
 			// Ecriture du fichier de sortie
 			Files.write(fichier, sprite.getCodeStart(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			
 			Files.write(fichier, sprite.getCodeHeader(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
@@ -32,9 +33,28 @@ public class CompiledSprite
 			Files.write(fichier, sprite.getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(fichier, sprite.getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, sprite.getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);	
+			Files.write(fichier, sprite.getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeEREFLabel("E1", "E2"), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+
+			Files.write(fichier, sprite.getCodeHeader("E1", 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeSwitchData("E1", 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledData("E1", 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledData("E1", 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeDataPos("E1"), Charset.forName("UTF-8"), StandardOpenOption.APPEND);	
+
+			Files.write(fichier, sprite.getCodeHeader("E2", 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeSwitchData("E2", 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledData("E2", 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCompiledData("E2", 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(fichier, sprite.getCodeDataPos("E2"), Charset.forName("UTF-8"), StandardOpenOption.APPEND);	
+			
 			Files.write(fichier, sprite.getCodePalette(background.getColorModel(),2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, sprite.getCodeEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 		}
 		else {
 			System.out.println("Parametres invalides !");
