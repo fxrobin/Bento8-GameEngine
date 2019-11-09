@@ -91,8 +91,7 @@ public class CompiledSpriteModeB16v2 {
 	int cyclesE2Code2 = 0;
 	int octetsE2Code2 = 0;
 	boolean isSelfModifying = false;
-	int offsetCodeSwitchData = 7;
-	int offsetCodeHeader = 13;
+	int offsetCode = 0;
 
 	public CompiledSpriteModeB16v2(String file) {
 		try {
@@ -159,36 +158,14 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 	public void generateCode() {
-		// Génération du code source pour l'écriture des images
-		isSelfModifying = true;
-		cyclesCode = 0;
-		octetsCode = 0;
-		generateCodeArray(1, spriteCode1, spriteData1);
-		cyclesWCode1 = cyclesCode;
-		octetsWCode1 = octetsCode;
-		System.out.println("W Cycles 1:  " + cyclesCode);
-		System.out.println("W Octets 1:  " + octetsCode);
-		
-		cyclesCode = 0;
-		octetsCode = 0;
-		generateCodeArray(3, spriteCode2, spriteData2);
-		cyclesWCode2 = cyclesCode;
-		octetsWCode2 = octetsCode;
-		System.out.println("W Cycles 2:  " + cyclesCode);
-		System.out.println("W Octets 2:  " + octetsCode);
-
 		// Génération du code source pour l'effacement des images
 		isSelfModifying = false;
-		cyclesCode = 0;
-		octetsCode = 0;
 		generateCodeArray(1, spriteE1Code1, spriteE1Data1);
 		cyclesE1Code1 = cyclesCode;
 		octetsE1Code1 = octetsCode;
 		System.out.println("E1 Cycles 1:  " + cyclesCode);
 		System.out.println("E1 Octets 1:  " + octetsCode);
 		
-		cyclesCode = 0;
-		octetsCode = 0;
 		generateCodeArray(3, spriteE1Code2, spriteE1Data2);
 		cyclesE1Code2 = cyclesCode;
 		octetsE1Code2 = octetsCode;
@@ -197,21 +174,31 @@ public class CompiledSpriteModeB16v2 {
 
 		// Génération du code source pour l'effacement des images
 		isSelfModifying = false;
-		cyclesCode = 0;
-		octetsCode = 0;
 		generateCodeArray(1, spriteE2Code1, spriteE2Data1);
 		cyclesE2Code1 = cyclesCode;
 		octetsE2Code1 = octetsCode;
 		System.out.println("E2 Cycles 1:  " + cyclesCode);
 		System.out.println("E2 Octets 1:  " + octetsCode);
 		
-		cyclesCode = 0;
-		octetsCode = 0;
 		generateCodeArray(3, spriteE2Code2, spriteE2Data2);
 		cyclesE2Code2 = cyclesCode;
 		octetsE2Code2 = octetsCode;
 		System.out.println("E2 Cycles 2:  " + cyclesCode);
 		System.out.println("E2 Octets 2:  " + octetsCode);
+		
+		// Génération du code source pour l'écriture des images
+		isSelfModifying = true;
+		generateCodeArray(1, spriteCode1, spriteData1);
+		cyclesWCode1 = cyclesCode;
+		octetsWCode1 = octetsCode;
+		System.out.println("W Cycles 1:  " + cyclesCode);
+		System.out.println("W Octets 1:  " + octetsCode);
+		
+		generateCodeArray(3, spriteCode2, spriteData2);
+		cyclesWCode2 = cyclesCode;
+		octetsWCode2 = octetsCode;
+		System.out.println("W Cycles 2:  " + cyclesCode);
+		System.out.println("W Octets 2:  " + octetsCode);
 		return;
 	}
 
@@ -226,6 +213,11 @@ public class CompiledSpriteModeB16v2 {
 		// Initialisation des variables globales
 		leas = 0;
 		stOffset = 0;
+		if (isSelfModifying) {
+			offsetCode = (pos==1) ? 19+octetsE2Code2 : 12;
+		}
+		cyclesCode = 0;
+		octetsCode = 0;
 
 		ArrayList<String> fdbBytes = new ArrayList<String>();
 		String fdbBytesResult = new String();
@@ -701,7 +693,7 @@ public class CompiledSpriteModeB16v2 {
 					write += "\n";
 				}
 				if (isSelfModifying) {
-					write += "\tST" + pulReg[indexReg] + " "+ octetsCode +",Y\n";
+					write += "\tST" + pulReg[indexReg] + " "+ (offsetCode+octetsCode) +",Y\n";
 				}
 				if (indexReg < 2) {
 					stOffset -= 2;
@@ -842,6 +834,41 @@ public class CompiledSpriteModeB16v2 {
 		return (i == 1) ? spriteData2 : spriteData1;
 	}
 
+
+	public List<String> getCompiledE1Code(int i) {
+		return (i == 1) ? spriteE1Code2 : spriteE1Code1;
+	}
+
+	public List<String> getCompiledE1Data(int i) {
+		return getCompiledE1Data("", i);
+	}	
+	
+	public List<String> getCompiledE1Data(String prefix, int i) {
+		if (i == 1) {
+			spriteE1Data2.set(0, prefix + dataLabel + "_2");
+		} else {
+			spriteE1Data1.set(0, prefix + dataLabel + "_1");
+		}
+		return (i == 1) ? spriteE1Data2 : spriteE1Data1;
+	}
+
+	public List<String> getCompiledE2Code(int i) {
+		return (i == 1) ? spriteE1Code2 : spriteE1Code1;
+	}
+
+	public List<String> getCompiledE2Data(int i) {
+		return getCompiledE1Data("", i);
+	}	
+	
+	public List<String> getCompiledE2Data(String prefix, int i) {
+		if (i == 1) {
+			spriteE1Data2.set(0, prefix + dataLabel + "_2");
+		} else {
+			spriteE1Data1.set(0, prefix + dataLabel + "_1");
+		}
+		return (i == 1) ? spriteE1Data2 : spriteE1Data1;
+	}	
+	
 	public List<String> getCodeStart() {
 		List<String> code = new ArrayList<String>();
 		code.add("********************************************************************************");
@@ -900,21 +927,15 @@ public class CompiledSpriteModeB16v2 {
 		code.add("\tINCA");
 		code.add("\tCMPY #FINTABPALETTE");
 		code.add("\tBNE	SETPALETTE");
-		code.add("\t");
-		code.add("********************************************************************************  ");
-		code.add("* Initialisation de la couleur de bordure");
-		code.add("********************************************************************************");
-		code.add("INITBORD");
-		code.add("\tLDA	#$0F	* couleur 15");
-		code.add("\tSTA	$E7DD");
 		code.add("");
 		code.add("********************************************************************************");
 		code.add("* Initialisation de la routine de commutation de page video");
 		code.add("********************************************************************************");
-		code.add("\tLDB $6081");
-		code.add("\tORB #$10");
+		code.add("\tLDB $6081 * A documenter");
+		code.add("\tORB #$10  * mettre le bit d4 a 1");
 		code.add("\tSTB $6081");
 		code.add("\tSTB $E7E7");
+		code.add("\tJSR SCRC * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)");
 		code.add("");
 		code.add("*-------------------------------------------------------------------------------");
 		code.add("* Initialisation des deux pages videos avec Fond et sprites");

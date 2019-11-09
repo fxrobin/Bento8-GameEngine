@@ -54,21 +54,15 @@ SETPALETTE
 	INCA
 	CMPY #FINTABPALETTE
 	BNE	SETPALETTE
-	
-********************************************************************************  
-* Initialisation de la couleur de bordure
-********************************************************************************
-INITBORD
-	LDA	#$0F	* couleur 15
-	STA	$E7DD
 
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
 ********************************************************************************
-	LDB $6081
-	ORB #$10
+	LDB $6081 * A documenter
+	ORB #$10  * mettre le bit d4 a 1
 	STB $6081
 	STB $E7E7
+	JSR SCRC * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
 
 *-------------------------------------------------------------------------------
 * Initialisation des deux pages videos avec Fond et sprites
@@ -386,34 +380,34 @@ DRAW_TEST1X100000
 	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
 	LDX #$fff0
-	STX 5,Y
+	STX 17,Y
 	STX -2,S
 	LDX #$c996
-	STX 10,Y
+	STX 22,Y
 	STX -42,S
 	LDX #$f026
-	STX 16,Y
+	STX 28,Y
 	STX -82,S
 	LDX #$2b2c
-	STX 22,Y
+	STX 34,Y
 	STX -122,S
 	LEAS -160,S
 	LDA #$c2
-	STA 31,Y
+	STA 43,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$0c
 	STA -2,S
 	LDA #$26
-	STA 43,Y
+	STA 55,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$02
 	STA -42,S
 	LDA #$11
-	STA 58,Y
+	STA 70,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
@@ -429,14 +423,14 @@ DRAW_TEST1X100000
 	ADDA #$0e
 	STA ,S
 	LDA #$db
-	STA 95,Y
+	STA 107,Y
 	STA -40,S
 	LDA  #$F0
 	ANDA -41,S
 	ADDA #$0b
 	STA -41,S
 	LDA #$d6
-	STA 110,Y
+	STA 122,Y
 	STA -80,S
 	LDA  #$F0
 	ANDA -81,S
@@ -447,7 +441,7 @@ DRAW_TEST1X100000
 	ADDA #$e0
 	STA -119,S
 	LDX #$b662
-	STX 136,Y
+	STX 148,Y
 	STX -121,S
 	LEAS -159,S
 	LDA  #$0F
@@ -455,28 +449,28 @@ DRAW_TEST1X100000
 	ADDA #$e0
 	STA ,S
 	LDX #$6b21
-	STX 154,Y
+	STX 166,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
 	LDX #$2b11
-	STX 169,Y
+	STX 181,Y
 	STX -42,S
 	LDA  #$0F
 	ANDA -80,S
 	ADDA #$a0
 	STA -80,S
 	LDA #$11
-	STA 184,Y
+	STA 196,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$00
 	STA -82,S
 	LDA #$d2
-	STA 199,Y
+	STA 211,Y
 	STA -121,S
 	LDA  #$F0
 	ANDA -122,S
@@ -484,39 +478,39 @@ DRAW_TEST1X100000
 	STA -122,S
 	LEAS -160,S
 	LDA #$d0
-	STA 218,Y
+	STA 230,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$05
 	STA -2,S
 	LDA #$ec
-	STA 230,Y
+	STA 242,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$08
 	STA -42,S
 	LDA #$c3
-	STA 245,Y
+	STA 257,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$0c
 	STA -82,S
 	LDA #$e0
-	STA 260,Y
+	STA 272,Y
 	STA -121,S
 	LEAS -159,S
 	LDX #$cede
-	STX 270,Y
+	STX 282,Y
 	STX -2,S
 	LDA  #$F0
 	ANDA -3,S
 	ADDA #$0c
 	STA -3,S
 	LDX #$5eed
-	STX 283,Y
+	STX 295,Y
 	STX -42,S
 	LDA  #$F0
 	ANDA -43,S
@@ -535,17 +529,17 @@ DRAW_TEST1X100000
 	ADDA #$a0
 	STA -38,S
 	LDX #$611a
-	STX 329,Y
+	STX 341,Y
 	STX -40,S
 	LDX #$007a
-	STX 335,Y
+	STX 347,Y
 	STX -80,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$d0
 	STA -118,S
 	LDX #$0077
-	STX 351,Y
+	STX 363,Y
 	STX -120,S
 	LEAS -157,S
 	LDA #$a0
@@ -568,34 +562,34 @@ DRAW_TEST1X100000
 	ADDA #$a0
 	STA -38,S
 	LDX #$7477
-	STX 408,Y
+	STX 420,Y
 	STX -40,S
 	LDX #$a773
-	STX 414,Y
+	STX 426,Y
 	STX -80,S
 	LDX #$e7c3
-	STX 420,Y
+	STX 432,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$d7d3
-	STX 430,Y
+	STX 442,Y
 	STX -2,S
 	LDX #$78ee
-	STX 435,Y
+	STX 447,Y
 	STX -41,S
 	LDA  #$0F
 	ANDA -42,S
 	ADDA #$d0
 	STA -42,S
 	LDX #$7ddd
-	STX 451,Y
+	STX 463,Y
 	STX -81,S
 	LDA  #$0F
 	ANDA -82,S
 	ADDA #$d0
 	STA -82,S
 	LDX #$a7aa
-	STX 467,Y
+	STX 479,Y
 	STX -121,S
 	LEAS -161,S
 	LDA  #$F0
@@ -616,7 +610,7 @@ DRAW_TEST1X100000
 	LDX #$99cf
 	PSHS X,A
 	LDX #$39cf
-	STX 22,Y
+	STX 523,Y
 	STX -39,S
 	LDA  #$F0
 	ANDA -40,S
@@ -627,14 +621,14 @@ DRAW_TEST1X100000
 	ADDA #$c0
 	STA -78,S
 	LDA #$01
-	STA 47,Y
+	STA 548,Y
 	STA -79,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$00
 	STA -118,S
 	LDA #$62
-	STA 62,Y
+	STA 563,Y
 	STA -119,S
 	LEAS -158,S
 	LDA  #$0F
@@ -642,14 +636,14 @@ DRAW_TEST1X100000
 	ADDA #$b0
 	STA ,S
 	LDA #$b0
-	STA 79,Y
+	STA 580,Y
 	STA -1,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$60
 	STA -40,S
 	LDA #$6b
-	STA 93,Y
+	STA 594,Y
 	STA -41,S
 	LDA  #$0F
 	ANDA -81,S
@@ -681,58 +675,58 @@ DRAW_TEST1X100000
 	ADDA #$e0
 	STA -80,S
 	LDX #$0ebd
-	STX 171,Y
+	STX 672,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$dd6f
-	STX 181,Y
+	STX 682,Y
 	STX -2,S
 	LDX #$8c18
-	STX 186,Y
+	STX 687,Y
 	STX -42,S
 	LDX #$35e5
-	STX 192,Y
+	STX 693,Y
 	STX -82,S
 	LDX #$3383
-	STX 198,Y
+	STX 699,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$333a
-	STX 208,Y
+	STX 709,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -41,S
 	ADDA #$e0
 	STA -41,S
 	LDA #$58
-	STA 222,Y
+	STA 723,Y
 	STA -42,S
 	LDX #$f0dd
-	STX 228,Y
+	STX 729,Y
 	STX -82,S
 	LDA  #$0F
 	ANDA -120,S
 	ADDA #$a0
 	STA -120,S
 	LDX #$88ee
-	STX 244,Y
+	STX 745,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$330e
-	STX 254,Y
+	STX 755,Y
 	STX -2,S
 	LDX #$33ee
-	STX 259,Y
+	STX 760,Y
 	STX -42,S
 	LDX #$11ee
-	STX 265,Y
+	STX 766,Y
 	STX -82,S
 	LDA  #$F0
 	ANDA -83,S
 	ADDA #$00
 	STA -83,S
 	LDX #$17de
-	STX 281,Y
+	STX 782,Y
 	STX -122,S
 	LDA  #$F0
 	ANDA -123,S
@@ -740,9 +734,9 @@ DRAW_TEST1X100000
 	STA -123,S
 	LEAS -160,S
 	LDX #$11ae
-	STX 301,Y
+	STX 802,Y
 	STX -2,S
-	STX 303,Y
+	STX 804,Y
 	STX -42,S
 	LEAS -79,S
 	LDA #$11
@@ -753,51 +747,51 @@ DRAW_TEST1X100000
 	ADDA #$e0
 	STA -38,S
 	LDX #$11ad
-	STX 329,Y
+	STX 830,Y
 	STX -40,S
 	LDA  #$0F
 	ANDA -78,S
 	ADDA #$a0
 	STA -78,S
 	LDX #$21ad
-	STX 345,Y
+	STX 846,Y
 	STX -80,S
 	LDX #$a1ad
-	STX 351,Y
+	STX 852,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$7aad
-	STX 361,Y
+	STX 862,Y
 	STX -2,S
 	LDX #$44ea
-	STX 366,Y
+	STX 867,Y
 	STX -42,S
 	LDX #$44ed
-	STX 372,Y
+	STX 873,Y
 	STX -82,S
 	LDX #$74ee
-	STX 378,Y
+	STX 879,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$77dd
-	STX 388,Y
+	STX 889,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
 	LDA #$aa
-	STA 402,Y
+	STA 903,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$07
 	STA -42,S
 	LDA #$77
-	STA 417,Y
+	STA 918,Y
 	STA -81,S
 	LDA #$aa
-	STA 422,Y
+	STA 923,Y
 	STA -121,S
 
 	LDS  >SSAVE
@@ -820,37 +814,29 @@ E1DRAW_TEST1X100000
 
 	LDS E1POS_TEST1X100000
 	LDU #E1DATA_TEST1X100000_1
-	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
 	LDX #$fff0
-	STX 5,Y
 	STX -2,S
 	LDX #$c996
-	STX 10,Y
 	STX -42,S
 	LDX #$f026
-	STX 16,Y
 	STX -82,S
 	LDX #$2b2c
-	STX 22,Y
 	STX -122,S
 	LEAS -160,S
 	LDA #$c2
-	STA 31,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$0c
 	STA -2,S
 	LDA #$26
-	STA 43,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$02
 	STA -42,S
 	LDA #$11
-	STA 58,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
@@ -866,14 +852,12 @@ E1DRAW_TEST1X100000
 	ADDA #$0e
 	STA ,S
 	LDA #$db
-	STA 95,Y
 	STA -40,S
 	LDA  #$F0
 	ANDA -41,S
 	ADDA #$0b
 	STA -41,S
 	LDA #$d6
-	STA 110,Y
 	STA -80,S
 	LDA  #$F0
 	ANDA -81,S
@@ -884,7 +868,6 @@ E1DRAW_TEST1X100000
 	ADDA #$e0
 	STA -119,S
 	LDX #$b662
-	STX 136,Y
 	STX -121,S
 	LEAS -159,S
 	LDA  #$0F
@@ -892,28 +875,24 @@ E1DRAW_TEST1X100000
 	ADDA #$e0
 	STA ,S
 	LDX #$6b21
-	STX 154,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
 	LDX #$2b11
-	STX 169,Y
 	STX -42,S
 	LDA  #$0F
 	ANDA -80,S
 	ADDA #$a0
 	STA -80,S
 	LDA #$11
-	STA 184,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$00
 	STA -82,S
 	LDA #$d2
-	STA 199,Y
 	STA -121,S
 	LDA  #$F0
 	ANDA -122,S
@@ -921,39 +900,33 @@ E1DRAW_TEST1X100000
 	STA -122,S
 	LEAS -160,S
 	LDA #$d0
-	STA 218,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$05
 	STA -2,S
 	LDA #$ec
-	STA 230,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$08
 	STA -42,S
 	LDA #$c3
-	STA 245,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$0c
 	STA -82,S
 	LDA #$e0
-	STA 260,Y
 	STA -121,S
 	LEAS -159,S
 	LDX #$cede
-	STX 270,Y
 	STX -2,S
 	LDA  #$F0
 	ANDA -3,S
 	ADDA #$0c
 	STA -3,S
 	LDX #$5eed
-	STX 283,Y
 	STX -42,S
 	LDA  #$F0
 	ANDA -43,S
@@ -972,17 +945,14 @@ E1DRAW_TEST1X100000
 	ADDA #$a0
 	STA -38,S
 	LDX #$611a
-	STX 329,Y
 	STX -40,S
 	LDX #$007a
-	STX 335,Y
 	STX -80,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$d0
 	STA -118,S
 	LDX #$0077
-	STX 351,Y
 	STX -120,S
 	LEAS -157,S
 	LDA #$a0
@@ -1005,34 +975,27 @@ E1DRAW_TEST1X100000
 	ADDA #$a0
 	STA -38,S
 	LDX #$7477
-	STX 408,Y
 	STX -40,S
 	LDX #$a773
-	STX 414,Y
 	STX -80,S
 	LDX #$e7c3
-	STX 420,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$d7d3
-	STX 430,Y
 	STX -2,S
 	LDX #$78ee
-	STX 435,Y
 	STX -41,S
 	LDA  #$0F
 	ANDA -42,S
 	ADDA #$d0
 	STA -42,S
 	LDX #$7ddd
-	STX 451,Y
 	STX -81,S
 	LDA  #$0F
 	ANDA -82,S
 	ADDA #$d0
 	STA -82,S
 	LDX #$a7aa
-	STX 467,Y
 	STX -121,S
 	LEAS -161,S
 	LDA  #$F0
@@ -1043,7 +1006,6 @@ E1DRAW_TEST1X100000
 	LDS E1POS_TEST1X100000+2
 	LDU #E1DATA_TEST1X100000_2
 
-	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
 	LDA #$00
 	LDX #$ff0f
@@ -1053,7 +1015,6 @@ E1DRAW_TEST1X100000
 	LDX #$99cf
 	PSHS X,A
 	LDX #$39cf
-	STX 22,Y
 	STX -39,S
 	LDA  #$F0
 	ANDA -40,S
@@ -1064,14 +1025,12 @@ E1DRAW_TEST1X100000
 	ADDA #$c0
 	STA -78,S
 	LDA #$01
-	STA 47,Y
 	STA -79,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$00
 	STA -118,S
 	LDA #$62
-	STA 62,Y
 	STA -119,S
 	LEAS -158,S
 	LDA  #$0F
@@ -1079,14 +1038,12 @@ E1DRAW_TEST1X100000
 	ADDA #$b0
 	STA ,S
 	LDA #$b0
-	STA 79,Y
 	STA -1,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$60
 	STA -40,S
 	LDA #$6b
-	STA 93,Y
 	STA -41,S
 	LDA  #$0F
 	ANDA -81,S
@@ -1118,58 +1075,45 @@ E1DRAW_TEST1X100000
 	ADDA #$e0
 	STA -80,S
 	LDX #$0ebd
-	STX 171,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$dd6f
-	STX 181,Y
 	STX -2,S
 	LDX #$8c18
-	STX 186,Y
 	STX -42,S
 	LDX #$35e5
-	STX 192,Y
 	STX -82,S
 	LDX #$3383
-	STX 198,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$333a
-	STX 208,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -41,S
 	ADDA #$e0
 	STA -41,S
 	LDA #$58
-	STA 222,Y
 	STA -42,S
 	LDX #$f0dd
-	STX 228,Y
 	STX -82,S
 	LDA  #$0F
 	ANDA -120,S
 	ADDA #$a0
 	STA -120,S
 	LDX #$88ee
-	STX 244,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$330e
-	STX 254,Y
 	STX -2,S
 	LDX #$33ee
-	STX 259,Y
 	STX -42,S
 	LDX #$11ee
-	STX 265,Y
 	STX -82,S
 	LDA  #$F0
 	ANDA -83,S
 	ADDA #$00
 	STA -83,S
 	LDX #$17de
-	STX 281,Y
 	STX -122,S
 	LDA  #$F0
 	ANDA -123,S
@@ -1177,9 +1121,7 @@ E1DRAW_TEST1X100000
 	STA -123,S
 	LEAS -160,S
 	LDX #$11ae
-	STX 301,Y
 	STX -2,S
-	STX 303,Y
 	STX -42,S
 	LEAS -79,S
 	LDA #$11
@@ -1190,51 +1132,40 @@ E1DRAW_TEST1X100000
 	ADDA #$e0
 	STA -38,S
 	LDX #$11ad
-	STX 329,Y
 	STX -40,S
 	LDA  #$0F
 	ANDA -78,S
 	ADDA #$a0
 	STA -78,S
 	LDX #$21ad
-	STX 345,Y
 	STX -80,S
 	LDX #$a1ad
-	STX 351,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$7aad
-	STX 361,Y
 	STX -2,S
 	LDX #$44ea
-	STX 366,Y
 	STX -42,S
 	LDX #$44ed
-	STX 372,Y
 	STX -82,S
 	LDX #$74ee
-	STX 378,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$77dd
-	STX 388,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
 	LDA #$aa
-	STA 402,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$07
 	STA -42,S
 	LDA #$77
-	STA 417,Y
 	STA -81,S
 	LDA #$aa
-	STA 422,Y
 	STA -121,S
 
 	LDS  >SSAVE
@@ -1253,37 +1184,29 @@ E2DRAW_TEST1X100000
 
 	LDS E2POS_TEST1X100000
 	LDU #E2DATA_TEST1X100000_1
-	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
 	LDX #$fff0
-	STX 5,Y
 	STX -2,S
 	LDX #$c996
-	STX 10,Y
 	STX -42,S
 	LDX #$f026
-	STX 16,Y
 	STX -82,S
 	LDX #$2b2c
-	STX 22,Y
 	STX -122,S
 	LEAS -160,S
 	LDA #$c2
-	STA 31,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$0c
 	STA -2,S
 	LDA #$26
-	STA 43,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$02
 	STA -42,S
 	LDA #$11
-	STA 58,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
@@ -1299,14 +1222,12 @@ E2DRAW_TEST1X100000
 	ADDA #$0e
 	STA ,S
 	LDA #$db
-	STA 95,Y
 	STA -40,S
 	LDA  #$F0
 	ANDA -41,S
 	ADDA #$0b
 	STA -41,S
 	LDA #$d6
-	STA 110,Y
 	STA -80,S
 	LDA  #$F0
 	ANDA -81,S
@@ -1317,7 +1238,6 @@ E2DRAW_TEST1X100000
 	ADDA #$e0
 	STA -119,S
 	LDX #$b662
-	STX 136,Y
 	STX -121,S
 	LEAS -159,S
 	LDA  #$0F
@@ -1325,28 +1245,24 @@ E2DRAW_TEST1X100000
 	ADDA #$e0
 	STA ,S
 	LDX #$6b21
-	STX 154,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
 	LDX #$2b11
-	STX 169,Y
 	STX -42,S
 	LDA  #$0F
 	ANDA -80,S
 	ADDA #$a0
 	STA -80,S
 	LDA #$11
-	STA 184,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$00
 	STA -82,S
 	LDA #$d2
-	STA 199,Y
 	STA -121,S
 	LDA  #$F0
 	ANDA -122,S
@@ -1354,39 +1270,33 @@ E2DRAW_TEST1X100000
 	STA -122,S
 	LEAS -160,S
 	LDA #$d0
-	STA 218,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$05
 	STA -2,S
 	LDA #$ec
-	STA 230,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$08
 	STA -42,S
 	LDA #$c3
-	STA 245,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$0c
 	STA -82,S
 	LDA #$e0
-	STA 260,Y
 	STA -121,S
 	LEAS -159,S
 	LDX #$cede
-	STX 270,Y
 	STX -2,S
 	LDA  #$F0
 	ANDA -3,S
 	ADDA #$0c
 	STA -3,S
 	LDX #$5eed
-	STX 283,Y
 	STX -42,S
 	LDA  #$F0
 	ANDA -43,S
@@ -1405,17 +1315,14 @@ E2DRAW_TEST1X100000
 	ADDA #$a0
 	STA -38,S
 	LDX #$611a
-	STX 329,Y
 	STX -40,S
 	LDX #$007a
-	STX 335,Y
 	STX -80,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$d0
 	STA -118,S
 	LDX #$0077
-	STX 351,Y
 	STX -120,S
 	LEAS -157,S
 	LDA #$a0
@@ -1438,34 +1345,27 @@ E2DRAW_TEST1X100000
 	ADDA #$a0
 	STA -38,S
 	LDX #$7477
-	STX 408,Y
 	STX -40,S
 	LDX #$a773
-	STX 414,Y
 	STX -80,S
 	LDX #$e7c3
-	STX 420,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$d7d3
-	STX 430,Y
 	STX -2,S
 	LDX #$78ee
-	STX 435,Y
 	STX -41,S
 	LDA  #$0F
 	ANDA -42,S
 	ADDA #$d0
 	STA -42,S
 	LDX #$7ddd
-	STX 451,Y
 	STX -81,S
 	LDA  #$0F
 	ANDA -82,S
 	ADDA #$d0
 	STA -82,S
 	LDX #$a7aa
-	STX 467,Y
 	STX -121,S
 	LEAS -161,S
 	LDA  #$F0
@@ -1476,7 +1376,6 @@ E2DRAW_TEST1X100000
 	LDS E2POS_TEST1X100000+2
 	LDU #E2DATA_TEST1X100000_2
 
-	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
 	LDA #$00
 	LDX #$ff0f
@@ -1486,7 +1385,6 @@ E2DRAW_TEST1X100000
 	LDX #$99cf
 	PSHS X,A
 	LDX #$39cf
-	STX 22,Y
 	STX -39,S
 	LDA  #$F0
 	ANDA -40,S
@@ -1497,14 +1395,12 @@ E2DRAW_TEST1X100000
 	ADDA #$c0
 	STA -78,S
 	LDA #$01
-	STA 47,Y
 	STA -79,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$00
 	STA -118,S
 	LDA #$62
-	STA 62,Y
 	STA -119,S
 	LEAS -158,S
 	LDA  #$0F
@@ -1512,14 +1408,12 @@ E2DRAW_TEST1X100000
 	ADDA #$b0
 	STA ,S
 	LDA #$b0
-	STA 79,Y
 	STA -1,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$60
 	STA -40,S
 	LDA #$6b
-	STA 93,Y
 	STA -41,S
 	LDA  #$0F
 	ANDA -81,S
@@ -1551,58 +1445,45 @@ E2DRAW_TEST1X100000
 	ADDA #$e0
 	STA -80,S
 	LDX #$0ebd
-	STX 171,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$dd6f
-	STX 181,Y
 	STX -2,S
 	LDX #$8c18
-	STX 186,Y
 	STX -42,S
 	LDX #$35e5
-	STX 192,Y
 	STX -82,S
 	LDX #$3383
-	STX 198,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$333a
-	STX 208,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -41,S
 	ADDA #$e0
 	STA -41,S
 	LDA #$58
-	STA 222,Y
 	STA -42,S
 	LDX #$f0dd
-	STX 228,Y
 	STX -82,S
 	LDA  #$0F
 	ANDA -120,S
 	ADDA #$a0
 	STA -120,S
 	LDX #$88ee
-	STX 244,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$330e
-	STX 254,Y
 	STX -2,S
 	LDX #$33ee
-	STX 259,Y
 	STX -42,S
 	LDX #$11ee
-	STX 265,Y
 	STX -82,S
 	LDA  #$F0
 	ANDA -83,S
 	ADDA #$00
 	STA -83,S
 	LDX #$17de
-	STX 281,Y
 	STX -122,S
 	LDA  #$F0
 	ANDA -123,S
@@ -1610,9 +1491,7 @@ E2DRAW_TEST1X100000
 	STA -123,S
 	LEAS -160,S
 	LDX #$11ae
-	STX 301,Y
 	STX -2,S
-	STX 303,Y
 	STX -42,S
 	LEAS -79,S
 	LDA #$11
@@ -1623,51 +1502,40 @@ E2DRAW_TEST1X100000
 	ADDA #$e0
 	STA -38,S
 	LDX #$11ad
-	STX 329,Y
 	STX -40,S
 	LDA  #$0F
 	ANDA -78,S
 	ADDA #$a0
 	STA -78,S
 	LDX #$21ad
-	STX 345,Y
 	STX -80,S
 	LDX #$a1ad
-	STX 351,Y
 	STX -120,S
 	LEAS -158,S
 	LDX #$7aad
-	STX 361,Y
 	STX -2,S
 	LDX #$44ea
-	STX 366,Y
 	STX -42,S
 	LDX #$44ed
-	STX 372,Y
 	STX -82,S
 	LDX #$74ee
-	STX 378,Y
 	STX -122,S
 	LEAS -160,S
 	LDX #$77dd
-	STX 388,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
 	LDA #$aa
-	STA 402,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$07
 	STA -42,S
 	LDA #$77
-	STA 417,Y
 	STA -81,S
 	LDA #$aa
-	STA 422,Y
 	STA -121,S
 
 	LDS  >SSAVE
