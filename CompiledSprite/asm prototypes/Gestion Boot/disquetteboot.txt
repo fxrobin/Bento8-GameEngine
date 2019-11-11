@@ -1,0 +1,76 @@
+10 '------------------------------------
+20 '
+30 '         MultiDos MO 3"1/2
+40 '
+50 '------------------------------------
+60 '
+70 '
+80 IF PEEK(&HC000)<>213 THEN PRINT"Ce pr
+ogramme ne fonctionne que sous":ATTRB1:P
+RINT"     BASIC 1":ATTRB0:END
+90 CLEAR 12000
+100 DIM A$(4,16),B$(4,16)
+110 OCTET=&H2974
+120 CONSOLE 0,24,0
+130 SCREEN 4,6,6
+140 CLS
+150 PRINT "     Multidos 1.0 (c) Thomson
+ 1986
+160 PRINT 
+170 PRINT "     Ce programme vous permet
+ de creer 
+180 PRINT "une disquette avec un DOS pou
+r l'un de
+190 PRINT "ces deux langages.
+200 PRINT
+210 PRINT "   1     BASIC MICROSOFT 1.0
+220 PRINT "   2     LOGO
+240 PRINT
+250 PRINT
+260 PRINT "Choisissez (1 ou 2) : ";
+270    A=VAL(INPUT$(1))
+280    IF A<1 OR A>2 THEN 270
+290 '
+300 CLS
+310 PRINT "Le DOS ";
+320 ON A GOTO 330,340,350
+330 F$ = "BASIC" : GOTO 360
+340 F$ = "LOGO"
+360 PRINT F$" va être installe."
+370 PRINT
+380 PRINT
+390 OPEN "I",#1,F$+".DOS"
+400 ON ERROR GOTO 470
+410 FOR P=0 TO 4
+420 FOR S=1 TO 16
+430 A$(P,S)=INPUT$(255,1)
+440 B$(P,S)=INPUT$(1,1)
+450 NEXT:NEXT
+460 '
+470 IF ERR<>54 THEN ERROR ERR
+480 RESUME 490
+490 ON ERROR GOTO 0
+500 CLOSE #1
+510 '
+520 PRINT "Inserez une disquette vierge"
+530 INPUT "et tapez ENTREE",BIDON$
+540 PRINT 
+550 PRINT "Formattage en cours...
+560 DSKINI 0
+570 PRINT "Installation du DOS en cours.
+..
+580 LAST=16
+590 FOR PP=0 TO P
+600 IF PP=P THEN LAST=S-1
+610 FOR SS=1 TO LAST
+620 POKE OCTET,ASC(B$(PP,SS))
+630 DSKO$ 0,PP,SS,A$(PP,SS)
+640 NEXT
+650 NEXT
+660 '
+670 FA$=DSKI$(0,20,2)
+680 MID$(FA$,2)=STRING$(P*2+1-(S>8),254)
+690 DSKO$ 0,20,2,FA$
+700 PRINT 
+710 PRINT "Installation terminee."
+720 END

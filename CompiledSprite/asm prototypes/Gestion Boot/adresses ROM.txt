@@ -1,0 +1,218 @@
+Les points d'entrées du Moniteur disque
+
+Adresses et points d'entrées sont déclarés pour MO et pour TO (avec numéro de CALL pour MO).
+
+$A004/$E004 (CALL $26 sur MO) : Fonctions standard (DKCONT)
+Cette entrée donne la possibilité d’exécuter diverses opérations fondamentales sous les modalités suivantes:
+Reset du contrôleur (tout lecteur sauf RamDisk)
+Registres d’entrée:
+- $2048/$6048 Code de commande $01
+- $20E9-$20EA/$60E9-$20EA Pointeur sur le buffer de secteur
+- $20ED-$20EE/$60ED-$60EE Pointeur sur le buffer de FAT
+Sur les lecteurs gérant simultanément la simple et la double densité, si le buffer de FAT et de secteur sont espacés de 256 octets, le reset contrôleur forcera la double densité. S'ils sont espacés de 128 octets, la simple. A l'initialisation de l'ordinateur, ces deux registres sont à $0000, la double densité est donc prioritaire. Il reste possible de forcer la densité par le point d'entrée Moniteur $A004/$E004 (commandes $04 et $10). La mise à jour des pointeurs de buffer pour des lecteurs ne gérant qu'une seule densité est sans conséquence au reset.
+Registres de retour:
+- Si C de CC à 0, $204E/$604E contient le code de densité du lecteur (« D » si double densité, « C » si simple). Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+Lecture d’un secteur (tout lecteur)
+Registres d’entrée :
+- $2048/$6048 Code de commande $02
+- $2049/$6049 Numéro du lecteur
+- $204A-$204B/$604A-$204B Numéro de piste
+- $204C/$604C Numéro de secteur (de 1 à 16)
+- $204F-$2050/$604F-$2050 Pointeur sur la mémoire tampon de réception
+Registres d’entrée pour QDD avec numéro de secteur réel:
+- $2048/$6048 Code de commande $02
+- $2049/$6049 Numéro du lecteur
+- $204A/$604A $FF
+- $204C-$204D/$604C-$604D Numéro de secteur (de 1 à 400)
+- $204F-$2050/$604F-$2050 Pointeur sur la mémoire tampon de réception
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+Passage en simple densité (floppy exclusivement)
+Registres d’entrée :
+- $2048/$6048 Code de commande $04
+Registres de retour :
+Aucun
+Ecriture d’un secteur (tout lecteur)
+Registres d’entrée :
+- $2048/$6048 Code de commande $08 ($88 pour écriture avec vérification)
+- $2049/$6049 Numéro du lecteur
+- $204A-$204B/$604A-$204B Numéro de piste
+- $204C/$604C Numéro de secteur
+- $204F-$2050/$604F-$2050 Pointeur sur la mémoire tampon de réception
+Registres d’entrée pour QDD avec numéro de secteur réel:
+- $2048/$6048 Code de commande $08 ($88 pour écriture avec vérification)
+- $2049/$6049 Numéro du lecteur
+- $204A/$604A $FF
+- $204C-$204D/$604C-$604D Numéro de secteur (de 1 à 400)
+- $204F-$2050/$604F-$2050 Pointeur sur la mémoire tampon de réception
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+Passage en double densité (floppy exclusivement)
+Registres d’entrée :
+- $2048/$6048 Code de commande $10
+Registres de retour :
+Aucun
+Recherche de la piste 0 (floppy exclusivement)
+Registres d’entrée :
+- $2048/$6048 Code de commande $20
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+Recherche d’une piste quelconque (floppy exclusivement)
+Registres d’entrée :
+- $2048/$6048 Code de commande $40
+- $204A-$204B/$604A-$204B Numéro de piste (sur 16 bits)
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+
+Remarque : dans le manuel, il est inscrit que le passage de densité peut provoquer une erreur mais elle n’est pas délivrée par les programmes de changement de densité, puisque ceux-ci ne renvoient jamais d’erreur. Une erreur, donc, que seule la logique impose...
+
+$A007/$E007 (CALL $28 sur MO) : Lancement du boot(DKBOOT)
+Registres d’entrée :
+Aucun
+Registres de retour :
+Aucun
+
+$A00A/$E00A (CALL $2A sur MO) : Formatage (DKFMT)
+Registres d’entrée :
+- $2048/$6048 Code $80 si vérification demandée, sinon $00 (floppy exclusivement)
+- $204D/$604D Facteur d’entrelacement de 1 à 15 (floppy exclusivement)
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+
+$A00D/$E00D (CALL $34 sur MO) : Lecture de la FAT (LECFA)
+Registres d’entrée :
+- $20ED/$60ED Pointeur sur la mémoire tampon de FAT (128 ou 256 octets selon la densité)
+Registres de retour :
+- C de CC à 1 si erreur de chargement. 0 si pas d’erreur.
+
+$A010/$E010 (CALL $38 sur MO) : Recherche d’un fichier (RECFI)
+Registres d’entrée :
+- La FAT a été chargée (entrée $A00D/$E00D)
+- $20E9-$20EA/$60E9-$60EA Pointeur sur la mémoire tampon de secteur
+- $20E7-$20E8/$60E7-$60E8 Pointeur sur le descripteur de fichier (11 octets)
+- $20F0/$60F0 Mode d’ouverture du fichier
+- $20EB/$60EB Type du fichier recherché
+- $20EC/$60EC Flag du fichier recherché
+Registres de retour :
+- C de CC à 1 si erreur de chargement. Le registre $20E5/$60E5 contient le code d’erreur du système d’exploitation logique $03 si I/O Error (aussi dans A). Registre à 0 et C de CC à 0 si pas d’erreur.
+- $20F9/$60F9 Numéro du secteur de l'entrée du fichier dans le catalogue. Si une sauvegarde avec écrasement est demandée ($03 dans le registre $20F0/$60F0), c’est le fichier nommé « SCRATCH.DOS » qui sera recherché. Si l’entrée du fichier n’a pas été trouvée, ce registre est à 0. ATTENTION! Le flag C de CC n’est pas mis à 1 dans ce dernier cas.
+- $20F6/$60F6 Numéro du premier bloc de fichier
+- $20F5/$60F5 Compteur de secteur à 0
+- $20F7-$20F8/$60F7-$60F8 Nombre d’octets dans le dernier secteur du fichier (sur 16 bits)
+- $20FA-$20FB/$60FA-$60FB Pointeur sur l’entrée du fichier dans le secteur
+
+$A013/$E013 (CALL $3A sur MO) : Récupération de la place occupée par un fichier (RECUP)
+Registres d’entrée :
+- La FAT a été chargée (entrée $A00D/$E00D).
+- Le fichier à effacer doit avoir été recherché dans le catalogue au préalable (entrée $A010/$E010).
+Registres de retour :
+- C de CC à 1 si erreur de sauvegarde du secteur de catalogue. Le registre $20E5/$60E5 contient le code d’erreur du système d’exploitation logique $03 si I/O Error. Registre à 0 et C de CC à 0 si pas d’erreur.
+- Y contient le pointeur sur la mémoire tampon de FAT.
+- L’entrée du fichier a été effacée, le secteur de catalogue a été sauvé, la FAT a été mise à jour mais pas sauvée sur le disque. Pour sauver la FAT, positionner le mode « écriture d’un fichier sans écrasement » (code $02) et appeler la routine de clôture en $A022/$E022.
+
+$A016/$E016 (CALL $30 sur MO) : Ecriture d’un secteur (ECRSE)
+Registres d’entrée :
+- $20E9-$20EA/$60E9-$60EA Pointeur sur la mémoire tampon de secteur
+Registres de retour :
+- Le secteur courant est sauvé sur le disque.
+- C de CC à 0. Si erreur, C de CC à 1, code d’erreur dans $204E/$604E, code contrôleur $03 (IO Error) dans $20E5/$60E5, la FAT est rétablie.
+On peut remarquer que pour faciliter le travail du programmeur, le registre Y pointe sur le début du secteur tampon.
+
+$A019/$E019 (CALL $2E sur MO) : Allocation de départ (ALLOD)
+Registres d’entrée :
+- La FAT doit avoir été chargée.
+- $20E9-$20EA/$60E9-$60EA Pointeur sur la mémoire tampon de secteur
+- $20E7-$20E8/$60E7-$60E8 Pointeur sur le descripteur de fichier (11 octets)
+- $20F0/$60F0 Mode d’ouverture du fichier ($02 ou $03)
+- $20EB/$60EB Type du fichier
+- $20EC/$60EC Flag du fichier
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1, code d’erreur dans $204E/$604E, code d’erreur contrôleur dans $20E5/$60E5.
+- $20F6/$60F6 Nouveau numéro de bloc
+Le secteur de catalogue à été sauvé sur le disque avec:
+- Nom de fichier mis à jour (SCRATCH.DOS si code $03, nom du fichier courant si code $02).
+- Type de fichier mis à jour.
+- Flag de fichier mis à jour.
+- Bloc de départ du fichier mis à jour.
+
+$A01C/$E01C (CALL $2C sur MO) : Allocation d’un bloc (ALLOB)
+Registres d’entrée :
+- La FAT doit avoir été chargée.
+- $20F6-$60F6 Numéro du bloc courant
+Registres de retour :
+- Si FAT pleine, C de CC à 1. Le registre $20E5/$60E5 contient le code d’erreur du système d’exploitation logique $05 si « Disk Full ».Registre à 0 et C de CC à 0 si pas d’erreur.
+- $20F9/$60F9 Nouveau numéro de bloc
+- Dans la FAT, en mémoire, la nouvelle place passe de $FF à $00.
+
+$A01F/$E01F (CALL $36 sur MO) : Mise à jour cluster (MAJCL)
+Registres d’entrée :
+- $20F6/$60F6 Numéro du bloc courant
+Registres de retour :
+- $20F5/$60F5 Nombre de secteur du dernier bloc (initialisé à 1 pour écriture de bloc)
+- $20FA/$60FA Numéro du premier secteur du bloc (1 ou 9)
+- $20FB/$60FB Numéro de piste (sur 16 bits)
+
+$A022/$E022 (CALL $32 sur MO) : Fin du transfert (FINTR)
+Registres d’entrée :
+- La FAT a été chargée (entrée $A00D/$E00D)
+- Le fichier a été ouvert en mode sauvegarde.
+- $20E9-$20EA/$60E9-$60EA Pointeur sur la mémoire tampon de secteur
+- $20E7-$20E8/$60E7-$60E8 Pointeur sur le descripteur de fichier de 11 caractères
+- $20F0/$60F0 Mode d’ouverture du fichier ($02 ou $03)
+Registres de retour :
+- C de CC à 0. Si erreur, C de CC à 1 et code d’erreur dans $204E/$604E.
+Si le mode d’ouverture du fichier est $02 (sauvegarde sans écrasement), les opérations suivantes sont effectuées :
+- Rétablissement de la FAT en mémoire
+- Sauvegarde de la FAT sur le disque
+Si le mode d’ouverture du fichier est $03 (sauvegarde avec écrasement), les opérations suivantes son effectuées :
+- Recherche dans le catalogue du fichier de nom courant
+- Effacement du fichier de nom courant
+- Recherche du fichier SCRATCH.DOS
+- Remplacement du nom SCRATCH.DOS avec le nom de fichier courant
+- Ecriture du secteur de catalogue
+- Sauvegarde de la FAT sur le disque
+- Rétablissement de la FAT en mémoire
+ATTENTION ! Le nombre de secteurs du dernier bloc dans la FAT ainsi que la taille du dernier secteur dans le catalogue n’ont pas été mis à jour. Prévoyez d’inscrire l’un dans la FAT avant sa sauvegarde, puis recherchez le fichier en mode $02 dans le catalogue par l’entrée $A010/$E010, mettez l’autre à jour et sauvegardez le secteur par l’entrée $A016/$E016.
+
+$A025/$E025 : Fonctions standard avec numéro de secteur réel (QDD exclusivement).
+Equivalente aux fonctions standard en $A004/$E004 mais $204A/$604A doit être à $FF et le numéro de secteur de 1 à 400 dans le registre $204B-$204C/$604B-$604C.
+
+
+
+Procédures standard du système logique
+
+Lecture d’un fichier :
+- $A00D/$E00D Chargement de la FAT
+- Code $01 dans $20F0/$60F0 (lecture)
+- $A010/$E010 Recherche du fichier
+...< chargement du fichier >...
+
+Sauvegarde d’un fichier sans écrasement:
+- $A00D/$E00D Chargement de la FAT
+- Code $02 dans $20F0/$60F0 (écriture sans écrasement)
+- $A019/$E019 Création du fichier
+- Si le fichier existe déjà, erreur et sort
+...< sauvegarde du fichier >...
+- $A022/$E022 Clôture d’opération en écriture
+- Code $01 dans $20F0/$60F0 (lecture)
+- $A010/$E010 Recherche du fichier dans le catalogue
+- Mise à jour de la taille du dernier secteur dans le catalogue
+- $A016/$E016 Sauvegarde du secteur de catalogue
+
+Sauvegarde d’un fichier avec écrasement :
+- $A00D/$E00D Chargement de la FAT
+- Code $03 dans $20F0/$60F0 (écriture avec écrasement)
+- $A019/$E019 Création de l'entrée du fichier (SCRATCH.DOS si code $03, nom de fichier courant si code $02)
+...<sauvegarde du fichier >...
+- $A022/$E022 Clôture d’opération en écriture (Efface fichier courant et renomme « SCRATCH.DOS » avec nom du fichier courant si code $03)
+- Code $01 dans $20F0/$60F0 (lecture)
+- $A010/$E010 Recherche du fichier dans le catalogue
+- Mise à jour de la taille du dernier secteur dans le catalogue
+- $A016/$E016 Sauvegarde du secteur de catalogue
+
+Effacement d’un fichier :
+- Code $02 dans $20F0/$60F0 (écriture sans écrasement)
+- $A00D/$E00D Chargement de la FAT
+- $A010/$E010 Recherche du fichier dans le catalogue
+- $A013/$E013 Effacement du fichier courant
+- $A022/$E022 Clôture d’opération en écriture
