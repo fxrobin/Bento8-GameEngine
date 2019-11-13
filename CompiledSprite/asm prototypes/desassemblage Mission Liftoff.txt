@@ -1,0 +1,34 @@
+Démarrage ordinateur en FDCC.
+
+piste EXEC&HE007 pour bootloader
+
+Début de Mission Liftoff :
+6200 1A 50 ORCC #$50
+
+2650 lance la routine effacement
+
+
+FF39 appelle 2AEF
+2AEF
+
+2AEF PULS A
+2AF1 PSHS CC
+2AF3 STA $E7C3
+2AF6 PULS CC,PC 
+
+FA84
+FA9E
+
+efface 6100 a 6800
+2AB8 LDA $1A,X
+2ABB LEAU $1C,X
+2ABE CMPA <$D1
+2AC0 BEQ $2AD4
+2AC2 LEAU $1E,X
+2AC5 LDX #$6100
+2AC8 LDB #$FF
+2ACA STB <$80
+2ACC CLRB (B à 00)
+2ACD STB ,X+
+2ACF CMPX #$6800 (X6201)
+2AD2 BMI $2ACD
