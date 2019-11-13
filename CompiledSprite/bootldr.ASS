@@ -1,0 +1,24 @@
+***************************************
+* Boot loader. Il charge le 2eme
+* secteur de la diskette de boot en
+* $6300 et saute a cette adresse.
+***************************************
+(main)bootld.ASS
+   setdp $60
+   org $6200
+
+init
+   lda #$02
+   sta <$6048 * DK.OPC $02 Operation - Lecture d un secteur
+   sta <$604C * DK.SEC $02 Secteur a lire
+   ldd $1E    * 
+   std ,s     * 
+   ldd #$6300 * Destination des donnees lues
+   std <$604F * DK.BUF Destination des donnees lues
+   jsr $E82A  * DKFORM Appel 
+   stb <$6080 * Semaphore du controle de presence du controleur de disque
+   bcs exit   * Si Erreur C=1 alors branchement exit
+   jmp $6300  * Sinon Execution en $6300
+exit
+   rts        * Retour au programme residant
+   end init
