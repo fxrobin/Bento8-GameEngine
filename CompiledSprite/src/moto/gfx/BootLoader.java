@@ -79,9 +79,10 @@ public class BootLoader {
 
 			for (i = 0; i < fd.length-signature.length; i++) {
 				if (fd[i] == signature[0] && fd[i+1] == signature[1] && fd[i+2] == signature[2] && fd[i+3] == signature[3] && fd[i+4] == signature[4] && fd[i+5] == signature[5] && fd[i+6] == signature[6]) {
-					for (int j = i-121, k = 0; j < i; j++) {
+					for (int j = i-120, k = 0; j < i; j++) {
 						decodedBootLoader[k++] = (byte) (256 - fd[j]);
 					}
+					break;
 				}
 			}
 		} catch (Exception e) {
@@ -89,5 +90,26 @@ public class BootLoader {
 			System.out.println(e);
 		}
 		return decodedBootLoader;
+	}
+	
+	public String removeExtension(String s) {
+
+		String separator = System.getProperty("file.separator");
+		String filename;
+
+		// Remove the path upto the filename.
+		int lastSeparatorIndex = s.lastIndexOf(separator);
+		if (lastSeparatorIndex == -1) {
+			filename = s;
+		} else {
+			filename = s.substring(lastSeparatorIndex + 1);
+		}
+
+		// Remove the extension.
+		int extensionIndex = filename.lastIndexOf(".");
+		if (extensionIndex == -1)
+			return filename;
+
+		return filename.substring(0, extensionIndex);
 	}
 }

@@ -1,5 +1,9 @@
 package moto.gfx;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class DecodeBootLoader
 {
   public static void main(String[] args)
@@ -10,11 +14,11 @@ public class DecodeBootLoader
 			// Decodage d'un bootloader a partir d'une image disquette fd
 			BootLoader bootLoader = new BootLoader();
 			byte[] bootLoaderBytes = bootLoader.decodeBootLoader(args[0]);
-			System.out.print("bootLoader: <");
-			for (int i = 0; i < bootLoaderBytes.length; i++) {
-				System.out.print(String.format("%02X", (0xFF & bootLoaderBytes[i])));
-			}
-			System.out.println(">");
+
+			Path fichier = Paths.get(bootLoader.removeExtension(args[0]) + "_Bootloader" + ".bin");
+			Files.deleteIfExists(fichier);
+			Files.createFile(fichier);
+			Files.write(fichier, bootLoaderBytes);
 		}
 		else {
 			System.out.println("Parametres invalides !");
