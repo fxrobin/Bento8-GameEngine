@@ -1,15 +1,15 @@
 package moto.gfx;
 
-public class BuildBootLoader
+public class DecodeBootLoader
 {
   public static void main(String[] args)
   {
 	try
 	{
 		if (args.length==1) {
-			// Génération d'un bootloader a partir d'un BIN
+			// Decodage d'un bootloader a partir d'une image disquette fd
 			BootLoader bootLoader = new BootLoader();
-			byte[] bootLoaderBytes = bootLoader.encodeBootLoader(args[0]);
+			byte[] bootLoaderBytes = bootLoader.decodeBootLoader(args[0]);
 			System.out.print("bootLoader: <");
 			for (int i = 0; i < bootLoaderBytes.length; i++) {
 				System.out.print(String.format("%02X", (0xFF & bootLoaderBytes[i])));
