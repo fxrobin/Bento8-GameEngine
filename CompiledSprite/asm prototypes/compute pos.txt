@@ -83,7 +83,6 @@ SETPALETTE
 MAIN
 	* Effacement et affichage des sprites
 	*JSR [DRAW_EREF_TEST1X100000] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
-	JSR DRAW_RAM_DATA_TO_CART_160x200
 	JSR DRAW_TEST1X100000 * TODO boulcuer sur tous les sprites visibles dans le bon ordre
 
 	* Gestion des deplacements
@@ -205,7 +204,7 @@ Hero_NotRight_00
 Hero_MoveLeft                  * XREF: Hero_Move
 	LDD TEST1X10_G_SPEED
 	CMPD #$0000
-	BLE Hero_MoveLeft_00       * BRANCH si la vitesse actuelle est negative
+	BLT Hero_MoveLeft_00       * BRANCH si la vitesse actuelle est negative
 	SUBD TEST1X10_DECELERATION * gsp decrease by deceleration
 	BCC Hero_MoveLeft_03       * BRANCH si la vitesse actuelle est positive
 	LDD TEST1X10_DECELERATION  * si la vitesse est devenue negative on la force a la va leur de DECELERATION
@@ -230,14 +229,12 @@ Hero_MoveLeft_01
 	LDD TEST1X10_G_SPEED
 Hero_MoveLeft_02
 	STD TEST1X10_X_SPEED       * TODO xsp = gsp*cos(angle)
-	TFR A,B                    * division par 256
-	ADDB TEST1X10_X_POS
-	STB TEST1X10_X_POS
+	ADDD TEST1X10_X_POS
+	STD TEST1X10_X_POS
 	LDD #$0000                 * TODO ysp = gsp*-sin(angle)
-	STA TEST1X10_Y_SPEED
-	TFR A,B                    * division par 256
-	ADDB TEST1X10_Y_POS
-	STB TEST1X10_Y_POS
+	STD TEST1X10_Y_SPEED
+	ADDD TEST1X10_Y_POS
+	STD TEST1X10_Y_POS
 	RTS
 
 Hero_MoveRight                  * XREF: Hero_NotLeft
@@ -268,14 +265,12 @@ Hero_MoveRight_01
 	LDD TEST1X10_G_SPEED
 Hero_MoveRight_02
 	STD TEST1X10_X_SPEED        * TODO xsp = gsp*cos(angle)
-	TFR A,B                    * division par 256
-	ADDB TEST1X10_X_POS
-	STB TEST1X10_X_POS
+	ADDD TEST1X10_X_POS
+	STD TEST1X10_X_POS
 	LDD #$0000                  * TODO ysp = gsp*-sin(angle)
 	STD TEST1X10_Y_SPEED
-	TFR A,B                    * division par 256
-	ADDB TEST1X10_Y_POS
-	STB TEST1X10_Y_POS
+	ADDD TEST1X10_Y_POS
+	STD TEST1X10_Y_POS
 	RTS
 
 * TODO : Braking Animation
