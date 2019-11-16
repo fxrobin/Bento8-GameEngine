@@ -295,13 +295,13 @@ Hero_MoveUpdatePos_00
 	LDB TEST1X10_X_POS
 	SUBB Hero_MoveUpdatePos_V00 * Ajout de la vitesse a la position
 Hero_MoveUpdatePos_01
-*	CMPB #$50					* Test de butee ecran a droite
-*	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
-*	LDB #$50					* Butee atteinte on limite a la butee
-*Hero_MoveUpdatePos_02
-*    CMPB #$0C					* Test de la butee ecran a gauche
-*	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
-*	LDB #$0C					* Butee atteinte on limite a la butee
+	CMPB #$50					* Test de butee ecran a droite
+	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
+	LDB #$50					* Butee atteinte on limite a la butee
+Hero_MoveUpdatePos_02
+    CMPB #$0C					* Test de la butee ecran a gauche
+	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
+	LDB #$0C					* Butee atteinte on limite a la butee
 Hero_MoveUpdatePos_03
 	STB TEST1X10_X_POS			
 	LDD #$0000                  * TODO ysp = gsp*-sin(angle)
