@@ -235,6 +235,10 @@ Hero_MoveLeft_03
 	STD TEST1X10_G_SPEED       	* On stocke la vitesse
 	LBRA Hero_MoveUpdatePos	   	* Mise a jour des coordonnees
 Hero_MoveLeft_00		       	* Orientation a GAUCHE 
+*	CMPD #$0000					* Comparaison avec la vitesse nulle
+*	BNE Hero_MoveLeft_02     	* BRANCH vitesse au sol non nulle
+*	LDD #$FEFF					* init vitesse de depart
+*Hero_MoveLeft_02
 	CMPD TEST1X10_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos     	* vitesse au sol deja au maximum - Mise a jour des coordonnees
 	SUBD TEST1X10_ACCELERATION 	* acceleration
@@ -262,6 +266,10 @@ Hero_MoveRight_03
 	STD TEST1X10_G_SPEED        * On stocke la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_00		      	* Orientation a DROITE 
+*	CMPD #$0000					* Comparaison avec la vitesse nulle
+*	BNE Hero_MoveRight_02     	* BRANCH vitesse au sol non nulle
+*	LDD #$0100					* init vitesse de depart
+*Hero_MoveRight_02
 	CMPD TEST1X10_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos      * vitesse au sol deja au maximum - Mise a jour des coordonnees
 	ADDD TEST1X10_ACCELERATION 	* acceleration
@@ -295,13 +303,13 @@ Hero_MoveUpdatePos_00
 	LDB TEST1X10_X_POS
 	SUBB Hero_MoveUpdatePos_V00 * Ajout de la vitesse a la position
 Hero_MoveUpdatePos_01
-	CMPB #$50					* Test de butee ecran a droite
-	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
-	LDB #$50					* Butee atteinte on limite a la butee
-Hero_MoveUpdatePos_02
-    CMPB #$0C					* Test de la butee ecran a gauche
-	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
-	LDB #$0C					* Butee atteinte on limite a la butee
+*	CMPB #$50					* Test de butee ecran a droite
+*	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
+*	LDB #$50					* Butee atteinte on limite a la butee
+*Hero_MoveUpdatePos_02
+*    CMPB #$0C					* Test de la butee ecran a gauche
+*	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
+*	LDB #$0C					* Butee atteinte on limite a la butee
 Hero_MoveUpdatePos_03
 	STB TEST1X10_X_POS			
 	LDD #$0000                  * TODO ysp = gsp*-sin(angle)

@@ -82,8 +82,7 @@ SETPALETTE
 *-------------------------------------------------------------------------------
 MAIN
 	* Effacement et affichage des sprites
-	*JSR [DRAW_EREF_TEST1X100000] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
-	JSR DRAW_RAM_DATA_TO_CART
+	JSR ERASE_TEST1X100000 * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
 	JSR DRAW_TEST1X100000 * TODO boulcuer sur tous les sprites visibles dans le bon ordre
 
 	* Gestion des deplacements
@@ -118,11 +117,7 @@ MAIN
 SCRC
 	JSR VSYNC
 
-	LDX DRAW_EREF_TEST1X100000	* permute les routines
-	LDY DRAW_EREF_TEST1X100000+2  * d effacement
-	STY DRAW_EREF_TEST1X100000    * des sprites
-	STX DRAW_EREF_TEST1X100000+2  * TODO faire boucle sur tous les sprites VISIBLES
-
+	CHANGEMENT PAGE
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
 	ANDB #$80	* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0
 	ORB #$0F	* recharger la couleur de cadre si diff de 0 car effacee juste au dessus (couleur F)
@@ -169,7 +164,6 @@ JOY_BTN_STATUS
 *---------------------------------------------------------------------------
 * Subroutine to	make hero walk/run
 *---------------------------------------------------------------------------
-
 Hero_Move
 	LDA JOY_DIR_STATUS
 	CMPA #JOY_G
@@ -235,6 +229,10 @@ Hero_MoveLeft_03
 	STD TEST1X10_G_SPEED       	* On stocke la vitesse
 	LBRA Hero_MoveUpdatePos	   	* Mise a jour des coordonnees
 Hero_MoveLeft_00		       	* Orientation a GAUCHE 
+*	CMPD #$0000					* Comparaison avec la vitesse nulle
+*	BNE Hero_MoveLeft_02     	* BRANCH vitesse au sol non nulle
+*	LDD #$FEFF					* init vitesse de depart
+*Hero_MoveLeft_02
 	CMPD TEST1X10_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos     	* vitesse au sol deja au maximum - Mise a jour des coordonnees
 	SUBD TEST1X10_ACCELERATION 	* acceleration
@@ -262,6 +260,10 @@ Hero_MoveRight_03
 	STD TEST1X10_G_SPEED        * On stocke la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_00		      	* Orientation a DROITE 
+*	CMPD #$0000					* Comparaison avec la vitesse nulle
+*	BNE Hero_MoveRight_02     	* BRANCH vitesse au sol non nulle
+*	LDD #$0100					* init vitesse de depart
+*Hero_MoveRight_02
 	CMPD TEST1X10_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos      * vitesse au sol deja au maximum - Mise a jour des coordonnees
 	ADDD TEST1X10_ACCELERATION 	* acceleration
@@ -405,72 +407,15 @@ DRAW_RAM_DATA_TO_CART_160x200B
 	PULS U,DP
 	RTS
 
-DRAW_RAM_DATA_TO_CART
-	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
-	STS >SSAVE
-	
-	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
-	LDU #$A000
-
-DRAW_RAM_DATA_TO_CARTA
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	CMPS #$18DA
-	BNE DRAW_RAM_DATA_TO_CARTA
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU B,DP,X,Y
-	PSHS Y,X,DP,B
-
-	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
-	LDU #$C000
-
-DRAW_RAM_DATA_TO_CARTB
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	CMPS #$38DA
-	BNE DRAW_RAM_DATA_TO_CARTB
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU B,DP,X,Y
-	PSHS Y,X,DP,B
-
-	LDS  >SSAVE		* rechargement des registres
-	PULS U,DP
-	RTS
 ********************************************************************************
 * Affiche un computed sprite en xxx cycles
 ********************************************************************************
 TEST1X10_WALK_SPD_LIMIT EQU $0400
 TEST1X10_JOG_SPD_LIMIT  EQU $0600
 TEST1X10_X_POS
-	FCB $50          * position horizontale
+	FCB $50        * position horizontale
 TEST1X10_Y_POS
-	FCB $C8          * position verticale
+	FCB $C8        * position verticale
 TEST1X10_G_SPEED
 	FDB $0000        * vitesse au sol
 TEST1X10_X_SPEED
@@ -496,37 +441,43 @@ DRAW_TEST1X100000
 
 	LDS POS_TEST1X100000
 	LDU #DATA_TEST1X100000_1
-	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+13
 	LDX #$fff0
-	STX 17,Y
 	STX -2,S
+	LDX -42,S
+	STX ERASE_TEST1X100000+18
 	LDX #$c996
-	STX 22,Y
 	STX -42,S
+	LDX -82,S
+	STX ERASE_TEST1X100000+24
 	LDX #$f026
-	STX 28,Y
 	STX -82,S
+	LDX -122,S
+	STX ERASE_TEST1X100000+30
 	LDX #$2b2c
-	STX 34,Y
 	STX -122,S
 	LEAS -160,S
+	LDA -1,S
+	STA ERASE_TEST1X100000+40
 	LDA #$c2
-	STA 43,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$0c
 	STA -2,S
+	LDA -41,S
+	STA ERASE_TEST1X100000+52
 	LDA #$26
-	STA 55,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$02
 	STA -42,S
+	LDA -81,S
+	STA ERASE_TEST1X100000+67
 	LDA #$11
-	STA 70,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
@@ -541,15 +492,17 @@ DRAW_TEST1X100000
 	ANDA ,S
 	ADDA #$0e
 	STA ,S
+	LDA -40,S
+	STA ERASE_TEST1X100000+104
 	LDA #$db
-	STA 107,Y
 	STA -40,S
 	LDA  #$F0
 	ANDA -41,S
 	ADDA #$0b
 	STA -41,S
+	LDA -80,S
+	STA ERASE_TEST1X100000+119
 	LDA #$d6
-	STA 122,Y
 	STA -80,S
 	LDA  #$F0
 	ANDA -81,S
@@ -559,77 +512,88 @@ DRAW_TEST1X100000
 	ANDA -119,S
 	ADDA #$e0
 	STA -119,S
+	LDX -121,S
+	STX ERASE_TEST1X100000+144
 	LDX #$b662
-	STX 148,Y
 	STX -121,S
 	LEAS -159,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$e0
 	STA ,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+162
 	LDX #$6b21
-	STX 166,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
+	LDX -42,S
+	STX ERASE_TEST1X100000+177
 	LDX #$2b11
-	STX 181,Y
 	STX -42,S
 	LDA  #$0F
 	ANDA -80,S
 	ADDA #$a0
 	STA -80,S
+	LDA -81,S
+	STA ERASE_TEST1X100000+193
 	LDA #$11
-	STA 196,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$00
 	STA -82,S
+	LDA -121,S
+	STA ERASE_TEST1X100000+208
 	LDA #$d2
-	STA 211,Y
 	STA -121,S
 	LDA  #$F0
 	ANDA -122,S
 	ADDA #$08
 	STA -122,S
 	LEAS -160,S
+	LDA -1,S
+	STA ERASE_TEST1X100000+227
 	LDA #$d0
-	STA 230,Y
 	STA -1,S
 	LDA  #$F0
 	ANDA -2,S
 	ADDA #$05
 	STA -2,S
+	LDA -41,S
+	STA ERASE_TEST1X100000+239
 	LDA #$ec
-	STA 242,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$08
 	STA -42,S
+	LDA -81,S
+	STA ERASE_TEST1X100000+254
 	LDA #$c3
-	STA 257,Y
 	STA -81,S
 	LDA  #$F0
 	ANDA -82,S
 	ADDA #$0c
 	STA -82,S
+	LDA -121,S
+	STA ERASE_TEST1X100000+269
 	LDA #$e0
-	STA 272,Y
 	STA -121,S
 	LEAS -159,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+278
 	LDX #$cede
-	STX 282,Y
 	STX -2,S
 	LDA  #$F0
 	ANDA -3,S
 	ADDA #$0c
 	STA -3,S
+	LDX -42,S
+	STX ERASE_TEST1X100000+291
 	LDX #$5eed
-	STX 295,Y
 	STX -42,S
 	LDA  #$F0
 	ANDA -43,S
@@ -647,18 +611,21 @@ DRAW_TEST1X100000
 	ANDA -38,S
 	ADDA #$a0
 	STA -38,S
+	LDX -40,S
+	STX ERASE_TEST1X100000+337
 	LDX #$611a
-	STX 341,Y
 	STX -40,S
+	LDX -80,S
+	STX ERASE_TEST1X100000+343
 	LDX #$007a
-	STX 347,Y
 	STX -80,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$d0
 	STA -118,S
+	LDX -120,S
+	STX ERASE_TEST1X100000+359
 	LDX #$0077
-	STX 363,Y
 	STX -120,S
 	LEAS -157,S
 	LDA #$a0
@@ -680,35 +647,42 @@ DRAW_TEST1X100000
 	ANDA -38,S
 	ADDA #$a0
 	STA -38,S
+	LDX -40,S
+	STX ERASE_TEST1X100000+416
 	LDX #$7477
-	STX 420,Y
 	STX -40,S
+	LDX -80,S
+	STX ERASE_TEST1X100000+422
 	LDX #$a773
-	STX 426,Y
 	STX -80,S
+	LDX -120,S
+	STX ERASE_TEST1X100000+428
 	LDX #$e7c3
-	STX 432,Y
 	STX -120,S
 	LEAS -158,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+438
 	LDX #$d7d3
-	STX 442,Y
 	STX -2,S
+	LDX -41,S
+	STX ERASE_TEST1X100000+443
 	LDX #$78ee
-	STX 447,Y
 	STX -41,S
 	LDA  #$0F
 	ANDA -42,S
 	ADDA #$d0
 	STA -42,S
+	LDX -81,S
+	STX ERASE_TEST1X100000+459
 	LDX #$7ddd
-	STX 463,Y
 	STX -81,S
 	LDA  #$0F
 	ANDA -82,S
 	ADDA #$d0
 	STA -82,S
+	LDX -121,S
+	STX ERASE_TEST1X100000+475
 	LDX #$a7aa
-	STX 479,Y
 	STX -121,S
 	LEAS -161,S
 	LDA  #$F0
@@ -719,7 +693,6 @@ DRAW_TEST1X100000
 	LDS POS_TEST1X100000+2
 	LDU #DATA_TEST1X100000_2
 
-	LDY DRAW_EREF_TEST1X100000
 	LEAS -2,S
 	LDA #$00
 	LDX #$ff0f
@@ -728,8 +701,9 @@ DRAW_TEST1X100000
 	LDA #$cf
 	LDX #$99cf
 	PSHS X,A
+	LDX -39,S
+	STX ERASE_TEST1X100000+519
 	LDX #$39cf
-	STX 523,Y
 	STX -39,S
 	LDA  #$F0
 	ANDA -40,S
@@ -739,30 +713,34 @@ DRAW_TEST1X100000
 	ANDA -78,S
 	ADDA #$c0
 	STA -78,S
+	LDA -79,S
+	STA ERASE_TEST1X100000+545
 	LDA #$01
-	STA 548,Y
 	STA -79,S
 	LDA  #$0F
 	ANDA -118,S
 	ADDA #$00
 	STA -118,S
+	LDA -119,S
+	STA ERASE_TEST1X100000+560
 	LDA #$62
-	STA 563,Y
 	STA -119,S
 	LEAS -158,S
 	LDA  #$0F
 	ANDA ,S
 	ADDA #$b0
 	STA ,S
+	LDA -1,S
+	STA ERASE_TEST1X100000+577
 	LDA #$b0
-	STA 580,Y
 	STA -1,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$60
 	STA -40,S
+	LDA -41,S
+	STA ERASE_TEST1X100000+591
 	LDA #$6b
-	STA 594,Y
 	STA -41,S
 	LDA  #$0F
 	ANDA -81,S
@@ -793,69 +771,85 @@ DRAW_TEST1X100000
 	ANDA -80,S
 	ADDA #$e0
 	STA -80,S
+	LDX -120,S
+	STX ERASE_TEST1X100000+668
 	LDX #$0ebd
-	STX 672,Y
 	STX -120,S
 	LEAS -158,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+678
 	LDX #$dd6f
-	STX 682,Y
 	STX -2,S
+	LDX -42,S
+	STX ERASE_TEST1X100000+683
 	LDX #$8c18
-	STX 687,Y
 	STX -42,S
+	LDX -82,S
+	STX ERASE_TEST1X100000+689
 	LDX #$35e5
-	STX 693,Y
 	STX -82,S
+	LDX -122,S
+	STX ERASE_TEST1X100000+695
 	LDX #$3383
-	STX 699,Y
 	STX -122,S
 	LEAS -160,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+705
 	LDX #$333a
-	STX 709,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -41,S
 	ADDA #$e0
 	STA -41,S
+	LDA -42,S
+	STA ERASE_TEST1X100000+720
 	LDA #$58
-	STA 723,Y
 	STA -42,S
+	LDX -82,S
+	STX ERASE_TEST1X100000+725
 	LDX #$f0dd
-	STX 729,Y
 	STX -82,S
 	LDA  #$0F
 	ANDA -120,S
 	ADDA #$a0
 	STA -120,S
+	LDX -122,S
+	STX ERASE_TEST1X100000+741
 	LDX #$88ee
-	STX 745,Y
 	STX -122,S
 	LEAS -160,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+751
 	LDX #$330e
-	STX 755,Y
 	STX -2,S
+	LDX -42,S
+	STX ERASE_TEST1X100000+756
 	LDX #$33ee
-	STX 760,Y
 	STX -42,S
+	LDX -82,S
+	STX ERASE_TEST1X100000+762
 	LDX #$11ee
-	STX 766,Y
 	STX -82,S
 	LDA  #$F0
 	ANDA -83,S
 	ADDA #$00
 	STA -83,S
+	LDX -122,S
+	STX ERASE_TEST1X100000+778
 	LDX #$17de
-	STX 782,Y
 	STX -122,S
 	LDA  #$F0
 	ANDA -123,S
 	ADDA #$00
 	STA -123,S
 	LEAS -160,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+798
 	LDX #$11ae
-	STX 802,Y
 	STX -2,S
-	STX 804,Y
+	LDX -42,S
+	STX ERASE_TEST1X100000+803
+	LDX #$11ae
 	STX -42,S
 	LEAS -79,S
 	LDA #$11
@@ -865,52 +859,63 @@ DRAW_TEST1X100000
 	ANDA -38,S
 	ADDA #$e0
 	STA -38,S
+	LDX -40,S
+	STX ERASE_TEST1X100000+829
 	LDX #$11ad
-	STX 830,Y
 	STX -40,S
 	LDA  #$0F
 	ANDA -78,S
 	ADDA #$a0
 	STA -78,S
+	LDX -80,S
+	STX ERASE_TEST1X100000+845
 	LDX #$21ad
-	STX 846,Y
 	STX -80,S
+	LDX -120,S
+	STX ERASE_TEST1X100000+851
 	LDX #$a1ad
-	STX 852,Y
 	STX -120,S
 	LEAS -158,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+861
 	LDX #$7aad
-	STX 862,Y
 	STX -2,S
+	LDX -42,S
+	STX ERASE_TEST1X100000+866
 	LDX #$44ea
-	STX 867,Y
 	STX -42,S
+	LDX -82,S
+	STX ERASE_TEST1X100000+872
 	LDX #$44ed
-	STX 873,Y
 	STX -82,S
+	LDX -122,S
+	STX ERASE_TEST1X100000+878
 	LDX #$74ee
-	STX 879,Y
 	STX -122,S
 	LEAS -160,S
+	LDX -2,S
+	STX ERASE_TEST1X100000+888
 	LDX #$77dd
-	STX 889,Y
 	STX -2,S
 	LDA  #$0F
 	ANDA -40,S
 	ADDA #$d0
 	STA -40,S
+	LDA -41,S
+	STA ERASE_TEST1X100000+903
 	LDA #$aa
-	STA 903,Y
 	STA -41,S
 	LDA  #$F0
 	ANDA -42,S
 	ADDA #$07
 	STA -42,S
+	LDA -81,S
+	STA ERASE_TEST1X100000+918
 	LDA #$77
-	STA 918,Y
 	STA -81,S
+	LDA -121,S
+	STA ERASE_TEST1X100000+923
 	LDA #$aa
-	STA 923,Y
 	STA -121,S
 
 	LDS  >SSAVE
@@ -923,16 +928,12 @@ POS_TEST1X100000
 	FDB $1F40
 	FDB $3F40
 
-DRAW_EREF_TEST1X100000
-	FDB E1DRAW_TEST1X100000
-	FDB E2DRAW_TEST1X100000
-
-E1DRAW_TEST1X100000
+ERASE_TEST1X100000
 	PSHS U,DP
 	STS >SSAVE
 
-	LDS E1POS_TEST1X100000
-	LDU #E1DATA_TEST1X100000_1
+	LDS POS_TEST1X100000
+	LDU #ERASE_DATA_TEST1X100000_1
 	LEAS -2,S
 	LDX #$fff0
 	STX -2,S
@@ -1122,8 +1123,8 @@ E1DRAW_TEST1X100000
 	ADDA #$0a
 	STA ,S
 
-	LDS E1POS_TEST1X100000+2
-	LDU #E1DATA_TEST1X100000_2
+	LDS POS_TEST1X100000+2
+	LDU #ERASE_DATA_TEST1X100000_2
 
 	LEAS -2,S
 	LDA #$00
@@ -1241,376 +1242,7 @@ E1DRAW_TEST1X100000
 	LEAS -160,S
 	LDX #$11ae
 	STX -2,S
-	STX -42,S
-	LEAS -79,S
-	LDA #$11
-	LDX #$aedd
-	PSHS X,A
-	LDA  #$0F
-	ANDA -38,S
-	ADDA #$e0
-	STA -38,S
-	LDX #$11ad
-	STX -40,S
-	LDA  #$0F
-	ANDA -78,S
-	ADDA #$a0
-	STA -78,S
-	LDX #$21ad
-	STX -80,S
-	LDX #$a1ad
-	STX -120,S
-	LEAS -158,S
-	LDX #$7aad
-	STX -2,S
-	LDX #$44ea
-	STX -42,S
-	LDX #$44ed
-	STX -82,S
-	LDX #$74ee
-	STX -122,S
-	LEAS -160,S
-	LDX #$77dd
-	STX -2,S
-	LDA  #$0F
-	ANDA -40,S
-	ADDA #$d0
-	STA -40,S
-	LDA #$aa
-	STA -41,S
-	LDA  #$F0
-	ANDA -42,S
-	ADDA #$07
-	STA -42,S
-	LDA #$77
-	STA -81,S
-	LDA #$aa
-	STA -121,S
-
-	LDS  >SSAVE
-	PULS U,DP
-	RTS
-
-E1DATA_TEST1X100000_2
-E1DATA_TEST1X100000_1
-E1POS_TEST1X100000
-	FDB $1F40
-	FDB $3F40
-
-E2DRAW_TEST1X100000
-	PSHS U,DP
-	STS >SSAVE
-
-	LDS E2POS_TEST1X100000
-	LDU #E2DATA_TEST1X100000_1
-	LEAS -2,S
-	LDX #$fff0
-	STX -2,S
-	LDX #$c996
-	STX -42,S
-	LDX #$f026
-	STX -82,S
-	LDX #$2b2c
-	STX -122,S
-	LEAS -160,S
-	LDA #$c2
-	STA -1,S
-	LDA  #$F0
-	ANDA -2,S
-	ADDA #$0c
-	STA -2,S
-	LDA #$26
-	STA -41,S
-	LDA  #$F0
-	ANDA -42,S
-	ADDA #$02
-	STA -42,S
-	LDA #$11
-	STA -81,S
-	LDA  #$F0
-	ANDA -82,S
-	ADDA #$02
-	STA -82,S
-	LDA  #$F0
-	ANDA -121,S
-	ADDA #$0e
-	STA -121,S
-	LEAS -161,S
-	LDA  #$F0
-	ANDA ,S
-	ADDA #$0e
-	STA ,S
-	LDA #$db
-	STA -40,S
-	LDA  #$F0
-	ANDA -41,S
-	ADDA #$0b
-	STA -41,S
-	LDA #$d6
-	STA -80,S
-	LDA  #$F0
-	ANDA -81,S
-	ADDA #$0b
-	STA -81,S
-	LDA  #$0F
-	ANDA -119,S
-	ADDA #$e0
-	STA -119,S
-	LDX #$b662
-	STX -121,S
-	LEAS -159,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA #$e0
-	STA ,S
-	LDX #$6b21
-	STX -2,S
-	LDA  #$0F
-	ANDA -40,S
-	ADDA #$d0
-	STA -40,S
-	LDX #$2b11
-	STX -42,S
-	LDA  #$0F
-	ANDA -80,S
-	ADDA #$a0
-	STA -80,S
-	LDA #$11
-	STA -81,S
-	LDA  #$F0
-	ANDA -82,S
-	ADDA #$00
-	STA -82,S
-	LDA #$d2
-	STA -121,S
-	LDA  #$F0
-	ANDA -122,S
-	ADDA #$08
-	STA -122,S
-	LEAS -160,S
-	LDA #$d0
-	STA -1,S
-	LDA  #$F0
-	ANDA -2,S
-	ADDA #$05
-	STA -2,S
-	LDA #$ec
-	STA -41,S
-	LDA  #$F0
-	ANDA -42,S
-	ADDA #$08
-	STA -42,S
-	LDA #$c3
-	STA -81,S
-	LDA  #$F0
-	ANDA -82,S
-	ADDA #$0c
-	STA -82,S
-	LDA #$e0
-	STA -121,S
-	LEAS -159,S
-	LDX #$cede
-	STX -2,S
-	LDA  #$F0
-	ANDA -3,S
-	ADDA #$0c
-	STA -3,S
-	LDX #$5eed
-	STX -42,S
-	LDA  #$F0
-	ANDA -43,S
-	ADDA #$08
-	STA -43,S
-	LEAS -80,S
-	LDA #$c3
-	LDX #$38da
-	PSHS X,A
-	LEAS -37,S
-	LDA #$01
-	LDX #$38aa
-	PSHS X,A
-	LDA  #$0F
-	ANDA -38,S
-	ADDA #$a0
-	STA -38,S
-	LDX #$611a
-	STX -40,S
-	LDX #$007a
-	STX -80,S
-	LDA  #$0F
-	ANDA -118,S
-	ADDA #$d0
-	STA -118,S
-	LDX #$0077
-	STX -120,S
-	LEAS -157,S
-	LDA #$a0
-	LDX #$77ed
-	PSHS X,A
-	LEAS -37,S
-	LDA #$7a
-	LDX #$77ee
-	PSHS X,A
-	LEAS -37,S
-	LDA #$77
-	LDX #$77dd
-	PSHS X,A
-	LEAS -37,S
-	LDA #$74
-	LDX #$44aa
-	PSHS X,A
-	LDA  #$0F
-	ANDA -38,S
-	ADDA #$a0
-	STA -38,S
-	LDX #$7477
-	STX -40,S
-	LDX #$a773
-	STX -80,S
-	LDX #$e7c3
-	STX -120,S
-	LEAS -158,S
-	LDX #$d7d3
-	STX -2,S
-	LDX #$78ee
-	STX -41,S
-	LDA  #$0F
-	ANDA -42,S
-	ADDA #$d0
-	STA -42,S
-	LDX #$7ddd
-	STX -81,S
-	LDA  #$0F
-	ANDA -82,S
-	ADDA #$d0
-	STA -82,S
-	LDX #$a7aa
-	STX -121,S
-	LEAS -161,S
-	LDA  #$F0
-	ANDA ,S
-	ADDA #$0a
-	STA ,S
-
-	LDS E2POS_TEST1X100000+2
-	LDU #E2DATA_TEST1X100000_2
-
-	LEAS -2,S
-	LDA #$00
-	LDX #$ff0f
-	PSHS X,A
-	LEAS -37,S
-	LDA #$cf
-	LDX #$99cf
-	PSHS X,A
-	LDX #$39cf
-	STX -39,S
-	LDA  #$F0
-	ANDA -40,S
-	ADDA #$0c
-	STA -40,S
-	LDA  #$0F
-	ANDA -78,S
-	ADDA #$c0
-	STA -78,S
-	LDA #$01
-	STA -79,S
-	LDA  #$0F
-	ANDA -118,S
-	ADDA #$00
-	STA -118,S
-	LDA #$62
-	STA -119,S
-	LEAS -158,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA #$b0
-	STA ,S
-	LDA #$b0
-	STA -1,S
-	LDA  #$0F
-	ANDA -40,S
-	ADDA #$60
-	STA -40,S
-	LDA #$6b
-	STA -41,S
-	LDA  #$0F
-	ANDA -81,S
-	ADDA #$d0
-	STA -81,S
-	LDA  #$0F
-	ANDA -121,S
-	ADDA #$d0
-	STA -121,S
-	LEAS -161,S
-	LDA  #$0F
-	ANDA ,S
-	ADDA #$d0
-	STA ,S
-	LDA  #$0F
-	ANDA -39,S
-	ADDA #$b0
-	STA -39,S
-	LDA  #$0F
-	ANDA -40,S
-	ADDA #$e0
-	STA -40,S
-	LDA  #$0F
-	ANDA -79,S
-	ADDA #$60
-	STA -79,S
-	LDA  #$0F
-	ANDA -80,S
-	ADDA #$e0
-	STA -80,S
-	LDX #$0ebd
-	STX -120,S
-	LEAS -158,S
-	LDX #$dd6f
-	STX -2,S
-	LDX #$8c18
-	STX -42,S
-	LDX #$35e5
-	STX -82,S
-	LDX #$3383
-	STX -122,S
-	LEAS -160,S
-	LDX #$333a
-	STX -2,S
-	LDA  #$0F
-	ANDA -41,S
-	ADDA #$e0
-	STA -41,S
-	LDA #$58
-	STA -42,S
-	LDX #$f0dd
-	STX -82,S
-	LDA  #$0F
-	ANDA -120,S
-	ADDA #$a0
-	STA -120,S
-	LDX #$88ee
-	STX -122,S
-	LEAS -160,S
-	LDX #$330e
-	STX -2,S
-	LDX #$33ee
-	STX -42,S
-	LDX #$11ee
-	STX -82,S
-	LDA  #$F0
-	ANDA -83,S
-	ADDA #$00
-	STA -83,S
-	LDX #$17de
-	STX -122,S
-	LDA  #$F0
-	ANDA -123,S
-	ADDA #$00
-	STA -123,S
-	LEAS -160,S
 	LDX #$11ae
-	STX -2,S
 	STX -42,S
 	LEAS -79,S
 	LDA #$11
@@ -1661,11 +1293,8 @@ E2DRAW_TEST1X100000
 	PULS U,DP
 	RTS
 
-E2DATA_TEST1X100000_2
-E2DATA_TEST1X100000_1
-E2POS_TEST1X100000
-	FDB $1F40
-	FDB $3F40
+ERASE_DATA_TEST1X100000_2
+ERASE_DATA_TEST1X100000_1
 
 TABPALETTE
 	FDB $0111	* index:0  R:51  V:51  B:51 

@@ -4,7 +4,7 @@
  * Fichier source      : TEST1X10.asm
  * Fichier destination : TEST1X10.BIN
  * Contenu :
- *     Main     0:TEST1X10.asm 27199
+ *     Main     0:TEST1X10.asm 22980
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -42,7 +42,7 @@ Pass2
      41                           *****************************************>>
      42                           * Initialisation de la palette de couleur>>
      43                           *****************************************>>
-     44  4     8009 108E 8EEA            LDY #TABPALETTE
+     44  4     8009 108E 8B2F            LDY #TABPALETTE
      45  2     800D 4F                   CLRA
      46        800E               SETPALETTE
      47  5+1   800E 34   02              PSHS A
@@ -53,7 +53,7 @@ Pass2
      52  5     8019 B7   E7DA            STA $E7DA
      53  5+1   801C 35   02              PULS A
      54  2     801E 4C                   INCA
-     55  5     801F 108C 8F0A            CMPY #FINTABPALETTE
+     55  5     801F 108C 8B4F            CMPY #FINTABPALETTE
      56  3     8023 26   E9              BNE    SETPALETTE
      57
      58                           *****************************************>>
@@ -71,11 +71,11 @@ Pass2
      70  2     8033 C6   03              LDB #$03  * On monte la page 3
      71  5     8035 F7   E7E5            STB $E7E5 * en RAM Donnees (A000-D>>
      72
-     73  8     8038 BD   8204            JSR DRAW_RAM_DATA_TO_CART_160x200
-     74  8     803B BD   82F5            JSR DRAW_TEST1X100000             >>
+     73  8     8038 BD   81F6            JSR DRAW_RAM_DATA_TO_CART_160x200
+     74  8     803B BD   8278            JSR DRAW_TEST1X100000             >>
      75  8     803E BD   805E            JSR SCRC                          >>
-     76  8     8041 BD   8204            JSR DRAW_RAM_DATA_TO_CART_160x200
-     77  8     8044 BD   82F5            JSR DRAW_TEST1X100000             >>
+     76  8     8041 BD   81F6            JSR DRAW_RAM_DATA_TO_CART_160x200
+     77  8     8044 BD   8278            JSR DRAW_TEST1X100000             >>
      78  8     8047 BD   805E            JSR SCRC                          >>
      79
      80                           *---------------------------------------->>
@@ -83,1695 +83,1318 @@ Pass2
      82                           *---------------------------------------->>
      83        804A               MAIN
      84                                  * Effacement et affichage des spri>>
-     85                                  *JSR [DRAW_EREF_TEST1X100000] * TO>>
-     86  8     804A BD   8273            JSR DRAW_RAM_DATA_TO_CART
-     87  8     804D BD   82F5            JSR DRAW_TEST1X100000 * TODO boulc>>
-     88
-     89                                  * Gestion des deplacements
-     90  8     8050 BD   8091            JSR JOY_READ
-     91  8     8053 BD   80AB            JSR Hero_Move
-     92  8     8056 BD   81CB            JSR Compute_Position
-     93
-     94  8     8059 BD   805E            JSR SCRC        * changement de pa>>
-     95  3     805C 20   EC              BRA MAIN
-     96
-     97                           *****************************************>>
-     98                           * Changement de page ESPACE ECRAN (affich>>
-     99                           *      $E7DD determine la page affichee d>>
-    100                           *      D7=0 D6=0 D5=0 D4=0 (#$0_) : page >>
-    101                           *      D7=0 D6=1 D5=0 D4=0 (#$4_) : page >>
-    102                           *      D7=1 D6=0 D5=0 D4=0 (#$8_) : page >>
-    103                           *      D7=1 D6=1 D5=0 D4=0 (#$C_) : page >>
-    104                           *   D3 D2 D1 D0  (#$_0 a #$_F) : couleur >>
-    105                           *   Remarque : D5 et D4 utilisable unique>>
-    106                           *
-    107                           * Changement de page ESPACE CARTOUCHE (ec>>
-    108                           *      $E7E6 determine la page affichee d>>
-    109                           *   D5 : 1 = espace cartouche recouvert p>>
-    110                           *   D4 : 0 = CAS1N valide : banques 0-15 >>
-    111                           *      D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$6>>
-    112                           *   ...
-    113                           *      D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6>>
-    114                           *      D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$7>>
-    115                           *   ...
-    116                           *      D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7>>
-    117                           *****************************************>>
-    118        805E               SCRC
-    119  8     805E BD   8086            JSR VSYNC
-    120
-    121  6     8061 BE   8792            LDX DRAW_EREF_TEST1X100000  * perm>>
-    122  7     8064 10BE 8794            LDY DRAW_EREF_TEST1X100000+2  * d >>
-    123  7     8068 10BF 8792            STY DRAW_EREF_TEST1X100000    * de>>
-    124  6     806C BF   8794            STX DRAW_EREF_TEST1X100000+2  * TO>>
-    125
-    126  5     806F F6   807D            LDB SCRC0+1   * charge la valeur d>>
-    127  2     8072 C4   80              ANDB #$80     * permute #$00 ou #$>>
-    128  2     8074 CA   0F              ORB #$0F      * recharger la coule>>
-    129  5     8076 F7   E7DD            STB $E7DD     * changement page da>>
-    130  7     8079 73   807D            COM SCRC0+1   * modification du co>>
-    131        807C               SCRC0
-    132  2     807C C6   00              LDB #$00
-    133  2     807E C4   02              ANDB #$02     * permute #$60 ou #$>>
-    134  2     8080 CA   60              ORB #$60      * espace cartouche r>>
-    135  5     8082 F7   E7E6            STB $E7E6     * changement page da>>
-    136  5     8085 39                   RTS                  * E7E6 D5=1 p>>
-    137                                                       * CAS1N : ban>>
-    138
-    139                           *****************************************>>
-    140                           * Attente VBL
-    141                           *****************************************>>
-    142        8086               VSYNC
-    143        8086               VSYNC_1
-    144  7     8086 7D   E7E7            TST    $E7E7
-    145  3     8089 2A   FB              BPL    VSYNC_1
-    146        808B               VSYNC_2
-    147  7     808B 7D   E7E7            TST    $E7E7
-    148  3     808E 2B   FB              BMI    VSYNC_2
-    149  5     8090 39                   RTS
-    150
-    151                           *---------------------------------------
-    152                           * Get joystick parameters
-    153                           *---------------------------------------
-    154        8091               JOY_READ
-    155  3     8091 8E   E7CF            ldx    #$e7cf
-    156  4     8094 108E E7CD            ldy    #$e7cd
-    157  3     8098 CC   400F            ldd    #$400f
-    158  5     809B F4   E7CC            andb   >$e7cc     * Read position
-    159  5     809E F7   80A9            stb    JOY_DIR_STATUS
-    160  4+0   80A1 A4   A4              anda   ,y         * Read button
-    161  2     80A3 88   40              eora   #$40
-    162  5     80A5 B7   80AA            sta    JOY_BTN_STATUS
-    163  5     80A8 39                   RTS
-    164        80A9               JOY_DIR_STATUS
-    165        80A9 00                   FCB $00 * Position Pad
-    166        80AA               JOY_BTN_STATUS
-    167        80AA 00                   FCB $00 * 40 Bouton A enfonce
-    168
-    169                           *---------------------------------------->>
-    170                           * Subroutine to      make hero walk/run
-    171                           *---------------------------------------->>
+     85  8     804A BD   8786            JSR ERASE_TEST1X100000 * TODO bouc>>
+     86  8     804D BD   8278            JSR DRAW_TEST1X100000 * TODO boulc>>
+     87
+     88                                  * Gestion des deplacements
+     89  8     8050 BD   8083            JSR JOY_READ
+     90  8     8053 BD   809D            JSR Hero_Move
+     91  8     8056 BD   81BD            JSR Compute_Position
+     92
+     93  8     8059 BD   805E            JSR SCRC        * changement de pa>>
+     94  3     805C 20   EC              BRA MAIN
+     95
+     96                           *****************************************>>
+     97                           * Changement de page ESPACE ECRAN (affich>>
+     98                           *      $E7DD determine la page affichee d>>
+     99                           *      D7=0 D6=0 D5=0 D4=0 (#$0_) : page >>
+    100                           *      D7=0 D6=1 D5=0 D4=0 (#$4_) : page >>
+    101                           *      D7=1 D6=0 D5=0 D4=0 (#$8_) : page >>
+    102                           *      D7=1 D6=1 D5=0 D4=0 (#$C_) : page >>
+    103                           *   D3 D2 D1 D0  (#$_0 a #$_F) : couleur >>
+    104                           *   Remarque : D5 et D4 utilisable unique>>
+    105                           *
+    106                           * Changement de page ESPACE CARTOUCHE (ec>>
+    107                           *      $E7E6 determine la page affichee d>>
+    108                           *   D5 : 1 = espace cartouche recouvert p>>
+    109                           *   D4 : 0 = CAS1N valide : banques 0-15 >>
+    110                           *      D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$6>>
+    111                           *   ...
+    112                           *      D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6>>
+    113                           *      D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$7>>
+    114                           *   ...
+    115                           *      D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7>>
+    116                           *****************************************>>
+    117        805E               SCRC
+    118  8     805E BD   8078            JSR VSYNC
+    119
+(120) Expression Error
+    120        CHANGEMENT PAGE
+    121  5     8061 F6   806F            LDB SCRC0+1   * charge la valeur d>>
+    122  2     8064 C4   80              ANDB #$80     * permute #$00 ou #$>>
+    123  2     8066 CA   0F              ORB #$0F      * recharger la coule>>
+    124  5     8068 F7   E7DD            STB $E7DD     * changement page da>>
+    125  7     806B 73   806F            COM SCRC0+1   * modification du co>>
+    126        806E               SCRC0
+    127  2     806E C6   00              LDB #$00
+    128  2     8070 C4   02              ANDB #$02     * permute #$60 ou #$>>
+    129  2     8072 CA   60              ORB #$60      * espace cartouche r>>
+    130  5     8074 F7   E7E6            STB $E7E6     * changement page da>>
+    131  5     8077 39                   RTS                  * E7E6 D5=1 p>>
+    132                                                       * CAS1N : ban>>
+    133
+    134                           *****************************************>>
+    135                           * Attente VBL
+    136                           *****************************************>>
+    137        8078               VSYNC
+    138        8078               VSYNC_1
+    139  7     8078 7D   E7E7            TST    $E7E7
+    140  3     807B 2A   FB              BPL    VSYNC_1
+    141        807D               VSYNC_2
+    142  7     807D 7D   E7E7            TST    $E7E7
+    143  3     8080 2B   FB              BMI    VSYNC_2
+    144  5     8082 39                   RTS
+    145
+    146                           *---------------------------------------
+    147                           * Get joystick parameters
+    148                           *---------------------------------------
+    149        8083               JOY_READ
+    150  3     8083 8E   E7CF            ldx    #$e7cf
+    151  4     8086 108E E7CD            ldy    #$e7cd
+    152  3     808A CC   400F            ldd    #$400f
+    153  5     808D F4   E7CC            andb   >$e7cc     * Read position
+    154  5     8090 F7   809B            stb    JOY_DIR_STATUS
+    155  4+0   8093 A4   A4              anda   ,y         * Read button
+    156  2     8095 88   40              eora   #$40
+    157  5     8097 B7   809C            sta    JOY_BTN_STATUS
+    158  5     809A 39                   RTS
+    159        809B               JOY_DIR_STATUS
+    160        809B 00                   FCB $00 * Position Pad
+    161        809C               JOY_BTN_STATUS
+    162        809C 00                   FCB $00 * 40 Bouton A enfonce
+    163
+    164                           *---------------------------------------->>
+    165                           * Subroutine to      make hero walk/run
+    166                           *---------------------------------------->>
+    167        809D               Hero_Move
+    168  5     809D B6   809B            LDA JOY_DIR_STATUS
+    169  2     80A0 81   0B              CMPA #JOY_G
+    170  3     80A2 26   02              BNE Hero_NotLeft
+    171  3     80A4 20   62              BRA Hero_MoveLeft
     172
-    173        80AB               Hero_Move
-    174  5     80AB B6   80A9            LDA JOY_DIR_STATUS
-    175  2     80AE 81   0B              CMPA #JOY_G
-    176  3     80B0 26   02              BNE Hero_NotLeft
-    177  3     80B2 20   62              BRA Hero_MoveLeft
-    178
-    179        80B4               Hero_NotLeft                   * XREF: He>>
-    180  2     80B4 81   07              CMPA #JOY_D
-    181  3     80B6 26   03              BNE Hero_NotLeftOrRight
-    182  5     80B8 16   009D            LBRA Hero_MoveRight
-    183
-    184        80BB               Hero_NotLeftOrRight            * XREF: He>>
-    185  6     80BB FC   82E4            LDD TEST1X10_G_SPEED
-    186  5     80BE 1083 0000            CMPD #$0000
-    187  3     80C2 2D   29              BLT Hero_NotLeftOrRight_00 * se de>>
-    188  7     80C4 B3   82F2            SUBD TEST1X10_FRICTION     * se de>>
-    189  3     80C7 24   0E              BCC Hero_NotLeftOrRight_01 * si on>>
-    190  3     80C9 CC   0000            LDD #$0000
-    191  6     80CC FD   82E4            STD TEST1X10_G_SPEED
-    192  2     80CF 86   01              LDA #$01                  * Charge>>
-    193  5     80D1 B7   82F4            STA TEST1X10_ANIMATION
-    194  5     80D4 16   00BD            LBRA Hero_MoveUpdatePos
-    195        80D7               Hero_NotLeftOrRight_01
-    196  5     80D7 1083 0600            CMPD #TEST1X10_JOG_SPD_LIMIT
-    197  3     80DB 2C   0A              BGE Hero_NotLeftOrRight_02
-    198  6     80DD FD   82E4            STD TEST1X10_G_SPEED
-    199  2     80E0 86   03              LDA #$03                  * Charge>>
-    200  5     80E2 B7   82F4            STA TEST1X10_ANIMATION
-    201  3     80E5 20   03              BRA Hero_NotLeftOrRight_03
-    202        80E7               Hero_NotLeftOrRight_02
-    203  6     80E7 FD   82E4            STD TEST1X10_G_SPEED
-    204        80EA               Hero_NotLeftOrRight_03
-    205  5     80EA 16   00A7            LBRA Hero_MoveUpdatePos
-    206        80ED               Hero_NotLeftOrRight_00
-    207  7     80ED F3   82F2            ADDD TEST1X10_FRICTION     * se de>>
-    208  3     80F0 24   0E              BCC Hero_NotLeftOrRight_11 * si on>>
-    209  3     80F2 CC   0000            LDD #$0000
-    210  6     80F5 FD   82E4            STD TEST1X10_G_SPEED
-    211  2     80F8 86   02              LDA #$02                  * Charge>>
-    212  5     80FA B7   82F4            STA TEST1X10_ANIMATION
-    213  5     80FD 16   0094            LBRA Hero_MoveUpdatePos
-    214        8100               Hero_NotLeftOrRight_11
-    215  5     8100 1083 0600            CMPD #TEST1X10_JOG_SPD_LIMIT
-    216  3     8104 2F   0A              BLE Hero_NotLeftOrRight_12
-    217  6     8106 FD   82E4            STD TEST1X10_G_SPEED
-    218  2     8109 86   04              LDA #$04                  * Charge>>
-    219  5     810B B7   82F4            STA TEST1X10_ANIMATION
-    220  3     810E 20   03              BRA Hero_NotLeftOrRight_13
-    221        8110               Hero_NotLeftOrRight_12
-    222  6     8110 FD   82E4            STD TEST1X10_G_SPEED
-    223        8113               Hero_NotLeftOrRight_13
-    224  5     8113 16   007E            LBRA Hero_MoveUpdatePos
-    225
-    226        8116               Hero_MoveLeft                      * XREF>>
-    227  6     8116 FC   82E4            LDD TEST1X10_G_SPEED        * Char>>
-    228  5     8119 1083 0000            CMPD #$0000                 * Test>>
-    229  3     811D 2F   11              BLE Hero_MoveLeft_00        * BRAN>>
-    230  7     811F B3   82F0            SUBD TEST1X10_DECELERATION  * orie>>
-    231  3     8122 24   06              BCC Hero_MoveLeft_03        * BRAN>>
-    232  3     8124 CC   0000            LDD #$0000
-    233  7     8127 B3   82F0            SUBD TEST1X10_DECELERATION  * si l>>
-    234        812A               Hero_MoveLeft_03
-    235  6     812A FD   82E4            STD TEST1X10_G_SPEED        * On s>>
-    236  5     812D 16   0064            LBRA Hero_MoveUpdatePos           >>
-    237        8130               Hero_MoveLeft_00                         >>
-    238  8     8130 10B3 82EC            CMPD TEST1X10_NEG_TOP_SPEED * Comp>>
-    239  3     8134 27   5E              BEQ Hero_MoveUpdatePos      * vite>>
-    240  7     8136 B3   82EE            SUBD TEST1X10_ACCELERATION  * acce>>
-    241  8     8139 10B3 82EC            CMPD TEST1X10_NEG_TOP_SPEED * Comp>>
-    242  3     813D 2E   0E              BGT Hero_MoveLeft_01        * BRAN>>
-    243  2     813F 86   06              LDA #$06                    * Char>>
-    244  5     8141 B7   82F4            STA TEST1X10_ANIMATION      * Sauv>>
-    245  6     8144 FC   82EC            LDD TEST1X10_NEG_TOP_SPEED  * Limi>>
-    246  6     8147 FD   82E4            STD TEST1X10_G_SPEED        * Enre>>
-    247  5     814A 16   0047            LBRA Hero_MoveUpdatePos     * Mise>>
-    248        814D               Hero_MoveLeft_01
-    249  6     814D FD   82E4            STD TEST1X10_G_SPEED        * Enre>>
-    250  2     8150 86   04              LDA #$04                    * Char>>
-    251  5     8152 B7   82F4            STA TEST1X10_ANIMATION      * Sauv>>
-    252  5     8155 16   003C            LBRA Hero_MoveUpdatePos
-    253
-    254        8158               Hero_MoveRight                  * XREF: H>>
-    255  6     8158 FC   82E4            LDD TEST1X10_G_SPEED        * Char>>
-    256  5     815B 1083 0000            CMPD #$0000                 * Test>>
-    257  3     815F 2C   0E              BGE Hero_MoveRight_00       * BRAN>>
-    258  7     8161 F3   82F0            ADDD TEST1X10_DECELERATION  * orie>>
-    259  3     8164 24   03              BCC Hero_MoveRight_03       * BRAN>>
-    260  6     8166 FC   82F0            LDD TEST1X10_DECELERATION   * si l>>
-    261        8169               Hero_MoveRight_03
-    262  6     8169 FD   82E4            STD TEST1X10_G_SPEED        * On s>>
-    263  5     816C 16   0025            LBRA Hero_MoveUpdatePos           >>
-    264        816F               Hero_MoveRight_00                  * Orie>>
-    265  8     816F 10B3 82EA            CMPD TEST1X10_TOP_SPEED           >>
-    266  3     8173 27   1F              BEQ Hero_MoveUpdatePos      * vite>>
-    267  7     8175 F3   82EE            ADDD TEST1X10_ACCELERATION  * acce>>
-    268  8     8178 10B3 82EA            CMPD TEST1X10_TOP_SPEED           >>
-    269  3     817C 2D   0E              BLT Hero_MoveRight_01       * BRAN>>
-    270  2     817E 86   05              LDA #$05                    * Char>>
-    271  5     8180 B7   82F4            STA TEST1X10_ANIMATION            >>
-    272  6     8183 FC   82EA            LDD TEST1X10_TOP_SPEED            >>
-    273  6     8186 FD   82E4            STD TEST1X10_G_SPEED        * Enre>>
-    274  5     8189 16   0008            LBRA Hero_MoveUpdatePos           >>
-    275        818C               Hero_MoveRight_01
-    276  6     818C FD   82E4            STD TEST1X10_G_SPEED        * Enre>>
-    277  2     818F 86   03              LDA #$03                    * Char>>
-    278  5     8191 B7   82F4            STA TEST1X10_ANIMATION            >>
-    279
-    280        8194               Hero_MoveUpdatePos
-    281  6     8194 FC   82E4            LDD TEST1X10_G_SPEED        * Char>>
-    282  6     8197 FD   82E6            STD TEST1X10_X_SPEED        * Stoc>>
-    283  5     819A 1083 0000            CMPD #$0000                 * Test>>
-    284  3     819E 2D   08              BLT Hero_MoveUpdatePos_00   * BRAN>>
-    285  6     81A0 1F   89              TFR A,B                     * Divi>>
-    286  5     81A2 FB   82E2            ADDB TEST1X10_X_POS               >>
-    287  3     81A5 20   12              BRA Hero_MoveUpdatePos_01
-    288        81A7               Hero_MoveUpdatePos_V00
-    289        81A7 00                   FCB $00
-    290        81A8               Hero_MoveUpdatePos_00
-    291  3     81A8 CC   0000            LDD #$0000
-    292  7     81AB B3   82E6            SUBD TEST1X10_X_SPEED             >>
-    293  6     81AE 1F   89              TFR A,B                     * Divi>>
-    294  5     81B0 F7   81A7            STB Hero_MoveUpdatePos_V00
-    295  5     81B3 F6   82E2            LDB TEST1X10_X_POS
-    296  5     81B6 F0   81A7            SUBB Hero_MoveUpdatePos_V00 * Ajou>>
-    297        81B9               Hero_MoveUpdatePos_01
-    298                           *      CMPB #$50                         >>
-    299                           *      BLE Hero_MoveUpdatePos_02   * Bute>>
-    300                           *      LDB #$50                          >>
-    301                           *Hero_MoveUpdatePos_02
-    302                           *    CMPB #$0C                           >>
-    303                           *      BGE Hero_MoveUpdatePos_03   * Bute>>
-    304                           *      LDB #$0C                          >>
-    305        81B9               Hero_MoveUpdatePos_03
-    306  5     81B9 F7   82E2            STB TEST1X10_X_POS
-    307  3     81BC CC   0000            LDD #$0000                  * TODO>>
-    308  6     81BF FD   82E8            STD TEST1X10_Y_SPEED
-    309  6     81C2 1F   89              TFR A,B                     * divi>>
-    310  5     81C4 FB   82E3            ADDB TEST1X10_Y_POS
-    311  5     81C7 F7   82E3            STB TEST1X10_Y_POS
-    312  5     81CA 39                   RTS
-    313
-    314                           * TODO : Braking Animation
-    315                           * Sonic enters his braking animation when>>
-    316                           * In Sonic 1 and Sonic CD, he then stays >>
-    317                           * In the other 3 games, Sonic returns to >>
-    318
-    319        81CB               Compute_Position
-    320  5     81CB B6   82E2            LDA TEST1X10_X_POS
-    321  2     81CE 44                   LSRA
-    322  3     81CF 25   17              BCS Compute_Position_01
-    323  5     81D1 B7   8203            STA Compute_Position_02+1
-    324  2     81D4 86   28              LDA #$28
-    325  5     81D6 F6   82E3            LDB TEST1X10_Y_POS
-    326  2     81D9 5A                   DECB
-    327  11    81DA 3D                   MUL
-    328  7     81DB F3   8202            ADDD Compute_Position_02
-    329  6     81DE FD   878E            STD POS_TEST1X100000
-    330  4     81E1 C3   2000            ADDD #$2000
-    331  6     81E4 FD   8790            STD POS_TEST1X100000+2
-    332  5     81E7 39                   RTS
-    333        81E8               Compute_Position_01
-    334  5     81E8 B7   8203            STA Compute_Position_02+1
-    335  2     81EB 86   28              LDA #$28
-    336  5     81ED F6   82E3            LDB TEST1X10_Y_POS
-    337  2     81F0 5A                   DECB
-    338  11    81F1 3D                   MUL
-    339  7     81F2 F3   8202            ADDD Compute_Position_02
-    340  4     81F5 C3   2000            ADDD #$2000
-    341  6     81F8 FD   878E            STD POS_TEST1X100000
-    342  4     81FB 83   1FFF            SUBD #$1FFF
-    343  6     81FE FD   8790            STD POS_TEST1X100000+2
-    344  5     8201 39                   RTS
-    345        8202               Compute_Position_02
-    346        8202 0000                 FDB $0000
-    347                           *****************************************>>
-    348                           * Affichage de l arriere plan xxx cycles
+    173        80A6               Hero_NotLeft                   * XREF: He>>
+    174  2     80A6 81   07              CMPA #JOY_D
+    175  3     80A8 26   03              BNE Hero_NotLeftOrRight
+    176  5     80AA 16   009D            LBRA Hero_MoveRight
+    177
+    178        80AD               Hero_NotLeftOrRight            * XREF: He>>
+    179  6     80AD FC   8267            LDD TEST1X10_G_SPEED
+    180  5     80B0 1083 0000            CMPD #$0000
+    181  3     80B4 2D   29              BLT Hero_NotLeftOrRight_00 * se de>>
+    182  7     80B6 B3   8275            SUBD TEST1X10_FRICTION     * se de>>
+    183  3     80B9 24   0E              BCC Hero_NotLeftOrRight_01 * si on>>
+    184  3     80BB CC   0000            LDD #$0000
+    185  6     80BE FD   8267            STD TEST1X10_G_SPEED
+    186  2     80C1 86   01              LDA #$01                  * Charge>>
+    187  5     80C3 B7   8277            STA TEST1X10_ANIMATION
+    188  5     80C6 16   00BD            LBRA Hero_MoveUpdatePos
+    189        80C9               Hero_NotLeftOrRight_01
+    190  5     80C9 1083 0600            CMPD #TEST1X10_JOG_SPD_LIMIT
+    191  3     80CD 2C   0A              BGE Hero_NotLeftOrRight_02
+    192  6     80CF FD   8267            STD TEST1X10_G_SPEED
+    193  2     80D2 86   03              LDA #$03                  * Charge>>
+    194  5     80D4 B7   8277            STA TEST1X10_ANIMATION
+    195  3     80D7 20   03              BRA Hero_NotLeftOrRight_03
+    196        80D9               Hero_NotLeftOrRight_02
+    197  6     80D9 FD   8267            STD TEST1X10_G_SPEED
+    198        80DC               Hero_NotLeftOrRight_03
+    199  5     80DC 16   00A7            LBRA Hero_MoveUpdatePos
+    200        80DF               Hero_NotLeftOrRight_00
+    201  7     80DF F3   8275            ADDD TEST1X10_FRICTION     * se de>>
+    202  3     80E2 24   0E              BCC Hero_NotLeftOrRight_11 * si on>>
+    203  3     80E4 CC   0000            LDD #$0000
+    204  6     80E7 FD   8267            STD TEST1X10_G_SPEED
+    205  2     80EA 86   02              LDA #$02                  * Charge>>
+    206  5     80EC B7   8277            STA TEST1X10_ANIMATION
+    207  5     80EF 16   0094            LBRA Hero_MoveUpdatePos
+    208        80F2               Hero_NotLeftOrRight_11
+    209  5     80F2 1083 0600            CMPD #TEST1X10_JOG_SPD_LIMIT
+    210  3     80F6 2F   0A              BLE Hero_NotLeftOrRight_12
+    211  6     80F8 FD   8267            STD TEST1X10_G_SPEED
+    212  2     80FB 86   04              LDA #$04                  * Charge>>
+    213  5     80FD B7   8277            STA TEST1X10_ANIMATION
+    214  3     8100 20   03              BRA Hero_NotLeftOrRight_13
+    215        8102               Hero_NotLeftOrRight_12
+    216  6     8102 FD   8267            STD TEST1X10_G_SPEED
+    217        8105               Hero_NotLeftOrRight_13
+    218  5     8105 16   007E            LBRA Hero_MoveUpdatePos
+    219
+    220        8108               Hero_MoveLeft                      * XREF>>
+    221  6     8108 FC   8267            LDD TEST1X10_G_SPEED        * Char>>
+    222  5     810B 1083 0000            CMPD #$0000                 * Test>>
+    223  3     810F 2F   11              BLE Hero_MoveLeft_00        * BRAN>>
+    224  7     8111 B3   8273            SUBD TEST1X10_DECELERATION  * orie>>
+    225  3     8114 24   06              BCC Hero_MoveLeft_03        * BRAN>>
+    226  3     8116 CC   0000            LDD #$0000
+    227  7     8119 B3   8273            SUBD TEST1X10_DECELERATION  * si l>>
+    228        811C               Hero_MoveLeft_03
+    229  6     811C FD   8267            STD TEST1X10_G_SPEED        * On s>>
+    230  5     811F 16   0064            LBRA Hero_MoveUpdatePos           >>
+    231        8122               Hero_MoveLeft_00                         >>
+    232                           *      CMPD #$0000                       >>
+    233                           *      BNE Hero_MoveLeft_02        * BRAN>>
+    234                           *      LDD #$FEFF                        >>
+    235                           *Hero_MoveLeft_02
+    236  8     8122 10B3 826F            CMPD TEST1X10_NEG_TOP_SPEED * Comp>>
+    237  3     8126 27   5E              BEQ Hero_MoveUpdatePos      * vite>>
+    238  7     8128 B3   8271            SUBD TEST1X10_ACCELERATION  * acce>>
+    239  8     812B 10B3 826F            CMPD TEST1X10_NEG_TOP_SPEED * Comp>>
+    240  3     812F 2E   0E              BGT Hero_MoveLeft_01        * BRAN>>
+    241  2     8131 86   06              LDA #$06                    * Char>>
+    242  5     8133 B7   8277            STA TEST1X10_ANIMATION      * Sauv>>
+    243  6     8136 FC   826F            LDD TEST1X10_NEG_TOP_SPEED  * Limi>>
+    244  6     8139 FD   8267            STD TEST1X10_G_SPEED        * Enre>>
+    245  5     813C 16   0047            LBRA Hero_MoveUpdatePos     * Mise>>
+    246        813F               Hero_MoveLeft_01
+    247  6     813F FD   8267            STD TEST1X10_G_SPEED        * Enre>>
+    248  2     8142 86   04              LDA #$04                    * Char>>
+    249  5     8144 B7   8277            STA TEST1X10_ANIMATION      * Sauv>>
+    250  5     8147 16   003C            LBRA Hero_MoveUpdatePos
+    251
+    252        814A               Hero_MoveRight                  * XREF: H>>
+    253  6     814A FC   8267            LDD TEST1X10_G_SPEED        * Char>>
+    254  5     814D 1083 0000            CMPD #$0000                 * Test>>
+    255  3     8151 2C   0E              BGE Hero_MoveRight_00       * BRAN>>
+    256  7     8153 F3   8273            ADDD TEST1X10_DECELERATION  * orie>>
+    257  3     8156 24   03              BCC Hero_MoveRight_03       * BRAN>>
+    258  6     8158 FC   8273            LDD TEST1X10_DECELERATION   * si l>>
+    259        815B               Hero_MoveRight_03
+    260  6     815B FD   8267            STD TEST1X10_G_SPEED        * On s>>
+    261  5     815E 16   0025            LBRA Hero_MoveUpdatePos           >>
+    262        8161               Hero_MoveRight_00                  * Orie>>
+    263                           *      CMPD #$0000                       >>
+    264                           *      BNE Hero_MoveRight_02       * BRAN>>
+    265                           *      LDD #$0100                        >>
+    266                           *Hero_MoveRight_02
+    267  8     8161 10B3 826D            CMPD TEST1X10_TOP_SPEED           >>
+    268  3     8165 27   1F              BEQ Hero_MoveUpdatePos      * vite>>
+    269  7     8167 F3   8271            ADDD TEST1X10_ACCELERATION  * acce>>
+    270  8     816A 10B3 826D            CMPD TEST1X10_TOP_SPEED           >>
+    271  3     816E 2D   0E              BLT Hero_MoveRight_01       * BRAN>>
+    272  2     8170 86   05              LDA #$05                    * Char>>
+    273  5     8172 B7   8277            STA TEST1X10_ANIMATION            >>
+    274  6     8175 FC   826D            LDD TEST1X10_TOP_SPEED            >>
+    275  6     8178 FD   8267            STD TEST1X10_G_SPEED        * Enre>>
+    276  5     817B 16   0008            LBRA Hero_MoveUpdatePos           >>
+    277        817E               Hero_MoveRight_01
+    278  6     817E FD   8267            STD TEST1X10_G_SPEED        * Enre>>
+    279  2     8181 86   03              LDA #$03                    * Char>>
+    280  5     8183 B7   8277            STA TEST1X10_ANIMATION            >>
+    281
+    282        8186               Hero_MoveUpdatePos
+    283  6     8186 FC   8267            LDD TEST1X10_G_SPEED        * Char>>
+    284  6     8189 FD   8269            STD TEST1X10_X_SPEED        * Stoc>>
+    285  5     818C 1083 0000            CMPD #$0000                 * Test>>
+    286  3     8190 2D   08              BLT Hero_MoveUpdatePos_00   * BRAN>>
+    287  6     8192 1F   89              TFR A,B                     * Divi>>
+    288  5     8194 FB   8265            ADDB TEST1X10_X_POS               >>
+    289  3     8197 20   12              BRA Hero_MoveUpdatePos_01
+    290        8199               Hero_MoveUpdatePos_V00
+    291        8199 00                   FCB $00
+    292        819A               Hero_MoveUpdatePos_00
+    293  3     819A CC   0000            LDD #$0000
+    294  7     819D B3   8269            SUBD TEST1X10_X_SPEED             >>
+    295  6     81A0 1F   89              TFR A,B                     * Divi>>
+    296  5     81A2 F7   8199            STB Hero_MoveUpdatePos_V00
+    297  5     81A5 F6   8265            LDB TEST1X10_X_POS
+    298  5     81A8 F0   8199            SUBB Hero_MoveUpdatePos_V00 * Ajou>>
+    299        81AB               Hero_MoveUpdatePos_01
+    300                           *      CMPB #$50                         >>
+    301                           *      BLE Hero_MoveUpdatePos_02   * Bute>>
+    302                           *      LDB #$50                          >>
+    303                           *Hero_MoveUpdatePos_02
+    304                           *    CMPB #$0C                           >>
+    305                           *      BGE Hero_MoveUpdatePos_03   * Bute>>
+    306                           *      LDB #$0C                          >>
+    307        81AB               Hero_MoveUpdatePos_03
+    308  5     81AB F7   8265            STB TEST1X10_X_POS
+    309  3     81AE CC   0000            LDD #$0000                  * TODO>>
+    310  6     81B1 FD   826B            STD TEST1X10_Y_SPEED
+    311  6     81B4 1F   89              TFR A,B                     * divi>>
+    312  5     81B6 FB   8266            ADDB TEST1X10_Y_POS
+    313  5     81B9 F7   8266            STB TEST1X10_Y_POS
+    314  5     81BC 39                   RTS
+    315
+    316                           * TODO : Braking Animation
+    317                           * Sonic enters his braking animation when>>
+    318                           * In Sonic 1 and Sonic CD, he then stays >>
+    319                           * In the other 3 games, Sonic returns to >>
+    320
+    321        81BD               Compute_Position
+    322  5     81BD B6   8265            LDA TEST1X10_X_POS
+    323  2     81C0 44                   LSRA
+    324  3     81C1 25   17              BCS Compute_Position_01
+    325  5     81C3 B7   81F5            STA Compute_Position_02+1
+    326  2     81C6 86   28              LDA #$28
+    327  5     81C8 F6   8266            LDB TEST1X10_Y_POS
+    328  2     81CB 5A                   DECB
+    329  11    81CC 3D                   MUL
+    330  7     81CD F3   81F4            ADDD Compute_Position_02
+    331  6     81D0 FD   8782            STD POS_TEST1X100000
+    332  4     81D3 C3   2000            ADDD #$2000
+    333  6     81D6 FD   8784            STD POS_TEST1X100000+2
+    334  5     81D9 39                   RTS
+    335        81DA               Compute_Position_01
+    336  5     81DA B7   81F5            STA Compute_Position_02+1
+    337  2     81DD 86   28              LDA #$28
+    338  5     81DF F6   8266            LDB TEST1X10_Y_POS
+    339  2     81E2 5A                   DECB
+    340  11    81E3 3D                   MUL
+    341  7     81E4 F3   81F4            ADDD Compute_Position_02
+    342  4     81E7 C3   2000            ADDD #$2000
+    343  6     81EA FD   8782            STD POS_TEST1X100000
+    344  4     81ED 83   1FFF            SUBD #$1FFF
+    345  6     81F0 FD   8784            STD POS_TEST1X100000+2
+    346  5     81F3 39                   RTS
+    347        81F4               Compute_Position_02
+    348        81F4 0000                 FDB $0000
     349                           *****************************************>>
-    350        8204               DRAW_RAM_DATA_TO_CART_160x200
-    351  5+3   8204 34   48              PSHS U,DP            * sauvegarde >>
-    352  7     8206 10FF 8000            STS >SSAVE
-    353                            
-    354  4     820A 10CE 1F40            LDS #FINECRANA       * init pointe>>
-    355  3     820E CE   A000            LDU #$A000
-    356
-    357        8211               DRAW_RAM_DATA_TO_CART_160x200A
-    358  5+7   8211 37   3E              PULU A,B,DP,X,Y
-    359  5+7   8213 34   3E              PSHS Y,X,DP,B,A
-    360  5+7   8215 37   3E              PULU A,B,DP,X,Y
-    361  5+7   8217 34   3E              PSHS Y,X,DP,B,A
-    362  5+7   8219 37   3E              PULU A,B,DP,X,Y
-    363  5+7   821B 34   3E              PSHS Y,X,DP,B,A
-    364  5+7   821D 37   3E              PULU A,B,DP,X,Y
-    365  5+7   821F 34   3E              PSHS Y,X,DP,B,A
-    366  5+7   8221 37   3E              PULU A,B,DP,X,Y
-    367  5+7   8223 34   3E              PSHS Y,X,DP,B,A
-    368  5+7   8225 37   3E              PULU A,B,DP,X,Y
-    369  5+7   8227 34   3E              PSHS Y,X,DP,B,A
-    370  5     8229 118C 0014            CMPS #DEBUTECRANA
-    371  3     822D 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200A>>
-    372  5+7   822F 37   3E              PULU A,B,DP,X,Y
-    373  5+7   8231 34   3E              PSHS Y,X,DP,B,A
-    374  5+7   8233 37   3E              PULU A,B,DP,X,Y
-    375  5+7   8235 34   3E              PSHS Y,X,DP,B,A
-    376  5+6   8237 37   3C              PULU B,DP,X,Y
-    377  5+6   8239 34   3C              PSHS Y,X,DP,B
-    378
-    379  4     823B 10CE 3F40            LDS #FINECRANB       * init pointe>>
-    380  3     823F CE   C000            LDU #$C000
-    381
-    382        8242               DRAW_RAM_DATA_TO_CART_160x200B
-    383  5+7   8242 37   3E              PULU A,B,DP,X,Y
-    384  5+7   8244 34   3E              PSHS Y,X,DP,B,A
-    385  5+7   8246 37   3E              PULU A,B,DP,X,Y
-    386  5+7   8248 34   3E              PSHS Y,X,DP,B,A
-    387  5+7   824A 37   3E              PULU A,B,DP,X,Y
-    388  5+7   824C 34   3E              PSHS Y,X,DP,B,A
-    389  5+7   824E 37   3E              PULU A,B,DP,X,Y
-    390  5+7   8250 34   3E              PSHS Y,X,DP,B,A
-    391  5+7   8252 37   3E              PULU A,B,DP,X,Y
-    392  5+7   8254 34   3E              PSHS Y,X,DP,B,A
-    393  5+7   8256 37   3E              PULU A,B,DP,X,Y
-    394  5+7   8258 34   3E              PSHS Y,X,DP,B,A
-    395  5     825A 118C 2014            CMPS #DEBUTECRANB
-    396  3     825E 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200B>>
-    397  5+7   8260 37   3E              PULU A,B,DP,X,Y
-    398  5+7   8262 34   3E              PSHS Y,X,DP,B,A
-    399  5+7   8264 37   3E              PULU A,B,DP,X,Y
-    400  5+7   8266 34   3E              PSHS Y,X,DP,B,A
-    401  5+6   8268 37   3C              PULU B,DP,X,Y
-    402  5+6   826A 34   3C              PSHS Y,X,DP,B
-    403
-    404  7     826C 10FE 8000            LDS  >SSAVE          * rechargemen>>
-    405  5+3   8270 35   48              PULS U,DP
-    406  5     8272 39                   RTS
-    407
-    408        8273               DRAW_RAM_DATA_TO_CART
-    409  5+3   8273 34   48              PSHS U,DP            * sauvegarde >>
-    410  7     8275 10FF 8000            STS >SSAVE
-    411                            
-    412  4     8279 10CE 1F40            LDS #FINECRANA       * init pointe>>
-    413  3     827D CE   A000            LDU #$A000
-    414
-    415        8280               DRAW_RAM_DATA_TO_CARTA
-    416  5+7   8280 37   3E              PULU A,B,DP,X,Y
-    417  5+7   8282 34   3E              PSHS Y,X,DP,B,A
-    418  5+7   8284 37   3E              PULU A,B,DP,X,Y
-    419  5+7   8286 34   3E              PSHS Y,X,DP,B,A
-    420  5+7   8288 37   3E              PULU A,B,DP,X,Y
-    421  5+7   828A 34   3E              PSHS Y,X,DP,B,A
-    422  5+7   828C 37   3E              PULU A,B,DP,X,Y
-    423  5+7   828E 34   3E              PSHS Y,X,DP,B,A
-    424  5+7   8290 37   3E              PULU A,B,DP,X,Y
-    425  5+7   8292 34   3E              PSHS Y,X,DP,B,A
-    426  5+7   8294 37   3E              PULU A,B,DP,X,Y
-    427  5+7   8296 34   3E              PSHS Y,X,DP,B,A
-    428  5     8298 118C 18DA            CMPS #$18DA
-    429  3     829C 26   E2              BNE DRAW_RAM_DATA_TO_CARTA
-    430  5+7   829E 37   3E              PULU A,B,DP,X,Y
-    431  5+7   82A0 34   3E              PSHS Y,X,DP,B,A
-    432  5+7   82A2 37   3E              PULU A,B,DP,X,Y
-    433  5+7   82A4 34   3E              PSHS Y,X,DP,B,A
-    434  5+6   82A6 37   3C              PULU B,DP,X,Y
-    435  5+6   82A8 34   3C              PSHS Y,X,DP,B
-    436
-    437  4     82AA 10CE 3F40            LDS #FINECRANB       * init pointe>>
-    438  3     82AE CE   C000            LDU #$C000
-    439
-    440        82B1               DRAW_RAM_DATA_TO_CARTB
-    441  5+7   82B1 37   3E              PULU A,B,DP,X,Y
-    442  5+7   82B3 34   3E              PSHS Y,X,DP,B,A
-    443  5+7   82B5 37   3E              PULU A,B,DP,X,Y
-    444  5+7   82B7 34   3E              PSHS Y,X,DP,B,A
-    445  5+7   82B9 37   3E              PULU A,B,DP,X,Y
-    446  5+7   82BB 34   3E              PSHS Y,X,DP,B,A
-    447  5+7   82BD 37   3E              PULU A,B,DP,X,Y
-    448  5+7   82BF 34   3E              PSHS Y,X,DP,B,A
-    449  5+7   82C1 37   3E              PULU A,B,DP,X,Y
-    450  5+7   82C3 34   3E              PSHS Y,X,DP,B,A
-    451  5+7   82C5 37   3E              PULU A,B,DP,X,Y
-    452  5+7   82C7 34   3E              PSHS Y,X,DP,B,A
-    453  5     82C9 118C 38DA            CMPS #$38DA
-    454  3     82CD 26   E2              BNE DRAW_RAM_DATA_TO_CARTB
-    455  5+7   82CF 37   3E              PULU A,B,DP,X,Y
-    456  5+7   82D1 34   3E              PSHS Y,X,DP,B,A
-    457  5+7   82D3 37   3E              PULU A,B,DP,X,Y
-    458  5+7   82D5 34   3E              PSHS Y,X,DP,B,A
-    459  5+6   82D7 37   3C              PULU B,DP,X,Y
-    460  5+6   82D9 34   3C              PSHS Y,X,DP,B
-    461
-    462  7     82DB 10FE 8000            LDS  >SSAVE          * rechargemen>>
-    463  5+3   82DF 35   48              PULS U,DP
-    464  5     82E1 39                   RTS
-    465                           *****************************************>>
-    466                           * Affiche un computed sprite en xxx cycle>>
-    467                           *****************************************>>
-    468                  0400     TEST1X10_WALK_SPD_LIMIT EQU $0400
-    469                  0600     TEST1X10_JOG_SPD_LIMIT  EQU $0600
-    470        82E2               TEST1X10_X_POS
-    471        82E2 50                   FCB $50          * position horizo>>
-    472        82E3               TEST1X10_Y_POS
-    473        82E3 C8                   FCB $C8          * position vertic>>
-    474        82E4               TEST1X10_G_SPEED
-    475        82E4 0000                 FDB $0000        * vitesse au sol
-    476        82E6               TEST1X10_X_SPEED
-    477        82E6 0000                 FDB $0000        * vitesse horizon>>
-    478        82E8               TEST1X10_Y_SPEED
-    479        82E8 0000                 FDB $0000        * vitesse vertica>>
-    480        82EA               TEST1X10_TOP_SPEED
-    481        82EA 0600                 FDB $0600        * vitesse maximum>>
-    482        82EC               TEST1X10_NEG_TOP_SPEED
-    483        82EC FA00                 FDB $FA00        * vitesse maximum>>
-    484        82EE               TEST1X10_ACCELERATION
-    485        82EE 000C                 FDB $000C        * constante accel>>
-    486        82F0               TEST1X10_DECELERATION
-    487        82F0 0080                 FDB $0080        * constante decel>>
-    488        82F2               TEST1X10_FRICTION
-    489        82F2 000C                 FDB $000C        * constante de fr>>
-    490        82F4               TEST1X10_ANIMATION
-    491        82F4 00                   FCB $00          * Animation coura>>
-    492
-    493        82F5               DRAW_TEST1X100000
-    494  5+3   82F5 34   48              PSHS U,DP
-    495  7     82F7 10FF 8000            STS >SSAVE
-    496
-    497  7     82FB 10FE 878E            LDS POS_TEST1X100000
-    498  3     82FF CE   878E            LDU #DATA_TEST1X100000_1
-    499  7     8302 10BE 8792            LDY DRAW_EREF_TEST1X100000
-    500  4+1   8306 32   7E              LEAS -2,S
-    501  3     8308 8E   FFF0            LDX #$fff0
-    502  5+1   830B AF   A8 11           STX 17,Y
-    503  5+1   830E AF   7E              STX -2,S
-    504  3     8310 8E   C996            LDX #$c996
-    505  5+1   8313 AF   A8 16           STX 22,Y
-    506  5+1   8316 AF   E8 D6           STX -42,S
-    507  3     8319 8E   F026            LDX #$f026
-    508  5+1   831C AF   A8 1C           STX 28,Y
-    509  5+1   831F AF   E8 AE           STX -82,S
-    510  3     8322 8E   2B2C            LDX #$2b2c
-    511  5+1   8325 AF   A8 22           STX 34,Y
-    512  5+1   8328 AF   E8 86           STX -122,S
-    513  4+4   832B 32   E9 FF60         LEAS -160,S
-    514  2     832F 86   C2              LDA #$c2
-    515  4+1   8331 A7   A8 2B           STA 43,Y
-    516  4+1   8334 A7   7F              STA -1,S
-    517  2     8336 86   F0              LDA  #$F0
-    518  4+1   8338 A4   7E              ANDA -2,S
-    519  2     833A 8B   0C              ADDA #$0c
-    520  4+1   833C A7   7E              STA -2,S
-    521  2     833E 86   26              LDA #$26
-    522  4+1   8340 A7   A8 37           STA 55,Y
-    523  4+1   8343 A7   E8 D7           STA -41,S
-    524  2     8346 86   F0              LDA  #$F0
-    525  4+1   8348 A4   E8 D6           ANDA -42,S
-    526  2     834B 8B   02              ADDA #$02
-    527  4+1   834D A7   E8 D6           STA -42,S
-    528  2     8350 86   11              LDA #$11
-    529  4+1   8352 A7   A8 46           STA 70,Y
-    530  4+1   8355 A7   E8 AF           STA -81,S
-    531  2     8358 86   F0              LDA  #$F0
-    532  4+1   835A A4   E8 AE           ANDA -82,S
-    533  2     835D 8B   02              ADDA #$02
-    534  4+1   835F A7   E8 AE           STA -82,S
-    535  2     8362 86   F0              LDA  #$F0
-    536  4+1   8364 A4   E8 87           ANDA -121,S
-    537  2     8367 8B   0E              ADDA #$0e
-    538  4+1   8369 A7   E8 87           STA -121,S
-    539  4+4   836C 32   E9 FF5F         LEAS -161,S
-    540  2     8370 86   F0              LDA  #$F0
-    541  4+0   8372 A4   E4              ANDA ,S
-    542  2     8374 8B   0E              ADDA #$0e
-    543  4+0   8376 A7   E4              STA ,S
-    544  2     8378 86   DB              LDA #$db
-    545  4+1   837A A7   A8 6B           STA 107,Y
-    546  4+1   837D A7   E8 D8           STA -40,S
-    547  2     8380 86   F0              LDA  #$F0
-    548  4+1   8382 A4   E8 D7           ANDA -41,S
-    549  2     8385 8B   0B              ADDA #$0b
-    550  4+1   8387 A7   E8 D7           STA -41,S
-    551  2     838A 86   D6              LDA #$d6
-    552  4+1   838C A7   A8 7A           STA 122,Y
-    553  4+1   838F A7   E8 B0           STA -80,S
-    554  2     8392 86   F0              LDA  #$F0
-    555  4+1   8394 A4   E8 AF           ANDA -81,S
-    556  2     8397 8B   0B              ADDA #$0b
-    557  4+1   8399 A7   E8 AF           STA -81,S
-    558  2     839C 86   0F              LDA  #$0F
-    559  4+1   839E A4   E8 89           ANDA -119,S
-    560  2     83A1 8B   E0              ADDA #$e0
-    561  4+1   83A3 A7   E8 89           STA -119,S
-    562  3     83A6 8E   B662            LDX #$b662
-    563  5+4   83A9 AF   A9 0094         STX 148,Y
-    564  5+1   83AD AF   E8 87           STX -121,S
-    565  4+4   83B0 32   E9 FF61         LEAS -159,S
-    566  2     83B4 86   0F              LDA  #$0F
-    567  4+0   83B6 A4   E4              ANDA ,S
-    568  2     83B8 8B   E0              ADDA #$e0
-    569  4+0   83BA A7   E4              STA ,S
-    570  3     83BC 8E   6B21            LDX #$6b21
-    571  5+4   83BF AF   A9 00A6         STX 166,Y
-    572  5+1   83C3 AF   7E              STX -2,S
-    573  2     83C5 86   0F              LDA  #$0F
-    574  4+1   83C7 A4   E8 D8           ANDA -40,S
-    575  2     83CA 8B   D0              ADDA #$d0
-    576  4+1   83CC A7   E8 D8           STA -40,S
-    577  3     83CF 8E   2B11            LDX #$2b11
-    578  5+4   83D2 AF   A9 00B5         STX 181,Y
-    579  5+1   83D6 AF   E8 D6           STX -42,S
-    580  2     83D9 86   0F              LDA  #$0F
-    581  4+1   83DB A4   E8 B0           ANDA -80,S
-    582  2     83DE 8B   A0              ADDA #$a0
-    583  4+1   83E0 A7   E8 B0           STA -80,S
-    584  2     83E3 86   11              LDA #$11
-    585  4+4   83E5 A7   A9 00C4         STA 196,Y
-    586  4+1   83E9 A7   E8 AF           STA -81,S
-    587  2     83EC 86   F0              LDA  #$F0
-    588  4+1   83EE A4   E8 AE           ANDA -82,S
-    589  2     83F1 8B   00              ADDA #$00
-    590  4+1   83F3 A7   E8 AE           STA -82,S
-    591  2     83F6 86   D2              LDA #$d2
-    592  4+4   83F8 A7   A9 00D3         STA 211,Y
-    593  4+1   83FC A7   E8 87           STA -121,S
-    594  2     83FF 86   F0              LDA  #$F0
-    595  4+1   8401 A4   E8 86           ANDA -122,S
-    596  2     8404 8B   08              ADDA #$08
-    597  4+1   8406 A7   E8 86           STA -122,S
-    598  4+4   8409 32   E9 FF60         LEAS -160,S
-    599  2     840D 86   D0              LDA #$d0
-    600  4+4   840F A7   A9 00E6         STA 230,Y
-    601  4+1   8413 A7   7F              STA -1,S
-    602  2     8415 86   F0              LDA  #$F0
-    603  4+1   8417 A4   7E              ANDA -2,S
-    604  2     8419 8B   05              ADDA #$05
-    605  4+1   841B A7   7E              STA -2,S
-    606  2     841D 86   EC              LDA #$ec
-    607  4+4   841F A7   A9 00F2         STA 242,Y
-    608  4+1   8423 A7   E8 D7           STA -41,S
-    609  2     8426 86   F0              LDA  #$F0
-    610  4+1   8428 A4   E8 D6           ANDA -42,S
-    611  2     842B 8B   08              ADDA #$08
-    612  4+1   842D A7   E8 D6           STA -42,S
-    613  2     8430 86   C3              LDA #$c3
-    614  4+4   8432 A7   A9 0101         STA 257,Y
-    615  4+1   8436 A7   E8 AF           STA -81,S
-    616  2     8439 86   F0              LDA  #$F0
-    617  4+1   843B A4   E8 AE           ANDA -82,S
-    618  2     843E 8B   0C              ADDA #$0c
-    619  4+1   8440 A7   E8 AE           STA -82,S
-    620  2     8443 86   E0              LDA #$e0
-    621  4+4   8445 A7   A9 0110         STA 272,Y
-    622  4+1   8449 A7   E8 87           STA -121,S
-    623  4+4   844C 32   E9 FF61         LEAS -159,S
-    624  3     8450 8E   CEDE            LDX #$cede
-    625  5+4   8453 AF   A9 011A         STX 282,Y
-    626  5+1   8457 AF   7E              STX -2,S
-    627  2     8459 86   F0              LDA  #$F0
-    628  4+1   845B A4   7D              ANDA -3,S
-    629  2     845D 8B   0C              ADDA #$0c
-    630  4+1   845F A7   7D              STA -3,S
-    631  3     8461 8E   5EED            LDX #$5eed
-    632  5+4   8464 AF   A9 0127         STX 295,Y
-    633  5+1   8468 AF   E8 D6           STX -42,S
-    634  2     846B 86   F0              LDA  #$F0
-    635  4+1   846D A4   E8 D5           ANDA -43,S
-    636  2     8470 8B   08              ADDA #$08
-    637  4+1   8472 A7   E8 D5           STA -43,S
-    638  4+1   8475 32   E8 B0           LEAS -80,S
-    639  2     8478 86   C3              LDA #$c3
-    640  3     847A 8E   38DA            LDX #$38da
-    641  5+3   847D 34   12              PSHS X,A
-    642  4+1   847F 32   E8 DB           LEAS -37,S
-    643  2     8482 86   01              LDA #$01
-    644  3     8484 8E   38AA            LDX #$38aa
-    645  5+3   8487 34   12              PSHS X,A
-    646  2     8489 86   0F              LDA  #$0F
-    647  4+1   848B A4   E8 DA           ANDA -38,S
-    648  2     848E 8B   A0              ADDA #$a0
-    649  4+1   8490 A7   E8 DA           STA -38,S
-    650  3     8493 8E   611A            LDX #$611a
-    651  5+4   8496 AF   A9 0155         STX 341,Y
-    652  5+1   849A AF   E8 D8           STX -40,S
-    653  3     849D 8E   007A            LDX #$007a
-    654  5+4   84A0 AF   A9 015B         STX 347,Y
-    655  5+1   84A4 AF   E8 B0           STX -80,S
-    656  2     84A7 86   0F              LDA  #$0F
-    657  4+1   84A9 A4   E8 8A           ANDA -118,S
-    658  2     84AC 8B   D0              ADDA #$d0
-    659  4+1   84AE A7   E8 8A           STA -118,S
-    660  3     84B1 8E   0077            LDX #$0077
-    661  5+4   84B4 AF   A9 016B         STX 363,Y
-    662  5+1   84B8 AF   E8 88           STX -120,S
-    663  4+4   84BB 32   E9 FF63         LEAS -157,S
-    664  2     84BF 86   A0              LDA #$a0
-    665  3     84C1 8E   77ED            LDX #$77ed
-    666  5+3   84C4 34   12              PSHS X,A
-    667  4+1   84C6 32   E8 DB           LEAS -37,S
-    668  2     84C9 86   7A              LDA #$7a
-    669  3     84CB 8E   77EE            LDX #$77ee
-    670  5+3   84CE 34   12              PSHS X,A
-    671  4+1   84D0 32   E8 DB           LEAS -37,S
-    672  2     84D3 86   77              LDA #$77
-    673  3     84D5 8E   77DD            LDX #$77dd
-    674  5+3   84D8 34   12              PSHS X,A
-    675  4+1   84DA 32   E8 DB           LEAS -37,S
-    676  2     84DD 86   74              LDA #$74
-    677  3     84DF 8E   44AA            LDX #$44aa
-    678  5+3   84E2 34   12              PSHS X,A
-    679  2     84E4 86   0F              LDA  #$0F
-    680  4+1   84E6 A4   E8 DA           ANDA -38,S
-    681  2     84E9 8B   A0              ADDA #$a0
-    682  4+1   84EB A7   E8 DA           STA -38,S
-    683  3     84EE 8E   7477            LDX #$7477
-    684  5+4   84F1 AF   A9 01A4         STX 420,Y
-    685  5+1   84F5 AF   E8 D8           STX -40,S
-    686  3     84F8 8E   A773            LDX #$a773
-    687  5+4   84FB AF   A9 01AA         STX 426,Y
-    688  5+1   84FF AF   E8 B0           STX -80,S
-    689  3     8502 8E   E7C3            LDX #$e7c3
-    690  5+4   8505 AF   A9 01B0         STX 432,Y
-    691  5+1   8509 AF   E8 88           STX -120,S
-    692  4+4   850C 32   E9 FF62         LEAS -158,S
-    693  3     8510 8E   D7D3            LDX #$d7d3
-    694  5+4   8513 AF   A9 01BA         STX 442,Y
-    695  5+1   8517 AF   7E              STX -2,S
-    696  3     8519 8E   78EE            LDX #$78ee
-    697  5+4   851C AF   A9 01BF         STX 447,Y
-    698  5+1   8520 AF   E8 D7           STX -41,S
-    699  2     8523 86   0F              LDA  #$0F
-    700  4+1   8525 A4   E8 D6           ANDA -42,S
-    701  2     8528 8B   D0              ADDA #$d0
-    702  4+1   852A A7   E8 D6           STA -42,S
-    703  3     852D 8E   7DDD            LDX #$7ddd
-    704  5+4   8530 AF   A9 01CF         STX 463,Y
-    705  5+1   8534 AF   E8 AF           STX -81,S
-    706  2     8537 86   0F              LDA  #$0F
-    707  4+1   8539 A4   E8 AE           ANDA -82,S
-    708  2     853C 8B   D0              ADDA #$d0
-    709  4+1   853E A7   E8 AE           STA -82,S
-    710  3     8541 8E   A7AA            LDX #$a7aa
-    711  5+4   8544 AF   A9 01DF         STX 479,Y
-    712  5+1   8548 AF   E8 87           STX -121,S
-    713  4+4   854B 32   E9 FF5F         LEAS -161,S
-    714  2     854F 86   F0              LDA  #$F0
-    715  4+0   8551 A4   E4              ANDA ,S
-    716  2     8553 8B   0A              ADDA #$0a
-    717  4+0   8555 A7   E4              STA ,S
-    718
-    719  7     8557 10FE 8790            LDS POS_TEST1X100000+2
-    720  3     855B CE   878E            LDU #DATA_TEST1X100000_2
-    721
-    722  7     855E 10BE 8792            LDY DRAW_EREF_TEST1X100000
-    723  4+1   8562 32   7E              LEAS -2,S
-    724  2     8564 86   00              LDA #$00
-    725  3     8566 8E   FF0F            LDX #$ff0f
-    726  5+3   8569 34   12              PSHS X,A
-    727  4+1   856B 32   E8 DB           LEAS -37,S
-    728  2     856E 86   CF              LDA #$cf
-    729  3     8570 8E   99CF            LDX #$99cf
-    730  5+3   8573 34   12              PSHS X,A
-    731  3     8575 8E   39CF            LDX #$39cf
-    732  5+4   8578 AF   A9 020B         STX 523,Y
-    733  5+1   857C AF   E8 D9           STX -39,S
-    734  2     857F 86   F0              LDA  #$F0
-    735  4+1   8581 A4   E8 D8           ANDA -40,S
-    736  2     8584 8B   0C              ADDA #$0c
-    737  4+1   8586 A7   E8 D8           STA -40,S
-    738  2     8589 86   0F              LDA  #$0F
-    739  4+1   858B A4   E8 B2           ANDA -78,S
-    740  2     858E 8B   C0              ADDA #$c0
-    741  4+1   8590 A7   E8 B2           STA -78,S
-    742  2     8593 86   01              LDA #$01
-    743  4+4   8595 A7   A9 0224         STA 548,Y
-    744  4+1   8599 A7   E8 B1           STA -79,S
-    745  2     859C 86   0F              LDA  #$0F
-    746  4+1   859E A4   E8 8A           ANDA -118,S
-    747  2     85A1 8B   00              ADDA #$00
-    748  4+1   85A3 A7   E8 8A           STA -118,S
-    749  2     85A6 86   62              LDA #$62
-    750  4+4   85A8 A7   A9 0233         STA 563,Y
-    751  4+1   85AC A7   E8 89           STA -119,S
-    752  4+4   85AF 32   E9 FF62         LEAS -158,S
-    753  2     85B3 86   0F              LDA  #$0F
-    754  4+0   85B5 A4   E4              ANDA ,S
-    755  2     85B7 8B   B0              ADDA #$b0
-    756  4+0   85B9 A7   E4              STA ,S
-    757  2     85BB 86   B0              LDA #$b0
-    758  4+4   85BD A7   A9 0244         STA 580,Y
-    759  4+1   85C1 A7   7F              STA -1,S
-    760  2     85C3 86   0F              LDA  #$0F
-    761  4+1   85C5 A4   E8 D8           ANDA -40,S
-    762  2     85C8 8B   60              ADDA #$60
-    763  4+1   85CA A7   E8 D8           STA -40,S
-    764  2     85CD 86   6B              LDA #$6b
-    765  4+4   85CF A7   A9 0252         STA 594,Y
-    766  4+1   85D3 A7   E8 D7           STA -41,S
-    767  2     85D6 86   0F              LDA  #$0F
-    768  4+1   85D8 A4   E8 AF           ANDA -81,S
-    769  2     85DB 8B   D0              ADDA #$d0
-    770  4+1   85DD A7   E8 AF           STA -81,S
-    771  2     85E0 86   0F              LDA  #$0F
-    772  4+1   85E2 A4   E8 87           ANDA -121,S
-    773  2     85E5 8B   D0              ADDA #$d0
-    774  4+1   85E7 A7   E8 87           STA -121,S
-    775  4+4   85EA 32   E9 FF5F         LEAS -161,S
-    776  2     85EE 86   0F              LDA  #$0F
-    777  4+0   85F0 A4   E4              ANDA ,S
-    778  2     85F2 8B   D0              ADDA #$d0
-    779  4+0   85F4 A7   E4              STA ,S
-    780  2     85F6 86   0F              LDA  #$0F
-    781  4+1   85F8 A4   E8 D9           ANDA -39,S
-    782  2     85FB 8B   B0              ADDA #$b0
-    783  4+1   85FD A7   E8 D9           STA -39,S
-    784  2     8600 86   0F              LDA  #$0F
-    785  4+1   8602 A4   E8 D8           ANDA -40,S
-    786  2     8605 8B   E0              ADDA #$e0
-    787  4+1   8607 A7   E8 D8           STA -40,S
-    788  2     860A 86   0F              LDA  #$0F
-    789  4+1   860C A4   E8 B1           ANDA -79,S
-    790  2     860F 8B   60              ADDA #$60
-    791  4+1   8611 A7   E8 B1           STA -79,S
-    792  2     8614 86   0F              LDA  #$0F
-    793  4+1   8616 A4   E8 B0           ANDA -80,S
-    794  2     8619 8B   E0              ADDA #$e0
-    795  4+1   861B A7   E8 B0           STA -80,S
-    796  3     861E 8E   0EBD            LDX #$0ebd
-    797  5+4   8621 AF   A9 02A0         STX 672,Y
-    798  5+1   8625 AF   E8 88           STX -120,S
-    799  4+4   8628 32   E9 FF62         LEAS -158,S
-    800  3     862C 8E   DD6F            LDX #$dd6f
-    801  5+4   862F AF   A9 02AA         STX 682,Y
-    802  5+1   8633 AF   7E              STX -2,S
-    803  3     8635 8E   8C18            LDX #$8c18
-    804  5+4   8638 AF   A9 02AF         STX 687,Y
-    805  5+1   863C AF   E8 D6           STX -42,S
-    806  3     863F 8E   35E5            LDX #$35e5
-    807  5+4   8642 AF   A9 02B5         STX 693,Y
-    808  5+1   8646 AF   E8 AE           STX -82,S
-    809  3     8649 8E   3383            LDX #$3383
-    810  5+4   864C AF   A9 02BB         STX 699,Y
-    811  5+1   8650 AF   E8 86           STX -122,S
-    812  4+4   8653 32   E9 FF60         LEAS -160,S
-    813  3     8657 8E   333A            LDX #$333a
-    814  5+4   865A AF   A9 02C5         STX 709,Y
-    815  5+1   865E AF   7E              STX -2,S
-    816  2     8660 86   0F              LDA  #$0F
-    817  4+1   8662 A4   E8 D7           ANDA -41,S
-    818  2     8665 8B   E0              ADDA #$e0
-    819  4+1   8667 A7   E8 D7           STA -41,S
-    820  2     866A 86   58              LDA #$58
-    821  4+4   866C A7   A9 02D3         STA 723,Y
-    822  4+1   8670 A7   E8 D6           STA -42,S
-    823  3     8673 8E   F0DD            LDX #$f0dd
-    824  5+4   8676 AF   A9 02D9         STX 729,Y
-    825  5+1   867A AF   E8 AE           STX -82,S
-    826  2     867D 86   0F              LDA  #$0F
-    827  4+1   867F A4   E8 88           ANDA -120,S
-    828  2     8682 8B   A0              ADDA #$a0
-    829  4+1   8684 A7   E8 88           STA -120,S
-    830  3     8687 8E   88EE            LDX #$88ee
-    831  5+4   868A AF   A9 02E9         STX 745,Y
-    832  5+1   868E AF   E8 86           STX -122,S
-    833  4+4   8691 32   E9 FF60         LEAS -160,S
-    834  3     8695 8E   330E            LDX #$330e
-    835  5+4   8698 AF   A9 02F3         STX 755,Y
-    836  5+1   869C AF   7E              STX -2,S
-    837  3     869E 8E   33EE            LDX #$33ee
-    838  5+4   86A1 AF   A9 02F8         STX 760,Y
-    839  5+1   86A5 AF   E8 D6           STX -42,S
-    840  3     86A8 8E   11EE            LDX #$11ee
-    841  5+4   86AB AF   A9 02FE         STX 766,Y
-    842  5+1   86AF AF   E8 AE           STX -82,S
-    843  2     86B2 86   F0              LDA  #$F0
-    844  4+1   86B4 A4   E8 AD           ANDA -83,S
-    845  2     86B7 8B   00              ADDA #$00
-    846  4+1   86B9 A7   E8 AD           STA -83,S
-    847  3     86BC 8E   17DE            LDX #$17de
-    848  5+4   86BF AF   A9 030E         STX 782,Y
-    849  5+1   86C3 AF   E8 86           STX -122,S
-    850  2     86C6 86   F0              LDA  #$F0
-    851  4+1   86C8 A4   E8 85           ANDA -123,S
-    852  2     86CB 8B   00              ADDA #$00
-    853  4+1   86CD A7   E8 85           STA -123,S
-    854  4+4   86D0 32   E9 FF60         LEAS -160,S
-    855  3     86D4 8E   11AE            LDX #$11ae
-    856  5+4   86D7 AF   A9 0322         STX 802,Y
-    857  5+1   86DB AF   7E              STX -2,S
-    858  5+4   86DD AF   A9 0324         STX 804,Y
-    859  5+1   86E1 AF   E8 D6           STX -42,S
-    860  4+1   86E4 32   E8 B1           LEAS -79,S
-    861  2     86E7 86   11              LDA #$11
-    862  3     86E9 8E   AEDD            LDX #$aedd
-    863  5+3   86EC 34   12              PSHS X,A
-    864  2     86EE 86   0F              LDA  #$0F
-    865  4+1   86F0 A4   E8 DA           ANDA -38,S
-    866  2     86F3 8B   E0              ADDA #$e0
-    867  4+1   86F5 A7   E8 DA           STA -38,S
-    868  3     86F8 8E   11AD            LDX #$11ad
-    869  5+4   86FB AF   A9 033E         STX 830,Y
-    870  5+1   86FF AF   E8 D8           STX -40,S
-    871  2     8702 86   0F              LDA  #$0F
-    872  4+1   8704 A4   E8 B2           ANDA -78,S
-    873  2     8707 8B   A0              ADDA #$a0
-    874  4+1   8709 A7   E8 B2           STA -78,S
-    875  3     870C 8E   21AD            LDX #$21ad
-    876  5+4   870F AF   A9 034E         STX 846,Y
-    877  5+1   8713 AF   E8 B0           STX -80,S
-    878  3     8716 8E   A1AD            LDX #$a1ad
-    879  5+4   8719 AF   A9 0354         STX 852,Y
-    880  5+1   871D AF   E8 88           STX -120,S
-    881  4+4   8720 32   E9 FF62         LEAS -158,S
-    882  3     8724 8E   7AAD            LDX #$7aad
-    883  5+4   8727 AF   A9 035E         STX 862,Y
-    884  5+1   872B AF   7E              STX -2,S
-    885  3     872D 8E   44EA            LDX #$44ea
-    886  5+4   8730 AF   A9 0363         STX 867,Y
-    887  5+1   8734 AF   E8 D6           STX -42,S
-    888  3     8737 8E   44ED            LDX #$44ed
-    889  5+4   873A AF   A9 0369         STX 873,Y
-    890  5+1   873E AF   E8 AE           STX -82,S
-    891  3     8741 8E   74EE            LDX #$74ee
-    892  5+4   8744 AF   A9 036F         STX 879,Y
-    893  5+1   8748 AF   E8 86           STX -122,S
-    894  4+4   874B 32   E9 FF60         LEAS -160,S
-    895  3     874F 8E   77DD            LDX #$77dd
-    896  5+4   8752 AF   A9 0379         STX 889,Y
-    897  5+1   8756 AF   7E              STX -2,S
-    898  2     8758 86   0F              LDA  #$0F
-    899  4+1   875A A4   E8 D8           ANDA -40,S
-    900  2     875D 8B   D0              ADDA #$d0
-    901  4+1   875F A7   E8 D8           STA -40,S
-    902  2     8762 86   AA              LDA #$aa
-    903  4+4   8764 A7   A9 0387         STA 903,Y
-    904  4+1   8768 A7   E8 D7           STA -41,S
-    905  2     876B 86   F0              LDA  #$F0
-    906  4+1   876D A4   E8 D6           ANDA -42,S
-    907  2     8770 8B   07              ADDA #$07
-    908  4+1   8772 A7   E8 D6           STA -42,S
-    909  2     8775 86   77              LDA #$77
-    910  4+4   8777 A7   A9 0396         STA 918,Y
-    911  4+1   877B A7   E8 AF           STA -81,S
-    912  2     877E 86   AA              LDA #$aa
-    913  4+4   8780 A7   A9 039B         STA 923,Y
-    914  4+1   8784 A7   E8 87           STA -121,S
-    915
-    916  7     8787 10FE 8000            LDS  >SSAVE
-    917  5+3   878B 35   48              PULS U,DP
-    918  5     878D 39                   RTS
-    919
-    920        878E               DATA_TEST1X100000_2
-    921        878E               DATA_TEST1X100000_1
-    922        878E               POS_TEST1X100000
-    923        878E 1F40                 FDB $1F40
-    924        8790 3F40                 FDB $3F40
-    925
-    926        8792               DRAW_EREF_TEST1X100000
-    927        8792 8796                 FDB E1DRAW_TEST1X100000
-    928        8794 8B40                 FDB E2DRAW_TEST1X100000
-    929
-    930        8796               E1DRAW_TEST1X100000
-    931  5+3   8796 34   48              PSHS U,DP
-    932  7     8798 10FF 8000            STS >SSAVE
-    933
-    934  7     879C 10FE 8B3C            LDS E1POS_TEST1X100000
-    935  3     87A0 CE   8B3C            LDU #E1DATA_TEST1X100000_1
-    936  4+1   87A3 32   7E              LEAS -2,S
-    937  3     87A5 8E   FFF0            LDX #$fff0
-    938  5+1   87A8 AF   7E              STX -2,S
-    939  3     87AA 8E   C996            LDX #$c996
-    940  5+1   87AD AF   E8 D6           STX -42,S
-    941  3     87B0 8E   F026            LDX #$f026
-    942  5+1   87B3 AF   E8 AE           STX -82,S
-    943  3     87B6 8E   2B2C            LDX #$2b2c
-    944  5+1   87B9 AF   E8 86           STX -122,S
-    945  4+4   87BC 32   E9 FF60         LEAS -160,S
-    946  2     87C0 86   C2              LDA #$c2
-    947  4+1   87C2 A7   7F              STA -1,S
-    948  2     87C4 86   F0              LDA  #$F0
-    949  4+1   87C6 A4   7E              ANDA -2,S
-    950  2     87C8 8B   0C              ADDA #$0c
-    951  4+1   87CA A7   7E              STA -2,S
-    952  2     87CC 86   26              LDA #$26
-    953  4+1   87CE A7   E8 D7           STA -41,S
-    954  2     87D1 86   F0              LDA  #$F0
-    955  4+1   87D3 A4   E8 D6           ANDA -42,S
-    956  2     87D6 8B   02              ADDA #$02
-    957  4+1   87D8 A7   E8 D6           STA -42,S
-    958  2     87DB 86   11              LDA #$11
-    959  4+1   87DD A7   E8 AF           STA -81,S
-    960  2     87E0 86   F0              LDA  #$F0
-    961  4+1   87E2 A4   E8 AE           ANDA -82,S
-    962  2     87E5 8B   02              ADDA #$02
-    963  4+1   87E7 A7   E8 AE           STA -82,S
-    964  2     87EA 86   F0              LDA  #$F0
-    965  4+1   87EC A4   E8 87           ANDA -121,S
-    966  2     87EF 8B   0E              ADDA #$0e
-    967  4+1   87F1 A7   E8 87           STA -121,S
-    968  4+4   87F4 32   E9 FF5F         LEAS -161,S
-    969  2     87F8 86   F0              LDA  #$F0
-    970  4+0   87FA A4   E4              ANDA ,S
-    971  2     87FC 8B   0E              ADDA #$0e
-    972  4+0   87FE A7   E4              STA ,S
-    973  2     8800 86   DB              LDA #$db
-    974  4+1   8802 A7   E8 D8           STA -40,S
-    975  2     8805 86   F0              LDA  #$F0
-    976  4+1   8807 A4   E8 D7           ANDA -41,S
-    977  2     880A 8B   0B              ADDA #$0b
-    978  4+1   880C A7   E8 D7           STA -41,S
-    979  2     880F 86   D6              LDA #$d6
-    980  4+1   8811 A7   E8 B0           STA -80,S
-    981  2     8814 86   F0              LDA  #$F0
-    982  4+1   8816 A4   E8 AF           ANDA -81,S
-    983  2     8819 8B   0B              ADDA #$0b
-    984  4+1   881B A7   E8 AF           STA -81,S
-    985  2     881E 86   0F              LDA  #$0F
-    986  4+1   8820 A4   E8 89           ANDA -119,S
-    987  2     8823 8B   E0              ADDA #$e0
-    988  4+1   8825 A7   E8 89           STA -119,S
-    989  3     8828 8E   B662            LDX #$b662
-    990  5+1   882B AF   E8 87           STX -121,S
-    991  4+4   882E 32   E9 FF61         LEAS -159,S
-    992  2     8832 86   0F              LDA  #$0F
-    993  4+0   8834 A4   E4              ANDA ,S
-    994  2     8836 8B   E0              ADDA #$e0
-    995  4+0   8838 A7   E4              STA ,S
-    996  3     883A 8E   6B21            LDX #$6b21
-    997  5+1   883D AF   7E              STX -2,S
-    998  2     883F 86   0F              LDA  #$0F
-    999  4+1   8841 A4   E8 D8           ANDA -40,S
-   1000  2     8844 8B   D0              ADDA #$d0
-   1001  4+1   8846 A7   E8 D8           STA -40,S
-   1002  3     8849 8E   2B11            LDX #$2b11
-   1003  5+1   884C AF   E8 D6           STX -42,S
-   1004  2     884F 86   0F              LDA  #$0F
-   1005  4+1   8851 A4   E8 B0           ANDA -80,S
-   1006  2     8854 8B   A0              ADDA #$a0
-   1007  4+1   8856 A7   E8 B0           STA -80,S
-   1008  2     8859 86   11              LDA #$11
-   1009  4+1   885B A7   E8 AF           STA -81,S
-   1010  2     885E 86   F0              LDA  #$F0
-   1011  4+1   8860 A4   E8 AE           ANDA -82,S
-   1012  2     8863 8B   00              ADDA #$00
-   1013  4+1   8865 A7   E8 AE           STA -82,S
-   1014  2     8868 86   D2              LDA #$d2
-   1015  4+1   886A A7   E8 87           STA -121,S
-   1016  2     886D 86   F0              LDA  #$F0
-   1017  4+1   886F A4   E8 86           ANDA -122,S
-   1018  2     8872 8B   08              ADDA #$08
-   1019  4+1   8874 A7   E8 86           STA -122,S
-   1020  4+4   8877 32   E9 FF60         LEAS -160,S
-   1021  2     887B 86   D0              LDA #$d0
-   1022  4+1   887D A7   7F              STA -1,S
-   1023  2     887F 86   F0              LDA  #$F0
-   1024  4+1   8881 A4   7E              ANDA -2,S
-   1025  2     8883 8B   05              ADDA #$05
-   1026  4+1   8885 A7   7E              STA -2,S
-   1027  2     8887 86   EC              LDA #$ec
-   1028  4+1   8889 A7   E8 D7           STA -41,S
-   1029  2     888C 86   F0              LDA  #$F0
-   1030  4+1   888E A4   E8 D6           ANDA -42,S
-   1031  2     8891 8B   08              ADDA #$08
-   1032  4+1   8893 A7   E8 D6           STA -42,S
-   1033  2     8896 86   C3              LDA #$c3
-   1034  4+1   8898 A7   E8 AF           STA -81,S
-   1035  2     889B 86   F0              LDA  #$F0
-   1036  4+1   889D A4   E8 AE           ANDA -82,S
-   1037  2     88A0 8B   0C              ADDA #$0c
-   1038  4+1   88A2 A7   E8 AE           STA -82,S
-   1039  2     88A5 86   E0              LDA #$e0
-   1040  4+1   88A7 A7   E8 87           STA -121,S
-   1041  4+4   88AA 32   E9 FF61         LEAS -159,S
-   1042  3     88AE 8E   CEDE            LDX #$cede
-   1043  5+1   88B1 AF   7E              STX -2,S
-   1044  2     88B3 86   F0              LDA  #$F0
-   1045  4+1   88B5 A4   7D              ANDA -3,S
-   1046  2     88B7 8B   0C              ADDA #$0c
-   1047  4+1   88B9 A7   7D              STA -3,S
-   1048  3     88BB 8E   5EED            LDX #$5eed
-   1049  5+1   88BE AF   E8 D6           STX -42,S
-   1050  2     88C1 86   F0              LDA  #$F0
-   1051  4+1   88C3 A4   E8 D5           ANDA -43,S
-   1052  2     88C6 8B   08              ADDA #$08
-   1053  4+1   88C8 A7   E8 D5           STA -43,S
-   1054  4+1   88CB 32   E8 B0           LEAS -80,S
-   1055  2     88CE 86   C3              LDA #$c3
-   1056  3     88D0 8E   38DA            LDX #$38da
-   1057  5+3   88D3 34   12              PSHS X,A
-   1058  4+1   88D5 32   E8 DB           LEAS -37,S
-   1059  2     88D8 86   01              LDA #$01
-   1060  3     88DA 8E   38AA            LDX #$38aa
-   1061  5+3   88DD 34   12              PSHS X,A
-   1062  2     88DF 86   0F              LDA  #$0F
-   1063  4+1   88E1 A4   E8 DA           ANDA -38,S
-   1064  2     88E4 8B   A0              ADDA #$a0
-   1065  4+1   88E6 A7   E8 DA           STA -38,S
-   1066  3     88E9 8E   611A            LDX #$611a
-   1067  5+1   88EC AF   E8 D8           STX -40,S
-   1068  3     88EF 8E   007A            LDX #$007a
-   1069  5+1   88F2 AF   E8 B0           STX -80,S
-   1070  2     88F5 86   0F              LDA  #$0F
-   1071  4+1   88F7 A4   E8 8A           ANDA -118,S
-   1072  2     88FA 8B   D0              ADDA #$d0
-   1073  4+1   88FC A7   E8 8A           STA -118,S
-   1074  3     88FF 8E   0077            LDX #$0077
-   1075  5+1   8902 AF   E8 88           STX -120,S
-   1076  4+4   8905 32   E9 FF63         LEAS -157,S
-   1077  2     8909 86   A0              LDA #$a0
-   1078  3     890B 8E   77ED            LDX #$77ed
-   1079  5+3   890E 34   12              PSHS X,A
-   1080  4+1   8910 32   E8 DB           LEAS -37,S
-   1081  2     8913 86   7A              LDA #$7a
-   1082  3     8915 8E   77EE            LDX #$77ee
-   1083  5+3   8918 34   12              PSHS X,A
-   1084  4+1   891A 32   E8 DB           LEAS -37,S
-   1085  2     891D 86   77              LDA #$77
-   1086  3     891F 8E   77DD            LDX #$77dd
-   1087  5+3   8922 34   12              PSHS X,A
-   1088  4+1   8924 32   E8 DB           LEAS -37,S
-   1089  2     8927 86   74              LDA #$74
-   1090  3     8929 8E   44AA            LDX #$44aa
-   1091  5+3   892C 34   12              PSHS X,A
-   1092  2     892E 86   0F              LDA  #$0F
-   1093  4+1   8930 A4   E8 DA           ANDA -38,S
-   1094  2     8933 8B   A0              ADDA #$a0
-   1095  4+1   8935 A7   E8 DA           STA -38,S
-   1096  3     8938 8E   7477            LDX #$7477
-   1097  5+1   893B AF   E8 D8           STX -40,S
-   1098  3     893E 8E   A773            LDX #$a773
-   1099  5+1   8941 AF   E8 B0           STX -80,S
-   1100  3     8944 8E   E7C3            LDX #$e7c3
-   1101  5+1   8947 AF   E8 88           STX -120,S
-   1102  4+4   894A 32   E9 FF62         LEAS -158,S
-   1103  3     894E 8E   D7D3            LDX #$d7d3
-   1104  5+1   8951 AF   7E              STX -2,S
-   1105  3     8953 8E   78EE            LDX #$78ee
-   1106  5+1   8956 AF   E8 D7           STX -41,S
-   1107  2     8959 86   0F              LDA  #$0F
-   1108  4+1   895B A4   E8 D6           ANDA -42,S
-   1109  2     895E 8B   D0              ADDA #$d0
-   1110  4+1   8960 A7   E8 D6           STA -42,S
-   1111  3     8963 8E   7DDD            LDX #$7ddd
-   1112  5+1   8966 AF   E8 AF           STX -81,S
-   1113  2     8969 86   0F              LDA  #$0F
-   1114  4+1   896B A4   E8 AE           ANDA -82,S
-   1115  2     896E 8B   D0              ADDA #$d0
-   1116  4+1   8970 A7   E8 AE           STA -82,S
-   1117  3     8973 8E   A7AA            LDX #$a7aa
-   1118  5+1   8976 AF   E8 87           STX -121,S
-   1119  4+4   8979 32   E9 FF5F         LEAS -161,S
-   1120  2     897D 86   F0              LDA  #$F0
-   1121  4+0   897F A4   E4              ANDA ,S
-   1122  2     8981 8B   0A              ADDA #$0a
-   1123  4+0   8983 A7   E4              STA ,S
-   1124
-   1125  7     8985 10FE 8B3E            LDS E1POS_TEST1X100000+2
-   1126  3     8989 CE   8B3C            LDU #E1DATA_TEST1X100000_2
-   1127
-   1128  4+1   898C 32   7E              LEAS -2,S
-   1129  2     898E 86   00              LDA #$00
-   1130  3     8990 8E   FF0F            LDX #$ff0f
-   1131  5+3   8993 34   12              PSHS X,A
-   1132  4+1   8995 32   E8 DB           LEAS -37,S
-   1133  2     8998 86   CF              LDA #$cf
-   1134  3     899A 8E   99CF            LDX #$99cf
-   1135  5+3   899D 34   12              PSHS X,A
-   1136  3     899F 8E   39CF            LDX #$39cf
-   1137  5+1   89A2 AF   E8 D9           STX -39,S
-   1138  2     89A5 86   F0              LDA  #$F0
-   1139  4+1   89A7 A4   E8 D8           ANDA -40,S
-   1140  2     89AA 8B   0C              ADDA #$0c
-   1141  4+1   89AC A7   E8 D8           STA -40,S
-   1142  2     89AF 86   0F              LDA  #$0F
-   1143  4+1   89B1 A4   E8 B2           ANDA -78,S
-   1144  2     89B4 8B   C0              ADDA #$c0
-   1145  4+1   89B6 A7   E8 B2           STA -78,S
-   1146  2     89B9 86   01              LDA #$01
-   1147  4+1   89BB A7   E8 B1           STA -79,S
-   1148  2     89BE 86   0F              LDA  #$0F
-   1149  4+1   89C0 A4   E8 8A           ANDA -118,S
-   1150  2     89C3 8B   00              ADDA #$00
-   1151  4+1   89C5 A7   E8 8A           STA -118,S
-   1152  2     89C8 86   62              LDA #$62
-   1153  4+1   89CA A7   E8 89           STA -119,S
-   1154  4+4   89CD 32   E9 FF62         LEAS -158,S
-   1155  2     89D1 86   0F              LDA  #$0F
-   1156  4+0   89D3 A4   E4              ANDA ,S
-   1157  2     89D5 8B   B0              ADDA #$b0
-   1158  4+0   89D7 A7   E4              STA ,S
-   1159  2     89D9 86   B0              LDA #$b0
-   1160  4+1   89DB A7   7F              STA -1,S
-   1161  2     89DD 86   0F              LDA  #$0F
-   1162  4+1   89DF A4   E8 D8           ANDA -40,S
-   1163  2     89E2 8B   60              ADDA #$60
-   1164  4+1   89E4 A7   E8 D8           STA -40,S
-   1165  2     89E7 86   6B              LDA #$6b
-   1166  4+1   89E9 A7   E8 D7           STA -41,S
-   1167  2     89EC 86   0F              LDA  #$0F
-   1168  4+1   89EE A4   E8 AF           ANDA -81,S
-   1169  2     89F1 8B   D0              ADDA #$d0
-   1170  4+1   89F3 A7   E8 AF           STA -81,S
-   1171  2     89F6 86   0F              LDA  #$0F
-   1172  4+1   89F8 A4   E8 87           ANDA -121,S
-   1173  2     89FB 8B   D0              ADDA #$d0
-   1174  4+1   89FD A7   E8 87           STA -121,S
-   1175  4+4   8A00 32   E9 FF5F         LEAS -161,S
-   1176  2     8A04 86   0F              LDA  #$0F
-   1177  4+0   8A06 A4   E4              ANDA ,S
-   1178  2     8A08 8B   D0              ADDA #$d0
-   1179  4+0   8A0A A7   E4              STA ,S
-   1180  2     8A0C 86   0F              LDA  #$0F
-   1181  4+1   8A0E A4   E8 D9           ANDA -39,S
-   1182  2     8A11 8B   B0              ADDA #$b0
-   1183  4+1   8A13 A7   E8 D9           STA -39,S
-   1184  2     8A16 86   0F              LDA  #$0F
-   1185  4+1   8A18 A4   E8 D8           ANDA -40,S
-   1186  2     8A1B 8B   E0              ADDA #$e0
-   1187  4+1   8A1D A7   E8 D8           STA -40,S
-   1188  2     8A20 86   0F              LDA  #$0F
-   1189  4+1   8A22 A4   E8 B1           ANDA -79,S
-   1190  2     8A25 8B   60              ADDA #$60
-   1191  4+1   8A27 A7   E8 B1           STA -79,S
-   1192  2     8A2A 86   0F              LDA  #$0F
-   1193  4+1   8A2C A4   E8 B0           ANDA -80,S
-   1194  2     8A2F 8B   E0              ADDA #$e0
-   1195  4+1   8A31 A7   E8 B0           STA -80,S
-   1196  3     8A34 8E   0EBD            LDX #$0ebd
-   1197  5+1   8A37 AF   E8 88           STX -120,S
-   1198  4+4   8A3A 32   E9 FF62         LEAS -158,S
-   1199  3     8A3E 8E   DD6F            LDX #$dd6f
-   1200  5+1   8A41 AF   7E              STX -2,S
-   1201  3     8A43 8E   8C18            LDX #$8c18
-   1202  5+1   8A46 AF   E8 D6           STX -42,S
-   1203  3     8A49 8E   35E5            LDX #$35e5
-   1204  5+1   8A4C AF   E8 AE           STX -82,S
-   1205  3     8A4F 8E   3383            LDX #$3383
-   1206  5+1   8A52 AF   E8 86           STX -122,S
-   1207  4+4   8A55 32   E9 FF60         LEAS -160,S
-   1208  3     8A59 8E   333A            LDX #$333a
-   1209  5+1   8A5C AF   7E              STX -2,S
-   1210  2     8A5E 86   0F              LDA  #$0F
-   1211  4+1   8A60 A4   E8 D7           ANDA -41,S
-   1212  2     8A63 8B   E0              ADDA #$e0
-   1213  4+1   8A65 A7   E8 D7           STA -41,S
-   1214  2     8A68 86   58              LDA #$58
-   1215  4+1   8A6A A7   E8 D6           STA -42,S
-   1216  3     8A6D 8E   F0DD            LDX #$f0dd
-   1217  5+1   8A70 AF   E8 AE           STX -82,S
-   1218  2     8A73 86   0F              LDA  #$0F
-   1219  4+1   8A75 A4   E8 88           ANDA -120,S
-   1220  2     8A78 8B   A0              ADDA #$a0
-   1221  4+1   8A7A A7   E8 88           STA -120,S
-   1222  3     8A7D 8E   88EE            LDX #$88ee
-   1223  5+1   8A80 AF   E8 86           STX -122,S
-   1224  4+4   8A83 32   E9 FF60         LEAS -160,S
-   1225  3     8A87 8E   330E            LDX #$330e
-   1226  5+1   8A8A AF   7E              STX -2,S
-   1227  3     8A8C 8E   33EE            LDX #$33ee
-   1228  5+1   8A8F AF   E8 D6           STX -42,S
-   1229  3     8A92 8E   11EE            LDX #$11ee
-   1230  5+1   8A95 AF   E8 AE           STX -82,S
-   1231  2     8A98 86   F0              LDA  #$F0
-   1232  4+1   8A9A A4   E8 AD           ANDA -83,S
-   1233  2     8A9D 8B   00              ADDA #$00
-   1234  4+1   8A9F A7   E8 AD           STA -83,S
-   1235  3     8AA2 8E   17DE            LDX #$17de
-   1236  5+1   8AA5 AF   E8 86           STX -122,S
-   1237  2     8AA8 86   F0              LDA  #$F0
-   1238  4+1   8AAA A4   E8 85           ANDA -123,S
-   1239  2     8AAD 8B   00              ADDA #$00
-   1240  4+1   8AAF A7   E8 85           STA -123,S
-   1241  4+4   8AB2 32   E9 FF60         LEAS -160,S
-   1242  3     8AB6 8E   11AE            LDX #$11ae
-   1243  5+1   8AB9 AF   7E              STX -2,S
-   1244  5+1   8ABB AF   E8 D6           STX -42,S
-   1245  4+1   8ABE 32   E8 B1           LEAS -79,S
-   1246  2     8AC1 86   11              LDA #$11
-   1247  3     8AC3 8E   AEDD            LDX #$aedd
-   1248  5+3   8AC6 34   12              PSHS X,A
-   1249  2     8AC8 86   0F              LDA  #$0F
-   1250  4+1   8ACA A4   E8 DA           ANDA -38,S
-   1251  2     8ACD 8B   E0              ADDA #$e0
-   1252  4+1   8ACF A7   E8 DA           STA -38,S
-   1253  3     8AD2 8E   11AD            LDX #$11ad
-   1254  5+1   8AD5 AF   E8 D8           STX -40,S
-   1255  2     8AD8 86   0F              LDA  #$0F
-   1256  4+1   8ADA A4   E8 B2           ANDA -78,S
-   1257  2     8ADD 8B   A0              ADDA #$a0
-   1258  4+1   8ADF A7   E8 B2           STA -78,S
-   1259  3     8AE2 8E   21AD            LDX #$21ad
-   1260  5+1   8AE5 AF   E8 B0           STX -80,S
-   1261  3     8AE8 8E   A1AD            LDX #$a1ad
-   1262  5+1   8AEB AF   E8 88           STX -120,S
-   1263  4+4   8AEE 32   E9 FF62         LEAS -158,S
-   1264  3     8AF2 8E   7AAD            LDX #$7aad
-   1265  5+1   8AF5 AF   7E              STX -2,S
-   1266  3     8AF7 8E   44EA            LDX #$44ea
-   1267  5+1   8AFA AF   E8 D6           STX -42,S
-   1268  3     8AFD 8E   44ED            LDX #$44ed
-   1269  5+1   8B00 AF   E8 AE           STX -82,S
-   1270  3     8B03 8E   74EE            LDX #$74ee
-   1271  5+1   8B06 AF   E8 86           STX -122,S
-   1272  4+4   8B09 32   E9 FF60         LEAS -160,S
-   1273  3     8B0D 8E   77DD            LDX #$77dd
-   1274  5+1   8B10 AF   7E              STX -2,S
-   1275  2     8B12 86   0F              LDA  #$0F
-   1276  4+1   8B14 A4   E8 D8           ANDA -40,S
-   1277  2     8B17 8B   D0              ADDA #$d0
-   1278  4+1   8B19 A7   E8 D8           STA -40,S
-   1279  2     8B1C 86   AA              LDA #$aa
-   1280  4+1   8B1E A7   E8 D7           STA -41,S
-   1281  2     8B21 86   F0              LDA  #$F0
-   1282  4+1   8B23 A4   E8 D6           ANDA -42,S
-   1283  2     8B26 8B   07              ADDA #$07
-   1284  4+1   8B28 A7   E8 D6           STA -42,S
-   1285  2     8B2B 86   77              LDA #$77
-   1286  4+1   8B2D A7   E8 AF           STA -81,S
-   1287  2     8B30 86   AA              LDA #$aa
-   1288  4+1   8B32 A7   E8 87           STA -121,S
-   1289
-   1290  7     8B35 10FE 8000            LDS  >SSAVE
-   1291  5+3   8B39 35   48              PULS U,DP
-   1292  5     8B3B 39                   RTS
-   1293
-   1294        8B3C               E1DATA_TEST1X100000_2
-   1295        8B3C               E1DATA_TEST1X100000_1
-   1296        8B3C               E1POS_TEST1X100000
-   1297        8B3C 1F40                 FDB $1F40
-   1298        8B3E 3F40                 FDB $3F40
-   1299
-   1300        8B40               E2DRAW_TEST1X100000
-   1301  5+3   8B40 34   48              PSHS U,DP
-   1302  7     8B42 10FF 8000            STS >SSAVE
-   1303
-   1304  7     8B46 10FE 8EE6            LDS E2POS_TEST1X100000
-   1305  3     8B4A CE   8EE6            LDU #E2DATA_TEST1X100000_1
-   1306  4+1   8B4D 32   7E              LEAS -2,S
-   1307  3     8B4F 8E   FFF0            LDX #$fff0
-   1308  5+1   8B52 AF   7E              STX -2,S
-   1309  3     8B54 8E   C996            LDX #$c996
-   1310  5+1   8B57 AF   E8 D6           STX -42,S
-   1311  3     8B5A 8E   F026            LDX #$f026
-   1312  5+1   8B5D AF   E8 AE           STX -82,S
-   1313  3     8B60 8E   2B2C            LDX #$2b2c
-   1314  5+1   8B63 AF   E8 86           STX -122,S
-   1315  4+4   8B66 32   E9 FF60         LEAS -160,S
-   1316  2     8B6A 86   C2              LDA #$c2
-   1317  4+1   8B6C A7   7F              STA -1,S
-   1318  2     8B6E 86   F0              LDA  #$F0
-   1319  4+1   8B70 A4   7E              ANDA -2,S
-   1320  2     8B72 8B   0C              ADDA #$0c
-   1321  4+1   8B74 A7   7E              STA -2,S
-   1322  2     8B76 86   26              LDA #$26
-   1323  4+1   8B78 A7   E8 D7           STA -41,S
-   1324  2     8B7B 86   F0              LDA  #$F0
-   1325  4+1   8B7D A4   E8 D6           ANDA -42,S
-   1326  2     8B80 8B   02              ADDA #$02
-   1327  4+1   8B82 A7   E8 D6           STA -42,S
-   1328  2     8B85 86   11              LDA #$11
-   1329  4+1   8B87 A7   E8 AF           STA -81,S
-   1330  2     8B8A 86   F0              LDA  #$F0
-   1331  4+1   8B8C A4   E8 AE           ANDA -82,S
-   1332  2     8B8F 8B   02              ADDA #$02
-   1333  4+1   8B91 A7   E8 AE           STA -82,S
-   1334  2     8B94 86   F0              LDA  #$F0
-   1335  4+1   8B96 A4   E8 87           ANDA -121,S
-   1336  2     8B99 8B   0E              ADDA #$0e
-   1337  4+1   8B9B A7   E8 87           STA -121,S
-   1338  4+4   8B9E 32   E9 FF5F         LEAS -161,S
-   1339  2     8BA2 86   F0              LDA  #$F0
-   1340  4+0   8BA4 A4   E4              ANDA ,S
-   1341  2     8BA6 8B   0E              ADDA #$0e
-   1342  4+0   8BA8 A7   E4              STA ,S
-   1343  2     8BAA 86   DB              LDA #$db
-   1344  4+1   8BAC A7   E8 D8           STA -40,S
-   1345  2     8BAF 86   F0              LDA  #$F0
-   1346  4+1   8BB1 A4   E8 D7           ANDA -41,S
-   1347  2     8BB4 8B   0B              ADDA #$0b
-   1348  4+1   8BB6 A7   E8 D7           STA -41,S
-   1349  2     8BB9 86   D6              LDA #$d6
-   1350  4+1   8BBB A7   E8 B0           STA -80,S
-   1351  2     8BBE 86   F0              LDA  #$F0
-   1352  4+1   8BC0 A4   E8 AF           ANDA -81,S
-   1353  2     8BC3 8B   0B              ADDA #$0b
-   1354  4+1   8BC5 A7   E8 AF           STA -81,S
-   1355  2     8BC8 86   0F              LDA  #$0F
-   1356  4+1   8BCA A4   E8 89           ANDA -119,S
-   1357  2     8BCD 8B   E0              ADDA #$e0
-   1358  4+1   8BCF A7   E8 89           STA -119,S
-   1359  3     8BD2 8E   B662            LDX #$b662
-   1360  5+1   8BD5 AF   E8 87           STX -121,S
-   1361  4+4   8BD8 32   E9 FF61         LEAS -159,S
-   1362  2     8BDC 86   0F              LDA  #$0F
-   1363  4+0   8BDE A4   E4              ANDA ,S
-   1364  2     8BE0 8B   E0              ADDA #$e0
-   1365  4+0   8BE2 A7   E4              STA ,S
-   1366  3     8BE4 8E   6B21            LDX #$6b21
-   1367  5+1   8BE7 AF   7E              STX -2,S
-   1368  2     8BE9 86   0F              LDA  #$0F
-   1369  4+1   8BEB A4   E8 D8           ANDA -40,S
-   1370  2     8BEE 8B   D0              ADDA #$d0
-   1371  4+1   8BF0 A7   E8 D8           STA -40,S
-   1372  3     8BF3 8E   2B11            LDX #$2b11
-   1373  5+1   8BF6 AF   E8 D6           STX -42,S
-   1374  2     8BF9 86   0F              LDA  #$0F
-   1375  4+1   8BFB A4   E8 B0           ANDA -80,S
-   1376  2     8BFE 8B   A0              ADDA #$a0
-   1377  4+1   8C00 A7   E8 B0           STA -80,S
-   1378  2     8C03 86   11              LDA #$11
-   1379  4+1   8C05 A7   E8 AF           STA -81,S
-   1380  2     8C08 86   F0              LDA  #$F0
-   1381  4+1   8C0A A4   E8 AE           ANDA -82,S
-   1382  2     8C0D 8B   00              ADDA #$00
-   1383  4+1   8C0F A7   E8 AE           STA -82,S
-   1384  2     8C12 86   D2              LDA #$d2
-   1385  4+1   8C14 A7   E8 87           STA -121,S
-   1386  2     8C17 86   F0              LDA  #$F0
-   1387  4+1   8C19 A4   E8 86           ANDA -122,S
-   1388  2     8C1C 8B   08              ADDA #$08
-   1389  4+1   8C1E A7   E8 86           STA -122,S
-   1390  4+4   8C21 32   E9 FF60         LEAS -160,S
-   1391  2     8C25 86   D0              LDA #$d0
-   1392  4+1   8C27 A7   7F              STA -1,S
-   1393  2     8C29 86   F0              LDA  #$F0
-   1394  4+1   8C2B A4   7E              ANDA -2,S
-   1395  2     8C2D 8B   05              ADDA #$05
-   1396  4+1   8C2F A7   7E              STA -2,S
-   1397  2     8C31 86   EC              LDA #$ec
-   1398  4+1   8C33 A7   E8 D7           STA -41,S
-   1399  2     8C36 86   F0              LDA  #$F0
-   1400  4+1   8C38 A4   E8 D6           ANDA -42,S
-   1401  2     8C3B 8B   08              ADDA #$08
-   1402  4+1   8C3D A7   E8 D6           STA -42,S
-   1403  2     8C40 86   C3              LDA #$c3
-   1404  4+1   8C42 A7   E8 AF           STA -81,S
-   1405  2     8C45 86   F0              LDA  #$F0
-   1406  4+1   8C47 A4   E8 AE           ANDA -82,S
-   1407  2     8C4A 8B   0C              ADDA #$0c
-   1408  4+1   8C4C A7   E8 AE           STA -82,S
-   1409  2     8C4F 86   E0              LDA #$e0
-   1410  4+1   8C51 A7   E8 87           STA -121,S
-   1411  4+4   8C54 32   E9 FF61         LEAS -159,S
-   1412  3     8C58 8E   CEDE            LDX #$cede
-   1413  5+1   8C5B AF   7E              STX -2,S
-   1414  2     8C5D 86   F0              LDA  #$F0
-   1415  4+1   8C5F A4   7D              ANDA -3,S
-   1416  2     8C61 8B   0C              ADDA #$0c
-   1417  4+1   8C63 A7   7D              STA -3,S
-   1418  3     8C65 8E   5EED            LDX #$5eed
-   1419  5+1   8C68 AF   E8 D6           STX -42,S
-   1420  2     8C6B 86   F0              LDA  #$F0
-   1421  4+1   8C6D A4   E8 D5           ANDA -43,S
-   1422  2     8C70 8B   08              ADDA #$08
-   1423  4+1   8C72 A7   E8 D5           STA -43,S
-   1424  4+1   8C75 32   E8 B0           LEAS -80,S
-   1425  2     8C78 86   C3              LDA #$c3
-   1426  3     8C7A 8E   38DA            LDX #$38da
-   1427  5+3   8C7D 34   12              PSHS X,A
-   1428  4+1   8C7F 32   E8 DB           LEAS -37,S
-   1429  2     8C82 86   01              LDA #$01
-   1430  3     8C84 8E   38AA            LDX #$38aa
-   1431  5+3   8C87 34   12              PSHS X,A
-   1432  2     8C89 86   0F              LDA  #$0F
-   1433  4+1   8C8B A4   E8 DA           ANDA -38,S
-   1434  2     8C8E 8B   A0              ADDA #$a0
-   1435  4+1   8C90 A7   E8 DA           STA -38,S
-   1436  3     8C93 8E   611A            LDX #$611a
-   1437  5+1   8C96 AF   E8 D8           STX -40,S
-   1438  3     8C99 8E   007A            LDX #$007a
-   1439  5+1   8C9C AF   E8 B0           STX -80,S
-   1440  2     8C9F 86   0F              LDA  #$0F
-   1441  4+1   8CA1 A4   E8 8A           ANDA -118,S
-   1442  2     8CA4 8B   D0              ADDA #$d0
-   1443  4+1   8CA6 A7   E8 8A           STA -118,S
-   1444  3     8CA9 8E   0077            LDX #$0077
-   1445  5+1   8CAC AF   E8 88           STX -120,S
-   1446  4+4   8CAF 32   E9 FF63         LEAS -157,S
-   1447  2     8CB3 86   A0              LDA #$a0
-   1448  3     8CB5 8E   77ED            LDX #$77ed
-   1449  5+3   8CB8 34   12              PSHS X,A
-   1450  4+1   8CBA 32   E8 DB           LEAS -37,S
-   1451  2     8CBD 86   7A              LDA #$7a
-   1452  3     8CBF 8E   77EE            LDX #$77ee
-   1453  5+3   8CC2 34   12              PSHS X,A
-   1454  4+1   8CC4 32   E8 DB           LEAS -37,S
-   1455  2     8CC7 86   77              LDA #$77
-   1456  3     8CC9 8E   77DD            LDX #$77dd
-   1457  5+3   8CCC 34   12              PSHS X,A
-   1458  4+1   8CCE 32   E8 DB           LEAS -37,S
-   1459  2     8CD1 86   74              LDA #$74
-   1460  3     8CD3 8E   44AA            LDX #$44aa
-   1461  5+3   8CD6 34   12              PSHS X,A
-   1462  2     8CD8 86   0F              LDA  #$0F
-   1463  4+1   8CDA A4   E8 DA           ANDA -38,S
-   1464  2     8CDD 8B   A0              ADDA #$a0
-   1465  4+1   8CDF A7   E8 DA           STA -38,S
-   1466  3     8CE2 8E   7477            LDX #$7477
-   1467  5+1   8CE5 AF   E8 D8           STX -40,S
-   1468  3     8CE8 8E   A773            LDX #$a773
-   1469  5+1   8CEB AF   E8 B0           STX -80,S
-   1470  3     8CEE 8E   E7C3            LDX #$e7c3
-   1471  5+1   8CF1 AF   E8 88           STX -120,S
-   1472  4+4   8CF4 32   E9 FF62         LEAS -158,S
-   1473  3     8CF8 8E   D7D3            LDX #$d7d3
-   1474  5+1   8CFB AF   7E              STX -2,S
-   1475  3     8CFD 8E   78EE            LDX #$78ee
-   1476  5+1   8D00 AF   E8 D7           STX -41,S
-   1477  2     8D03 86   0F              LDA  #$0F
-   1478  4+1   8D05 A4   E8 D6           ANDA -42,S
-   1479  2     8D08 8B   D0              ADDA #$d0
-   1480  4+1   8D0A A7   E8 D6           STA -42,S
-   1481  3     8D0D 8E   7DDD            LDX #$7ddd
-   1482  5+1   8D10 AF   E8 AF           STX -81,S
-   1483  2     8D13 86   0F              LDA  #$0F
-   1484  4+1   8D15 A4   E8 AE           ANDA -82,S
-   1485  2     8D18 8B   D0              ADDA #$d0
-   1486  4+1   8D1A A7   E8 AE           STA -82,S
-   1487  3     8D1D 8E   A7AA            LDX #$a7aa
-   1488  5+1   8D20 AF   E8 87           STX -121,S
-   1489  4+4   8D23 32   E9 FF5F         LEAS -161,S
-   1490  2     8D27 86   F0              LDA  #$F0
-   1491  4+0   8D29 A4   E4              ANDA ,S
-   1492  2     8D2B 8B   0A              ADDA #$0a
-   1493  4+0   8D2D A7   E4              STA ,S
-   1494
-   1495  7     8D2F 10FE 8EE8            LDS E2POS_TEST1X100000+2
-   1496  3     8D33 CE   8EE6            LDU #E2DATA_TEST1X100000_2
-   1497
-   1498  4+1   8D36 32   7E              LEAS -2,S
-   1499  2     8D38 86   00              LDA #$00
-   1500  3     8D3A 8E   FF0F            LDX #$ff0f
-   1501  5+3   8D3D 34   12              PSHS X,A
-   1502  4+1   8D3F 32   E8 DB           LEAS -37,S
-   1503  2     8D42 86   CF              LDA #$cf
-   1504  3     8D44 8E   99CF            LDX #$99cf
-   1505  5+3   8D47 34   12              PSHS X,A
-   1506  3     8D49 8E   39CF            LDX #$39cf
-   1507  5+1   8D4C AF   E8 D9           STX -39,S
-   1508  2     8D4F 86   F0              LDA  #$F0
-   1509  4+1   8D51 A4   E8 D8           ANDA -40,S
-   1510  2     8D54 8B   0C              ADDA #$0c
-   1511  4+1   8D56 A7   E8 D8           STA -40,S
-   1512  2     8D59 86   0F              LDA  #$0F
-   1513  4+1   8D5B A4   E8 B2           ANDA -78,S
-   1514  2     8D5E 8B   C0              ADDA #$c0
-   1515  4+1   8D60 A7   E8 B2           STA -78,S
-   1516  2     8D63 86   01              LDA #$01
-   1517  4+1   8D65 A7   E8 B1           STA -79,S
-   1518  2     8D68 86   0F              LDA  #$0F
-   1519  4+1   8D6A A4   E8 8A           ANDA -118,S
-   1520  2     8D6D 8B   00              ADDA #$00
-   1521  4+1   8D6F A7   E8 8A           STA -118,S
-   1522  2     8D72 86   62              LDA #$62
-   1523  4+1   8D74 A7   E8 89           STA -119,S
-   1524  4+4   8D77 32   E9 FF62         LEAS -158,S
-   1525  2     8D7B 86   0F              LDA  #$0F
-   1526  4+0   8D7D A4   E4              ANDA ,S
-   1527  2     8D7F 8B   B0              ADDA #$b0
-   1528  4+0   8D81 A7   E4              STA ,S
-   1529  2     8D83 86   B0              LDA #$b0
-   1530  4+1   8D85 A7   7F              STA -1,S
-   1531  2     8D87 86   0F              LDA  #$0F
-   1532  4+1   8D89 A4   E8 D8           ANDA -40,S
-   1533  2     8D8C 8B   60              ADDA #$60
-   1534  4+1   8D8E A7   E8 D8           STA -40,S
-   1535  2     8D91 86   6B              LDA #$6b
-   1536  4+1   8D93 A7   E8 D7           STA -41,S
-   1537  2     8D96 86   0F              LDA  #$0F
-   1538  4+1   8D98 A4   E8 AF           ANDA -81,S
-   1539  2     8D9B 8B   D0              ADDA #$d0
-   1540  4+1   8D9D A7   E8 AF           STA -81,S
-   1541  2     8DA0 86   0F              LDA  #$0F
-   1542  4+1   8DA2 A4   E8 87           ANDA -121,S
-   1543  2     8DA5 8B   D0              ADDA #$d0
-   1544  4+1   8DA7 A7   E8 87           STA -121,S
-   1545  4+4   8DAA 32   E9 FF5F         LEAS -161,S
-   1546  2     8DAE 86   0F              LDA  #$0F
-   1547  4+0   8DB0 A4   E4              ANDA ,S
-   1548  2     8DB2 8B   D0              ADDA #$d0
-   1549  4+0   8DB4 A7   E4              STA ,S
-   1550  2     8DB6 86   0F              LDA  #$0F
-   1551  4+1   8DB8 A4   E8 D9           ANDA -39,S
-   1552  2     8DBB 8B   B0              ADDA #$b0
-   1553  4+1   8DBD A7   E8 D9           STA -39,S
-   1554  2     8DC0 86   0F              LDA  #$0F
-   1555  4+1   8DC2 A4   E8 D8           ANDA -40,S
-   1556  2     8DC5 8B   E0              ADDA #$e0
-   1557  4+1   8DC7 A7   E8 D8           STA -40,S
-   1558  2     8DCA 86   0F              LDA  #$0F
-   1559  4+1   8DCC A4   E8 B1           ANDA -79,S
-   1560  2     8DCF 8B   60              ADDA #$60
-   1561  4+1   8DD1 A7   E8 B1           STA -79,S
-   1562  2     8DD4 86   0F              LDA  #$0F
-   1563  4+1   8DD6 A4   E8 B0           ANDA -80,S
-   1564  2     8DD9 8B   E0              ADDA #$e0
-   1565  4+1   8DDB A7   E8 B0           STA -80,S
-   1566  3     8DDE 8E   0EBD            LDX #$0ebd
-   1567  5+1   8DE1 AF   E8 88           STX -120,S
-   1568  4+4   8DE4 32   E9 FF62         LEAS -158,S
-   1569  3     8DE8 8E   DD6F            LDX #$dd6f
-   1570  5+1   8DEB AF   7E              STX -2,S
-   1571  3     8DED 8E   8C18            LDX #$8c18
-   1572  5+1   8DF0 AF   E8 D6           STX -42,S
-   1573  3     8DF3 8E   35E5            LDX #$35e5
-   1574  5+1   8DF6 AF   E8 AE           STX -82,S
-   1575  3     8DF9 8E   3383            LDX #$3383
-   1576  5+1   8DFC AF   E8 86           STX -122,S
-   1577  4+4   8DFF 32   E9 FF60         LEAS -160,S
-   1578  3     8E03 8E   333A            LDX #$333a
-   1579  5+1   8E06 AF   7E              STX -2,S
-   1580  2     8E08 86   0F              LDA  #$0F
-   1581  4+1   8E0A A4   E8 D7           ANDA -41,S
-   1582  2     8E0D 8B   E0              ADDA #$e0
-   1583  4+1   8E0F A7   E8 D7           STA -41,S
-   1584  2     8E12 86   58              LDA #$58
-   1585  4+1   8E14 A7   E8 D6           STA -42,S
-   1586  3     8E17 8E   F0DD            LDX #$f0dd
-   1587  5+1   8E1A AF   E8 AE           STX -82,S
-   1588  2     8E1D 86   0F              LDA  #$0F
-   1589  4+1   8E1F A4   E8 88           ANDA -120,S
-   1590  2     8E22 8B   A0              ADDA #$a0
-   1591  4+1   8E24 A7   E8 88           STA -120,S
-   1592  3     8E27 8E   88EE            LDX #$88ee
-   1593  5+1   8E2A AF   E8 86           STX -122,S
-   1594  4+4   8E2D 32   E9 FF60         LEAS -160,S
-   1595  3     8E31 8E   330E            LDX #$330e
-   1596  5+1   8E34 AF   7E              STX -2,S
-   1597  3     8E36 8E   33EE            LDX #$33ee
-   1598  5+1   8E39 AF   E8 D6           STX -42,S
-   1599  3     8E3C 8E   11EE            LDX #$11ee
-   1600  5+1   8E3F AF   E8 AE           STX -82,S
-   1601  2     8E42 86   F0              LDA  #$F0
-   1602  4+1   8E44 A4   E8 AD           ANDA -83,S
-   1603  2     8E47 8B   00              ADDA #$00
-   1604  4+1   8E49 A7   E8 AD           STA -83,S
-   1605  3     8E4C 8E   17DE            LDX #$17de
-   1606  5+1   8E4F AF   E8 86           STX -122,S
-   1607  2     8E52 86   F0              LDA  #$F0
-   1608  4+1   8E54 A4   E8 85           ANDA -123,S
-   1609  2     8E57 8B   00              ADDA #$00
-   1610  4+1   8E59 A7   E8 85           STA -123,S
-   1611  4+4   8E5C 32   E9 FF60         LEAS -160,S
-   1612  3     8E60 8E   11AE            LDX #$11ae
-   1613  5+1   8E63 AF   7E              STX -2,S
-   1614  5+1   8E65 AF   E8 D6           STX -42,S
-   1615  4+1   8E68 32   E8 B1           LEAS -79,S
-   1616  2     8E6B 86   11              LDA #$11
-   1617  3     8E6D 8E   AEDD            LDX #$aedd
-   1618  5+3   8E70 34   12              PSHS X,A
-   1619  2     8E72 86   0F              LDA  #$0F
-   1620  4+1   8E74 A4   E8 DA           ANDA -38,S
-   1621  2     8E77 8B   E0              ADDA #$e0
-   1622  4+1   8E79 A7   E8 DA           STA -38,S
-   1623  3     8E7C 8E   11AD            LDX #$11ad
-   1624  5+1   8E7F AF   E8 D8           STX -40,S
-   1625  2     8E82 86   0F              LDA  #$0F
-   1626  4+1   8E84 A4   E8 B2           ANDA -78,S
-   1627  2     8E87 8B   A0              ADDA #$a0
-   1628  4+1   8E89 A7   E8 B2           STA -78,S
-   1629  3     8E8C 8E   21AD            LDX #$21ad
-   1630  5+1   8E8F AF   E8 B0           STX -80,S
-   1631  3     8E92 8E   A1AD            LDX #$a1ad
-   1632  5+1   8E95 AF   E8 88           STX -120,S
-   1633  4+4   8E98 32   E9 FF62         LEAS -158,S
-   1634  3     8E9C 8E   7AAD            LDX #$7aad
-   1635  5+1   8E9F AF   7E              STX -2,S
-   1636  3     8EA1 8E   44EA            LDX #$44ea
-   1637  5+1   8EA4 AF   E8 D6           STX -42,S
-   1638  3     8EA7 8E   44ED            LDX #$44ed
-   1639  5+1   8EAA AF   E8 AE           STX -82,S
-   1640  3     8EAD 8E   74EE            LDX #$74ee
-   1641  5+1   8EB0 AF   E8 86           STX -122,S
-   1642  4+4   8EB3 32   E9 FF60         LEAS -160,S
-   1643  3     8EB7 8E   77DD            LDX #$77dd
-   1644  5+1   8EBA AF   7E              STX -2,S
-   1645  2     8EBC 86   0F              LDA  #$0F
-   1646  4+1   8EBE A4   E8 D8           ANDA -40,S
-   1647  2     8EC1 8B   D0              ADDA #$d0
-   1648  4+1   8EC3 A7   E8 D8           STA -40,S
-   1649  2     8EC6 86   AA              LDA #$aa
-   1650  4+1   8EC8 A7   E8 D7           STA -41,S
-   1651  2     8ECB 86   F0              LDA  #$F0
-   1652  4+1   8ECD A4   E8 D6           ANDA -42,S
-   1653  2     8ED0 8B   07              ADDA #$07
-   1654  4+1   8ED2 A7   E8 D6           STA -42,S
-   1655  2     8ED5 86   77              LDA #$77
-   1656  4+1   8ED7 A7   E8 AF           STA -81,S
-   1657  2     8EDA 86   AA              LDA #$aa
-   1658  4+1   8EDC A7   E8 87           STA -121,S
-   1659
-   1660  7     8EDF 10FE 8000            LDS  >SSAVE
-   1661  5+3   8EE3 35   48              PULS U,DP
-   1662  5     8EE5 39                   RTS
-   1663
-   1664        8EE6               E2DATA_TEST1X100000_2
-   1665        8EE6               E2DATA_TEST1X100000_1
-   1666        8EE6               E2POS_TEST1X100000
-   1667        8EE6 1F40                 FDB $1F40
-   1668        8EE8 3F40                 FDB $3F40
-   1669
-   1670        8EEA               TABPALETTE
-   1671        8EEA 0111                 FDB $0111     * index:0  R:51  V:5>>
-   1672        8EEC 0143                 FDB $0143     * index:1  R:108 V:1>>
-   1673        8EEE 0113                 FDB $0113     * index:2  R:107 V:5>>
-   1674        8EF0 0484                 FDB $0484     * index:3  R:132 V:1>>
-   1675        8EF2 0112                 FDB $0112     * index:4  R:92  V:6>>
-   1676        8EF4 0247                 FDB $0247     * index:5  R:180 V:1>>
-   1677        8EF6 0233                 FDB $0233     * index:6  R:116 V:1>>
-   1678        8EF8 0177                 FDB $0177     * index:7  R:172 V:1>>
-   1679        8EFA 0111                 FDB $0111     * index:8  R:60  V:5>>
-   1680        8EFC 0016                 FDB $0016     * index:9  R:164 V:6>>
-   1681        8EFE 0698                 FDB $0698     * index:10 R:187 V:1>>
-   1682        8F00 0344                 FDB $0344     * index:11 R:132 V:1>>
-   1683        8F02 0221                 FDB $0221     * index:12 R:68  V:9>>
-   1684        8F04 0452                 FDB $0452     * index:13 R:92  V:1>>
-   1685        8F06 0356                 FDB $0356     * index:14 R:164 V:1>>
-   1686        8F08 0125                 FDB $0125     * index:15 R:140 V:1>>
-   1687        8F0A               FINTABPALETTE
+    350                           * Affichage de l arriere plan xxx cycles
+    351                           *****************************************>>
+    352        81F6               DRAW_RAM_DATA_TO_CART_160x200
+    353  5+3   81F6 34   48              PSHS U,DP            * sauvegarde >>
+    354  7     81F8 10FF 8000            STS >SSAVE
+    355                            
+    356  4     81FC 10CE 1F40            LDS #FINECRANA       * init pointe>>
+    357  3     8200 CE   A000            LDU #$A000
+    358
+    359        8203               DRAW_RAM_DATA_TO_CART_160x200A
+    360  5+7   8203 37   3E              PULU A,B,DP,X,Y
+    361  5+7   8205 34   3E              PSHS Y,X,DP,B,A
+    362  5+7   8207 37   3E              PULU A,B,DP,X,Y
+    363  5+7   8209 34   3E              PSHS Y,X,DP,B,A
+    364  5+7   820B 37   3E              PULU A,B,DP,X,Y
+    365  5+7   820D 34   3E              PSHS Y,X,DP,B,A
+    366  5+7   820F 37   3E              PULU A,B,DP,X,Y
+    367  5+7   8211 34   3E              PSHS Y,X,DP,B,A
+    368  5+7   8213 37   3E              PULU A,B,DP,X,Y
+    369  5+7   8215 34   3E              PSHS Y,X,DP,B,A
+    370  5+7   8217 37   3E              PULU A,B,DP,X,Y
+    371  5+7   8219 34   3E              PSHS Y,X,DP,B,A
+    372  5     821B 118C 0014            CMPS #DEBUTECRANA
+    373  3     821F 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200A>>
+    374  5+7   8221 37   3E              PULU A,B,DP,X,Y
+    375  5+7   8223 34   3E              PSHS Y,X,DP,B,A
+    376  5+7   8225 37   3E              PULU A,B,DP,X,Y
+    377  5+7   8227 34   3E              PSHS Y,X,DP,B,A
+    378  5+6   8229 37   3C              PULU B,DP,X,Y
+    379  5+6   822B 34   3C              PSHS Y,X,DP,B
+    380
+    381  4     822D 10CE 3F40            LDS #FINECRANB       * init pointe>>
+    382  3     8231 CE   C000            LDU #$C000
+    383
+    384        8234               DRAW_RAM_DATA_TO_CART_160x200B
+    385  5+7   8234 37   3E              PULU A,B,DP,X,Y
+    386  5+7   8236 34   3E              PSHS Y,X,DP,B,A
+    387  5+7   8238 37   3E              PULU A,B,DP,X,Y
+    388  5+7   823A 34   3E              PSHS Y,X,DP,B,A
+    389  5+7   823C 37   3E              PULU A,B,DP,X,Y
+    390  5+7   823E 34   3E              PSHS Y,X,DP,B,A
+    391  5+7   8240 37   3E              PULU A,B,DP,X,Y
+    392  5+7   8242 34   3E              PSHS Y,X,DP,B,A
+    393  5+7   8244 37   3E              PULU A,B,DP,X,Y
+    394  5+7   8246 34   3E              PSHS Y,X,DP,B,A
+    395  5+7   8248 37   3E              PULU A,B,DP,X,Y
+    396  5+7   824A 34   3E              PSHS Y,X,DP,B,A
+    397  5     824C 118C 2014            CMPS #DEBUTECRANB
+    398  3     8250 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200B>>
+    399  5+7   8252 37   3E              PULU A,B,DP,X,Y
+    400  5+7   8254 34   3E              PSHS Y,X,DP,B,A
+    401  5+7   8256 37   3E              PULU A,B,DP,X,Y
+    402  5+7   8258 34   3E              PSHS Y,X,DP,B,A
+    403  5+6   825A 37   3C              PULU B,DP,X,Y
+    404  5+6   825C 34   3C              PSHS Y,X,DP,B
+    405
+    406  7     825E 10FE 8000            LDS  >SSAVE          * rechargemen>>
+    407  5+3   8262 35   48              PULS U,DP
+    408  5     8264 39                   RTS
+    409
+    410                           *****************************************>>
+    411                           * Affiche un computed sprite en xxx cycle>>
+    412                           *****************************************>>
+    413                  0400     TEST1X10_WALK_SPD_LIMIT EQU $0400
+    414                  0600     TEST1X10_JOG_SPD_LIMIT  EQU $0600
+    415        8265               TEST1X10_X_POS
+    416        8265 50                   FCB $50        * position horizont>>
+    417        8266               TEST1X10_Y_POS
+    418        8266 C8                   FCB $C8        * position vertical>>
+    419        8267               TEST1X10_G_SPEED
+    420        8267 0000                 FDB $0000        * vitesse au sol
+    421        8269               TEST1X10_X_SPEED
+    422        8269 0000                 FDB $0000        * vitesse horizon>>
+    423        826B               TEST1X10_Y_SPEED
+    424        826B 0000                 FDB $0000        * vitesse vertica>>
+    425        826D               TEST1X10_TOP_SPEED
+    426        826D 0600                 FDB $0600        * vitesse maximum>>
+    427        826F               TEST1X10_NEG_TOP_SPEED
+    428        826F FA00                 FDB $FA00        * vitesse maximum>>
+    429        8271               TEST1X10_ACCELERATION
+    430        8271 000C                 FDB $000C        * constante accel>>
+    431        8273               TEST1X10_DECELERATION
+    432        8273 0080                 FDB $0080        * constante decel>>
+    433        8275               TEST1X10_FRICTION
+    434        8275 000C                 FDB $000C        * constante de fr>>
+    435        8277               TEST1X10_ANIMATION
+    436        8277 00                   FCB $00          * Animation coura>>
+    437
+    438        8278               DRAW_TEST1X100000
+    439  5+3   8278 34   48              PSHS U,DP
+    440  7     827A 10FF 8000            STS >SSAVE
+    441
+    442  7     827E 10FE 8782            LDS POS_TEST1X100000
+    443  3     8282 CE   8782            LDU #DATA_TEST1X100000_1
+    444  4+1   8285 32   7E              LEAS -2,S
+    445  5+1   8287 AE   7E              LDX -2,S
+    446  6     8289 BF   8793            STX ERASE_TEST1X100000+13
+    447  3     828C 8E   FFF0            LDX #$fff0
+    448  5+1   828F AF   7E              STX -2,S
+    449  5+1   8291 AE   E8 D6           LDX -42,S
+    450  6     8294 BF   8798            STX ERASE_TEST1X100000+18
+    451  3     8297 8E   C996            LDX #$c996
+    452  5+1   829A AF   E8 D6           STX -42,S
+    453  5+1   829D AE   E8 AE           LDX -82,S
+    454  6     82A0 BF   879E            STX ERASE_TEST1X100000+24
+    455  3     82A3 8E   F026            LDX #$f026
+    456  5+1   82A6 AF   E8 AE           STX -82,S
+    457  5+1   82A9 AE   E8 86           LDX -122,S
+    458  6     82AC BF   87A4            STX ERASE_TEST1X100000+30
+    459  3     82AF 8E   2B2C            LDX #$2b2c
+    460  5+1   82B2 AF   E8 86           STX -122,S
+    461  4+4   82B5 32   E9 FF60         LEAS -160,S
+    462  4+1   82B9 A6   7F              LDA -1,S
+    463  5     82BB B7   87AE            STA ERASE_TEST1X100000+40
+    464  2     82BE 86   C2              LDA #$c2
+    465  4+1   82C0 A7   7F              STA -1,S
+    466  2     82C2 86   F0              LDA  #$F0
+    467  4+1   82C4 A4   7E              ANDA -2,S
+    468  2     82C6 8B   0C              ADDA #$0c
+    469  4+1   82C8 A7   7E              STA -2,S
+    470  4+1   82CA A6   E8 D7           LDA -41,S
+    471  5     82CD B7   87BA            STA ERASE_TEST1X100000+52
+    472  2     82D0 86   26              LDA #$26
+    473  4+1   82D2 A7   E8 D7           STA -41,S
+    474  2     82D5 86   F0              LDA  #$F0
+    475  4+1   82D7 A4   E8 D6           ANDA -42,S
+    476  2     82DA 8B   02              ADDA #$02
+    477  4+1   82DC A7   E8 D6           STA -42,S
+    478  4+1   82DF A6   E8 AF           LDA -81,S
+    479  5     82E2 B7   87C9            STA ERASE_TEST1X100000+67
+    480  2     82E5 86   11              LDA #$11
+    481  4+1   82E7 A7   E8 AF           STA -81,S
+    482  2     82EA 86   F0              LDA  #$F0
+    483  4+1   82EC A4   E8 AE           ANDA -82,S
+    484  2     82EF 8B   02              ADDA #$02
+    485  4+1   82F1 A7   E8 AE           STA -82,S
+    486  2     82F4 86   F0              LDA  #$F0
+    487  4+1   82F6 A4   E8 87           ANDA -121,S
+    488  2     82F9 8B   0E              ADDA #$0e
+    489  4+1   82FB A7   E8 87           STA -121,S
+    490  4+4   82FE 32   E9 FF5F         LEAS -161,S
+    491  2     8302 86   F0              LDA  #$F0
+    492  4+0   8304 A4   E4              ANDA ,S
+    493  2     8306 8B   0E              ADDA #$0e
+    494  4+0   8308 A7   E4              STA ,S
+    495  4+1   830A A6   E8 D8           LDA -40,S
+    496  5     830D B7   87EE            STA ERASE_TEST1X100000+104
+    497  2     8310 86   DB              LDA #$db
+    498  4+1   8312 A7   E8 D8           STA -40,S
+    499  2     8315 86   F0              LDA  #$F0
+    500  4+1   8317 A4   E8 D7           ANDA -41,S
+    501  2     831A 8B   0B              ADDA #$0b
+    502  4+1   831C A7   E8 D7           STA -41,S
+    503  4+1   831F A6   E8 B0           LDA -80,S
+    504  5     8322 B7   87FD            STA ERASE_TEST1X100000+119
+    505  2     8325 86   D6              LDA #$d6
+    506  4+1   8327 A7   E8 B0           STA -80,S
+    507  2     832A 86   F0              LDA  #$F0
+    508  4+1   832C A4   E8 AF           ANDA -81,S
+    509  2     832F 8B   0B              ADDA #$0b
+    510  4+1   8331 A7   E8 AF           STA -81,S
+    511  2     8334 86   0F              LDA  #$0F
+    512  4+1   8336 A4   E8 89           ANDA -119,S
+    513  2     8339 8B   E0              ADDA #$e0
+    514  4+1   833B A7   E8 89           STA -119,S
+    515  5+1   833E AE   E8 87           LDX -121,S
+    516  6     8341 BF   8816            STX ERASE_TEST1X100000+144
+    517  3     8344 8E   B662            LDX #$b662
+    518  5+1   8347 AF   E8 87           STX -121,S
+    519  4+4   834A 32   E9 FF61         LEAS -159,S
+    520  2     834E 86   0F              LDA  #$0F
+    521  4+0   8350 A4   E4              ANDA ,S
+    522  2     8352 8B   E0              ADDA #$e0
+    523  4+0   8354 A7   E4              STA ,S
+    524  5+1   8356 AE   7E              LDX -2,S
+    525  6     8358 BF   8828            STX ERASE_TEST1X100000+162
+    526  3     835B 8E   6B21            LDX #$6b21
+    527  5+1   835E AF   7E              STX -2,S
+    528  2     8360 86   0F              LDA  #$0F
+    529  4+1   8362 A4   E8 D8           ANDA -40,S
+    530  2     8365 8B   D0              ADDA #$d0
+    531  4+1   8367 A7   E8 D8           STA -40,S
+    532  5+1   836A AE   E8 D6           LDX -42,S
+    533  6     836D BF   8837            STX ERASE_TEST1X100000+177
+    534  3     8370 8E   2B11            LDX #$2b11
+    535  5+1   8373 AF   E8 D6           STX -42,S
+    536  2     8376 86   0F              LDA  #$0F
+    537  4+1   8378 A4   E8 B0           ANDA -80,S
+    538  2     837B 8B   A0              ADDA #$a0
+    539  4+1   837D A7   E8 B0           STA -80,S
+    540  4+1   8380 A6   E8 AF           LDA -81,S
+    541  5     8383 B7   8847            STA ERASE_TEST1X100000+193
+    542  2     8386 86   11              LDA #$11
+    543  4+1   8388 A7   E8 AF           STA -81,S
+    544  2     838B 86   F0              LDA  #$F0
+    545  4+1   838D A4   E8 AE           ANDA -82,S
+    546  2     8390 8B   00              ADDA #$00
+    547  4+1   8392 A7   E8 AE           STA -82,S
+    548  4+1   8395 A6   E8 87           LDA -121,S
+    549  5     8398 B7   8856            STA ERASE_TEST1X100000+208
+    550  2     839B 86   D2              LDA #$d2
+    551  4+1   839D A7   E8 87           STA -121,S
+    552  2     83A0 86   F0              LDA  #$F0
+    553  4+1   83A2 A4   E8 86           ANDA -122,S
+    554  2     83A5 8B   08              ADDA #$08
+    555  4+1   83A7 A7   E8 86           STA -122,S
+    556  4+4   83AA 32   E9 FF60         LEAS -160,S
+    557  4+1   83AE A6   7F              LDA -1,S
+    558  5     83B0 B7   8869            STA ERASE_TEST1X100000+227
+    559  2     83B3 86   D0              LDA #$d0
+    560  4+1   83B5 A7   7F              STA -1,S
+    561  2     83B7 86   F0              LDA  #$F0
+    562  4+1   83B9 A4   7E              ANDA -2,S
+    563  2     83BB 8B   05              ADDA #$05
+    564  4+1   83BD A7   7E              STA -2,S
+    565  4+1   83BF A6   E8 D7           LDA -41,S
+    566  5     83C2 B7   8875            STA ERASE_TEST1X100000+239
+    567  2     83C5 86   EC              LDA #$ec
+    568  4+1   83C7 A7   E8 D7           STA -41,S
+    569  2     83CA 86   F0              LDA  #$F0
+    570  4+1   83CC A4   E8 D6           ANDA -42,S
+    571  2     83CF 8B   08              ADDA #$08
+    572  4+1   83D1 A7   E8 D6           STA -42,S
+    573  4+1   83D4 A6   E8 AF           LDA -81,S
+    574  5     83D7 B7   8884            STA ERASE_TEST1X100000+254
+    575  2     83DA 86   C3              LDA #$c3
+    576  4+1   83DC A7   E8 AF           STA -81,S
+    577  2     83DF 86   F0              LDA  #$F0
+    578  4+1   83E1 A4   E8 AE           ANDA -82,S
+    579  2     83E4 8B   0C              ADDA #$0c
+    580  4+1   83E6 A7   E8 AE           STA -82,S
+    581  4+1   83E9 A6   E8 87           LDA -121,S
+    582  5     83EC B7   8893            STA ERASE_TEST1X100000+269
+    583  2     83EF 86   E0              LDA #$e0
+    584  4+1   83F1 A7   E8 87           STA -121,S
+    585  4+4   83F4 32   E9 FF61         LEAS -159,S
+    586  5+1   83F8 AE   7E              LDX -2,S
+    587  6     83FA BF   889C            STX ERASE_TEST1X100000+278
+    588  3     83FD 8E   CEDE            LDX #$cede
+    589  5+1   8400 AF   7E              STX -2,S
+    590  2     8402 86   F0              LDA  #$F0
+    591  4+1   8404 A4   7D              ANDA -3,S
+    592  2     8406 8B   0C              ADDA #$0c
+    593  4+1   8408 A7   7D              STA -3,S
+    594  5+1   840A AE   E8 D6           LDX -42,S
+    595  6     840D BF   88A9            STX ERASE_TEST1X100000+291
+    596  3     8410 8E   5EED            LDX #$5eed
+    597  5+1   8413 AF   E8 D6           STX -42,S
+    598  2     8416 86   F0              LDA  #$F0
+    599  4+1   8418 A4   E8 D5           ANDA -43,S
+    600  2     841B 8B   08              ADDA #$08
+    601  4+1   841D A7   E8 D5           STA -43,S
+    602  4+1   8420 32   E8 B0           LEAS -80,S
+    603  2     8423 86   C3              LDA #$c3
+    604  3     8425 8E   38DA            LDX #$38da
+    605  5+3   8428 34   12              PSHS X,A
+    606  4+1   842A 32   E8 DB           LEAS -37,S
+    607  2     842D 86   01              LDA #$01
+    608  3     842F 8E   38AA            LDX #$38aa
+    609  5+3   8432 34   12              PSHS X,A
+    610  2     8434 86   0F              LDA  #$0F
+    611  4+1   8436 A4   E8 DA           ANDA -38,S
+    612  2     8439 8B   A0              ADDA #$a0
+    613  4+1   843B A7   E8 DA           STA -38,S
+    614  5+1   843E AE   E8 D8           LDX -40,S
+    615  6     8441 BF   88D7            STX ERASE_TEST1X100000+337
+    616  3     8444 8E   611A            LDX #$611a
+    617  5+1   8447 AF   E8 D8           STX -40,S
+    618  5+1   844A AE   E8 B0           LDX -80,S
+    619  6     844D BF   88DD            STX ERASE_TEST1X100000+343
+    620  3     8450 8E   007A            LDX #$007a
+    621  5+1   8453 AF   E8 B0           STX -80,S
+    622  2     8456 86   0F              LDA  #$0F
+    623  4+1   8458 A4   E8 8A           ANDA -118,S
+    624  2     845B 8B   D0              ADDA #$d0
+    625  4+1   845D A7   E8 8A           STA -118,S
+    626  5+1   8460 AE   E8 88           LDX -120,S
+    627  6     8463 BF   88ED            STX ERASE_TEST1X100000+359
+    628  3     8466 8E   0077            LDX #$0077
+    629  5+1   8469 AF   E8 88           STX -120,S
+    630  4+4   846C 32   E9 FF63         LEAS -157,S
+    631  2     8470 86   A0              LDA #$a0
+    632  3     8472 8E   77ED            LDX #$77ed
+    633  5+3   8475 34   12              PSHS X,A
+    634  4+1   8477 32   E8 DB           LEAS -37,S
+    635  2     847A 86   7A              LDA #$7a
+    636  3     847C 8E   77EE            LDX #$77ee
+    637  5+3   847F 34   12              PSHS X,A
+    638  4+1   8481 32   E8 DB           LEAS -37,S
+    639  2     8484 86   77              LDA #$77
+    640  3     8486 8E   77DD            LDX #$77dd
+    641  5+3   8489 34   12              PSHS X,A
+    642  4+1   848B 32   E8 DB           LEAS -37,S
+    643  2     848E 86   74              LDA #$74
+    644  3     8490 8E   44AA            LDX #$44aa
+    645  5+3   8493 34   12              PSHS X,A
+    646  2     8495 86   0F              LDA  #$0F
+    647  4+1   8497 A4   E8 DA           ANDA -38,S
+    648  2     849A 8B   A0              ADDA #$a0
+    649  4+1   849C A7   E8 DA           STA -38,S
+    650  5+1   849F AE   E8 D8           LDX -40,S
+    651  6     84A2 BF   8926            STX ERASE_TEST1X100000+416
+    652  3     84A5 8E   7477            LDX #$7477
+    653  5+1   84A8 AF   E8 D8           STX -40,S
+    654  5+1   84AB AE   E8 B0           LDX -80,S
+    655  6     84AE BF   892C            STX ERASE_TEST1X100000+422
+    656  3     84B1 8E   A773            LDX #$a773
+    657  5+1   84B4 AF   E8 B0           STX -80,S
+    658  5+1   84B7 AE   E8 88           LDX -120,S
+    659  6     84BA BF   8932            STX ERASE_TEST1X100000+428
+    660  3     84BD 8E   E7C3            LDX #$e7c3
+    661  5+1   84C0 AF   E8 88           STX -120,S
+    662  4+4   84C3 32   E9 FF62         LEAS -158,S
+    663  5+1   84C7 AE   7E              LDX -2,S
+    664  6     84C9 BF   893C            STX ERASE_TEST1X100000+438
+    665  3     84CC 8E   D7D3            LDX #$d7d3
+    666  5+1   84CF AF   7E              STX -2,S
+    667  5+1   84D1 AE   E8 D7           LDX -41,S
+    668  6     84D4 BF   8941            STX ERASE_TEST1X100000+443
+    669  3     84D7 8E   78EE            LDX #$78ee
+    670  5+1   84DA AF   E8 D7           STX -41,S
+    671  2     84DD 86   0F              LDA  #$0F
+    672  4+1   84DF A4   E8 D6           ANDA -42,S
+    673  2     84E2 8B   D0              ADDA #$d0
+    674  4+1   84E4 A7   E8 D6           STA -42,S
+    675  5+1   84E7 AE   E8 AF           LDX -81,S
+    676  6     84EA BF   8951            STX ERASE_TEST1X100000+459
+    677  3     84ED 8E   7DDD            LDX #$7ddd
+    678  5+1   84F0 AF   E8 AF           STX -81,S
+    679  2     84F3 86   0F              LDA  #$0F
+    680  4+1   84F5 A4   E8 AE           ANDA -82,S
+    681  2     84F8 8B   D0              ADDA #$d0
+    682  4+1   84FA A7   E8 AE           STA -82,S
+    683  5+1   84FD AE   E8 87           LDX -121,S
+    684  6     8500 BF   8961            STX ERASE_TEST1X100000+475
+    685  3     8503 8E   A7AA            LDX #$a7aa
+    686  5+1   8506 AF   E8 87           STX -121,S
+    687  4+4   8509 32   E9 FF5F         LEAS -161,S
+    688  2     850D 86   F0              LDA  #$F0
+    689  4+0   850F A4   E4              ANDA ,S
+    690  2     8511 8B   0A              ADDA #$0a
+    691  4+0   8513 A7   E4              STA ,S
+    692
+    693  7     8515 10FE 8784            LDS POS_TEST1X100000+2
+    694  3     8519 CE   8782            LDU #DATA_TEST1X100000_2
+    695
+    696  4+1   851C 32   7E              LEAS -2,S
+    697  2     851E 86   00              LDA #$00
+    698  3     8520 8E   FF0F            LDX #$ff0f
+    699  5+3   8523 34   12              PSHS X,A
+    700  4+1   8525 32   E8 DB           LEAS -37,S
+    701  2     8528 86   CF              LDA #$cf
+    702  3     852A 8E   99CF            LDX #$99cf
+    703  5+3   852D 34   12              PSHS X,A
+    704  5+1   852F AE   E8 D9           LDX -39,S
+    705  6     8532 BF   898D            STX ERASE_TEST1X100000+519
+    706  3     8535 8E   39CF            LDX #$39cf
+    707  5+1   8538 AF   E8 D9           STX -39,S
+    708  2     853B 86   F0              LDA  #$F0
+    709  4+1   853D A4   E8 D8           ANDA -40,S
+    710  2     8540 8B   0C              ADDA #$0c
+    711  4+1   8542 A7   E8 D8           STA -40,S
+    712  2     8545 86   0F              LDA  #$0F
+    713  4+1   8547 A4   E8 B2           ANDA -78,S
+    714  2     854A 8B   C0              ADDA #$c0
+    715  4+1   854C A7   E8 B2           STA -78,S
+    716  4+1   854F A6   E8 B1           LDA -79,S
+    717  5     8552 B7   89A7            STA ERASE_TEST1X100000+545
+    718  2     8555 86   01              LDA #$01
+    719  4+1   8557 A7   E8 B1           STA -79,S
+    720  2     855A 86   0F              LDA  #$0F
+    721  4+1   855C A4   E8 8A           ANDA -118,S
+    722  2     855F 8B   00              ADDA #$00
+    723  4+1   8561 A7   E8 8A           STA -118,S
+    724  4+1   8564 A6   E8 89           LDA -119,S
+    725  5     8567 B7   89B6            STA ERASE_TEST1X100000+560
+    726  2     856A 86   62              LDA #$62
+    727  4+1   856C A7   E8 89           STA -119,S
+    728  4+4   856F 32   E9 FF62         LEAS -158,S
+    729  2     8573 86   0F              LDA  #$0F
+    730  4+0   8575 A4   E4              ANDA ,S
+    731  2     8577 8B   B0              ADDA #$b0
+    732  4+0   8579 A7   E4              STA ,S
+    733  4+1   857B A6   7F              LDA -1,S
+    734  5     857D B7   89C7            STA ERASE_TEST1X100000+577
+    735  2     8580 86   B0              LDA #$b0
+    736  4+1   8582 A7   7F              STA -1,S
+    737  2     8584 86   0F              LDA  #$0F
+    738  4+1   8586 A4   E8 D8           ANDA -40,S
+    739  2     8589 8B   60              ADDA #$60
+    740  4+1   858B A7   E8 D8           STA -40,S
+    741  4+1   858E A6   E8 D7           LDA -41,S
+    742  5     8591 B7   89D5            STA ERASE_TEST1X100000+591
+    743  2     8594 86   6B              LDA #$6b
+    744  4+1   8596 A7   E8 D7           STA -41,S
+    745  2     8599 86   0F              LDA  #$0F
+    746  4+1   859B A4   E8 AF           ANDA -81,S
+    747  2     859E 8B   D0              ADDA #$d0
+    748  4+1   85A0 A7   E8 AF           STA -81,S
+    749  2     85A3 86   0F              LDA  #$0F
+    750  4+1   85A5 A4   E8 87           ANDA -121,S
+    751  2     85A8 8B   D0              ADDA #$d0
+    752  4+1   85AA A7   E8 87           STA -121,S
+    753  4+4   85AD 32   E9 FF5F         LEAS -161,S
+    754  2     85B1 86   0F              LDA  #$0F
+    755  4+0   85B3 A4   E4              ANDA ,S
+    756  2     85B5 8B   D0              ADDA #$d0
+    757  4+0   85B7 A7   E4              STA ,S
+    758  2     85B9 86   0F              LDA  #$0F
+    759  4+1   85BB A4   E8 D9           ANDA -39,S
+    760  2     85BE 8B   B0              ADDA #$b0
+    761  4+1   85C0 A7   E8 D9           STA -39,S
+    762  2     85C3 86   0F              LDA  #$0F
+    763  4+1   85C5 A4   E8 D8           ANDA -40,S
+    764  2     85C8 8B   E0              ADDA #$e0
+    765  4+1   85CA A7   E8 D8           STA -40,S
+    766  2     85CD 86   0F              LDA  #$0F
+    767  4+1   85CF A4   E8 B1           ANDA -79,S
+    768  2     85D2 8B   60              ADDA #$60
+    769  4+1   85D4 A7   E8 B1           STA -79,S
+    770  2     85D7 86   0F              LDA  #$0F
+    771  4+1   85D9 A4   E8 B0           ANDA -80,S
+    772  2     85DC 8B   E0              ADDA #$e0
+    773  4+1   85DE A7   E8 B0           STA -80,S
+    774  5+1   85E1 AE   E8 88           LDX -120,S
+    775  6     85E4 BF   8A22            STX ERASE_TEST1X100000+668
+    776  3     85E7 8E   0EBD            LDX #$0ebd
+    777  5+1   85EA AF   E8 88           STX -120,S
+    778  4+4   85ED 32   E9 FF62         LEAS -158,S
+    779  5+1   85F1 AE   7E              LDX -2,S
+    780  6     85F3 BF   8A2C            STX ERASE_TEST1X100000+678
+    781  3     85F6 8E   DD6F            LDX #$dd6f
+    782  5+1   85F9 AF   7E              STX -2,S
+    783  5+1   85FB AE   E8 D6           LDX -42,S
+    784  6     85FE BF   8A31            STX ERASE_TEST1X100000+683
+    785  3     8601 8E   8C18            LDX #$8c18
+    786  5+1   8604 AF   E8 D6           STX -42,S
+    787  5+1   8607 AE   E8 AE           LDX -82,S
+    788  6     860A BF   8A37            STX ERASE_TEST1X100000+689
+    789  3     860D 8E   35E5            LDX #$35e5
+    790  5+1   8610 AF   E8 AE           STX -82,S
+    791  5+1   8613 AE   E8 86           LDX -122,S
+    792  6     8616 BF   8A3D            STX ERASE_TEST1X100000+695
+    793  3     8619 8E   3383            LDX #$3383
+    794  5+1   861C AF   E8 86           STX -122,S
+    795  4+4   861F 32   E9 FF60         LEAS -160,S
+    796  5+1   8623 AE   7E              LDX -2,S
+    797  6     8625 BF   8A47            STX ERASE_TEST1X100000+705
+    798  3     8628 8E   333A            LDX #$333a
+    799  5+1   862B AF   7E              STX -2,S
+    800  2     862D 86   0F              LDA  #$0F
+    801  4+1   862F A4   E8 D7           ANDA -41,S
+    802  2     8632 8B   E0              ADDA #$e0
+    803  4+1   8634 A7   E8 D7           STA -41,S
+    804  4+1   8637 A6   E8 D6           LDA -42,S
+    805  5     863A B7   8A56            STA ERASE_TEST1X100000+720
+    806  2     863D 86   58              LDA #$58
+    807  4+1   863F A7   E8 D6           STA -42,S
+    808  5+1   8642 AE   E8 AE           LDX -82,S
+    809  6     8645 BF   8A5B            STX ERASE_TEST1X100000+725
+    810  3     8648 8E   F0DD            LDX #$f0dd
+    811  5+1   864B AF   E8 AE           STX -82,S
+    812  2     864E 86   0F              LDA  #$0F
+    813  4+1   8650 A4   E8 88           ANDA -120,S
+    814  2     8653 8B   A0              ADDA #$a0
+    815  4+1   8655 A7   E8 88           STA -120,S
+    816  5+1   8658 AE   E8 86           LDX -122,S
+    817  6     865B BF   8A6B            STX ERASE_TEST1X100000+741
+    818  3     865E 8E   88EE            LDX #$88ee
+    819  5+1   8661 AF   E8 86           STX -122,S
+    820  4+4   8664 32   E9 FF60         LEAS -160,S
+    821  5+1   8668 AE   7E              LDX -2,S
+    822  6     866A BF   8A75            STX ERASE_TEST1X100000+751
+    823  3     866D 8E   330E            LDX #$330e
+    824  5+1   8670 AF   7E              STX -2,S
+    825  5+1   8672 AE   E8 D6           LDX -42,S
+    826  6     8675 BF   8A7A            STX ERASE_TEST1X100000+756
+    827  3     8678 8E   33EE            LDX #$33ee
+    828  5+1   867B AF   E8 D6           STX -42,S
+    829  5+1   867E AE   E8 AE           LDX -82,S
+    830  6     8681 BF   8A80            STX ERASE_TEST1X100000+762
+    831  3     8684 8E   11EE            LDX #$11ee
+    832  5+1   8687 AF   E8 AE           STX -82,S
+    833  2     868A 86   F0              LDA  #$F0
+    834  4+1   868C A4   E8 AD           ANDA -83,S
+    835  2     868F 8B   00              ADDA #$00
+    836  4+1   8691 A7   E8 AD           STA -83,S
+    837  5+1   8694 AE   E8 86           LDX -122,S
+    838  6     8697 BF   8A90            STX ERASE_TEST1X100000+778
+    839  3     869A 8E   17DE            LDX #$17de
+    840  5+1   869D AF   E8 86           STX -122,S
+    841  2     86A0 86   F0              LDA  #$F0
+    842  4+1   86A2 A4   E8 85           ANDA -123,S
+    843  2     86A5 8B   00              ADDA #$00
+    844  4+1   86A7 A7   E8 85           STA -123,S
+    845  4+4   86AA 32   E9 FF60         LEAS -160,S
+    846  5+1   86AE AE   7E              LDX -2,S
+    847  6     86B0 BF   8AA4            STX ERASE_TEST1X100000+798
+    848  3     86B3 8E   11AE            LDX #$11ae
+    849  5+1   86B6 AF   7E              STX -2,S
+    850  5+1   86B8 AE   E8 D6           LDX -42,S
+    851  6     86BB BF   8AA9            STX ERASE_TEST1X100000+803
+    852  3     86BE 8E   11AE            LDX #$11ae
+    853  5+1   86C1 AF   E8 D6           STX -42,S
+    854  4+1   86C4 32   E8 B1           LEAS -79,S
+    855  2     86C7 86   11              LDA #$11
+    856  3     86C9 8E   AEDD            LDX #$aedd
+    857  5+3   86CC 34   12              PSHS X,A
+    858  2     86CE 86   0F              LDA  #$0F
+    859  4+1   86D0 A4   E8 DA           ANDA -38,S
+    860  2     86D3 8B   E0              ADDA #$e0
+    861  4+1   86D5 A7   E8 DA           STA -38,S
+    862  5+1   86D8 AE   E8 D8           LDX -40,S
+    863  6     86DB BF   8AC3            STX ERASE_TEST1X100000+829
+    864  3     86DE 8E   11AD            LDX #$11ad
+    865  5+1   86E1 AF   E8 D8           STX -40,S
+    866  2     86E4 86   0F              LDA  #$0F
+    867  4+1   86E6 A4   E8 B2           ANDA -78,S
+    868  2     86E9 8B   A0              ADDA #$a0
+    869  4+1   86EB A7   E8 B2           STA -78,S
+    870  5+1   86EE AE   E8 B0           LDX -80,S
+    871  6     86F1 BF   8AD3            STX ERASE_TEST1X100000+845
+    872  3     86F4 8E   21AD            LDX #$21ad
+    873  5+1   86F7 AF   E8 B0           STX -80,S
+    874  5+1   86FA AE   E8 88           LDX -120,S
+    875  6     86FD BF   8AD9            STX ERASE_TEST1X100000+851
+    876  3     8700 8E   A1AD            LDX #$a1ad
+    877  5+1   8703 AF   E8 88           STX -120,S
+    878  4+4   8706 32   E9 FF62         LEAS -158,S
+    879  5+1   870A AE   7E              LDX -2,S
+    880  6     870C BF   8AE3            STX ERASE_TEST1X100000+861
+    881  3     870F 8E   7AAD            LDX #$7aad
+    882  5+1   8712 AF   7E              STX -2,S
+    883  5+1   8714 AE   E8 D6           LDX -42,S
+    884  6     8717 BF   8AE8            STX ERASE_TEST1X100000+866
+    885  3     871A 8E   44EA            LDX #$44ea
+    886  5+1   871D AF   E8 D6           STX -42,S
+    887  5+1   8720 AE   E8 AE           LDX -82,S
+    888  6     8723 BF   8AEE            STX ERASE_TEST1X100000+872
+    889  3     8726 8E   44ED            LDX #$44ed
+    890  5+1   8729 AF   E8 AE           STX -82,S
+    891  5+1   872C AE   E8 86           LDX -122,S
+    892  6     872F BF   8AF4            STX ERASE_TEST1X100000+878
+    893  3     8732 8E   74EE            LDX #$74ee
+    894  5+1   8735 AF   E8 86           STX -122,S
+    895  4+4   8738 32   E9 FF60         LEAS -160,S
+    896  5+1   873C AE   7E              LDX -2,S
+    897  6     873E BF   8AFE            STX ERASE_TEST1X100000+888
+    898  3     8741 8E   77DD            LDX #$77dd
+    899  5+1   8744 AF   7E              STX -2,S
+    900  2     8746 86   0F              LDA  #$0F
+    901  4+1   8748 A4   E8 D8           ANDA -40,S
+    902  2     874B 8B   D0              ADDA #$d0
+    903  4+1   874D A7   E8 D8           STA -40,S
+    904  4+1   8750 A6   E8 D7           LDA -41,S
+    905  5     8753 B7   8B0D            STA ERASE_TEST1X100000+903
+    906  2     8756 86   AA              LDA #$aa
+    907  4+1   8758 A7   E8 D7           STA -41,S
+    908  2     875B 86   F0              LDA  #$F0
+    909  4+1   875D A4   E8 D6           ANDA -42,S
+    910  2     8760 8B   07              ADDA #$07
+    911  4+1   8762 A7   E8 D6           STA -42,S
+    912  4+1   8765 A6   E8 AF           LDA -81,S
+    913  5     8768 B7   8B1C            STA ERASE_TEST1X100000+918
+    914  2     876B 86   77              LDA #$77
+    915  4+1   876D A7   E8 AF           STA -81,S
+    916  4+1   8770 A6   E8 87           LDA -121,S
+    917  5     8773 B7   8B21            STA ERASE_TEST1X100000+923
+    918  2     8776 86   AA              LDA #$aa
+    919  4+1   8778 A7   E8 87           STA -121,S
+    920
+    921  7     877B 10FE 8000            LDS  >SSAVE
+    922  5+3   877F 35   48              PULS U,DP
+    923  5     8781 39                   RTS
+    924
+    925        8782               DATA_TEST1X100000_2
+    926        8782               DATA_TEST1X100000_1
+    927        8782               POS_TEST1X100000
+    928        8782 1F40                 FDB $1F40
+    929        8784 3F40                 FDB $3F40
+    930
+    931        8786               ERASE_TEST1X100000
+    932  5+3   8786 34   48              PSHS U,DP
+    933  7     8788 10FF 8000            STS >SSAVE
+    934
+    935  7     878C 10FE 8782            LDS POS_TEST1X100000
+    936  3     8790 CE   8B2F            LDU #ERASE_DATA_TEST1X100000_1
+    937  4+1   8793 32   7E              LEAS -2,S
+    938  3     8795 8E   FFF0            LDX #$fff0
+    939  5+1   8798 AF   7E              STX -2,S
+    940  3     879A 8E   C996            LDX #$c996
+    941  5+1   879D AF   E8 D6           STX -42,S
+    942  3     87A0 8E   F026            LDX #$f026
+    943  5+1   87A3 AF   E8 AE           STX -82,S
+    944  3     87A6 8E   2B2C            LDX #$2b2c
+    945  5+1   87A9 AF   E8 86           STX -122,S
+    946  4+4   87AC 32   E9 FF60         LEAS -160,S
+    947  2     87B0 86   C2              LDA #$c2
+    948  4+1   87B2 A7   7F              STA -1,S
+    949  2     87B4 86   F0              LDA  #$F0
+    950  4+1   87B6 A4   7E              ANDA -2,S
+    951  2     87B8 8B   0C              ADDA #$0c
+    952  4+1   87BA A7   7E              STA -2,S
+    953  2     87BC 86   26              LDA #$26
+    954  4+1   87BE A7   E8 D7           STA -41,S
+    955  2     87C1 86   F0              LDA  #$F0
+    956  4+1   87C3 A4   E8 D6           ANDA -42,S
+    957  2     87C6 8B   02              ADDA #$02
+    958  4+1   87C8 A7   E8 D6           STA -42,S
+    959  2     87CB 86   11              LDA #$11
+    960  4+1   87CD A7   E8 AF           STA -81,S
+    961  2     87D0 86   F0              LDA  #$F0
+    962  4+1   87D2 A4   E8 AE           ANDA -82,S
+    963  2     87D5 8B   02              ADDA #$02
+    964  4+1   87D7 A7   E8 AE           STA -82,S
+    965  2     87DA 86   F0              LDA  #$F0
+    966  4+1   87DC A4   E8 87           ANDA -121,S
+    967  2     87DF 8B   0E              ADDA #$0e
+    968  4+1   87E1 A7   E8 87           STA -121,S
+    969  4+4   87E4 32   E9 FF5F         LEAS -161,S
+    970  2     87E8 86   F0              LDA  #$F0
+    971  4+0   87EA A4   E4              ANDA ,S
+    972  2     87EC 8B   0E              ADDA #$0e
+    973  4+0   87EE A7   E4              STA ,S
+    974  2     87F0 86   DB              LDA #$db
+    975  4+1   87F2 A7   E8 D8           STA -40,S
+    976  2     87F5 86   F0              LDA  #$F0
+    977  4+1   87F7 A4   E8 D7           ANDA -41,S
+    978  2     87FA 8B   0B              ADDA #$0b
+    979  4+1   87FC A7   E8 D7           STA -41,S
+    980  2     87FF 86   D6              LDA #$d6
+    981  4+1   8801 A7   E8 B0           STA -80,S
+    982  2     8804 86   F0              LDA  #$F0
+    983  4+1   8806 A4   E8 AF           ANDA -81,S
+    984  2     8809 8B   0B              ADDA #$0b
+    985  4+1   880B A7   E8 AF           STA -81,S
+    986  2     880E 86   0F              LDA  #$0F
+    987  4+1   8810 A4   E8 89           ANDA -119,S
+    988  2     8813 8B   E0              ADDA #$e0
+    989  4+1   8815 A7   E8 89           STA -119,S
+    990  3     8818 8E   B662            LDX #$b662
+    991  5+1   881B AF   E8 87           STX -121,S
+    992  4+4   881E 32   E9 FF61         LEAS -159,S
+    993  2     8822 86   0F              LDA  #$0F
+    994  4+0   8824 A4   E4              ANDA ,S
+    995  2     8826 8B   E0              ADDA #$e0
+    996  4+0   8828 A7   E4              STA ,S
+    997  3     882A 8E   6B21            LDX #$6b21
+    998  5+1   882D AF   7E              STX -2,S
+    999  2     882F 86   0F              LDA  #$0F
+   1000  4+1   8831 A4   E8 D8           ANDA -40,S
+   1001  2     8834 8B   D0              ADDA #$d0
+   1002  4+1   8836 A7   E8 D8           STA -40,S
+   1003  3     8839 8E   2B11            LDX #$2b11
+   1004  5+1   883C AF   E8 D6           STX -42,S
+   1005  2     883F 86   0F              LDA  #$0F
+   1006  4+1   8841 A4   E8 B0           ANDA -80,S
+   1007  2     8844 8B   A0              ADDA #$a0
+   1008  4+1   8846 A7   E8 B0           STA -80,S
+   1009  2     8849 86   11              LDA #$11
+   1010  4+1   884B A7   E8 AF           STA -81,S
+   1011  2     884E 86   F0              LDA  #$F0
+   1012  4+1   8850 A4   E8 AE           ANDA -82,S
+   1013  2     8853 8B   00              ADDA #$00
+   1014  4+1   8855 A7   E8 AE           STA -82,S
+   1015  2     8858 86   D2              LDA #$d2
+   1016  4+1   885A A7   E8 87           STA -121,S
+   1017  2     885D 86   F0              LDA  #$F0
+   1018  4+1   885F A4   E8 86           ANDA -122,S
+   1019  2     8862 8B   08              ADDA #$08
+   1020  4+1   8864 A7   E8 86           STA -122,S
+   1021  4+4   8867 32   E9 FF60         LEAS -160,S
+   1022  2     886B 86   D0              LDA #$d0
+   1023  4+1   886D A7   7F              STA -1,S
+   1024  2     886F 86   F0              LDA  #$F0
+   1025  4+1   8871 A4   7E              ANDA -2,S
+   1026  2     8873 8B   05              ADDA #$05
+   1027  4+1   8875 A7   7E              STA -2,S
+   1028  2     8877 86   EC              LDA #$ec
+   1029  4+1   8879 A7   E8 D7           STA -41,S
+   1030  2     887C 86   F0              LDA  #$F0
+   1031  4+1   887E A4   E8 D6           ANDA -42,S
+   1032  2     8881 8B   08              ADDA #$08
+   1033  4+1   8883 A7   E8 D6           STA -42,S
+   1034  2     8886 86   C3              LDA #$c3
+   1035  4+1   8888 A7   E8 AF           STA -81,S
+   1036  2     888B 86   F0              LDA  #$F0
+   1037  4+1   888D A4   E8 AE           ANDA -82,S
+   1038  2     8890 8B   0C              ADDA #$0c
+   1039  4+1   8892 A7   E8 AE           STA -82,S
+   1040  2     8895 86   E0              LDA #$e0
+   1041  4+1   8897 A7   E8 87           STA -121,S
+   1042  4+4   889A 32   E9 FF61         LEAS -159,S
+   1043  3     889E 8E   CEDE            LDX #$cede
+   1044  5+1   88A1 AF   7E              STX -2,S
+   1045  2     88A3 86   F0              LDA  #$F0
+   1046  4+1   88A5 A4   7D              ANDA -3,S
+   1047  2     88A7 8B   0C              ADDA #$0c
+   1048  4+1   88A9 A7   7D              STA -3,S
+   1049  3     88AB 8E   5EED            LDX #$5eed
+   1050  5+1   88AE AF   E8 D6           STX -42,S
+   1051  2     88B1 86   F0              LDA  #$F0
+   1052  4+1   88B3 A4   E8 D5           ANDA -43,S
+   1053  2     88B6 8B   08              ADDA #$08
+   1054  4+1   88B8 A7   E8 D5           STA -43,S
+   1055  4+1   88BB 32   E8 B0           LEAS -80,S
+   1056  2     88BE 86   C3              LDA #$c3
+   1057  3     88C0 8E   38DA            LDX #$38da
+   1058  5+3   88C3 34   12              PSHS X,A
+   1059  4+1   88C5 32   E8 DB           LEAS -37,S
+   1060  2     88C8 86   01              LDA #$01
+   1061  3     88CA 8E   38AA            LDX #$38aa
+   1062  5+3   88CD 34   12              PSHS X,A
+   1063  2     88CF 86   0F              LDA  #$0F
+   1064  4+1   88D1 A4   E8 DA           ANDA -38,S
+   1065  2     88D4 8B   A0              ADDA #$a0
+   1066  4+1   88D6 A7   E8 DA           STA -38,S
+   1067  3     88D9 8E   611A            LDX #$611a
+   1068  5+1   88DC AF   E8 D8           STX -40,S
+   1069  3     88DF 8E   007A            LDX #$007a
+   1070  5+1   88E2 AF   E8 B0           STX -80,S
+   1071  2     88E5 86   0F              LDA  #$0F
+   1072  4+1   88E7 A4   E8 8A           ANDA -118,S
+   1073  2     88EA 8B   D0              ADDA #$d0
+   1074  4+1   88EC A7   E8 8A           STA -118,S
+   1075  3     88EF 8E   0077            LDX #$0077
+   1076  5+1   88F2 AF   E8 88           STX -120,S
+   1077  4+4   88F5 32   E9 FF63         LEAS -157,S
+   1078  2     88F9 86   A0              LDA #$a0
+   1079  3     88FB 8E   77ED            LDX #$77ed
+   1080  5+3   88FE 34   12              PSHS X,A
+   1081  4+1   8900 32   E8 DB           LEAS -37,S
+   1082  2     8903 86   7A              LDA #$7a
+   1083  3     8905 8E   77EE            LDX #$77ee
+   1084  5+3   8908 34   12              PSHS X,A
+   1085  4+1   890A 32   E8 DB           LEAS -37,S
+   1086  2     890D 86   77              LDA #$77
+   1087  3     890F 8E   77DD            LDX #$77dd
+   1088  5+3   8912 34   12              PSHS X,A
+   1089  4+1   8914 32   E8 DB           LEAS -37,S
+   1090  2     8917 86   74              LDA #$74
+   1091  3     8919 8E   44AA            LDX #$44aa
+   1092  5+3   891C 34   12              PSHS X,A
+   1093  2     891E 86   0F              LDA  #$0F
+   1094  4+1   8920 A4   E8 DA           ANDA -38,S
+   1095  2     8923 8B   A0              ADDA #$a0
+   1096  4+1   8925 A7   E8 DA           STA -38,S
+   1097  3     8928 8E   7477            LDX #$7477
+   1098  5+1   892B AF   E8 D8           STX -40,S
+   1099  3     892E 8E   A773            LDX #$a773
+   1100  5+1   8931 AF   E8 B0           STX -80,S
+   1101  3     8934 8E   E7C3            LDX #$e7c3
+   1102  5+1   8937 AF   E8 88           STX -120,S
+   1103  4+4   893A 32   E9 FF62         LEAS -158,S
+   1104  3     893E 8E   D7D3            LDX #$d7d3
+   1105  5+1   8941 AF   7E              STX -2,S
+   1106  3     8943 8E   78EE            LDX #$78ee
+   1107  5+1   8946 AF   E8 D7           STX -41,S
+   1108  2     8949 86   0F              LDA  #$0F
+   1109  4+1   894B A4   E8 D6           ANDA -42,S
+   1110  2     894E 8B   D0              ADDA #$d0
+   1111  4+1   8950 A7   E8 D6           STA -42,S
+   1112  3     8953 8E   7DDD            LDX #$7ddd
+   1113  5+1   8956 AF   E8 AF           STX -81,S
+   1114  2     8959 86   0F              LDA  #$0F
+   1115  4+1   895B A4   E8 AE           ANDA -82,S
+   1116  2     895E 8B   D0              ADDA #$d0
+   1117  4+1   8960 A7   E8 AE           STA -82,S
+   1118  3     8963 8E   A7AA            LDX #$a7aa
+   1119  5+1   8966 AF   E8 87           STX -121,S
+   1120  4+4   8969 32   E9 FF5F         LEAS -161,S
+   1121  2     896D 86   F0              LDA  #$F0
+   1122  4+0   896F A4   E4              ANDA ,S
+   1123  2     8971 8B   0A              ADDA #$0a
+   1124  4+0   8973 A7   E4              STA ,S
+   1125
+   1126  7     8975 10FE 8784            LDS POS_TEST1X100000+2
+   1127  3     8979 CE   8B2F            LDU #ERASE_DATA_TEST1X100000_2
+   1128
+   1129  4+1   897C 32   7E              LEAS -2,S
+   1130  2     897E 86   00              LDA #$00
+   1131  3     8980 8E   FF0F            LDX #$ff0f
+   1132  5+3   8983 34   12              PSHS X,A
+   1133  4+1   8985 32   E8 DB           LEAS -37,S
+   1134  2     8988 86   CF              LDA #$cf
+   1135  3     898A 8E   99CF            LDX #$99cf
+   1136  5+3   898D 34   12              PSHS X,A
+   1137  3     898F 8E   39CF            LDX #$39cf
+   1138  5+1   8992 AF   E8 D9           STX -39,S
+   1139  2     8995 86   F0              LDA  #$F0
+   1140  4+1   8997 A4   E8 D8           ANDA -40,S
+   1141  2     899A 8B   0C              ADDA #$0c
+   1142  4+1   899C A7   E8 D8           STA -40,S
+   1143  2     899F 86   0F              LDA  #$0F
+   1144  4+1   89A1 A4   E8 B2           ANDA -78,S
+   1145  2     89A4 8B   C0              ADDA #$c0
+   1146  4+1   89A6 A7   E8 B2           STA -78,S
+   1147  2     89A9 86   01              LDA #$01
+   1148  4+1   89AB A7   E8 B1           STA -79,S
+   1149  2     89AE 86   0F              LDA  #$0F
+   1150  4+1   89B0 A4   E8 8A           ANDA -118,S
+   1151  2     89B3 8B   00              ADDA #$00
+   1152  4+1   89B5 A7   E8 8A           STA -118,S
+   1153  2     89B8 86   62              LDA #$62
+   1154  4+1   89BA A7   E8 89           STA -119,S
+   1155  4+4   89BD 32   E9 FF62         LEAS -158,S
+   1156  2     89C1 86   0F              LDA  #$0F
+   1157  4+0   89C3 A4   E4              ANDA ,S
+   1158  2     89C5 8B   B0              ADDA #$b0
+   1159  4+0   89C7 A7   E4              STA ,S
+   1160  2     89C9 86   B0              LDA #$b0
+   1161  4+1   89CB A7   7F              STA -1,S
+   1162  2     89CD 86   0F              LDA  #$0F
+   1163  4+1   89CF A4   E8 D8           ANDA -40,S
+   1164  2     89D2 8B   60              ADDA #$60
+   1165  4+1   89D4 A7   E8 D8           STA -40,S
+   1166  2     89D7 86   6B              LDA #$6b
+   1167  4+1   89D9 A7   E8 D7           STA -41,S
+   1168  2     89DC 86   0F              LDA  #$0F
+   1169  4+1   89DE A4   E8 AF           ANDA -81,S
+   1170  2     89E1 8B   D0              ADDA #$d0
+   1171  4+1   89E3 A7   E8 AF           STA -81,S
+   1172  2     89E6 86   0F              LDA  #$0F
+   1173  4+1   89E8 A4   E8 87           ANDA -121,S
+   1174  2     89EB 8B   D0              ADDA #$d0
+   1175  4+1   89ED A7   E8 87           STA -121,S
+   1176  4+4   89F0 32   E9 FF5F         LEAS -161,S
+   1177  2     89F4 86   0F              LDA  #$0F
+   1178  4+0   89F6 A4   E4              ANDA ,S
+   1179  2     89F8 8B   D0              ADDA #$d0
+   1180  4+0   89FA A7   E4              STA ,S
+   1181  2     89FC 86   0F              LDA  #$0F
+   1182  4+1   89FE A4   E8 D9           ANDA -39,S
+   1183  2     8A01 8B   B0              ADDA #$b0
+   1184  4+1   8A03 A7   E8 D9           STA -39,S
+   1185  2     8A06 86   0F              LDA  #$0F
+   1186  4+1   8A08 A4   E8 D8           ANDA -40,S
+   1187  2     8A0B 8B   E0              ADDA #$e0
+   1188  4+1   8A0D A7   E8 D8           STA -40,S
+   1189  2     8A10 86   0F              LDA  #$0F
+   1190  4+1   8A12 A4   E8 B1           ANDA -79,S
+   1191  2     8A15 8B   60              ADDA #$60
+   1192  4+1   8A17 A7   E8 B1           STA -79,S
+   1193  2     8A1A 86   0F              LDA  #$0F
+   1194  4+1   8A1C A4   E8 B0           ANDA -80,S
+   1195  2     8A1F 8B   E0              ADDA #$e0
+   1196  4+1   8A21 A7   E8 B0           STA -80,S
+   1197  3     8A24 8E   0EBD            LDX #$0ebd
+   1198  5+1   8A27 AF   E8 88           STX -120,S
+   1199  4+4   8A2A 32   E9 FF62         LEAS -158,S
+   1200  3     8A2E 8E   DD6F            LDX #$dd6f
+   1201  5+1   8A31 AF   7E              STX -2,S
+   1202  3     8A33 8E   8C18            LDX #$8c18
+   1203  5+1   8A36 AF   E8 D6           STX -42,S
+   1204  3     8A39 8E   35E5            LDX #$35e5
+   1205  5+1   8A3C AF   E8 AE           STX -82,S
+   1206  3     8A3F 8E   3383            LDX #$3383
+   1207  5+1   8A42 AF   E8 86           STX -122,S
+   1208  4+4   8A45 32   E9 FF60         LEAS -160,S
+   1209  3     8A49 8E   333A            LDX #$333a
+   1210  5+1   8A4C AF   7E              STX -2,S
+   1211  2     8A4E 86   0F              LDA  #$0F
+   1212  4+1   8A50 A4   E8 D7           ANDA -41,S
+   1213  2     8A53 8B   E0              ADDA #$e0
+   1214  4+1   8A55 A7   E8 D7           STA -41,S
+   1215  2     8A58 86   58              LDA #$58
+   1216  4+1   8A5A A7   E8 D6           STA -42,S
+   1217  3     8A5D 8E   F0DD            LDX #$f0dd
+   1218  5+1   8A60 AF   E8 AE           STX -82,S
+   1219  2     8A63 86   0F              LDA  #$0F
+   1220  4+1   8A65 A4   E8 88           ANDA -120,S
+   1221  2     8A68 8B   A0              ADDA #$a0
+   1222  4+1   8A6A A7   E8 88           STA -120,S
+   1223  3     8A6D 8E   88EE            LDX #$88ee
+   1224  5+1   8A70 AF   E8 86           STX -122,S
+   1225  4+4   8A73 32   E9 FF60         LEAS -160,S
+   1226  3     8A77 8E   330E            LDX #$330e
+   1227  5+1   8A7A AF   7E              STX -2,S
+   1228  3     8A7C 8E   33EE            LDX #$33ee
+   1229  5+1   8A7F AF   E8 D6           STX -42,S
+   1230  3     8A82 8E   11EE            LDX #$11ee
+   1231  5+1   8A85 AF   E8 AE           STX -82,S
+   1232  2     8A88 86   F0              LDA  #$F0
+   1233  4+1   8A8A A4   E8 AD           ANDA -83,S
+   1234  2     8A8D 8B   00              ADDA #$00
+   1235  4+1   8A8F A7   E8 AD           STA -83,S
+   1236  3     8A92 8E   17DE            LDX #$17de
+   1237  5+1   8A95 AF   E8 86           STX -122,S
+   1238  2     8A98 86   F0              LDA  #$F0
+   1239  4+1   8A9A A4   E8 85           ANDA -123,S
+   1240  2     8A9D 8B   00              ADDA #$00
+   1241  4+1   8A9F A7   E8 85           STA -123,S
+   1242  4+4   8AA2 32   E9 FF60         LEAS -160,S
+   1243  3     8AA6 8E   11AE            LDX #$11ae
+   1244  5+1   8AA9 AF   7E              STX -2,S
+   1245  3     8AAB 8E   11AE            LDX #$11ae
+   1246  5+1   8AAE AF   E8 D6           STX -42,S
+   1247  4+1   8AB1 32   E8 B1           LEAS -79,S
+   1248  2     8AB4 86   11              LDA #$11
+   1249  3     8AB6 8E   AEDD            LDX #$aedd
+   1250  5+3   8AB9 34   12              PSHS X,A
+   1251  2     8ABB 86   0F              LDA  #$0F
+   1252  4+1   8ABD A4   E8 DA           ANDA -38,S
+   1253  2     8AC0 8B   E0              ADDA #$e0
+   1254  4+1   8AC2 A7   E8 DA           STA -38,S
+   1255  3     8AC5 8E   11AD            LDX #$11ad
+   1256  5+1   8AC8 AF   E8 D8           STX -40,S
+   1257  2     8ACB 86   0F              LDA  #$0F
+   1258  4+1   8ACD A4   E8 B2           ANDA -78,S
+   1259  2     8AD0 8B   A0              ADDA #$a0
+   1260  4+1   8AD2 A7   E8 B2           STA -78,S
+   1261  3     8AD5 8E   21AD            LDX #$21ad
+   1262  5+1   8AD8 AF   E8 B0           STX -80,S
+   1263  3     8ADB 8E   A1AD            LDX #$a1ad
+   1264  5+1   8ADE AF   E8 88           STX -120,S
+   1265  4+4   8AE1 32   E9 FF62         LEAS -158,S
+   1266  3     8AE5 8E   7AAD            LDX #$7aad
+   1267  5+1   8AE8 AF   7E              STX -2,S
+   1268  3     8AEA 8E   44EA            LDX #$44ea
+   1269  5+1   8AED AF   E8 D6           STX -42,S
+   1270  3     8AF0 8E   44ED            LDX #$44ed
+   1271  5+1   8AF3 AF   E8 AE           STX -82,S
+   1272  3     8AF6 8E   74EE            LDX #$74ee
+   1273  5+1   8AF9 AF   E8 86           STX -122,S
+   1274  4+4   8AFC 32   E9 FF60         LEAS -160,S
+   1275  3     8B00 8E   77DD            LDX #$77dd
+   1276  5+1   8B03 AF   7E              STX -2,S
+   1277  2     8B05 86   0F              LDA  #$0F
+   1278  4+1   8B07 A4   E8 D8           ANDA -40,S
+   1279  2     8B0A 8B   D0              ADDA #$d0
+   1280  4+1   8B0C A7   E8 D8           STA -40,S
+   1281  2     8B0F 86   AA              LDA #$aa
+   1282  4+1   8B11 A7   E8 D7           STA -41,S
+   1283  2     8B14 86   F0              LDA  #$F0
+   1284  4+1   8B16 A4   E8 D6           ANDA -42,S
+   1285  2     8B19 8B   07              ADDA #$07
+   1286  4+1   8B1B A7   E8 D6           STA -42,S
+   1287  2     8B1E 86   77              LDA #$77
+   1288  4+1   8B20 A7   E8 AF           STA -81,S
+   1289  2     8B23 86   AA              LDA #$aa
+   1290  4+1   8B25 A7   E8 87           STA -121,S
+   1291
+   1292  7     8B28 10FE 8000            LDS  >SSAVE
+   1293  5+3   8B2C 35   48              PULS U,DP
+   1294  5     8B2E 39                   RTS
+   1295
+   1296        8B2F               ERASE_DATA_TEST1X100000_2
+   1297        8B2F               ERASE_DATA_TEST1X100000_1
+   1298
+   1299        8B2F               TABPALETTE
+   1300        8B2F 0111                 FDB $0111     * index:0  R:51  V:5>>
+   1301        8B31 0143                 FDB $0143     * index:1  R:108 V:1>>
+   1302        8B33 0113                 FDB $0113     * index:2  R:107 V:5>>
+   1303        8B35 0484                 FDB $0484     * index:3  R:132 V:1>>
+   1304        8B37 0112                 FDB $0112     * index:4  R:92  V:6>>
+   1305        8B39 0247                 FDB $0247     * index:5  R:180 V:1>>
+   1306        8B3B 0233                 FDB $0233     * index:6  R:116 V:1>>
+   1307        8B3D 0177                 FDB $0177     * index:7  R:172 V:1>>
+   1308        8B3F 0111                 FDB $0111     * index:8  R:60  V:5>>
+   1309        8B41 0016                 FDB $0016     * index:9  R:164 V:6>>
+   1310        8B43 0698                 FDB $0698     * index:10 R:187 V:1>>
+   1311        8B45 0344                 FDB $0344     * index:11 R:132 V:1>>
+   1312        8B47 0221                 FDB $0221     * index:12 R:68  V:9>>
+   1313        8B49 0452                 FDB $0452     * index:13 R:92  V:1>>
+   1314        8B4B 0356                 FDB $0356     * index:14 R:164 V:1>>
+   1315        8B4D 0125                 FDB $0125     * index:15 R:140 V:1>>
+   1316        8B4F               FINTABPALETTE
 
-000000 Total Errors
+000001 Total Errors
+        Expression Error     120        CHANGEMENT PAGE
 
-000084 Total Symbols
-     1x          Label 81CB Compute_Position
-     1x          Label 81E8 Compute_Position_01
-     4x          Label 8202 Compute_Position_02
-     1x          Label 878E DATA_TEST1X100000_1
-     1x          Label 878E DATA_TEST1X100000_2
+000076 Total Symbols
+     1x Unknown  Equ   0000 CHANGEMENT
+     1x          Label 81BD Compute_Position
+     1x          Label 81DA Compute_Position_01
+     4x          Label 81F4 Compute_Position_02
+     1x          Label 8782 DATA_TEST1X100000_1
+     1x          Label 8782 DATA_TEST1X100000_2
      1x          Equ   0014 DEBUTECRANA
      1x          Equ   2014 DEBUTECRANB
-     6x          Label 8792 DRAW_EREF_TEST1X100000
-     1x          Label 8273 DRAW_RAM_DATA_TO_CART
-     1x          Label 8280 DRAW_RAM_DATA_TO_CARTA
-     1x          Label 82B1 DRAW_RAM_DATA_TO_CARTB
-     2x          Label 8204 DRAW_RAM_DATA_TO_CART_160x200
-     1x          Label 8211 DRAW_RAM_DATA_TO_CART_160x200A
-     1x          Label 8242 DRAW_RAM_DATA_TO_CART_160x200B
-     3x          Label 82F5 DRAW_TEST1X100000
-     1x          Label 8B3C E1DATA_TEST1X100000_1
-     1x          Label 8B3C E1DATA_TEST1X100000_2
-     1x          Label 8796 E1DRAW_TEST1X100000
-     2x          Label 8B3C E1POS_TEST1X100000
-     1x          Label 8EE6 E2DATA_TEST1X100000_1
-     1x          Label 8EE6 E2DATA_TEST1X100000_2
-     1x          Label 8B40 E2DRAW_TEST1X100000
-     2x          Label 8EE6 E2POS_TEST1X100000
-     2x          Equ   1F40 FINECRANA
-     2x          Equ   3F40 FINECRANB
-     1x          Label 8F0A FINTABPALETTE
-     1x          Label 80AB Hero_Move
-     1x          Label 8116 Hero_MoveLeft
-     1x          Label 8130 Hero_MoveLeft_00
-     1x          Label 814D Hero_MoveLeft_01
-     1x          Label 812A Hero_MoveLeft_03
-     1x          Label 8158 Hero_MoveRight
-     1x          Label 816F Hero_MoveRight_00
-     1x          Label 818C Hero_MoveRight_01
-     1x          Label 8169 Hero_MoveRight_03
-    11x          Label 8194 Hero_MoveUpdatePos
-     1x          Label 81A8 Hero_MoveUpdatePos_00
-     1x          Label 81B9 Hero_MoveUpdatePos_01
-     0x          Label 81B9 Hero_MoveUpdatePos_03
-     2x          Label 81A7 Hero_MoveUpdatePos_V00
-     1x          Label 80B4 Hero_NotLeft
-     1x          Label 80BB Hero_NotLeftOrRight
-     1x          Label 80ED Hero_NotLeftOrRight_00
-     1x          Label 80D7 Hero_NotLeftOrRight_01
-     1x          Label 80E7 Hero_NotLeftOrRight_02
-     1x          Label 80EA Hero_NotLeftOrRight_03
-     1x          Label 8100 Hero_NotLeftOrRight_11
-     1x          Label 8110 Hero_NotLeftOrRight_12
-     1x          Label 8113 Hero_NotLeftOrRight_13
+     2x          Label 81F6 DRAW_RAM_DATA_TO_CART_160x200
+     1x          Label 8203 DRAW_RAM_DATA_TO_CART_160x200A
+     1x          Label 8234 DRAW_RAM_DATA_TO_CART_160x200B
+     3x          Label 8278 DRAW_TEST1X100000
+     1x          Label 8B2F ERASE_DATA_TEST1X100000_1
+     1x          Label 8B2F ERASE_DATA_TEST1X100000_2
+    62x          Label 8786 ERASE_TEST1X100000
+     1x          Equ   1F40 FINECRANA
+     1x          Equ   3F40 FINECRANB
+     1x          Label 8B4F FINTABPALETTE
+     1x          Label 809D Hero_Move
+     1x          Label 8108 Hero_MoveLeft
+     1x          Label 8122 Hero_MoveLeft_00
+     1x          Label 813F Hero_MoveLeft_01
+     1x          Label 811C Hero_MoveLeft_03
+     1x          Label 814A Hero_MoveRight
+     1x          Label 8161 Hero_MoveRight_00
+     1x          Label 817E Hero_MoveRight_01
+     1x          Label 815B Hero_MoveRight_03
+    11x          Label 8186 Hero_MoveUpdatePos
+     1x          Label 819A Hero_MoveUpdatePos_00
+     1x          Label 81AB Hero_MoveUpdatePos_01
+     0x          Label 81AB Hero_MoveUpdatePos_03
+     2x          Label 8199 Hero_MoveUpdatePos_V00
+     1x          Label 80A6 Hero_NotLeft
+     1x          Label 80AD Hero_NotLeftOrRight
+     1x          Label 80DF Hero_NotLeftOrRight_00
+     1x          Label 80C9 Hero_NotLeftOrRight_01
+     1x          Label 80D9 Hero_NotLeftOrRight_02
+     1x          Label 80DC Hero_NotLeftOrRight_03
+     1x          Label 80F2 Hero_NotLeftOrRight_11
+     1x          Label 8102 Hero_NotLeftOrRight_12
+     1x          Label 8105 Hero_NotLeftOrRight_13
      0x          Equ   000D JOY_B
      0x          Equ   0005 JOY_BD
      0x          Equ   0009 JOY_BG
-     1x          Label 80AA JOY_BTN_STATUS
+     1x          Label 809C JOY_BTN_STATUS
      0x          Equ   000F JOY_C
      1x          Equ   0007 JOY_D
-     2x          Label 80A9 JOY_DIR_STATUS
+     2x          Label 809B JOY_DIR_STATUS
      1x          Equ   000B JOY_G
      0x          Equ   000E JOY_H
      0x          Equ   0006 JOY_HD
      0x          Equ   000A JOY_HG
-     1x          Label 8091 JOY_READ
+     1x          Label 8083 JOY_READ
      1x          Label 804A MAIN
-     6x          Label 878E POS_TEST1X100000
+     8x          Label 8782 POS_TEST1X100000
      4x          Label 805E SCRC
-     2x          Label 807C SCRC0
+     2x          Label 806E SCRC0
      1x          Label 800E SETPALETTE
-    10x          Label 8000 SSAVE
-     1x          Label 8EEA TABPALETTE
-     2x          Label 82EE TEST1X10_ACCELERATION
-     8x          Label 82F4 TEST1X10_ANIMATION
-     4x          Label 82F0 TEST1X10_DECELERATION
-     2x          Label 82F2 TEST1X10_FRICTION
-    16x          Label 82E4 TEST1X10_G_SPEED
+     6x          Label 8000 SSAVE
+     1x          Label 8B2F TABPALETTE
+     2x          Label 8271 TEST1X10_ACCELERATION
+     8x          Label 8277 TEST1X10_ANIMATION
+     4x          Label 8273 TEST1X10_DECELERATION
+     2x          Label 8275 TEST1X10_FRICTION
+    16x          Label 8267 TEST1X10_G_SPEED
      2x          Equ   0600 TEST1X10_JOG_SPD_LIMIT
-     3x          Label 82EC TEST1X10_NEG_TOP_SPEED
-     3x          Label 82EA TEST1X10_TOP_SPEED
+     3x          Label 826F TEST1X10_NEG_TOP_SPEED
+     3x          Label 826D TEST1X10_TOP_SPEED
      0x          Equ   0400 TEST1X10_WALK_SPD_LIMIT
-     4x          Label 82E2 TEST1X10_X_POS
-     2x          Label 82E6 TEST1X10_X_SPEED
-     4x          Label 82E3 TEST1X10_Y_POS
-     1x          Label 82E8 TEST1X10_Y_SPEED
-     1x          Label 8086 VSYNC
-     1x          Label 8086 VSYNC_1
-     1x          Label 808B VSYNC_2
+     4x          Label 8265 TEST1X10_X_POS
+     2x          Label 8269 TEST1X10_X_SPEED
+     4x          Label 8266 TEST1X10_Y_POS
+     1x          Label 826B TEST1X10_Y_SPEED
+     1x          Label 8078 VSYNC
+     1x          Label 8078 VSYNC_1
+     1x          Label 807D VSYNC_2
 

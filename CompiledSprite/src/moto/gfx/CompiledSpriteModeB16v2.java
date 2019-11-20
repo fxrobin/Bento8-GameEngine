@@ -63,16 +63,12 @@ public class CompiledSpriteModeB16v2 {
 	List<String> spriteCode2 = new ArrayList<String>();
 	List<String> spriteData1 = new ArrayList<String>();
 	List<String> spriteData2 = new ArrayList<String>();
-	List<String> spriteE1Code1 = new ArrayList<String>();
-	List<String> spriteE1Code2 = new ArrayList<String>();
-	List<String> spriteE1Data1 = new ArrayList<String>();
-	List<String> spriteE1Data2 = new ArrayList<String>();
-	List<String> spriteE2Code1 = new ArrayList<String>();
-	List<String> spriteE2Code2 = new ArrayList<String>();
-	List<String> spriteE2Data1 = new ArrayList<String>();
-	List<String> spriteE2Data2 = new ArrayList<String>();
+	List<String> spriteECode1 = new ArrayList<String>();
+	List<String> spriteECode2 = new ArrayList<String>();
+	List<String> spriteEData1 = new ArrayList<String>();
+	List<String> spriteEData2 = new ArrayList<String>();
 	
-	String drawLabel, drawELabel;
+	String drawLabel, eraseLabel, erasePrefix;
 	String dataLabel;
 	String posLabel;
 	
@@ -82,14 +78,10 @@ public class CompiledSpriteModeB16v2 {
 	int octetsWCode1 = 0;
 	int cyclesWCode2 = 0;
 	int octetsWCode2 = 0;
-	int cyclesE1Code1 = 0;
-	int octetsE1Code1 = 0;
-	int cyclesE1Code2 = 0;
-	int octetsE1Code2 = 0;
-	int cyclesE2Code1 = 0;
-	int octetsE2Code1 = 0;
-	int cyclesE2Code2 = 0;
-	int octetsE2Code2 = 0;
+	int cyclesECode1 = 0;
+	int octetsECode1 = 0;
+	int cyclesECode2 = 0;
+	int octetsECode2 = 0;
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
@@ -111,7 +103,8 @@ public class CompiledSpriteModeB16v2 {
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
 			posLabel    = "POS_" + spriteName;
-			drawELabel  = "DRAW_EREF_" + spriteName;
+			erasePrefix = "ERASE_";
+			eraseLabel  = erasePrefix + spriteName;
 
 			// System.out.println("Type image:"+image.getType());
 			// ContrÃ´le du format d'image
@@ -160,32 +153,18 @@ public class CompiledSpriteModeB16v2 {
 	public void generateCode() {
 		// Génération du code source pour l'effacement des images
 		isSelfModifying = false;
-		generateCodeArray(1, spriteE1Code1, spriteE1Data1);
-		cyclesE1Code1 = cyclesCode;
-		octetsE1Code1 = octetsCode;
-		System.out.println("E1 Cycles 1:  " + cyclesCode);
-		System.out.println("E1 Octets 1:  " + octetsCode);
+		generateCodeArray(1, spriteECode1, spriteEData1);
+		cyclesECode1 = cyclesCode;
+		octetsECode1 = octetsCode;
+		System.out.println("E Cycles 1:  " + cyclesCode);
+		System.out.println("E Octets 1:  " + octetsCode);
 		
-		generateCodeArray(3, spriteE1Code2, spriteE1Data2);
-		cyclesE1Code2 = cyclesCode;
-		octetsE1Code2 = octetsCode;
-		System.out.println("E1 Cycles 2:  " + cyclesCode);
-		System.out.println("E1 Octets 2:  " + octetsCode);
+		generateCodeArray(3, spriteECode2, spriteEData2);
+		cyclesECode2 = cyclesCode;
+		octetsECode2 = octetsCode;
+		System.out.println("E Cycles 2:  " + cyclesCode);
+		System.out.println("E Octets 2:  " + octetsCode);
 
-		// Génération du code source pour l'effacement des images
-		isSelfModifying = false;
-		generateCodeArray(1, spriteE2Code1, spriteE2Data1);
-		cyclesE2Code1 = cyclesCode;
-		octetsE2Code1 = octetsCode;
-		System.out.println("E2 Cycles 1:  " + cyclesCode);
-		System.out.println("E2 Octets 1:  " + octetsCode);
-		
-		generateCodeArray(3, spriteE2Code2, spriteE2Data2);
-		cyclesE2Code2 = cyclesCode;
-		octetsE2Code2 = octetsCode;
-		System.out.println("E2 Cycles 2:  " + cyclesCode);
-		System.out.println("E2 Octets 2:  " + octetsCode);
-		
 		// Génération du code source pour l'écriture des images
 		isSelfModifying = true;
 		generateCodeArray(1, spriteCode1, spriteData1);
@@ -214,7 +193,7 @@ public class CompiledSpriteModeB16v2 {
 		leas = 0;
 		stOffset = 0;
 		if (isSelfModifying) {
-			offsetCode = (pos==1) ? 18+octetsE2Code2 : 11;
+			offsetCode = (pos==1) ? 18+octetsECode2 : 11;
 		}
 		cyclesCode = 0;
 		octetsCode = 0;
@@ -231,10 +210,6 @@ public class CompiledSpriteModeB16v2 {
 		// 0-15 couleur utile
 		// 16-255 considéré comme couleur transparente
 		// **************************************************************
-
-		if (isSelfModifying) {
-			spriteCode.add("\tLDY " + drawELabel);
-		}		
 		
 		for (int pixel = (width * height) - 1; pixel >= 0; pixel = ((row - 1) * width) + col - 1) {
 
@@ -677,7 +652,18 @@ public class CompiledSpriteModeB16v2 {
 				}
 			}
 			if (nbBytes <= 2) {
-				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+				if (indexReg < 2) {
+					stOffset -= 2;
+					leas -= 2;
+				} else {
+					stOffset -= 1;
+					leas -= 1;
+				}
+				if (isSelfModifying) {
+					read += "\tLD" + pulReg[indexReg] + " " + stOffset + ",S\n";
+					read += "\tST" + pulReg[indexReg] + " " + eraseLabel + "+" + (offsetCode+octetsCode);
+				}
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
 					if (!read.equals("")) {
 						read += "\n";
 					}
@@ -688,22 +674,14 @@ public class CompiledSpriteModeB16v2 {
 					} else {
 						computeStats8b();
 					}
-				}
+				//}
 				if (!write.equals("")) {
 					write += "\n";
 				}
-				if (isSelfModifying) {
-					write += "\tST" + pulReg[indexReg] + " "+ (offsetCode+octetsCode) +",Y\n";
-				}
+				write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
 				if (indexReg < 2) {
-					stOffset -= 2;
-					leas -= 2;
-					write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
 					computeStats16b(stOffset);
 				} else {
-					stOffset -= 1;
-					leas -= 1;
-					write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
 					computeStats8b(stOffset);
 				}
 			}
@@ -835,40 +813,23 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 
-	public List<String> getCompiledE1Code(int i) {
-		return (i == 1) ? spriteE1Code2 : spriteE1Code1;
+	public List<String> getCompiledECode(int i) {
+		return (i == 1) ? spriteECode2 : spriteECode1;
 	}
 
-	public List<String> getCompiledE1Data(int i) {
-		return getCompiledE1Data("", i);
+	public List<String> getCompiledEData(int i) {
+		return getCompiledEData("", i);
 	}	
 	
-	public List<String> getCompiledE1Data(String prefix, int i) {
+	public List<String> getCompiledEData(String prefix, int i) {
 		if (i == 1) {
-			spriteE1Data2.set(0, prefix + dataLabel + "_2");
+			spriteEData2.set(0, prefix + dataLabel + "_2");
 		} else {
-			spriteE1Data1.set(0, prefix + dataLabel + "_1");
+			spriteEData1.set(0, prefix + dataLabel + "_1");
 		}
-		return (i == 1) ? spriteE1Data2 : spriteE1Data1;
+		return (i == 1) ? spriteEData2 : spriteEData1;
 	}
 
-	public List<String> getCompiledE2Code(int i) {
-		return (i == 1) ? spriteE1Code2 : spriteE1Code1;
-	}
-
-	public List<String> getCompiledE2Data(int i) {
-		return getCompiledE1Data("", i);
-	}	
-	
-	public List<String> getCompiledE2Data(String prefix, int i) {
-		if (i == 1) {
-			spriteE1Data2.set(0, prefix + dataLabel + "_2");
-		} else {
-			spriteE1Data1.set(0, prefix + dataLabel + "_1");
-		}
-		return (i == 1) ? spriteE1Data2 : spriteE1Data1;
-	}	
-	
 	public List<String> getCodeStart() {
 		List<String> code = new ArrayList<String>();
 		code.add("********************************************************************************");
@@ -955,7 +916,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("*-------------------------------------------------------------------------------");
 		code.add("MAIN");
 		code.add("\t* Effacement et affichage des sprites");
-		code.add("\tJSR ["+ drawELabel +"] * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre");
+		code.add("\tJSR "+ eraseLabel +" * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre");
 		code.add("\tJSR "+ drawLabel +" * TODO boulcuer sur tous les sprites visibles dans le bon ordre");
 		code.add("");
 		code.add("\t* Gestion des deplacements");
@@ -990,11 +951,7 @@ public class CompiledSpriteModeB16v2 {
 		code.add("SCRC");
 		code.add("\tJSR VSYNC");
 		code.add("");
-		code.add("\tLDX DRAW_EREF_TEST1X100000	* permute les routines");
-		code.add("\tLDY DRAW_EREF_TEST1X100000+2  * d effacement");
-		code.add("\tSTY DRAW_EREF_TEST1X100000    * des sprites");
-		code.add("\tSTX DRAW_EREF_TEST1X100000+2  * TODO faire boucle sur tous les sprites VISIBLES");
-		code.add("");
+		code.add("\tCHANGEMENT PAGE");
 		code.add("\tLDB SCRC0+1\t* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code");
 		code.add("\tANDB #$80\t* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0");
 		code.add("\tORB #$0F\t* recharger la couleur de cadre si diff de 0 car effacee juste au dessus (couleur F)");
@@ -1327,17 +1284,17 @@ public class CompiledSpriteModeB16v2 {
 		return code;
 	}
 
-	public List<String> getCodeHeader(int pos) {
-		return getCodeHeader("", pos);
+	public List<String> getCodeHeader(String label, int pos) {
+		return getCodeHeader("", label, pos);
 	}	
 	
-	public List<String> getCodeHeader(String prefix, int pos) {
+	public List<String> getCodeHeader(String prefix, String label, int pos) {
 		List<String> code = new ArrayList<String>();
-		code.add(prefix + drawLabel);
+		code.add(label);
 		code.add("\tPSHS U,DP");
 		code.add("\tSTS >SSAVE");
 		code.add("");
-		code.add("\tLDS " + prefix + posLabel);
+		code.add("\tLDS " + posLabel);
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		return code;
 	}
@@ -1349,7 +1306,7 @@ public class CompiledSpriteModeB16v2 {
 	public List<String> getCodeSwitchData(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS " + prefix + posLabel + "+2");
+		code.add("\tLDS " + posLabel + "+2");
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		code.add("");
 		return code;
@@ -1366,23 +1323,10 @@ public class CompiledSpriteModeB16v2 {
 	}
 
 	public List<String> getCodeDataPos() {
-		return getCodeDataPos("");
-	}
-	
-	public List<String> getCodeDataPos(String prefix) {
 		List<String> code = new ArrayList<String>();
-		code.add(prefix + posLabel);
+		code.add(posLabel);
 		code.add("\tFDB $1F40");
 		code.add("\tFDB $3F40");
-		code.add("");
-		return code;
-	}
-
-	public List<String> getCodeEREFLabel(String e1, String e2) {
-		List<String> code = new ArrayList<String>();
-		code.add(drawELabel);
-		code.add("\tFDB " + e1 + drawLabel);
-		code.add("\tFDB " + e2 + drawLabel);
 		code.add("");
 		return code;
 	}
@@ -1395,7 +1339,7 @@ public class CompiledSpriteModeB16v2 {
 		// std gamma: 3
 		// suggestion : 2 pour couleurs pastel
 		List<String> code = new ArrayList<String>();
-
+		code.add("");
 		code.add("TABPALETTE");
 		// Construction de la palette de couleur
 		for (int j = 0; j < 16; j++) {
