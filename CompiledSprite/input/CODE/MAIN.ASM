@@ -31,27 +31,23 @@ JOY_C  EQU $0F       * Centre
 SSAVE FDB $0000
 
 <ANIMATION_TABLE>
-* Limite a 64 images par animations
-	FCB $01		* Nb images
+* Limite a 128 images par animations
+
+	FDB $0118	* Nb images | Nb frames par image
 HERO_IDLE-L
 	FCB $01		* Page adresse
-	FDB $A000	* Adresse draw
-	FCB $01		* Nombre de frames par image
+	FDB $A000	* Adresse drw
+	FDB $A000	* Adresse del
 
-HERO_IDLE-R_FRM
-	FCB $01
-HERO_IDLE-R_PAG
-	FCB $01
-HERO_IDLE-R_ADR
-	FDB $A000
-HERO_IDLE-R_DUR
-	FCB $01
+	FDB $0118	* Nb images | Nb frames par image
+HERO_IDLE-R
+	FCB $01		* Page adresse
+	FDB $A000	* Adresse drw
+	FDB $A000	* Adresse del
 	
-HERO_JOG-L_FRM
-	FCB $01
-HERO_JOG-L_PAG
-	FCB $01
-	FCB $01
+	FDB $0118	* Nb images | Nb frames par image
+HERO_JOG-L
+	FCB $01		* Page adresse
 	FCB $01
 	FCB $01
 	FCB $01
@@ -60,7 +56,9 @@ HERO_JOG-L_PAG
 	FCB $01
 	FCB $01
 	FCB $01
-HERO_JOG-L_ADR
+	FCB $01
+	FDB $A000	* Adresse drw
+	FDB $A000	* Adresse del
 	FDB $A000
 	FDB $A000
 	FDB $A000
@@ -69,25 +67,10 @@ HERO_JOG-L_ADR
 	FDB $A000
 	FDB $A000
 	FDB $A000
-	FDB $A000
-	FDB $A000
-HERO_JOG-L_DUR
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
 
-HERO_JOG-R_FRM
-	FCB $01
-HERO_JOG-R_PAG
-	FCB $01
-	FCB $01
+	FDB $0118	* Nb images | Nb frames par image
+HERO_JOG-R
+	FCB $01		* Page adresse
 	FCB $01
 	FCB $01
 	FCB $01
@@ -96,7 +79,9 @@ HERO_JOG-R_PAG
 	FCB $01
 	FCB $01
 	FCB $01
-HERO_JOG-R_ADR
+	FCB $01
+	FDB $A000	* Adresse drw
+	FDB $A000	* Adresse del
 	FDB $A000
 	FDB $A000
 	FDB $A000
@@ -105,19 +90,6 @@ HERO_JOG-R_ADR
 	FDB $A000
 	FDB $A000
 	FDB $A000
-	FDB $A000
-	FDB $A000
-HERO_JOG-R_DUR
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
 
 ********************************************************************************  
 * Debut du programme
@@ -156,95 +128,40 @@ SETPALETTE
 ********************************************************************************
 * Initialisation des deux pages videos avec Fond et sprites
 ********************************************************************************
-LDX #$HERO_IDLE-R
-JSR HERO_ANIMATION_LOAD
+	LDX #HERO_IDLE-R
+	JSR HERO_ANIMATION_LOAD
 
-HERO_ANIMATION_LOAD
-	STX HERO_ANIMATION_DRW
-	
-	LDA -1,X
-	STA HERO_ANIMATION_NBI
-	
-	LDA #$00
-	STA HERO_ANIMATION_IMC
-
-	LDB A,X
-	STB HERO_ANIMATION_PAG
-
-	LDB #$02
-	MUL
-	ADDB HERO_ANIMATION_NBI
-	LDY B,X
-	STD HERO_ANIMATION_ADR
-	
-	LDA D,#$HERO_IDLE-R_DUR
-	STA HERO_ANIMATION_FRR
-RTS
-
-HERO_ANIMATION_DRAW
-	STX HERO_ANIMATION_ADR
-	LDA #$00
-	STA HERO_ANIMATION_IMC
-	
-	LDB X
-	STB HERO_ANIMATION_NBI
-
-	ADDA #$01
-	LDB A,X
-	STB HERO_ANIMATION_PAG
-
-	MUL 
-	LDB A,X
-	STA HERO_ANIMATION_FRR
-RTS
-
-HERO_ANIMATION_ERASE
-	STX HERO_ANIMATION_ADR
-	LDA #$00
-	STA HERO_ANIMATION_IMC
-	LDA 0,X
-	STA HERO_ANIMATION_NBI
-	LDA 1,X
-	STA HERO_ANIMATION_PAG
-
-	LDA 0,#$HERO_IDLE-R_DUR
-	STA HERO_ANIMATION_FRR
-RTS
-
-	LDB #$03  * On monte la page 3
-	STB $E7E5 * en RAM Donnees (A000-DFFF)
+	FCB $01
+INIT_SCREEN
+	LDB #$03							* On monte la page 3
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR DRAW_RAM_DATA_TO_CART_160x200
 	
-	LDB #$04  * On monte la page 4
-	STB $E7E5 * en RAM Donnees (A000-DFFF)
-	JSR DRAW_HERO0000               * TODO Boucle sur tous les sprites visibles
+	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	JSR [HERO_ANIMATION_DRW]			* TODO Boucle sur tous les sprites visibles
 	
-	JSR SCRC                            * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
-	
-	LDB #$03  * On monte la page 3
-	STB $E7E5 * en RAM Donnees (A000-DFFF)
-	JSR DRAW_RAM_DATA_TO_CART_160x200
-	
-	LDB #$04  * On monte la page 5
-	STB $E7E5 * en RAM Donnees (A000-DFFF)
-	JSR DRAW_HERO0000               * TODO Boucle sur tous les sprites visibles
-	
-	JSR SCRC                            * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+	JSR SCRC                    		* page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
+										* page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+	DEC -1,INIT_SCREEN
+	BCC INIT_SCREEN
 
 ********************************************************************************
 * Boucle principale
 ********************************************************************************
 MAIN
 	* Effacement et affichage des sprites
-	JSR ERASE_HERO0000 * TODO boucler sur tous les effacements de sprite visibles dans le bon ordre
-	JSR DRAW_HERO0000 * TODO boulcuer sur tous les sprites visibles dans le bon ordre
+	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	JSR [HERO_ANIMATION_EFF]			* Efface le sprite
+	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 
 	* Gestion des deplacements
 	JSR JOY_READ
 	JSR Hero_Move
 	JSR Compute_Position
 
-	JSR SCRC        * changement de page ecran
+	JSR SCRC        					* changement de page ecran
 	BRA MAIN
 
 ********************************************************************************
@@ -271,7 +188,11 @@ MAIN
 SCRC
 	JSR VSYNC
 
-	* Implementer CHANGEMENT PAGE espace DONNEE
+	LDB SCRC0+1
+	ANDB #$01
+	LDA HERO_ANIMATION_PAG
+	ADDA B
+	STA HERO_ANIMATION_PAG
 	
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
 	ANDB #$80	* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0
@@ -593,6 +514,45 @@ TABPALETTE
 FINTABPALETTE
 
 ********************************************************************************
+* HERO Animations
+********************************************************************************
+
+HERO_ANIMATION_LOAD
+	STX HERO_ANIMATION_ADR
+	LDA -1,X
+	STA HERO_ANIMATION_FRR
+	LDA -2,X
+	STA HERO_ANIMATION_NBI
+	LDA #$00
+	STA HERO_ANIMATION_IMC
+HERO_ANIMATION_LOAD_00
+	LDB A,X
+	STB HERO_ANIMATION_PAG
+	LDB #$04
+	MUL
+	ADDB HERO_ANIMATION_NBI
+	LDY B,X
+	STY HERO_ANIMATION_DRW
+	ADDB #$02
+	LDY B,X
+	STY HERO_ANIMATION_EFF
+	RTS
+
+HERO_ANIMATION_NEXT				*TODO gestion derniere image et rebouclage ou boucle infinie
+	LDA HERO_ANIMATION_FRR
+	DECA
+	BNE HERO_ANIMATION_NEXT_00
+	LDX HERO_ANIMATION_ADR
+	LDA -1,X
+	STA HERO_ANIMATION_FRR
+	DEC HERO_ANIMATION_IMC
+	LDA HERO_ANIMATION_IMC	
+	BRA HERO_ANIMATION_LOAD_00
+HERO_ANIMATION_NEXT_00
+	STA HERO_ANIMATION_FRR
+	RTS
+
+********************************************************************************
 * HERO Variables
 ********************************************************************************
 HERO_WALK_SPD_LIMIT EQU $0400
@@ -621,10 +581,14 @@ HERO_DECELERATION
 	FDB $0080        * constante deceleration 0.5 = 128/256
 HERO_FRICTION
 	FDB $000C        * constante de friction 0.046875 = 12/256
-HERO_ANIMATION_PAG
-	FCB $00          * Animation courante - Pointeurs Page
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
+HERO_ANIMATION_PAG
+	FCB $00          * Animation courante - Pointeur Page
+HERO_ANIMATION_DEL
+	FDB $0000        * Animation courante - Pointeur Dessin
+HERO_ANIMATION_DRW
+	FDB $0000        * Animation courante - Pointeur Dessin
 HERO_ANIMATION_NBI
 	FCB $00          * Animation courante - Nombre d images
 HERO_ANIMATION_IMC
