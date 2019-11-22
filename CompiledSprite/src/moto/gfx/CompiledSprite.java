@@ -15,7 +15,7 @@ public class CompiledSprite
 			// Génération d'un Sprite Compilé à partir d'un PNG
 			CompiledSpriteModeB16v2 sprite = new CompiledSpriteModeB16v2(args[0]);		
 			
-			Path fichier = Paths.get(sprite.getName().substring(0, Math.min(sprite.getName().length(), 8))+".asm");
+			Path fichier = Paths.get(sprite.getName().substring(0, Math.min(sprite.getName().length(), 8))+".ASS");
 			Files.deleteIfExists(fichier);
 			Files.createFile(fichier);
 		
