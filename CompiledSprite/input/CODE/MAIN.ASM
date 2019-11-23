@@ -33,63 +33,63 @@ SSAVE FDB $0000
 <ANIMATION_TABLE>
 * Limite a 128 images par animations
 
-	FDB $0118	* Nb images | Nb frames par image
+	FDB $0018		* 00 Absolute 18 Nb frames par image
 HERO_IDLE-L
-	FCB $01		* Page adresse
-	FDB $A000	* Adresse drw
-	FDB $A000	* Adresse del
-
-	FDB $0118	* Nb images | Nb frames par image
-HERO_IDLE-R
-	FCB $01		* Page adresse
-	FDB $A000	* Adresse drw
-	FDB $A000	* Adresse del
+	FCB $01			* Page associee a l adresse drw img 00
+	FDB $A000		* Adresse drw img 00
+	FDB $A000		* Adresse del img 00
+	FCB $01			* Page associee a l adresse drw img 01
+	FDB $A000		* Adresse drw img 01
+	FDB $A000		* Adresse del img 01
+	FCB $01			* Page associee a l adresse drw img 02
+	FDB $A000		* Adresse drw img 02
+	FDB $A000		* Adresse del img 02
+	FCB $FF			* FF Boucle
+	FDB $0300		* 03 nb de boucles 00 image de depart
+	FDB $0000		* non utilise
+	FCB $01			* Page associee a l adresse drw img 04
+	FDB $A000		* Adresse drw img 04
+	FDB $A000		* Adresse del img 04
+	FCB $FF			* FF Boucle
+	FDB $0004		* 00 nb de boucles 04 image de depart
+	FDB $0000		* non utilise
 	
-	FDB $0118	* Nb images | Nb frames par image
-HERO_JOG-L
-	FCB $01		* Page adresse
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FDB $A000	* Adresse drw
-	FDB $A000	* Adresse del
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
+	FDB $0018		* 00 Absolute 18 Nb frames par image
+HERO_IDLE-R
+	FCB $01			* Page associee a l adresse drw img 00
+	FDB $A000		* Adresse drw img 00
+	FDB $A000		* Adresse del img 00
+	FCB $01			* Page associee a l adresse drw img 01
+	FDB $A000		* Adresse drw img 01
+	FDB $A000		* Adresse del img 01
+	FCB $01			* Page associee a l adresse drw img 02
+	FDB $A000		* Adresse drw img 02
+	FDB $A000		* Adresse del img 02
+	FCB $FE			* FE do not save return adress and BRANCH
+	FDB $0000		* 00 unused 00 image cible
+	FDB HERO_IDLE-C * adresse animation cible
 
-	FDB $0118	* Nb images | Nb frames par image
-HERO_JOG-R
-	FCB $01		* Page adresse
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FCB $01
-	FDB $A000	* Adresse drw
-	FDB $A000	* Adresse del
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
-	FDB $A000
+	FDB $0018		* 00 Absolute 18 Nb frames par image
+HERO_IDLE-L
+	FCB $01			* Page associee a l adresse drw img 00
+	FDB $A000		* Adresse drw img 00
+	FDB $A000		* Adresse del img 00
+	FCB $FD			* FD save return adress and BRANCH
+	FDB $0000		* 00 unused 00 image cible
+	FDB HERO_IDLE-B * animation cible
+	FCB $01			* Page associee a l adresse drw img 02
+	FDB $A000		* Adresse drw img 02
+	FDB $A000		* Adresse del img 02
+	FCB $FF			* FF Boucle
+	FDB $0001		* 00 nb de boucles 01 image de depart
+	FDB $0000		* non utilise
+	
+	FDB $0018		* 00 Absolute (FF for GSP relative) 18 Nb frames par image
+HERO_SUBIDLE-B
+	FCB $01			* Page associee a l adresse drw
+	FDB $A000		* Adresse drw
+	FDB $A000		* Adresse del
+	FDB $FC			* FC return to saved adress and next image
 
 ********************************************************************************  
 * Debut du programme
@@ -583,10 +583,12 @@ HERO_FRICTION
 	FDB $000C        * constante de friction 0.046875 = 12/256
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
+HERO_ANIMATION_RTN_ADR
+	FDB $0000        * Animation courante - Pointeur Adresse Retour Animation apellante
 HERO_ANIMATION_PAG
 	FCB $00          * Animation courante - Pointeur Page
 HERO_ANIMATION_DEL
-	FDB $0000        * Animation courante - Pointeur Dessin
+	FDB $0000        * Animation courante - Pointeur Effacement
 HERO_ANIMATION_DRW
 	FDB $0000        * Animation courante - Pointeur Dessin
 HERO_ANIMATION_NBI
