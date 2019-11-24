@@ -519,18 +519,22 @@ FINTABPALETTE
 
 HERO_ANIMATION_LOAD
 	STX HERO_ANIMATION_ADR
-	LDA -1,X
-	STA HERO_ANIMATION_FRR
-	LDA -2,X
-	STA HERO_ANIMATION_NBI
-	LDA #$00
-	STA HERO_ANIMATION_IMC
+	LDD -2,X					* Load Frames informations
+	CMPA #$00					* Different from $00 means NbFrames relative to GSP
+	BEQ HERO_ANIMATION_LOAD_00
+	SUBB HERO_G_SPEED			* G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
+	BCS HERO_ANIMATION_LOAD_00
+	LDB #$01					* Minimun 1 frame/image
 HERO_ANIMATION_LOAD_00
+	STB HERO_ANIMATION_FRR		* Store remaining Frames for this loaded image
+	LDA #$00
+	STA HERO_ANIMATION_IMC		* Set first image to $00
+HERO_ANIMATION_LOAD_01
 	LDB A,X
 	STB HERO_ANIMATION_PAG
 	LDB #$04
 	MUL
-	ADDB HERO_ANIMATION_NBI
+	ADDB HERO_ANIMATION_FRC
 	LDY B,X
 	STY HERO_ANIMATION_DRW
 	ADDB #$02
@@ -547,7 +551,7 @@ HERO_ANIMATION_NEXT				*TODO gestion derniere image et rebouclage ou boucle infi
 	STA HERO_ANIMATION_FRR
 	DEC HERO_ANIMATION_IMC
 	LDA HERO_ANIMATION_IMC	
-	BRA HERO_ANIMATION_LOAD_00
+	BRA HERO_ANIMATION_LOAD_01
 HERO_ANIMATION_NEXT_00
 	STA HERO_ANIMATION_FRR
 	RTS
@@ -558,19 +562,19 @@ HERO_ANIMATION_NEXT_00
 HERO_WALK_SPD_LIMIT EQU $0400
 HERO_JOG_SPD_LIMIT  EQU $0600
 HERO_X_POS
-	FCB $50        * position horizontale
+	FCB $50			* Horizontal Position
 HERO_Y_POS
-	FCB $C8        * position verticale
-HERO_G_SPEED
-	FDB $0000        * vitesse au sol
+	FCB $C8			* Vertical Position
+HERO_G_SPEED		* Ground Speed
+	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED
-	FDB $0000        * vitesse horizontale
+	FDB $0000		* Horizontal Speed
 HERO_X_SPS
-	FDB $0000        * subpixel X speed
+	FDB $0000		* Subpixel X speed
 HERO_Y_SPEED
-	FDB $0000        * vitesse verticale
+	FDB $0000		* Vertical Speed
 HERO_Y_SPS
-	FDB $0000        * subpixel Y speed
+	FDB $0000		* Subpixel Y speed
 HERO_TOP_SPEED
 	FDB $0600        * vitesse maximum autorisee 6 = 1536/256
 HERO_NEG_TOP_SPEED
@@ -591,8 +595,6 @@ HERO_ANIMATION_DEL
 	FDB $0000        * Animation courante - Pointeur Effacement
 HERO_ANIMATION_DRW
 	FDB $0000        * Animation courante - Pointeur Dessin
-HERO_ANIMATION_NBI
-	FCB $00          * Animation courante - Nombre d images
 HERO_ANIMATION_IMC
 	FCB $00          * Animation courante - Image courante
 HERO_ANIMATION_FRR
