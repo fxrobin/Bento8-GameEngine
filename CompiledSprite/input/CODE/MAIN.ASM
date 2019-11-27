@@ -30,11 +30,11 @@ JOY_C  EQU $0F       * Centre
 
 SSAVE FDB $0000
 
-<ANIMATION_TABLE>
+*<ANIMATION_TABLE>
 * Limite a 128 images par animations
 
 	FDB $0018		* 00 Absolute 18 Nb frames par image
-HERO_IDLE-L
+HERO_IDLE_L
 	FCB $01			* Page associee a l adresse drw img 00
 	FDB $A000		* Adresse drw img 00
 	FDB $A000		* Adresse del img 00
@@ -45,17 +45,17 @@ HERO_IDLE-L
 	FDB $A000		* Adresse drw img 02
 	FDB $A000		* Adresse del img 02
 	FCB $FF			* FF Boucle
-	FDB $0300		* 03 nb de boucles 00 image de depart
+	FDB $0000		* 00 image de depart 00 unused
 	FDB $0000		* non utilise
 	FCB $01			* Page associee a l adresse drw img 04
 	FDB $A000		* Adresse drw img 04
 	FDB $A000		* Adresse del img 04
 	FCB $FF			* FF Boucle
-	FDB $0004		* 00 nb de boucles 04 image de depart
+	FDB $0000		* 00 image de depart 00 unused
 	FDB $0000		* non utilise
 	
 	FDB $0018		* 00 Absolute 18 Nb frames par image
-HERO_IDLE-R
+HERO_IDLE_R
 	FCB $01			* Page associee a l adresse drw img 00
 	FDB $A000		* Adresse drw img 00
 	FDB $A000		* Adresse del img 00
@@ -70,26 +70,31 @@ HERO_IDLE-R
 	FDB HERO_IDLE-C * adresse animation cible
 
 	FDB $0018		* 00 Absolute 18 Nb frames par image
-HERO_IDLE-L
+HERO_IDLE_L2
 	FCB $01			* Page associee a l adresse drw img 00
 	FDB $A000		* Adresse drw img 00
 	FDB $A000		* Adresse del img 00
 	FCB $FD			* FD save return adress and BRANCH
 	FDB $0000		* 00 unused 00 image cible
-	FDB HERO_IDLE-B * animation cible
+	FDB HERO_IDLE_B * animation cible
 	FCB $01			* Page associee a l adresse drw img 02
 	FDB $A000		* Adresse drw img 02
 	FDB $A000		* Adresse del img 02
 	FCB $FF			* FF Boucle
-	FDB $0001		* 00 nb de boucles 01 image de depart
+	FDB $000		* 01 image de depart 00 unused
 	FDB $0000		* non utilise
 	
 	FDB $0018		* 00 Absolute (FF for GSP relative) 18 Nb frames par image
-HERO_SUBIDLE-B
+HERO_SUBIDLE_B
 	FCB $01			* Page associee a l adresse drw
 	FDB $A000		* Adresse drw
 	FDB $A000		* Adresse del
 	FDB $FC			* FC return to saved adress and next image
+	
+HERO_WALK_L
+HERO_WALK_R
+HERO_RUN_L
+HERO_RUN_R
 
 ********************************************************************************  
 * Debut du programme
@@ -128,7 +133,7 @@ SETPALETTE
 ********************************************************************************
 * Initialisation des deux pages videos avec Fond et sprites
 ********************************************************************************
-	LDX #HERO_IDLE-R
+	LDX #HERO_IDLE_R
 	JSR HERO_ANIMATION_LOAD
 
 	FCB $01
@@ -260,15 +265,15 @@ Hero_NotLeftOrRight            * XREF: Hero_NotLeft
 	LDD #$0000
 	STD HERO_G_SPEED
 	STD HERO_X_SPS
-	LDA #$01                  * Charge animation IDLE R
-	STA HERO_ANIMATION
+	LDX #HERO_IDLE_R        * Charge animation IDLE R
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LBRA Hero_MoveUpdatePos
 Hero_NotLeftOrRight_01	       
 	CMPD #HERO_JOG_SPD_LIMIT
 	BGE Hero_NotLeftOrRight_02
 	STD HERO_G_SPEED
-	LDA #$03                  * Charge animation WALK R
-	STA HERO_ANIMATION
+	LDX #HERO_WALK_R        * Charge animation WALK R
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	BRA Hero_NotLeftOrRight_03
 Hero_NotLeftOrRight_02	
 	STD HERO_G_SPEED
@@ -279,15 +284,15 @@ Hero_NotLeftOrRight_00
 	BCC Hero_NotLeftOrRight_11 * si on passe au dessus de 0 on repositionne a 0
 	LDD #$0000
 	STD HERO_G_SPEED
-	LDA #$02                  * Charge animation IDLE L
-	STA HERO_ANIMATION
+	LDX #HERO_IDLE_L        * Charge animation IDLE L
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LBRA Hero_MoveUpdatePos
 Hero_NotLeftOrRight_11	       
 	CMPD #HERO_JOG_SPD_LIMIT
 	BLE Hero_NotLeftOrRight_12
 	STD HERO_G_SPEED
-	LDA #$04                  * Charge animation WALK L
-	STA HERO_ANIMATION
+	LDX #HERO_WALK_L        * Charge animation WALK L
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	BRA Hero_NotLeftOrRight_13
 Hero_NotLeftOrRight_12	
 	STD HERO_G_SPEED
@@ -315,15 +320,15 @@ Hero_MoveLeft_00		       	* Orientation a GAUCHE
 	SUBD HERO_ACCELERATION 	* acceleration
 	CMPD HERO_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BGT Hero_MoveLeft_01       	* BRANCH si vitesse inferieur au maximum
-	LDA #$06                   	* Charge animation RUN L
-	STA HERO_ANIMATION     	* Sauvegarde animation
+	LDX #HERO_RUN_L        * Charge animation WALK L
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LDD HERO_NEG_TOP_SPEED 	* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos    	* Mise a jour des coordonnees
 Hero_MoveLeft_01               	
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
-	LDA #$04                   	* Charge animation WALK L
-	STA HERO_ANIMATION     	* Sauvegarde animation
+	LDX #HERO_WALK_L        * Charge animation WALK L
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LBRA Hero_MoveUpdatePos
 
 Hero_MoveRight                  * XREF: Hero_NotLeft
@@ -346,15 +351,15 @@ Hero_MoveRight_00		      	* Orientation a DROITE
 	ADDD HERO_ACCELERATION 	* acceleration
 	CMPD HERO_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BLT Hero_MoveRight_01       * BRANCH si vitesse inferieur au maximum
-	LDA #$05                    * Charge animation RUN R
-	STA HERO_ANIMATION		* Sauvegarde animation
+	LDX #HERO_RUN_R			* Charge animation WALK R
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LDD HERO_TOP_SPEED		* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_01
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
-	LDA #$03                    * Charge animation WALK R
-	STA HERO_ANIMATION		* Sauvegarde animation
+	LDX #HERO_WALK_R        * Charge animation WALK R
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 Hero_MoveUpdatePos
 	LDD HERO_G_SPEED		* Chargement de la vitesse au sol
@@ -517,44 +522,64 @@ FINTABPALETTE
 * HERO Animations
 ********************************************************************************
 
-HERO_ANIMATION_LOAD
+HERO_ANIMATION_LOAD				* Input X : Animation Adress
 	STX HERO_ANIMATION_ADR
+	CLR HERO_ANIMATION_IMC		* Set first image to $00
+HERO_ANIMATION_LOAD_00
+	LDX HERO_ANIMATION_ADR	
+	STX HERO_ANIMATION_RTN_ADR
 	LDD -2,X					* Load Frames informations
 	CMPA #$00					* Different from $00 means NbFrames relative to GSP
-	BEQ HERO_ANIMATION_LOAD_00
+	BEQ HERO_ANIMATION_LOAD_01
 	SUBB HERO_G_SPEED			* G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
-	BCS HERO_ANIMATION_LOAD_00
+	BCC HERO_ANIMATION_LOAD_01
 	LDB #$01					* Minimun 1 frame/image
-HERO_ANIMATION_LOAD_00
-	STB HERO_ANIMATION_FRR		* Store remaining Frames for this loaded image
-	LDA #$00
-	STA HERO_ANIMATION_IMC		* Set first image to $00
 HERO_ANIMATION_LOAD_01
-	LDB A,X
-	STB HERO_ANIMATION_PAG
-	LDB #$04
+	STB HERO_ANIMATION_FRR		* Store remaining Frames for this loaded image
+	LDA HERO_ANIMATION_IMC
+	LDB #$05
 	MUL
-	ADDB HERO_ANIMATION_FRC
-	LDY B,X
+	LDB D,X+					* !!!!!!!!! on LDB donc on ecrase D !!!!!!!!!!!!!!!!!!!!!
+	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
+	BHI HERO_ANIMATION_LOAD_NOPAGE
+	STB HERO_ANIMATION_PAG
+	LDY D,X++
 	STY HERO_ANIMATION_DRW
-	ADDB #$02
-	LDY B,X
-	STY HERO_ANIMATION_EFF
+	LDY D,X
+	STY HERO_ANIMATION_DEL
 	RTS
+HERO_ANIMATION_LOAD_NOPAGE
+	CMPB #$FF
+	BNE HERO_ANIMATION_LOAD_FE
+	LDY D,X++
+	STY HERO_ANIMATION_ADR
+	LDB D,X+
+	STB HERO_ANIMATION_IMC
+	LDB D,X+
+	STB HERO_ANIMATION_RTN_IMC
+	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
+HERO_ANIMATION_LOAD_FE
+	LDX HERO_ANIMATION_RTN_ADR	* RETURN to Calling Animation
+	STX HERO_ANIMATION_ADR
+	LDB HERO_ANIMATION_RTN_IMC
+	STB HERO_ANIMATION_IMC
+	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
 
-HERO_ANIMATION_NEXT				*TODO gestion derniere image et rebouclage ou boucle infinie
-	LDA HERO_ANIMATION_FRR
-	DECA
-	BNE HERO_ANIMATION_NEXT_00
-	LDX HERO_ANIMATION_ADR
-	LDA -1,X
-	STA HERO_ANIMATION_FRR
-	DEC HERO_ANIMATION_IMC
-	LDA HERO_ANIMATION_IMC	
-	BRA HERO_ANIMATION_LOAD_01
-HERO_ANIMATION_NEXT_00
-	STA HERO_ANIMATION_FRR
+HERO_ANIMATION_NEXT
+	DEC HERO_ANIMATION_FRR
+	BEQ HERO_ANIMATION_NEXT_00	* BRANCH if no more frame to wait
 	RTS
+HERO_ANIMATION_NEXT_00
+	INC HERO_ANIMATION_IMC
+	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
+
+*   CODE SPECIAUX ANIMATION
+*	-----------------------
+*	FCB $FF			* FF SET return Anim et Image BRANCH Anim et Image
+*	FDB HERO_IDLE-C * adresse animation cible
+*	FDB $0301		* 03 image cible 01 image retour
+*	
+*	FCB $FE			* FE RETURN
 
 ********************************************************************************
 * HERO Variables
@@ -597,5 +622,7 @@ HERO_ANIMATION_DRW
 	FDB $0000        * Animation courante - Pointeur Dessin
 HERO_ANIMATION_IMC
 	FCB $00          * Animation courante - Image courante
+HERO_ANIMATION_RTN_IMC
+	FCB $00          * Animation courante - Image courante Retourn Animation apellante
 HERO_ANIMATION_FRR
 	FCB $00          * Animation courante - Frames restante
