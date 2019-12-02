@@ -165,6 +165,8 @@ MAIN
 	JSR JOY_READ
 	JSR Hero_Move
 	JSR Compute_Position
+	
+	JSR HERO_ANIMATION_NEXT
 
 	JSR SCRC        					* changement de page ecran
 	BRA MAIN
@@ -520,14 +522,30 @@ FINTABPALETTE
 
 ********************************************************************************
 * HERO Animations
+* ---------------
+* Note: Speed abs +0, rel +8, rel cap +10
+*
+* Chargement nouvelle animation
+*    nouvelle frame = 109 a 119
+*
+* Chargement frame suivante
+*    frame identique = 15
+* ou frame suivante  = 116 a 126
+*
+* Chargement frame suivante avec branchement sur une autre animation
+*    nouvelle frame = 165 a 175
+* ou frame suivante = 172 a 182
+*
+* Chargement frame suivante avec retour sur animation apellante
+*    nouvelle frame = 167 a 177
+* ou frame suivante = 174 a 184
 ********************************************************************************
 
 HERO_ANIMATION_LOAD				* Input X : Animation Adress
 	STX HERO_ANIMATION_ADR
+	STX HERO_ANIMATION_RTN_ADR
 	CLR HERO_ANIMATION_IMC		* Set first image to $00
 HERO_ANIMATION_LOAD_00
-	LDX HERO_ANIMATION_ADR	
-	STX HERO_ANIMATION_RTN_ADR
 	LDD -2,X					* Load Frames informations
 	CMPA #$00					* Different from $00 means NbFrames relative to GSP
 	BEQ HERO_ANIMATION_LOAD_01
@@ -539,24 +557,24 @@ HERO_ANIMATION_LOAD_01
 	LDA HERO_ANIMATION_IMC
 	LDB #$05
 	MUL
-	LDB D,X+					* !!!!!!!!! on LDB donc on ecrase D !!!!!!!!!!!!!!!!!!!!!
+	ADDD HERO_ANIMATION_ADR
+	TFR D,Y
+	LDB ,Y
 	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
 	BHI HERO_ANIMATION_LOAD_NOPAGE
-	STB HERO_ANIMATION_PAG
-	LDY D,X++
-	STY HERO_ANIMATION_DRW
-	LDY D,X
-	STY HERO_ANIMATION_DEL
+	STB HERO_ANIMATION_PAG		* optim remplacer par push pull
+	LDX 1,Y
+	STX HERO_ANIMATION_DRW
+	LDX 3,Y
+	STX HERO_ANIMATION_DEL
 	RTS
 HERO_ANIMATION_LOAD_NOPAGE
 	CMPB #$FF
 	BNE HERO_ANIMATION_LOAD_FE
-	LDY D,X++
-	STY HERO_ANIMATION_ADR
-	LDB D,X+
-	STB HERO_ANIMATION_IMC
-	LDB D,X+
-	STB HERO_ANIMATION_RTN_IMC
+	LDX 3,Y
+	STX HERO_ANIMATION_IMC		* Save IMC and RTN_IMC
+	LDX 1,Y
+	STX HERO_ANIMATION_ADR
 	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
 HERO_ANIMATION_LOAD_FE
 	LDX HERO_ANIMATION_RTN_ADR	* RETURN to Calling Animation
@@ -571,15 +589,27 @@ HERO_ANIMATION_NEXT
 	RTS
 HERO_ANIMATION_NEXT_00
 	INC HERO_ANIMATION_IMC
+	LDX HERO_ANIMATION_ADR	
 	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
-
-*   CODE SPECIAUX ANIMATION
-*	-----------------------
+	
+*   SAMPLE CODE ANIMATION
+*	---------------------
+*	FDB $0018		* 00 Absolute 18 Nb frames par image
+*HERO_IDLE_L
+*	FCB $01			* Page associee a l adresse drw img 00
+*	FDB $A000		* Adresse drw img 00
+*	FDB $A000		* Adresse del img 00
+*
 *	FCB $FF			* FF SET return Anim et Image BRANCH Anim et Image
 *	FDB HERO_IDLE-C * adresse animation cible
 *	FDB $0301		* 03 image cible 01 image retour
 *	
 *	FCB $FE			* FE RETURN
+*
+*	LDX #HERO_IDLE_R
+*	JSR HERO_ANIMATION_LOAD
+*
+*	JSR HERO_ANIMATION_NEXT
 
 ********************************************************************************
 * HERO Variables
@@ -621,8 +651,8 @@ HERO_ANIMATION_DEL
 HERO_ANIMATION_DRW
 	FDB $0000        * Animation courante - Pointeur Dessin
 HERO_ANIMATION_IMC
-	FCB $00          * Animation courante - Image courante
+	FCB $00          * Animation courante - Image courante (doit etre suivi de RTN_IMC)
 HERO_ANIMATION_RTN_IMC
-	FCB $00          * Animation courante - Image courante Retourn Animation apellante
+	FCB $00          * Animation courante - Image courante Retourn Animation apellante (doit etre precede de IMC)
 HERO_ANIMATION_FRR
 	FCB $00          * Animation courante - Frames restante
