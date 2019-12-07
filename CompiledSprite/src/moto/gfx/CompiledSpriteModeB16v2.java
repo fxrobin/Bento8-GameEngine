@@ -1335,7 +1335,7 @@ public class CompiledSpriteModeB16v2 {
 		return colorModel;
 	}
 	
-	public List<String> getCodePalette(ColorModel colorModel, int gamma) {
+	public List<String> getCodePalette(ColorModel colorModel, double gamma) {
 		// std gamma: 3
 		// suggestion : 2 pour couleurs pastel
 		List<String> code = new ArrayList<String>();
