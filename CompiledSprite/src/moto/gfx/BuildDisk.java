@@ -29,10 +29,6 @@ public class BuildDisk
 				Files.deleteIfExists(fichier);
 				Files.createFile(fichier);
 
-				// Génération d'un fichier BIN a partir d'un PNG
-				PngToBinModeB16 background = new PngToBinModeB16(".\\images\\Foret.png");	
-				background.writeBIN(background.getName().substring(0, Math.min(background.getName().length(), 7))+".BIN");
-
 				// Ecriture du fichier de sortie
 				Files.write(fichier, sprite.getCodeHeader(sprite.drawLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(fichier, sprite.getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
