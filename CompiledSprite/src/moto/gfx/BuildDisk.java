@@ -1,10 +1,6 @@
 package moto.gfx;
 
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 
 import moto.util.knapsack.Item;
 import moto.util.knapsack.Knapsack;
@@ -16,60 +12,52 @@ public class BuildDisk
 
 	public static void main(String[] args)
 	{
+		String binary;
+		int k=0;
+		HashMap<String, String> compiledImages = new HashMap<String, String>();
+
 		try {
 			confProperties = new ReadProperties();
-
+			
+			// Count total images to sort
 			for (String[] i : confProperties.animationImages.values()) {
-				System.out.println(i[3]);
-
-				// Génération d'un Sprite Compilé à partir d'un PNG
-				CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[3]);		
-
-				Path fichier = Paths.get(sprite.getName().substring(0, Math.min(sprite.getName().length(), 8))+".ASS");
-				Files.deleteIfExists(fichier);
-				Files.createFile(fichier);
-
-				// Ecriture du fichier de sortie
-				Files.write(fichier, sprite.getCodeHeader(sprite.drawLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-
-				Files.write(fichier, sprite.getCodeHeader(sprite.erasePrefix, sprite.eraseLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledECode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCodeSwitchData(sprite.erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledECode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledEData(sprite.erasePrefix, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(fichier, sprite.getCompiledEData(sprite.erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				k += Integer.parseInt(i[4]);
 			}
+			
+			Item[] items = new Item[k];
+			k=0;
+
+			// Compile sprites images
+			for (String[] i : confProperties.animationImages.values()) {
+				int nbImages = Integer.parseInt(i[4]);
+				for (int j=0; j<nbImages; j++ ) {
+					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[3], nbImages, j); // todo implementer sous images	
+					binary = sprite.getCompiledCode();
+					compiledImages.put(i[0]+":"+j, binary);
+					items[k++] = new Item(i[0]+":"+j, Integer.parseInt(i[1]+String.format("%03d", i[2])), binary.length()); // id, priority, bytes
+				}
+			}
+
+			// Arrange images in 16ko pages
+			Knapsack knapsack = new Knapsack(items, 16384); //16Ko
+			knapsack.display();
+			Solution solution = knapsack.solve();
+			solution.display();
+			// todo retirer items utilisés
+			
+			for (Iterator<String> iter = list.listIterator(); iter.hasNext(); ) {
+			    String a = iter.next();
+			    if (...) {
+			        iter.remove();
+			    }
+			}
+			
+			// boucler sur pages restantes
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace(); 
 			System.out.println(e); 
 		}
-
-
-///////////////////////////////////////
-
-
-
-		Item[] items = {new Item("Elt1", 4, 12), // id, priority, bytes
-				new Item("Elt2", 2, 1), 
-				new Item("Elt3", 2, 2), 
-				new Item("Elt4", 1, 1),
-				new Item("Elt5", 10, 4)};
-
-		Knapsack knapsack = new Knapsack(items, 16384); //16Ko
-		knapsack.display();
-		Solution solution = knapsack.solve();
-		solution.display();
-		// todo retirer items utilisés
-		// boucler sur pages restantes
 	}
 }

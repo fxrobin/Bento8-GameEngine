@@ -64,7 +64,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
-	public CompiledSpriteModeB16v3(String file) {
+	public CompiledSpriteModeB16v3(String file, int nbImages, int numImage) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -856,47 +856,49 @@ public class CompiledSpriteModeB16v3 {
 		return code;
 	}
 	
-	public List<String> getCompiledCode() {
+	public String getCompiledCode() {
+		String content="";
 		try
 		{
 			// Read PNG and generate assembly code
-			Path fichier = Paths.get("TMP.ASS");
-			Files.deleteIfExists(fichier);
-			Files.createFile(fichier);
+			Path assemblyFile = Paths.get("TMP.ASS");
+			Files.deleteIfExists(assemblyFile);
+			Files.createFile(assemblyFile);
 
-			Files.write(fichier, getCodeHeader(drawLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeHeader(drawLabel, 1));
+			Files.write(assemblyFile, getCompiledCode(1));
+			Files.write(assemblyFile, getCodeSwitchData(2));
+			Files.write(assemblyFile, getCompiledCode(2));
+			Files.write(assemblyFile, getCodeFooter());
+			Files.write(assemblyFile, getCompiledData(1));
+			Files.write(assemblyFile, getCompiledData(2));
+			Files.write(assemblyFile, getCodeDataPos());
 
-			Files.write(fichier, getCodeHeader(erasePrefix, eraseLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledECode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCodeSwitchData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledECode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledEData(erasePrefix, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(fichier, getCompiledEData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeHeader(erasePrefix, eraseLabel, 1));
+			Files.write(assemblyFile, getCompiledECode(1));
+			Files.write(assemblyFile, getCodeSwitchData(erasePrefix, 2));
+			Files.write(assemblyFile, getCompiledECode(2));
+			Files.write(assemblyFile, getCodeFooter());
+			Files.write(assemblyFile, getCompiledEData(erasePrefix, 1));
+			Files.write(assemblyFile, getCompiledEData(erasePrefix, 2));
 			
 			// Generate binary code from assembly code
-			ProcessBuilder probuilder = new ProcessBuilder("CMD", "/C", "dir");
-			probuilder.directory(new File("c:\\xyzwsdemo"));
-			Process process = probuilder.start();
-			try {
-			    int exitValue = process.waitFor();
-			} catch (InterruptedException e) {
-			    e.printStackTrace();
-			}			
-			
+			Process p = new ProcessBuilder("c6809.exe", "-bd TMP.ASS TMP.BIN").start();
+			p.waitFor();
+
+			// Load binary code
+		    content = new String ( Files.readAllBytes( Paths.get("TMP.BIN") ) );	
+		    
+		    // Delete binary file
+			Path binaryFile = Paths.get("TMP.BIN");
+			Files.deleteIfExists(binaryFile);
 		} 
 		catch (Exception e)
 		{
 			e.printStackTrace(); 
 			System.out.println(e); 
 		}
+        return content;
 	}
 	
 	public List<String> getCodePalette(ColorModel colorModel, double gamma) {
