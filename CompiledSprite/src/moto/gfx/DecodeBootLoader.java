@@ -15,7 +15,7 @@ public class DecodeBootLoader
 			BootLoader bootLoader = new BootLoader();
 			byte[] bootLoaderBytes = bootLoader.decodeBootLoader(args[0]);
 
-			Path fichier = Paths.get(bootLoader.removeExtension(args[0]) + "_Bootloader" + ".bin");
+			Path fichier = Paths.get("Bootloader_" + args[0]);
 			Files.deleteIfExists(fichier);
 			Files.createFile(fichier);
 			Files.write(fichier, bootLoaderBytes);
