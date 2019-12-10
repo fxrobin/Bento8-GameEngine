@@ -9,7 +9,7 @@
 ********************************************************************************
 
 (main)MAIN
-	ORG $8000
+	ORG $6300
 
 ********************************************************************************  
 * Constantes et variables
@@ -33,68 +33,21 @@ SSAVE FDB $0000
 *<ANIMATION_TABLE>
 * Limite a 128 images par animations
 
-	FDB $0018		* 00 Absolute 18 Nb frames par image
+	FDB $0001
 HERO_IDLE_L
-	FCB $01			* Page associee a l adresse drw img 00
-	FDB $A000		* Adresse drw img 00
-	FDB $A000		* Adresse del img 00
-	FCB $01			* Page associee a l adresse drw img 01
-	FDB $A000		* Adresse drw img 01
-	FDB $A000		* Adresse del img 01
-	FCB $01			* Page associee a l adresse drw img 02
-	FDB $A000		* Adresse drw img 02
-	FDB $A000		* Adresse del img 02
-	FCB $FF			* FF Boucle
-	FDB $0000		* 00 image de depart 00 unused
-	FDB $0000		* non utilise
-	FCB $01			* Page associee a l adresse drw img 04
-	FDB $A000		* Adresse drw img 04
-	FDB $A000		* Adresse del img 04
-	FCB $FF			* FF Boucle
-	FDB $0000		* 00 image de depart 00 unused
-	FDB $0000		* non utilise
-	
-	FDB $0018		* 00 Absolute 18 Nb frames par image
 HERO_IDLE_R
-	FCB $01			* Page associee a l adresse drw img 00
-	FDB $A000		* Adresse drw img 00
-	FDB $A000		* Adresse del img 00
-	FCB $01			* Page associee a l adresse drw img 01
-	FDB $A000		* Adresse drw img 01
-	FDB $A000		* Adresse del img 01
-	FCB $01			* Page associee a l adresse drw img 02
-	FDB $A000		* Adresse drw img 02
-	FDB $A000		* Adresse del img 02
-	FCB $FE			* FE do not save return adress and BRANCH
-	FDB $0000		* 00 unused 00 image cible
-	FDB HERO_IDLE-C * adresse animation cible
-
-	FDB $0018		* 00 Absolute 18 Nb frames par image
 HERO_IDLE_L2
-	FCB $01			* Page associee a l adresse drw img 00
-	FDB $A000		* Adresse drw img 00
-	FDB $A000		* Adresse del img 00
-	FCB $FD			* FD save return adress and BRANCH
-	FDB $0000		* 00 unused 00 image cible
-	FDB HERO_IDLE_B * animation cible
-	FCB $01			* Page associee a l adresse drw img 02
-	FDB $A000		* Adresse drw img 02
-	FDB $A000		* Adresse del img 02
-	FCB $FF			* FF Boucle
-	FDB $000		* 01 image de depart 00 unused
-	FDB $0000		* non utilise
-	
-	FDB $0018		* 00 Absolute (FF for GSP relative) 18 Nb frames par image
 HERO_SUBIDLE_B
-	FCB $01			* Page associee a l adresse drw
-	FDB $A000		* Adresse drw
-	FDB $A000		* Adresse del
-	FDB $FC			* FC return to saved adress and next image
-	
 HERO_WALK_L
 HERO_WALK_R
 HERO_RUN_L
 HERO_RUN_R
+	FCB $04
+	FDB $A000
+	FDB $A000
+	FCB $FF
+	FDB HERO_RUN_R
+	FDB $0000
 
 ********************************************************************************  
 * Debut du programme
@@ -122,6 +75,42 @@ SETPALETTE
 	BNE	SETPALETTE
 
 ********************************************************************************
+* Chargement des pages memoire
+********************************************************************************
+	SETDP $60
+	LDA #$60
+	TFR A,DP
+	LDB #$04							* On monte la page 4
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+    lda #$01
+    sta <$6048 * DK.OPC $02 Operation - Lecture d un secteur
+    sta <$604C * DK.SEC $02 Secteur a lire
+    ldd #$0004
+    std <$604A * DK.TRK $04 Secteur a lire  
+    ldd #$A000 * Destination des donnees lues
+read
+   std <$604F * DK.BUF Destination des donnees lues
+   jsr $E82A  * DKFORM Appel 
+   addd #$0100
+   cmpd #$E000
+   blt read
+
+	LDB #$05							* On monte la page 5
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+    lda #$01
+    sta <$6048 * DK.OPC $02 Operation - Lecture d un secteur
+    sta <$604C * DK.SEC $02 Secteur a lire
+    ldd #$0004
+    std <$604A * DK.TRK $04 Secteur a lire  
+    ldd #$A000 * Destination des donnees lues
+read2
+   std <$604F * DK.BUF Destination des donnees lues
+   jsr $E82A  * DKFORM Appel 
+   addd #$0100
+   cmpd #$E000
+   blt read2
+
+********************************************************************************
 * Initialisation de la routine de commutation de page video
 ********************************************************************************
 	LDB $6081 * A documenter
@@ -140,7 +129,7 @@ SETPALETTE
 INIT_SCREEN
 	LDB #$03							* On monte la page 3
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	JSR DRAW_RAM_DATA_TO_CART_160x200
+*	JSR DRAW_RAM_DATA_TO_CART_160x200
 	
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
@@ -148,7 +137,7 @@ INIT_SCREEN
 	
 	JSR SCRC                    		* page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
 										* page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
-	DEC -1,INIT_SCREEN
+	DEC INIT_SCREEN-1
 	BCC INIT_SCREEN
 
 ********************************************************************************
@@ -158,7 +147,7 @@ MAIN
 	* Effacement et affichage des sprites
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	JSR [HERO_ANIMATION_EFF]			* Efface le sprite
+	JSR [HERO_ANIMATION_DEL]			* Efface le sprite
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 
 	* Gestion des deplacements
@@ -197,9 +186,8 @@ SCRC
 
 	LDB SCRC0+1
 	ANDB #$01
-	LDA HERO_ANIMATION_PAG
-	ADDA B
-	STA HERO_ANIMATION_PAG
+	ADDB HERO_ANIMATION_PAG
+	STB HERO_ANIMATION_PAG
 	
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
 	ANDB #$80	* permute #$00 ou #$80 (suivant la valeur B #$00 ou #$FF) / fond couleur 0
@@ -395,7 +383,7 @@ Hero_MoveUpdatePos_01
 Hero_MoveUpdatePos_03
 	STB HERO_X_POS			
 	LDB #$00					
-	STB TEST1X10_X_SPS			* reste subpixel est sur un octet stocké sur deux
+	STB HERO_X_SPS				* reste subpixel est sur un octet stocké sur deux
 	LDD #$0000                  * TODO ysp = gsp*-sin(angle)
 	STD HERO_Y_SPEED
 	TFR A,B                     * division par 256
@@ -418,9 +406,9 @@ Compute_Position
 	DECB
 	MUL
 	ADDD Compute_Position_02
-	STD POS_HERO0000
+	STD HERO_POS
 	ADDD #$2000
-	STD POS_HERO0000+2
+	STD HERO_POS+2
 	RTS
 Compute_Position_01
 	STA Compute_Position_02+1
@@ -430,9 +418,9 @@ Compute_Position_01
 	MUL
 	ADDD Compute_Position_02
 	ADDD #$2000
-	STD POS_HERO0000
+	STD HERO_POS
 	SUBD #$1FFF
-	STD POS_HERO0000+2
+	STD HERO_POS+2
 	RTS
 Compute_Position_02
 	FDB $0000
@@ -616,6 +604,9 @@ HERO_ANIMATION_NEXT_00
 ********************************************************************************
 HERO_WALK_SPD_LIMIT EQU $0400
 HERO_JOG_SPD_LIMIT  EQU $0600
+HERO_POS
+	FDB $0000
+	FDB $0000
 HERO_X_POS
 	FCB $50			* Horizontal Position
 HERO_Y_POS

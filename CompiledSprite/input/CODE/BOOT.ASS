@@ -14,8 +14,13 @@ init
    ldd $1E    * 
    std ,s     * ecriture de la valeur $001E en $9FFA ? a documenter
    ldd #$6300 * Destination des donnees lues
+read
    std <$604F * DK.BUF Destination des donnees lues
    jsr $E82A  * DKFORM Appel 
+   addd #$0100
+   cmpd #$A000
+   blt read
+   ldb #$00
    stb <$6080 * Semaphore du controle de presence du controleur de disque
    bcs exit   * Si Erreur C=1 alors branchement exit
    jmp $6300  * Sinon Execution en $6300
