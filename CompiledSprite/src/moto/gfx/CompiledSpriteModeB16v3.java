@@ -4,7 +4,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.ColorModel;
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,7 +66,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
-	public CompiledSpriteModeB16v3(String file, int nbImages, int numImage) {
+	public CompiledSpriteModeB16v3(String file, String entity, String spriteName, int nbImages, int numImage) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -76,12 +78,13 @@ public class CompiledSpriteModeB16v3 {
 			colorModel = image.getColorModel();
 			int pixelSize = colorModel.getPixelSize();
 			// int numComponents = colorModel.getNumComponents();
-			spriteName = removeExtension(file).toUpperCase().replaceAll("[^A-Za-z0-9]", "");
+			spriteName = spriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
+			entity = entity.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 
 			// Initialisation du code statique
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
-			posLabel    = "POS_" + spriteName;
+			posLabel    = "POS_" + entity;
 			erasePrefix = "ERASE_";
 			eraseLabel  = erasePrefix + spriteName;
 
@@ -856,41 +859,55 @@ public class CompiledSpriteModeB16v3 {
 		return code;
 	}
 	
-	public String getCompiledCode() {
+	public String getCompiledCode(String org) {
 		String content="";
+		List<String> code = new ArrayList<String>();
+		String tempASSFile="TMP.ASS";
+		String tempBINFile="TMP.BIN";
 		try
 		{
 			// Read PNG and generate assembly code
-			Path assemblyFile = Paths.get("TMP.ASS");
+			Path assemblyFile = Paths.get(tempASSFile);
 			Files.deleteIfExists(assemblyFile);
 			Files.createFile(assemblyFile);
+			
+			code.add("(main)"+tempASSFile);
+			code.add("\tORG $"+org);
+			Files.write(assemblyFile, code, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeHeader(drawLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			//Files.write(assemblyFile, getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 
-			Files.write(assemblyFile, getCodeHeader(drawLabel, 1));
-			Files.write(assemblyFile, getCompiledCode(1));
-			Files.write(assemblyFile, getCodeSwitchData(2));
-			Files.write(assemblyFile, getCompiledCode(2));
-			Files.write(assemblyFile, getCodeFooter());
-			Files.write(assemblyFile, getCompiledData(1));
-			Files.write(assemblyFile, getCompiledData(2));
-			Files.write(assemblyFile, getCodeDataPos());
-
-			Files.write(assemblyFile, getCodeHeader(erasePrefix, eraseLabel, 1));
-			Files.write(assemblyFile, getCompiledECode(1));
-			Files.write(assemblyFile, getCodeSwitchData(erasePrefix, 2));
-			Files.write(assemblyFile, getCompiledECode(2));
-			Files.write(assemblyFile, getCodeFooter());
-			Files.write(assemblyFile, getCompiledEData(erasePrefix, 1));
-			Files.write(assemblyFile, getCompiledEData(erasePrefix, 2));
+			Files.write(assemblyFile, getCodeHeader(erasePrefix, eraseLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledECode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeSwitchData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledECode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledEData(erasePrefix, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledEData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			
+		    // Delete binary file
+			Path binaryFile = Paths.get(tempBINFile);
+			Files.deleteIfExists(binaryFile);
 			
 			// Generate binary code from assembly code
-			Process p = new ProcessBuilder("c6809.exe", "-bd TMP.ASS TMP.BIN").start();
+			Process p = new ProcessBuilder("c6809.exe", "-bd", tempASSFile, tempBINFile).start();
+			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line;
+			while((line=br.readLine())!=null){
+				 System.out.println(line);
+			}
 			p.waitFor();
+			
 
 			// Load binary code
-		    content = new String ( Files.readAllBytes( Paths.get("TMP.BIN") ) );	
+		    content = new String ( Files.readAllBytes( Paths.get(tempBINFile) ) );	
 		    
-		    // Delete binary file
-			Path binaryFile = Paths.get("TMP.BIN");
 			Files.deleteIfExists(binaryFile);
 		} 
 		catch (Exception e)

@@ -14,6 +14,7 @@ public class ReadProperties {
 	HashMap<String, String[]> tileMaps = new HashMap<String, String[]>();
 	HashMap<String, String[]> raws = new HashMap<String, String[]>();
 	String bootfile = new String();
+	String mainfile = new String();
 	String outputfile = new String();
 	
 	public ReadProperties(String file) {
@@ -36,6 +37,8 @@ public class ReadProperties {
 					raws.put(splitedLine[0], splitedLine);
 				} else if (line.startsWith("bootfile=")) {
 					bootfile=splitedLine[0];
+				} else if (line.startsWith("mainfile=")) {
+					mainfile=splitedLine[0];
 				} else if (line.startsWith("outputfile=")) {
 					outputfile=splitedLine[0];
 				}
