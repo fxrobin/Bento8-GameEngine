@@ -29,6 +29,7 @@ public class CompiledSpriteModeB16v3 {
 	int width;
 	int height;
 	byte[] pixels;
+	String ssave;
 
 	// Calcul
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
@@ -66,7 +67,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
-	public CompiledSpriteModeB16v3(String file, String entity, String spriteName, int nbImages, int numImage) {
+	public CompiledSpriteModeB16v3(String file, int posAdr, String spriteName, int nbImages, int numImage) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -79,14 +80,14 @@ public class CompiledSpriteModeB16v3 {
 			int pixelSize = colorModel.getPixelSize();
 			// int numComponents = colorModel.getNumComponents();
 			spriteName = spriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
-			entity = entity.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 
 			// Initialisation du code statique
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
-			posLabel    = "POS_" + entity;
+			posLabel    = "$" + Integer.toString(posAdr+2);
 			erasePrefix = "ERASE_";
 			eraseLabel  = erasePrefix + spriteName;
+			ssave = Integer.toString(posAdr);
 
 			// System.out.println("Type image:"+image.getType());
 			// Contrôle du format d'image
@@ -820,7 +821,7 @@ public class CompiledSpriteModeB16v3 {
 		List<String> code = new ArrayList<String>();
 		code.add(label);
 		code.add("\tPSHS U,DP");
-		code.add("\tSTS >SSAVE");
+		code.add("\tSTS $"+ssave);
 		code.add("");
 		code.add("\tLDS " + posLabel);
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
@@ -843,7 +844,7 @@ public class CompiledSpriteModeB16v3 {
 	public List<String> getCodeFooter() {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS  >SSAVE");
+		code.add("\tLDS $"+ssave);
 		code.add("\tPULS U,DP");
 		code.add("\tRTS");
 		code.add("");
