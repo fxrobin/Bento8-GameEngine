@@ -67,7 +67,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
-	public CompiledSpriteModeB16v3(String file, int posAdr, String spriteName, int nbImages, int numImage) {
+	public CompiledSpriteModeB16v3(String file, String mainOrg, String spriteName, int nbImages, int numImage) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -80,14 +80,15 @@ public class CompiledSpriteModeB16v3 {
 			int pixelSize = colorModel.getPixelSize();
 			// int numComponents = colorModel.getNumComponents();
 			spriteName = spriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
-
+			int mainOrgx= Integer.parseInt(mainOrg, 16);
+			
 			// Initialisation du code statique
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
-			posLabel    = "$" + Integer.toString(posAdr+2);
+			posLabel    = "$" + Integer.toHexString(mainOrgx+5);
 			erasePrefix = "ERASE_";
 			eraseLabel  = erasePrefix + spriteName;
-			ssave = Integer.toString(posAdr);
+			ssave = Integer.toHexString(mainOrgx+3);
 
 			// System.out.println("Type image:"+image.getType());
 			// Contrôle du format d'image
