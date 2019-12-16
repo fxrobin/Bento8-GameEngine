@@ -1,0 +1,38 @@
+DKCO
+E82A JMP $E004
+E004 LBRA $E076
+E076 PSHS U,Y,X,DP,B,A,CC * sauvegarde des registres
+E078 BSR $E09D * Init DP et code retour
+E07A LDA <$48  * Lecture de DK.OPC $6048
+E07C CMPA #$01 * Code initialisation du controleur
+E07E BEQ $E086 * Si code d'init alors branchement
+E080 LDA <$49  * Lecture de DK.DRV $6049
+E082 CMPA #$04 * Code positionnement en simple densité
+E084 BEQ $E093 * Si code simple densité alors branchement
+E086 BSR $E0A7 * Branchement init001
+E088 BSR $E0C2 * 
+E08A BSR $E0B9
+E08C PULS A
+E08E EXG A,CC
+E090 LSRA
+E091 PULS A,B,DP,X,Y,U,PC * chargement des registres
+
+sous-routine d'initialisation DP et registre de retour
+------------------------------------------------------
+E09D LDA #$60
+E09F TFR A,DP
+E0A1 LDX #$E7D0
+E0A4 CLR <$4E * on efface la position 604E (code retour)
+E0A6 RTS
+
+init001
+-------
+E0A7 LDD <$48   * Lecture de DK.OPC $6048
+E0A9 CMPA #$01  * Code initialisation du controleur
+E0AB BNE $E0AF
+E0AD LDB #$01   * Uniquement si on initialise sinon B=00
+E0AF LDU #$E0BE * Charge #$E0BE dans U
+E0B2 LDA B,U    * Charge A=41
+E0B4 STA $02,X  * Ecrit 41 dans E7D0+2 = E7D2
+E0B6 STA <$57   * Ecrit 41 dans 6057
+E0B8 RTS

@@ -1,0 +1,43 @@
+***************************************
+* Boot loader
+***************************************
+(main)BOOT.ASS
+   setdp $60
+   org $6200
+   bra init
+destination
+   FDB $6300
+piste
+   FDB $0000
+secteur
+   FCB $02
+init
+   lda #$02
+   sta <$6048 * DK.OPC $02 Operation - Lecture d un secteur
+read
+   ldd piste
+   std <$604A * DK.TRK Piste a lire
+   lda secteur
+   sta <$604C * DK.SEC Secteur a lire
+   ldd destination * Destination des donnees lues
+   std <$604F * DK.BUF Destination des donnees lues
+   jsr $E82A  * DKFORM Appel 
+   stb <$6080 * Semaphore du controle de presence du controleur de disque
+   bcs exit   * Si Erreur C=1 alors branchement exit
+   inc secteur
+   lda secteur
+   cmpa #$10
+   bhi init_secteur
+retour_init_secteur
+   inc destination
+   ldd destination * Destination des donnees lues
+   cmpd #$9E00 * 9F00 - 9FFF est reserve a la pile systeme
+   bls read   
+   jmp $6300  * Sinon Execution en $6300
+init_secteur
+   lda #$01
+   sta secteur
+   inc piste+1
+   bra retour_init_secteur
+exit
+   bra exit
