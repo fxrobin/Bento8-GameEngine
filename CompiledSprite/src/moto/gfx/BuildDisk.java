@@ -2,7 +2,6 @@ package moto.gfx;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,7 +64,7 @@ public class BuildDisk
 				int nbImages = Integer.parseInt(i[5]);
 				for (int j=0; j<nbImages; j++ ) {
 					System.out.println("**************** COMPILE SPRITE " + i[1]+":"+j + " ****************");
-					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], confProperties.mainorg, i[1]+j, nbImages, j); // todo implementer sous images	
+					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j); // todo implementer sous images	
 					binary = sprite.getCompiledCode("A000");
 					compiledImages.put(i[1]+":"+j, binary);
 					items[k++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length()); // id, priority, bytes

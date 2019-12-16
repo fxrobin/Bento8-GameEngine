@@ -67,7 +67,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
-	public CompiledSpriteModeB16v3(String file, String mainOrg, String spriteName, int nbImages, int numImage) {
+	public CompiledSpriteModeB16v3(String file, String spriteName, int nbImages, int numImage) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -80,15 +80,14 @@ public class CompiledSpriteModeB16v3 {
 			int pixelSize = colorModel.getPixelSize();
 			// int numComponents = colorModel.getNumComponents();
 			spriteName = spriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
-			int mainOrgx= Integer.parseInt(mainOrg, 16);
 			
 			// Initialisation du code statique
+			ssave       = "9F00";
+			posLabel    = "9F02";
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
-			posLabel    = "$" + Integer.toHexString(mainOrgx+5);
 			erasePrefix = "ERASE_";
 			eraseLabel  = erasePrefix + spriteName;
-			ssave = Integer.toHexString(mainOrgx+3);
 
 			// System.out.println("Type image:"+image.getType());
 			// Contrôle du format d'image
@@ -824,7 +823,7 @@ public class CompiledSpriteModeB16v3 {
 		code.add("\tPSHS U,DP");
 		code.add("\tSTS $"+ssave);
 		code.add("");
-		code.add("\tLDS " + posLabel);
+		code.add("\tLDS $" + posLabel);
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		return code;
 	}
@@ -836,7 +835,7 @@ public class CompiledSpriteModeB16v3 {
 	public List<String> getCodeSwitchData(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS " + posLabel + "+2");
+		code.add("\tLDS $" + posLabel + "+2");
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		code.add("");
 		return code;
@@ -848,15 +847,6 @@ public class CompiledSpriteModeB16v3 {
 		code.add("\tLDS $"+ssave);
 		code.add("\tPULS U,DP");
 		code.add("\tRTS");
-		code.add("");
-		return code;
-	}
-
-	public List<String> getCodeDataPos() {
-		List<String> code = new ArrayList<String>();
-		code.add(posLabel);
-		code.add("\tFDB $1F40");
-		code.add("\tFDB $3F40");
 		code.add("");
 		return code;
 	}

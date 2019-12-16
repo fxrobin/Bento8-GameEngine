@@ -15,7 +15,6 @@ public class ReadProperties {
 	HashMap<String, String[]> raws = new HashMap<String, String[]>();
 	String bootfile = new String();
 	String mainfile = new String();
-	String mainorg = new String();
 	String outputfile = new String();
 	
 	public ReadProperties(String file) {
@@ -40,8 +39,6 @@ public class ReadProperties {
 					bootfile=splitedLine[0];
 				} else if (line.startsWith("mainfile=")) {
 					mainfile=splitedLine[0];
-				} else if (line.startsWith("mainorg=")) {
-					mainorg=splitedLine[0];
 				} else if (line.startsWith("outputfile=")) {
 					outputfile=splitedLine[0];
 				}
