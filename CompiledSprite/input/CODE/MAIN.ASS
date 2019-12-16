@@ -16,7 +16,7 @@
 ********************************************************************************
 
 DK_lecture               EQU $6205 * routine de lecture disquette
-DK_piste                 EQU $620B * 2B numero de la piste de depart
+DK_piste                 EQU $620A * 2B numero de la piste de depart
 DK_secteur               EQU $620F * 1B numero du secteur de depart
 DK_destination           EQU $6213 * 2B debut de la zone memoire cible
 DK_dernier_bloc_a_ecrire EQU $622C * 2B fin de la zone memoire cible (debut du dernier bloc de 256 octets)
@@ -36,13 +36,8 @@ JOY_B  EQU $0D * Bas
 JOY_H  EQU $0E * Haut
 JOY_C  EQU $0F * Centre
 
-   JSR BEGIN
-
-SSAVE
-	FDB $0000 * BUFFER for S when using stackblast
-HERO_POS
-	FDB FINECRANA
-	FDB FINECRANB
+SSAVE    EQU $9F00 * BUFFER for S when using stackblast
+HERO_POS EQU $9F02
 
 ********************************************************************************  
 * Debut du programme
@@ -52,6 +47,13 @@ BEGIN
 	
 	LDA #$7B	* passage en mode 160x200x16c
 	STA $E7DC	
+	
+	LDD #$0000     * Init variables globales 
+	STD SSAVE
+	LDD #FINECRANA
+	STD HERO_POS
+	LDD #FINECRANB
+	STD HERO_POS+2	
 
 ********************************************************************************  
 * Initialisation de la palette de couleurs
@@ -86,30 +88,17 @@ SETPALETTE
 	STD DK_dernier_bloc_a_ecrire
 	JSR DK_lecture
 	
-	LDB #$05							* On monte la page 5
+	LDB #$04							* On monte la page 4
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	
-	PSHS U,Y,X,DP,B,A * sauvegarde des registres
-	STS SSAVE
-	LDS #$DFFF
+
+	LDX #$A000        * Copie page 4 en 5
 MEM_CART_COPY
-	PULS A,B,DP,X,Y,U
+	LDU ,X
 	INC $E7E5
-	PSHS U,Y,X,DP,B,A
+	STU ,X++
 	DEC $E7E5
-	DEC MEM_CART_COPY_CPT
-	LDD MEM_CART_COPY_CPT
-	CMPD #$0000
+	CMPX #$E000
 	BNE MEM_CART_COPY
-	PULS X,Y
-	INC $E7E5
-	PSHS Y,X
-	DEC $E7E5
-	LDS SSAVE	
-	PULS A,B,DP,X,Y,U * chargement des registres
-	JSR INIT_VID
-MEM_CART_COPY_CPT
-	FDB #$071C
 	
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
@@ -127,8 +116,15 @@ INIT_VID
 	LDX #HERO_IDLE_R
 	JSR HERO_ANIMATION_LOAD
 
-	FCB $01
+	FCB $02
 INIT_SCREEN
+
+	LDX #$0000
+CLR_SCREEN
+    CLR ,X++
+	CMPX #$4000
+	BNE CLR_SCREEN
+
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* TODO Boucle sur tous les sprites visibles
@@ -136,7 +132,7 @@ INIT_SCREEN
 	JSR SCRC                    		* page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
 										* page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
 	DEC INIT_SCREEN-1
-	BCC INIT_SCREEN
+	BNE INIT_SCREEN
 
 ********************************************************************************
 * Boucle principale
@@ -145,7 +141,7 @@ MAIN
 	* Effacement et affichage des sprites
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	JSR [HERO_ANIMATION_DEL]			* Efface le sprite
+	*JSR [HERO_ANIMATION_DEL]			* Efface le sprite
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 
 	* Gestion des deplacements
