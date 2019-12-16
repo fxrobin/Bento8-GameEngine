@@ -14,45 +14,35 @@
 ********************************************************************************  
 * Constantes et variables
 ********************************************************************************
-DEBUTECRANA EQU $0014	* test pour fin stack blasting
-FINECRANA   EQU $1F40	* fin de la RAM A video
-DEBUTECRANB EQU $2014	* test pour fin stack blasting
-FINECRANB   EQU $3F40	* fin de la RAM B video
-JOY_BD EQU $05       * Bas Droite
-JOY_HD EQU $06       * Haut Droite
-JOY_D  EQU $07       * Droite
-JOY_BG EQU $09       * Bas Gauche
-JOY_HG EQU $0A       * Haut Gauche
-JOY_G  EQU $0B       * Gauche
-JOY_B  EQU $0D       * Bas
-JOY_H  EQU $0E       * Haut
-JOY_C  EQU $0F       * Centre
 
-	JSR BEGIN
+DK_lecture               EQU $6205 * routine de lecture disquette
+DK_piste                 EQU $620B * 2B numero de la piste de depart
+DK_secteur               EQU $620F * 1B numero du secteur de depart
+DK_destination           EQU $6213 * 2B debut de la zone memoire cible
+DK_dernier_bloc_a_ecrire EQU $622C * 2B fin de la zone memoire cible (debut du dernier bloc de 256 octets)
 
-*<ANIMATION_TABLE>
-* Limite a 128 images par animations
+DEBUTECRANA EQU $0014 * test pour fin stack blasting
+FINECRANA   EQU $1F40 * fin de la RAM A video
+DEBUTECRANB EQU $2014 * test pour fin stack blasting
+FINECRANB   EQU $3F40 * fin de la RAM B video
+
+JOY_BD EQU $05 * Bas Droite
+JOY_HD EQU $06 * Haut Droite
+JOY_D  EQU $07 * Droite
+JOY_BG EQU $09 * Bas Gauche
+JOY_HG EQU $0A * Haut Gauche
+JOY_G  EQU $0B * Gauche
+JOY_B  EQU $0D * Bas
+JOY_H  EQU $0E * Haut
+JOY_C  EQU $0F * Centre
+
+   JSR BEGIN
+
 SSAVE
 	FDB $0000 * BUFFER for S when using stackblast
 HERO_POS
 	FDB FINECRANA
 	FDB FINECRANB
-
-	FDB $0001
-HERO_IDLE_L
-HERO_IDLE_R
-HERO_IDLE_L2
-HERO_SUBIDLE_B
-HERO_WALK_L
-HERO_WALK_R
-HERO_RUN_L
-HERO_RUN_R
-	FCB $04
-	FDB $A000
-	FDB $A000
-	FCB $FF
-	FDB HERO_RUN_R
-	FDB $0000
 
 ********************************************************************************  
 * Debut du programme
@@ -83,42 +73,48 @@ SETPALETTE
 ********************************************************************************
 * Chargement des pages memoire
 ********************************************************************************
-	SETDP $60
-	LDA #$60
-	TFR A,DP
 	LDB #$04							* On monte la page 4
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-    lda #$01
-    sta <$6048 * DK.OPC $02 Operation - Lecture d un secteur
-    sta <$604C * DK.SEC $02 Secteur a lire
-    ldd #$0004
-    std <$604A * DK.TRK $04 Secteur a lire  
-    ldd #$A000 * Destination des donnees lues
-read
-   std <$604F * DK.BUF Destination des donnees lues
-   jsr $E82A  * DKFORM Appel 
-   addd #$0100
-   cmpd #$E000
-   blt read
-
+	
+	LDD #$0004
+	STD DK_piste
+	LDA #$01
+	STA DK_secteur
+	LDD #$A000
+	STD DK_destination
+	LDD #$DF00
+	STD DK_dernier_bloc_a_ecrire
+	JSR DK_lecture
+	
 	LDB #$05							* On monte la page 5
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-    lda #$01
-    sta <$6048 * DK.OPC $02 Operation - Lecture d un secteur
-    sta <$604C * DK.SEC $02 Secteur a lire
-    ldd #$0004
-    std <$604A * DK.TRK $04 Secteur a lire  
-    ldd #$A000 * Destination des donnees lues
-read2
-   std <$604F * DK.BUF Destination des donnees lues
-   jsr $E82A  * DKFORM Appel 
-   addd #$0100
-   cmpd #$E000
-   blt read2
-
+	
+	PSHS U,Y,X,DP,B,A * sauvegarde des registres
+	STS SSAVE
+	LDS #$DFFF
+MEM_CART_COPY
+	PULS A,B,DP,X,Y,U
+	INC $E7E5
+	PSHS U,Y,X,DP,B,A
+	DEC $E7E5
+	DEC MEM_CART_COPY_CPT
+	LDD MEM_CART_COPY_CPT
+	CMPD #$0000
+	BNE MEM_CART_COPY
+	PULS X,Y
+	INC $E7E5
+	PSHS Y,X
+	DEC $E7E5
+	LDS SSAVE	
+	PULS A,B,DP,X,Y,U * chargement des registres
+	JSR INIT_VID
+MEM_CART_COPY_CPT
+	FDB #$071C
+	
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
 ********************************************************************************
+INIT_VID
 	LDB $6081 * A documenter
 	ORB #$10  * mettre le bit d4 a 1
 	STB $6081
@@ -133,10 +129,6 @@ read2
 
 	FCB $01
 INIT_SCREEN
-	LDB #$03							* On monte la page 3
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
-*	JSR DRAW_RAM_DATA_TO_CART_160x200
-	
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* TODO Boucle sur tous les sprites visibles
@@ -605,6 +597,25 @@ HERO_ANIMATION_NEXT_00
 *
 *	JSR HERO_ANIMATION_NEXT
 
+*<ANIMATION_TABLE>
+* Limite a 128 images par animations
+
+	FDB $0001
+HERO_IDLE_L
+HERO_IDLE_R
+HERO_IDLE_L2
+HERO_SUBIDLE_B
+HERO_WALK_L
+HERO_WALK_R
+HERO_RUN_L
+HERO_RUN_R
+	FCB $04
+	FDB $A000
+	FDB $A000
+	FCB $FF
+	FDB HERO_RUN_R
+	FDB $0000
+	
 ********************************************************************************
 * HERO Variables
 ********************************************************************************
