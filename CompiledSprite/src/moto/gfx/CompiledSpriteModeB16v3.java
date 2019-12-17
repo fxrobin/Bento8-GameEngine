@@ -151,7 +151,8 @@ public class CompiledSpriteModeB16v3 {
 		System.out.println("E Octets 2:  " + octetsCode);
 
 		// Génération du code source pour l'écriture des images
-		isSelfModifying = true;
+		//isSelfModifying = true;
+		isSelfModifying = false;
 		generateCodeArray(1, spriteCode1, spriteData1);
 		cyclesWCode1 = cyclesCode;
 		octetsWCode1 = octetsCode;
@@ -853,8 +854,8 @@ public class CompiledSpriteModeB16v3 {
 		return code;
 	}
 	
-	public String getCompiledCode(String org) {
-		String content="";
+	public byte[] getCompiledCode(String org) {
+		byte[]  content = {};
 		List<String> code = new ArrayList<String>();
 		String tempASSFile="TMP.ASS";
 		String tempBINFile="TMP.BIN";
@@ -898,10 +899,9 @@ public class CompiledSpriteModeB16v3 {
 			}
 			p.waitFor();
 			
-
 			// Load binary code
-		    content = new String ( Files.readAllBytes( Paths.get(tempBINFile) ) );	
-		    
+		    content = Files.readAllBytes(Paths.get(tempBINFile));	
+
 			Files.deleteIfExists(binaryFile);
 		} 
 		catch (Exception e)

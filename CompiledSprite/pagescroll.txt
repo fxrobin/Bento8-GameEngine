@@ -1,0 +1,30 @@
+  V D|E P|D       (V: VIDEO, D|E: SHADOW DRAW|SHADOW ERASE, P|D: PREPARE BACKGRND|PREPARE BACKGRND AND DRAW)
+---------
+
+INIT
+
+0 - -|- B mv0 P depuis RAM
+0 - -|- B mv0 P depuis RAM
+0 - B|- A mv0 P depuis RAM
+(ajout init C)
+
+BEGIN
+
+0 B -|C -|A mv0 P depuis E
+0 A B|- C|- mv1 P depuis D+dec+Compl
+0 B A|- C|- mv1 P depuis D+dec+Compl
+0 A C|- B|- mv1 P depuis D
+		
+1 C -|A -|B mv1 P depuis V
+1 B C|- A|- mv2 P depuis D+dec+Compl
+1 C B|- A|- mv2 P depuis D+dec+Compl
+1 B A|- C|- mv2 P depuis D
+		
+2 A -|B -|C mv2 P depuis V
+2 C A|- B|- mv3 P depuis D+dec+Compl
+2 A C|- B|- mv3 P depuis D+dec+Compl
+2 C B|- A|- mv3 P depuis D
+
+GO BEGIN
+
+Copie depuis D entre effacement et ecriture sprite

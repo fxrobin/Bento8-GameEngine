@@ -21,9 +21,9 @@ public class BuildDisk
 	
 	public static void main(String[] args)
 	{
-		String binary;
+		byte[] binary;
 		int k=0, sector=0, track=0, face=0;
-		HashMap<String, String> compiledImages = new HashMap<String, String>();
+		HashMap<String, byte[]> compiledImages = new HashMap<String, byte[]>();
 
 		try {
 			confProperties = new ReadProperties(args[0]);
@@ -64,10 +64,10 @@ public class BuildDisk
 				int nbImages = Integer.parseInt(i[5]);
 				for (int j=0; j<nbImages; j++ ) {
 					System.out.println("**************** COMPILE SPRITE " + i[1]+":"+j + " ****************");
-					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j); // todo implementer sous images	
+					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j); // todo implementer sous images
 					binary = sprite.getCompiledCode("A000");
 					compiledImages.put(i[1]+":"+j, binary);
-					items[k++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length()); // id, priority, bytes
+					items[k++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length); // id, priority, bytes
 				}
 			}
 
@@ -92,13 +92,13 @@ public class BuildDisk
 			sector=1;
 			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
 				Item a = iter.next();
-				for (int i=0; i<compiledImages.get(a.name).getBytes().length; i++) {
-					fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = compiledImages.get(a.name).getBytes()[i];
+				for (int i=0; i<compiledImages.get(a.name).length; i++) {
+					fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = compiledImages.get(a.name)[i];
 				}
 			}
 			
 			// ********** Load Main code **********
-			
+
 			// Generate binary code from assembly code
 			Files.deleteIfExists(Paths.get(tempFile));
 			p = new ProcessBuilder("c6809.exe", "-bd", confProperties.mainfile, tempFile).start();
@@ -108,7 +108,7 @@ public class BuildDisk
 				System.out.println(line);
 			}
 			p.waitFor();
-					
+
 			// Write Main Code
 			face=0;
 			track=0;
@@ -130,4 +130,11 @@ public class BuildDisk
 			System.out.println(e); 
 		}
 	}
+	public static String display(byte[] b1) {
+		   StringBuilder strBuilder = new StringBuilder();
+		   for(byte val : b1) {
+		      strBuilder.append(String.format("%02x", val&0xff));
+		   }
+		   return strBuilder.toString();
+		}
 }
