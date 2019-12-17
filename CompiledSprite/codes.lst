@@ -4,7 +4,7 @@
  * Fichier source      : ./input/CODE/MAIN.ASS
  * Fichier destination : TMP.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     14495
+ *     Main     0:MAIN.ASM     14504
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -59,7 +59,7 @@ Pass2
      58                           *****************************************>>
      59                           * Initialisation de la palette de couleur>>
      60                           *****************************************>>
-     61  4     6319 108E 65E5            LDY #TABPALETTE
+     61  4     6319 108E 65E8            LDY #TABPALETTE
      62  2     631D 4F                   CLRA
      63        631E               SETPALETTE
      64  5+1   631E 34   02              PSHS A
@@ -70,7 +70,7 @@ Pass2
      69  5     6329 B7   E7DA            STA $E7DA
      70  5+1   632C 35   02              PULS A
      71  2     632E 4C                   INCA
-     72  5     632F 108C 6605            CMPY #FINTABPALETTE
+     72  5     632F 108C 6608            CMPY #FINTABPALETTE
      73  3     6333 26   E9              BNE    SETPALETTE
      74
      75                           *****************************************>>
@@ -109,51 +109,51 @@ Pass2
     108  2     636E CA   10              ORB #$10  * mettre le bit d4 a 1
     109  5     6370 F7   6081            STB $6081
     110  5     6373 F7   E7E7            STB $E7E7
-    111  8     6376 BD   63B7            JSR SCRC * page 2 en RAM Cartouche>>
+    111  8     6376 BD   63BA            JSR SCRC * page 2 en RAM Cartouche>>
     112
     113                           *****************************************>>
     114                           * Initialisation des deux pages videos av>>
     115                           *****************************************>>
-    116  3     6379 8E   666B            LDX #HERO_IDLE_R
-    117  8     637C BD   6605            JSR HERO_ANIMATION_LOAD
+    116  3     6379 8E   666E            LDX #HERO_IDLE_R
+    117  8     637C BD   6608            JSR HERO_ANIMATION_LOAD
     118
-    119        637F 02                   FCB $02
-    120        6380               INIT_SCREEN
-    121
-    122  3     6380 8E   0000            LDX #$0000
-    123        6383               CLR_SCREEN
-    124  6+3   6383 6F   81           CLR ,X++
-    125  4     6385 8C   4000            CMPX #$4000
-    126  3     6388 26   F9              BNE CLR_SCREEN
+    119  8     637F BD   6383         JSR INIT_SCREEN
+    120        6382 02                   FCB $02
+    121        6383               INIT_SCREEN
+    122  3     6383 8E   0000            LDX #$0000
+    123        6386               CLR_SCREEN
+    124  6+2   6386 6F   80           CLR ,X+
+    125  4     6388 8C   4000            CMPX #$4000
+    126  3     638B 26   F9              BNE CLR_SCREEN
     127
-    128  5     638A F6   668F            LDB HERO_ANIMATION_PAG            >>
-    129  5     638D F7   E7E5            STB $E7E5                         >>
-    130  7+3   6390 AD   9F 6692         JSR [HERO_ANIMATION_DRW]          >>
+    128  5     638D F6   6692            LDB HERO_ANIMATION_PAG            >>
+    129  5     6390 F7   E7E5            STB $E7E5                         >>
+    130  7+3   6393 AD   9F 6695         JSR [HERO_ANIMATION_DRW]          >>
     131                            
-    132  8     6394 BD   63B7            JSR SCRC                          >>
+    132  8     6397 BD   63BA            JSR SCRC                          >>
     133                                                                    >>
-    134  7     6397 7A   637F            DEC INIT_SCREEN-1
-    135  3     639A 26   E4              BNE INIT_SCREEN
+    134  7     639A 7A   6382            DEC INIT_SCREEN-1
+    135  3     639D 26   E4              BNE INIT_SCREEN
     136
     137                           *****************************************>>
     138                           * Boucle principale
     139                           *****************************************>>
-    140        639C               MAIN
+    140        639F               MAIN
     141                                  * Effacement et affichage des spri>>
-    142  5     639C F6   668F            LDB HERO_ANIMATION_PAG            >>
-    143  5     639F F7   E7E5            STB $E7E5                         >>
+    142  5     639F F6   6692            LDB HERO_ANIMATION_PAG            >>
+    143  5     63A2 F7   E7E5            STB $E7E5                         >>
     144                                  *JSR [HERO_ANIMATION_DEL]         >>
-    145  7+3   63A2 AD   9F 6692         JSR [HERO_ANIMATION_DRW]          >>
+    145  7+3   63A5 AD   9F 6695         JSR [HERO_ANIMATION_DRW]          >>
     146
     147                                  * Gestion des deplacements
-    148  8     63A6 BD   63E7            JSR JOY_READ
-    149  8     63A9 BD   6401            JSR Hero_Move
-    150  8     63AC BD   653D            JSR Compute_Position
+    148  8     63A9 BD   63EA            JSR JOY_READ
+    149  8     63AC BD   6404            JSR Hero_Move
+    150  8     63AF BD   6540            JSR Compute_Position
     151                            
-    152  8     63AF BD   665B            JSR HERO_ANIMATION_NEXT
+    152  8     63B2 BD   665E            JSR HERO_ANIMATION_NEXT
     153
-    154  8     63B2 BD   63B7            JSR SCRC                          >>
-    155  3     63B5 20   E5              BRA MAIN
+    154  8     63B5 BD   63BA            JSR SCRC                          >>
+    155  3     63B8 20   E5              BRA MAIN
     156
     157                           *****************************************>>
     158                           * Changement de page ESPACE ECRAN (affich>>
@@ -176,198 +176,198 @@ Pass2
     175                           *   ...
     176                           *      D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7>>
     177                           *****************************************>>
-    178        63B7               SCRC
-    179  8     63B7 BD   63DC            JSR VSYNC
+    178        63BA               SCRC
+    179  8     63BA BD   63DF            JSR VSYNC
     180
-    181  5     63BA F6   63D3            LDB SCRC0+1
-    182  2     63BD C4   01              ANDB #$01
-    183  5     63BF FB   668F            ADDB HERO_ANIMATION_PAG
-    184  5     63C2 F7   668F            STB HERO_ANIMATION_PAG
+    181  5     63BD F6   63D6            LDB SCRC0+1
+    182  2     63C0 C4   01              ANDB #$01
+    183  5     63C2 FB   6692            ADDB HERO_ANIMATION_PAG
+    184  5     63C5 F7   6692            STB HERO_ANIMATION_PAG
     185                            
-    186  5     63C5 F6   63D3            LDB SCRC0+1   * charge la valeur d>>
-    187  2     63C8 C4   80              ANDB #$80     * permute #$00 ou #$>>
-    188  2     63CA CA   0F              ORB #$0F      * recharger la coule>>
-    189  5     63CC F7   E7DD            STB $E7DD     * changement page da>>
-    190  7     63CF 73   63D3            COM SCRC0+1   * modification du co>>
-    191        63D2               SCRC0
-    192  2     63D2 C6   00              LDB #$00
-    193  2     63D4 C4   02              ANDB #$02     * permute #$60 ou #$>>
-    194  2     63D6 CA   60              ORB #$60      * espace cartouche r>>
-    195  5     63D8 F7   E7E6            STB $E7E6     * changement page da>>
-    196  5     63DB 39                   RTS                  * E7E6 D5=1 p>>
+    186  5     63C8 F6   63D6            LDB SCRC0+1   * charge la valeur d>>
+    187  2     63CB C4   80              ANDB #$80     * permute #$00 ou #$>>
+    188  2     63CD CA   0F              ORB #$0F      * recharger la coule>>
+    189  5     63CF F7   E7DD            STB $E7DD     * changement page da>>
+    190  7     63D2 73   63D6            COM SCRC0+1   * modification du co>>
+    191        63D5               SCRC0
+    192  2     63D5 C6   00              LDB #$00
+    193  2     63D7 C4   02              ANDB #$02     * permute #$60 ou #$>>
+    194  2     63D9 CA   60              ORB #$60      * espace cartouche r>>
+    195  5     63DB F7   E7E6            STB $E7E6     * changement page da>>
+    196  5     63DE 39                   RTS                  * E7E6 D5=1 p>>
     197                                                       * CAS1N : ban>>
     198
     199                           *****************************************>>
     200                           * Attente VBL
     201                           *****************************************>>
-    202        63DC               VSYNC
-    203        63DC               VSYNC_1
-    204  7     63DC 7D   E7E7            TST    $E7E7
-    205  3     63DF 2A   FB              BPL    VSYNC_1
-    206        63E1               VSYNC_2
-    207  7     63E1 7D   E7E7            TST    $E7E7
-    208  3     63E4 2B   FB              BMI    VSYNC_2
-    209  5     63E6 39                   RTS
+    202        63DF               VSYNC
+    203        63DF               VSYNC_1
+    204  7     63DF 7D   E7E7            TST    $E7E7
+    205  3     63E2 2A   FB              BPL    VSYNC_1
+    206        63E4               VSYNC_2
+    207  7     63E4 7D   E7E7            TST    $E7E7
+    208  3     63E7 2B   FB              BMI    VSYNC_2
+    209  5     63E9 39                   RTS
     210
     211                           ****************************************
     212                           * Get joystick parameters
     213                           ****************************************
-    214        63E7               JOY_READ
-    215  3     63E7 8E   E7CF            ldx    #$e7cf
-    216  4     63EA 108E E7CD            ldy    #$e7cd
-    217  3     63EE CC   400F            ldd    #$400f
-    218  5     63F1 F4   E7CC            andb   >$e7cc     * Read position
-    219  5     63F4 F7   63FF            stb    JOY_DIR_STATUS
-    220  4+0   63F7 A4   A4              anda   ,y         * Read button
-    221  2     63F9 88   40              eora   #$40
-    222  5     63FB B7   6400            sta    JOY_BTN_STATUS
-    223  5     63FE 39                   RTS
-    224        63FF               JOY_DIR_STATUS
-    225        63FF 00                   FCB $00 * Position Pad
-    226        6400               JOY_BTN_STATUS
-    227        6400 00                   FCB $00 * 40 Bouton A enfonce
+    214        63EA               JOY_READ
+    215  3     63EA 8E   E7CF            ldx    #$e7cf
+    216  4     63ED 108E E7CD            ldy    #$e7cd
+    217  3     63F1 CC   400F            ldd    #$400f
+    218  5     63F4 F4   E7CC            andb   >$e7cc     * Read position
+    219  5     63F7 F7   6402            stb    JOY_DIR_STATUS
+    220  4+0   63FA A4   A4              anda   ,y         * Read button
+    221  2     63FC 88   40              eora   #$40
+    222  5     63FE B7   6403            sta    JOY_BTN_STATUS
+    223  5     6401 39                   RTS
+    224        6402               JOY_DIR_STATUS
+    225        6402 00                   FCB $00 * Position Pad
+    226        6403               JOY_BTN_STATUS
+    227        6403 00                   FCB $00 * 40 Bouton A enfonce
     228
     229                           *****************************************>>
     230                           * Subroutine to      make HERO walk/run
     231                           *****************************************>>
-    232        6401               Hero_Move
-    233  5     6401 B6   63FF            LDA JOY_DIR_STATUS
-    234  2     6404 81   0B              CMPA #JOY_G
-    235  3     6406 26   02              BNE Hero_NotLeft
-    236  3     6408 20   69              BRA Hero_MoveLeft
+    232        6404               Hero_Move
+    233  5     6404 B6   6402            LDA JOY_DIR_STATUS
+    234  2     6407 81   0B              CMPA #JOY_G
+    235  3     6409 26   02              BNE Hero_NotLeft
+    236  3     640B 20   69              BRA Hero_MoveLeft
     237
-    238        640A               Hero_NotLeft                   * XREF: He>>
-    239  2     640A 81   07              CMPA #JOY_D
-    240  3     640C 26   03              BNE Hero_NotLeftOrRight
-    241  5     640E 16   00A6            LBRA Hero_MoveRight
+    238        640D               Hero_NotLeft                   * XREF: He>>
+    239  2     640D 81   07              CMPA #JOY_D
+    240  3     640F 26   03              BNE Hero_NotLeftOrRight
+    241  5     6411 16   00A6            LBRA Hero_MoveRight
     242
-    243        6411               Hero_NotLeftOrRight            * XREF: He>>
-    244  6     6411 FC   6677            LDD HERO_G_SPEED
-    245  5     6414 1083 0000            CMPD #$0000
-    246  3     6418 2D   2E              BLT Hero_NotLeftOrRight_00 * se de>>
-    247  7     641A B3   6689            SUBD HERO_FRICTION     * se deplac>>
-    248  3     641D 24   12              BCC Hero_NotLeftOrRight_01 * si on>>
-    249  3     641F CC   0000            LDD #$0000
-    250  6     6422 FD   6677            STD HERO_G_SPEED
-    251  6     6425 FD   667B            STD HERO_X_SPS
-    252  3     6428 8E   666B            LDX #HERO_IDLE_R        * Charge a>>
-    253  6     642B BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    254  5     642E 16   00C4            LBRA Hero_MoveUpdatePos
-    255        6431               Hero_NotLeftOrRight_01
-    256  5     6431 1083 0600            CMPD #HERO_JOG_SPD_LIMIT
-    257  3     6435 2C   0B              BGE Hero_NotLeftOrRight_02
-    258  6     6437 FD   6677            STD HERO_G_SPEED
-    259  3     643A 8E   666B            LDX #HERO_WALK_R        * Charge a>>
-    260  6     643D BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    261  3     6440 20   03              BRA Hero_NotLeftOrRight_03
-    262        6442               Hero_NotLeftOrRight_02
-    263  6     6442 FD   6677            STD HERO_G_SPEED
-    264        6445               Hero_NotLeftOrRight_03
-    265  5     6445 16   00AD            LBRA Hero_MoveUpdatePos
-    266        6448               Hero_NotLeftOrRight_00
-    267  7     6448 F3   6689            ADDD HERO_FRICTION     * se deplac>>
-    268  3     644B 24   0F              BCC Hero_NotLeftOrRight_11 * si on>>
-    269  3     644D CC   0000            LDD #$0000
-    270  6     6450 FD   6677            STD HERO_G_SPEED
-    271  3     6453 8E   666B            LDX #HERO_IDLE_L        * Charge a>>
-    272  6     6456 BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    273  5     6459 16   0099            LBRA Hero_MoveUpdatePos
-    274        645C               Hero_NotLeftOrRight_11
-    275  5     645C 1083 0600            CMPD #HERO_JOG_SPD_LIMIT
-    276  3     6460 2F   0B              BLE Hero_NotLeftOrRight_12
-    277  6     6462 FD   6677            STD HERO_G_SPEED
-    278  3     6465 8E   666B            LDX #HERO_WALK_L        * Charge a>>
-    279  6     6468 BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    280  3     646B 20   03              BRA Hero_NotLeftOrRight_13
-    281        646D               Hero_NotLeftOrRight_12
-    282  6     646D FD   6677            STD HERO_G_SPEED
-    283        6470               Hero_NotLeftOrRight_13
-    284  5     6470 16   0082            LBRA Hero_MoveUpdatePos
+    243        6414               Hero_NotLeftOrRight            * XREF: He>>
+    244  6     6414 FC   667A            LDD HERO_G_SPEED
+    245  5     6417 1083 0000            CMPD #$0000
+    246  3     641B 2D   2E              BLT Hero_NotLeftOrRight_00 * se de>>
+    247  7     641D B3   668C            SUBD HERO_FRICTION     * se deplac>>
+    248  3     6420 24   12              BCC Hero_NotLeftOrRight_01 * si on>>
+    249  3     6422 CC   0000            LDD #$0000
+    250  6     6425 FD   667A            STD HERO_G_SPEED
+    251  6     6428 FD   667E            STD HERO_X_SPS
+    252  3     642B 8E   666E            LDX #HERO_IDLE_R        * Charge a>>
+    253  6     642E BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    254  5     6431 16   00C4            LBRA Hero_MoveUpdatePos
+    255        6434               Hero_NotLeftOrRight_01
+    256  5     6434 1083 0600            CMPD #HERO_JOG_SPD_LIMIT
+    257  3     6438 2C   0B              BGE Hero_NotLeftOrRight_02
+    258  6     643A FD   667A            STD HERO_G_SPEED
+    259  3     643D 8E   666E            LDX #HERO_WALK_R        * Charge a>>
+    260  6     6440 BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    261  3     6443 20   03              BRA Hero_NotLeftOrRight_03
+    262        6445               Hero_NotLeftOrRight_02
+    263  6     6445 FD   667A            STD HERO_G_SPEED
+    264        6448               Hero_NotLeftOrRight_03
+    265  5     6448 16   00AD            LBRA Hero_MoveUpdatePos
+    266        644B               Hero_NotLeftOrRight_00
+    267  7     644B F3   668C            ADDD HERO_FRICTION     * se deplac>>
+    268  3     644E 24   0F              BCC Hero_NotLeftOrRight_11 * si on>>
+    269  3     6450 CC   0000            LDD #$0000
+    270  6     6453 FD   667A            STD HERO_G_SPEED
+    271  3     6456 8E   666E            LDX #HERO_IDLE_L        * Charge a>>
+    272  6     6459 BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    273  5     645C 16   0099            LBRA Hero_MoveUpdatePos
+    274        645F               Hero_NotLeftOrRight_11
+    275  5     645F 1083 0600            CMPD #HERO_JOG_SPD_LIMIT
+    276  3     6463 2F   0B              BLE Hero_NotLeftOrRight_12
+    277  6     6465 FD   667A            STD HERO_G_SPEED
+    278  3     6468 8E   666E            LDX #HERO_WALK_L        * Charge a>>
+    279  6     646B BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    280  3     646E 20   03              BRA Hero_NotLeftOrRight_13
+    281        6470               Hero_NotLeftOrRight_12
+    282  6     6470 FD   667A            STD HERO_G_SPEED
+    283        6473               Hero_NotLeftOrRight_13
+    284  5     6473 16   0082            LBRA Hero_MoveUpdatePos
     285
-    286        6473               Hero_MoveLeft                      * XREF>>
-    287  6     6473 FC   6677            LDD HERO_G_SPEED            * Char>>
-    288  5     6476 1083 0000            CMPD #$0000                 * Test>>
-    289  3     647A 2F   11              BLE Hero_MoveLeft_00        * BRAN>>
-    290  7     647C B3   6687            SUBD HERO_DECELERATION      * orie>>
-    291  3     647F 24   06              BCC Hero_MoveLeft_03        * BRAN>>
-    292  3     6481 CC   0000            LDD #$0000
-    293  7     6484 B3   6687            SUBD HERO_DECELERATION      * si l>>
-    294        6487               Hero_MoveLeft_03
-    295  6     6487 FD   6677            STD HERO_G_SPEED            * On s>>
-    296  5     648A 16   0068            LBRA Hero_MoveUpdatePos           >>
-    297        648D               Hero_MoveLeft_00                         >>
+    286        6476               Hero_MoveLeft                      * XREF>>
+    287  6     6476 FC   667A            LDD HERO_G_SPEED            * Char>>
+    288  5     6479 1083 0000            CMPD #$0000                 * Test>>
+    289  3     647D 2F   11              BLE Hero_MoveLeft_00        * BRAN>>
+    290  7     647F B3   668A            SUBD HERO_DECELERATION      * orie>>
+    291  3     6482 24   06              BCC Hero_MoveLeft_03        * BRAN>>
+    292  3     6484 CC   0000            LDD #$0000
+    293  7     6487 B3   668A            SUBD HERO_DECELERATION      * si l>>
+    294        648A               Hero_MoveLeft_03
+    295  6     648A FD   667A            STD HERO_G_SPEED            * On s>>
+    296  5     648D 16   0068            LBRA Hero_MoveUpdatePos           >>
+    297        6490               Hero_MoveLeft_00                         >>
     298                           *      CMPD #$0000                       >>
     299                           *      BNE Hero_MoveLeft_02        * BRAN>>
     300                           *      LDD #$FEFF                        >>
     301                           *Hero_MoveLeft_02
-    302  8     648D 10B3 6683            CMPD HERO_NEG_TOP_SPEED     * Comp>>
-    303  3     6491 27   62              BEQ Hero_MoveUpdatePos      * vite>>
-    304  7     6493 B3   6685            SUBD HERO_ACCELERATION      * acce>>
-    305  8     6496 10B3 6683            CMPD HERO_NEG_TOP_SPEED     * Comp>>
-    306  3     649A 2E   0F              BGT Hero_MoveLeft_01        * BRAN>>
-    307  3     649C 8E   666B            LDX #HERO_RUN_L        * Charge an>>
-    308  6     649F BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    309  6     64A2 FC   6683            LDD HERO_NEG_TOP_SPEED      * Limi>>
-    310  6     64A5 FD   6677            STD HERO_G_SPEED            * Enre>>
-    311  5     64A8 16   004A            LBRA Hero_MoveUpdatePos     * Mise>>
-    312        64AB               Hero_MoveLeft_01
-    313  6     64AB FD   6677            STD HERO_G_SPEED            * Enre>>
-    314  3     64AE 8E   666B            LDX #HERO_WALK_L        * Charge a>>
-    315  6     64B1 BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    316  5     64B4 16   003E            LBRA Hero_MoveUpdatePos
+    302  8     6490 10B3 6686            CMPD HERO_NEG_TOP_SPEED     * Comp>>
+    303  3     6494 27   62              BEQ Hero_MoveUpdatePos      * vite>>
+    304  7     6496 B3   6688            SUBD HERO_ACCELERATION      * acce>>
+    305  8     6499 10B3 6686            CMPD HERO_NEG_TOP_SPEED     * Comp>>
+    306  3     649D 2E   0F              BGT Hero_MoveLeft_01        * BRAN>>
+    307  3     649F 8E   666E            LDX #HERO_RUN_L        * Charge an>>
+    308  6     64A2 BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    309  6     64A5 FC   6686            LDD HERO_NEG_TOP_SPEED      * Limi>>
+    310  6     64A8 FD   667A            STD HERO_G_SPEED            * Enre>>
+    311  5     64AB 16   004A            LBRA Hero_MoveUpdatePos     * Mise>>
+    312        64AE               Hero_MoveLeft_01
+    313  6     64AE FD   667A            STD HERO_G_SPEED            * Enre>>
+    314  3     64B1 8E   666E            LDX #HERO_WALK_L        * Charge a>>
+    315  6     64B4 BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    316  5     64B7 16   003E            LBRA Hero_MoveUpdatePos
     317
-    318        64B7               Hero_MoveRight                  * XREF: H>>
-    319  6     64B7 FC   6677            LDD HERO_G_SPEED        * Chargeme>>
-    320  5     64BA 1083 0000            CMPD #$0000                 * Test>>
-    321  3     64BE 2C   0E              BGE Hero_MoveRight_00       * BRAN>>
-    322  7     64C0 F3   6687            ADDD HERO_DECELERATION      * orie>>
-    323  3     64C3 24   03              BCC Hero_MoveRight_03       * BRAN>>
-    324  6     64C5 FC   6687            LDD HERO_DECELERATION   * si la vi>>
-    325        64C8               Hero_MoveRight_03
-    326  6     64C8 FD   6677            STD HERO_G_SPEED        * On stock>>
-    327  5     64CB 16   0027            LBRA Hero_MoveUpdatePos           >>
-    328        64CE               Hero_MoveRight_00                  * Orie>>
+    318        64BA               Hero_MoveRight                  * XREF: H>>
+    319  6     64BA FC   667A            LDD HERO_G_SPEED        * Chargeme>>
+    320  5     64BD 1083 0000            CMPD #$0000                 * Test>>
+    321  3     64C1 2C   0E              BGE Hero_MoveRight_00       * BRAN>>
+    322  7     64C3 F3   668A            ADDD HERO_DECELERATION      * orie>>
+    323  3     64C6 24   03              BCC Hero_MoveRight_03       * BRAN>>
+    324  6     64C8 FC   668A            LDD HERO_DECELERATION   * si la vi>>
+    325        64CB               Hero_MoveRight_03
+    326  6     64CB FD   667A            STD HERO_G_SPEED        * On stock>>
+    327  5     64CE 16   0027            LBRA Hero_MoveUpdatePos           >>
+    328        64D1               Hero_MoveRight_00                  * Orie>>
     329                           *      CMPD #$0000                       >>
     330                           *      BNE Hero_MoveRight_02       * BRAN>>
     331                           *      LDD #$0100                        >>
     332                           *Hero_MoveRight_02
-    333  8     64CE 10B3 6681            CMPD HERO_TOP_SPEED         * Comp>>
-    334  3     64D2 27   21              BEQ Hero_MoveUpdatePos      * vite>>
-    335  7     64D4 F3   6685            ADDD HERO_ACCELERATION      * acce>>
-    336  8     64D7 10B3 6681            CMPD HERO_TOP_SPEED         * Comp>>
-    337  3     64DB 2D   0F              BLT Hero_MoveRight_01       * BRAN>>
-    338  3     64DD 8E   666B            LDX #HERO_RUN_R                   >>
-    339  6     64E0 BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
-    340  6     64E3 FC   6681            LDD HERO_TOP_SPEED          * Limi>>
-    341  6     64E6 FD   6677            STD HERO_G_SPEED            * Enre>>
-    342  5     64E9 16   0009            LBRA Hero_MoveUpdatePos           >>
-    343        64EC               Hero_MoveRight_01
-    344  6     64EC FD   6677            STD HERO_G_SPEED            * Enre>>
-    345  3     64EF 8E   666B            LDX #HERO_WALK_R        * Charge a>>
-    346  6     64F2 BF   668B            STX HERO_ANIMATION_ADR      * Sauv>>
+    333  8     64D1 10B3 6684            CMPD HERO_TOP_SPEED         * Comp>>
+    334  3     64D5 27   21              BEQ Hero_MoveUpdatePos      * vite>>
+    335  7     64D7 F3   6688            ADDD HERO_ACCELERATION      * acce>>
+    336  8     64DA 10B3 6684            CMPD HERO_TOP_SPEED         * Comp>>
+    337  3     64DE 2D   0F              BLT Hero_MoveRight_01       * BRAN>>
+    338  3     64E0 8E   666E            LDX #HERO_RUN_R                   >>
+    339  6     64E3 BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
+    340  6     64E6 FC   6684            LDD HERO_TOP_SPEED          * Limi>>
+    341  6     64E9 FD   667A            STD HERO_G_SPEED            * Enre>>
+    342  5     64EC 16   0009            LBRA Hero_MoveUpdatePos           >>
+    343        64EF               Hero_MoveRight_01
+    344  6     64EF FD   667A            STD HERO_G_SPEED            * Enre>>
+    345  3     64F2 8E   666E            LDX #HERO_WALK_R        * Charge a>>
+    346  6     64F5 BF   668E            STX HERO_ANIMATION_ADR      * Sauv>>
     347
-    348        64F5               Hero_MoveUpdatePos
-    349  6     64F5 FC   6677            LDD HERO_G_SPEED            * Char>>
-    350  6     64F8 FD   6679            STD HERO_X_SPEED        * Stockage>>
-    351  5     64FB 1083 0000            CMPD #$0000                 * Test>>
-    352  3     64FF 2D   0E              BLT Hero_MoveUpdatePos_00   * BRAN>>
-    353  7     6501 F3   667B            ADDD HERO_X_SPS         * Ajout du>>
-    354  5     6504 F7   667C            STB HERO_X_SPS+1            * sauv>>
-    355  6     6507 1F   89              TFR A,B                     * Divi>>
-    356  5     6509 FB   6675            ADDB HERO_X_POS                   >>
-    357  3     650C 20   18              BRA Hero_MoveUpdatePos_01
-    358        650E               Hero_MoveUpdatePos_V00
-    359        650E 00                   FCB $00
-    360        650F               Hero_MoveUpdatePos_00
-    361  3     650F CC   0000            LDD #$0000
-    362  7     6512 B3   6679            SUBD HERO_X_SPEED           * La v>>
-    363  7     6515 F3   667B            ADDD HERO_X_SPS         * Ajout du>>
-    364  5     6518 F7   667C            STB HERO_X_SPS+1            * sauv>>
-    365  6     651B 1F   89              TFR A,B                     * Divi>>
-    366  5     651D F7   650E            STB Hero_MoveUpdatePos_V00
-    367  5     6520 F6   6675            LDB HERO_X_POS
-    368  5     6523 F0   650E            SUBB Hero_MoveUpdatePos_V00 * Ajou>>
-    369        6526               Hero_MoveUpdatePos_01
+    348        64F8               Hero_MoveUpdatePos
+    349  6     64F8 FC   667A            LDD HERO_G_SPEED            * Char>>
+    350  6     64FB FD   667C            STD HERO_X_SPEED        * Stockage>>
+    351  5     64FE 1083 0000            CMPD #$0000                 * Test>>
+    352  3     6502 2D   0E              BLT Hero_MoveUpdatePos_00   * BRAN>>
+    353  7     6504 F3   667E            ADDD HERO_X_SPS         * Ajout du>>
+    354  5     6507 F7   667F            STB HERO_X_SPS+1            * sauv>>
+    355  6     650A 1F   89              TFR A,B                     * Divi>>
+    356  5     650C FB   6678            ADDB HERO_X_POS                   >>
+    357  3     650F 20   18              BRA Hero_MoveUpdatePos_01
+    358        6511               Hero_MoveUpdatePos_V00
+    359        6511 00                   FCB $00
+    360        6512               Hero_MoveUpdatePos_00
+    361  3     6512 CC   0000            LDD #$0000
+    362  7     6515 B3   667C            SUBD HERO_X_SPEED           * La v>>
+    363  7     6518 F3   667E            ADDD HERO_X_SPS         * Ajout du>>
+    364  5     651B F7   667F            STB HERO_X_SPS+1            * sauv>>
+    365  6     651E 1F   89              TFR A,B                     * Divi>>
+    366  5     6520 F7   6511            STB Hero_MoveUpdatePos_V00
+    367  5     6523 F6   6678            LDB HERO_X_POS
+    368  5     6526 F0   6511            SUBB Hero_MoveUpdatePos_V00 * Ajou>>
+    369        6529               Hero_MoveUpdatePos_01
     370                           *      CMPB #$50                         >>
     371                           *      BLE Hero_MoveUpdatePos_02   * Bute>>
     372                           *      LDB #$50                          >>
@@ -375,133 +375,133 @@ Pass2
     374                           *    CMPB #$0C                           >>
     375                           *      BGE Hero_MoveUpdatePos_03   * Bute>>
     376                           *      LDB #$0C                          >>
-    377        6526               Hero_MoveUpdatePos_03
-    378  5     6526 F7   6675            STB HERO_X_POS
-    379  2     6529 C6   00              LDB #$00
-    380  5     652B F7   667B            STB HERO_X_SPS                    >>
-    381  3     652E CC   0000            LDD #$0000                  * TODO>>
-    382  6     6531 FD   667D            STD HERO_Y_SPEED
-    383  6     6534 1F   89              TFR A,B                     * divi>>
-    384  5     6536 FB   6676            ADDB HERO_Y_POS
-    385  5     6539 F7   6676            STB HERO_Y_POS
-    386  5     653C 39                   RTS
+    377        6529               Hero_MoveUpdatePos_03
+    378  5     6529 F7   6678            STB HERO_X_POS
+    379  2     652C C6   00              LDB #$00
+    380  5     652E F7   667E            STB HERO_X_SPS                    >>
+    381  3     6531 CC   0000            LDD #$0000                  * TODO>>
+    382  6     6534 FD   6680            STD HERO_Y_SPEED
+    383  6     6537 1F   89              TFR A,B                     * divi>>
+    384  5     6539 FB   6679            ADDB HERO_Y_POS
+    385  5     653C F7   6679            STB HERO_Y_POS
+    386  5     653F 39                   RTS
     387
     388                           * TODO : Braking Animation
     389                           * Sonic enters his braking animation when>>
     390                           * In Sonic 1 and Sonic CD, he then stays >>
     391                           * In the other 3 games, Sonic returns to >>
     392
-    393        653D               Compute_Position
-    394  5     653D B6   6675            LDA HERO_X_POS
-    395  2     6540 44                   LSRA
-    396  3     6541 25   17              BCS Compute_Position_01
-    397  5     6543 B7   6575            STA Compute_Position_02+1
-    398  2     6546 86   28              LDA #$28
-    399  5     6548 F6   6676            LDB HERO_Y_POS
-    400  2     654B 5A                   DECB
-    401  11    654C 3D                   MUL
-    402  7     654D F3   6574            ADDD Compute_Position_02
-    403  6     6550 FD   9F02            STD HERO_POS
-    404  4     6553 C3   2000            ADDD #$2000
-    405  6     6556 FD   9F04            STD HERO_POS+2
-    406  5     6559 39                   RTS
-    407        655A               Compute_Position_01
-    408  5     655A B7   6575            STA Compute_Position_02+1
-    409  2     655D 86   28              LDA #$28
-    410  5     655F F6   6676            LDB HERO_Y_POS
-    411  2     6562 5A                   DECB
-    412  11    6563 3D                   MUL
-    413  7     6564 F3   6574            ADDD Compute_Position_02
-    414  4     6567 C3   2000            ADDD #$2000
-    415  6     656A FD   9F02            STD HERO_POS
-    416  4     656D 83   1FFF            SUBD #$1FFF
-    417  6     6570 FD   9F04            STD HERO_POS+2
-    418  5     6573 39                   RTS
-    419        6574               Compute_Position_02
-    420        6574 0000                 FDB $0000
+    393        6540               Compute_Position
+    394  5     6540 B6   6678            LDA HERO_X_POS
+    395  2     6543 44                   LSRA
+    396  3     6544 25   17              BCS Compute_Position_01
+    397  5     6546 B7   6578            STA Compute_Position_02+1
+    398  2     6549 86   28              LDA #$28
+    399  5     654B F6   6679            LDB HERO_Y_POS
+    400  2     654E 5A                   DECB
+    401  11    654F 3D                   MUL
+    402  7     6550 F3   6577            ADDD Compute_Position_02
+    403  6     6553 FD   9F02            STD HERO_POS
+    404  4     6556 C3   2000            ADDD #$2000
+    405  6     6559 FD   9F04            STD HERO_POS+2
+    406  5     655C 39                   RTS
+    407        655D               Compute_Position_01
+    408  5     655D B7   6578            STA Compute_Position_02+1
+    409  2     6560 86   28              LDA #$28
+    410  5     6562 F6   6679            LDB HERO_Y_POS
+    411  2     6565 5A                   DECB
+    412  11    6566 3D                   MUL
+    413  7     6567 F3   6577            ADDD Compute_Position_02
+    414  4     656A C3   2000            ADDD #$2000
+    415  6     656D FD   9F02            STD HERO_POS
+    416  4     6570 83   1FFF            SUBD #$1FFF
+    417  6     6573 FD   9F04            STD HERO_POS+2
+    418  5     6576 39                   RTS
+    419        6577               Compute_Position_02
+    420        6577 0000                 FDB $0000
     421                            
     422                           *****************************************>>
     423                           * Affichage de l arriere plan xxx cycles
     424                           *****************************************>>
-    425        6576               DRAW_RAM_DATA_TO_CART_160x200
-    426  5+3   6576 34   48              PSHS U,DP            * sauvegarde >>
-    427  7     6578 10FF 9F00            STS >SSAVE
+    425        6579               DRAW_RAM_DATA_TO_CART_160x200
+    426  5+3   6579 34   48              PSHS U,DP            * sauvegarde >>
+    427  7     657B 10FF 9F00            STS >SSAVE
     428                            
-    429  4     657C 10CE 1F40            LDS #FINECRANA       * init pointe>>
-    430  3     6580 CE   A000            LDU #$A000
+    429  4     657F 10CE 1F40            LDS #FINECRANA       * init pointe>>
+    430  3     6583 CE   A000            LDU #$A000
     431
-    432        6583               DRAW_RAM_DATA_TO_CART_160x200A
-    433  5+7   6583 37   3E              PULU A,B,DP,X,Y
-    434  5+7   6585 34   3E              PSHS Y,X,DP,B,A
-    435  5+7   6587 37   3E              PULU A,B,DP,X,Y
-    436  5+7   6589 34   3E              PSHS Y,X,DP,B,A
-    437  5+7   658B 37   3E              PULU A,B,DP,X,Y
-    438  5+7   658D 34   3E              PSHS Y,X,DP,B,A
-    439  5+7   658F 37   3E              PULU A,B,DP,X,Y
-    440  5+7   6591 34   3E              PSHS Y,X,DP,B,A
-    441  5+7   6593 37   3E              PULU A,B,DP,X,Y
-    442  5+7   6595 34   3E              PSHS Y,X,DP,B,A
-    443  5+7   6597 37   3E              PULU A,B,DP,X,Y
-    444  5+7   6599 34   3E              PSHS Y,X,DP,B,A
-    445  5     659B 118C 0014            CMPS #DEBUTECRANA
-    446  3     659F 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200A>>
-    447  5+7   65A1 37   3E              PULU A,B,DP,X,Y
-    448  5+7   65A3 34   3E              PSHS Y,X,DP,B,A
-    449  5+7   65A5 37   3E              PULU A,B,DP,X,Y
-    450  5+7   65A7 34   3E              PSHS Y,X,DP,B,A
-    451  5+6   65A9 37   3C              PULU B,DP,X,Y
-    452  5+6   65AB 34   3C              PSHS Y,X,DP,B
+    432        6586               DRAW_RAM_DATA_TO_CART_160x200A
+    433  5+7   6586 37   3E              PULU A,B,DP,X,Y
+    434  5+7   6588 34   3E              PSHS Y,X,DP,B,A
+    435  5+7   658A 37   3E              PULU A,B,DP,X,Y
+    436  5+7   658C 34   3E              PSHS Y,X,DP,B,A
+    437  5+7   658E 37   3E              PULU A,B,DP,X,Y
+    438  5+7   6590 34   3E              PSHS Y,X,DP,B,A
+    439  5+7   6592 37   3E              PULU A,B,DP,X,Y
+    440  5+7   6594 34   3E              PSHS Y,X,DP,B,A
+    441  5+7   6596 37   3E              PULU A,B,DP,X,Y
+    442  5+7   6598 34   3E              PSHS Y,X,DP,B,A
+    443  5+7   659A 37   3E              PULU A,B,DP,X,Y
+    444  5+7   659C 34   3E              PSHS Y,X,DP,B,A
+    445  5     659E 118C 0014            CMPS #DEBUTECRANA
+    446  3     65A2 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200A>>
+    447  5+7   65A4 37   3E              PULU A,B,DP,X,Y
+    448  5+7   65A6 34   3E              PSHS Y,X,DP,B,A
+    449  5+7   65A8 37   3E              PULU A,B,DP,X,Y
+    450  5+7   65AA 34   3E              PSHS Y,X,DP,B,A
+    451  5+6   65AC 37   3C              PULU B,DP,X,Y
+    452  5+6   65AE 34   3C              PSHS Y,X,DP,B
     453
-    454  4     65AD 10CE 3F40            LDS #FINECRANB       * init pointe>>
-    455  3     65B1 CE   C000            LDU #$C000
+    454  4     65B0 10CE 3F40            LDS #FINECRANB       * init pointe>>
+    455  3     65B4 CE   C000            LDU #$C000
     456
-    457        65B4               DRAW_RAM_DATA_TO_CART_160x200B
-    458  5+7   65B4 37   3E              PULU A,B,DP,X,Y
-    459  5+7   65B6 34   3E              PSHS Y,X,DP,B,A
-    460  5+7   65B8 37   3E              PULU A,B,DP,X,Y
-    461  5+7   65BA 34   3E              PSHS Y,X,DP,B,A
-    462  5+7   65BC 37   3E              PULU A,B,DP,X,Y
-    463  5+7   65BE 34   3E              PSHS Y,X,DP,B,A
-    464  5+7   65C0 37   3E              PULU A,B,DP,X,Y
-    465  5+7   65C2 34   3E              PSHS Y,X,DP,B,A
-    466  5+7   65C4 37   3E              PULU A,B,DP,X,Y
-    467  5+7   65C6 34   3E              PSHS Y,X,DP,B,A
-    468  5+7   65C8 37   3E              PULU A,B,DP,X,Y
-    469  5+7   65CA 34   3E              PSHS Y,X,DP,B,A
-    470  5     65CC 118C 2014            CMPS #DEBUTECRANB
-    471  3     65D0 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200B>>
-    472  5+7   65D2 37   3E              PULU A,B,DP,X,Y
-    473  5+7   65D4 34   3E              PSHS Y,X,DP,B,A
-    474  5+7   65D6 37   3E              PULU A,B,DP,X,Y
-    475  5+7   65D8 34   3E              PSHS Y,X,DP,B,A
-    476  5+6   65DA 37   3C              PULU B,DP,X,Y
-    477  5+6   65DC 34   3C              PSHS Y,X,DP,B
+    457        65B7               DRAW_RAM_DATA_TO_CART_160x200B
+    458  5+7   65B7 37   3E              PULU A,B,DP,X,Y
+    459  5+7   65B9 34   3E              PSHS Y,X,DP,B,A
+    460  5+7   65BB 37   3E              PULU A,B,DP,X,Y
+    461  5+7   65BD 34   3E              PSHS Y,X,DP,B,A
+    462  5+7   65BF 37   3E              PULU A,B,DP,X,Y
+    463  5+7   65C1 34   3E              PSHS Y,X,DP,B,A
+    464  5+7   65C3 37   3E              PULU A,B,DP,X,Y
+    465  5+7   65C5 34   3E              PSHS Y,X,DP,B,A
+    466  5+7   65C7 37   3E              PULU A,B,DP,X,Y
+    467  5+7   65C9 34   3E              PSHS Y,X,DP,B,A
+    468  5+7   65CB 37   3E              PULU A,B,DP,X,Y
+    469  5+7   65CD 34   3E              PSHS Y,X,DP,B,A
+    470  5     65CF 118C 2014            CMPS #DEBUTECRANB
+    471  3     65D3 26   E2              BNE DRAW_RAM_DATA_TO_CART_160x200B>>
+    472  5+7   65D5 37   3E              PULU A,B,DP,X,Y
+    473  5+7   65D7 34   3E              PSHS Y,X,DP,B,A
+    474  5+7   65D9 37   3E              PULU A,B,DP,X,Y
+    475  5+7   65DB 34   3E              PSHS Y,X,DP,B,A
+    476  5+6   65DD 37   3C              PULU B,DP,X,Y
+    477  5+6   65DF 34   3C              PSHS Y,X,DP,B
     478
-    479  7     65DE 10FE 9F00            LDS  >SSAVE          * rechargemen>>
-    480  5+3   65E2 35   48              PULS U,DP
-    481  5     65E4 39                   RTS
+    479  7     65E1 10FE 9F00            LDS  >SSAVE          * rechargemen>>
+    480  5+3   65E5 35   48              PULS U,DP
+    481  5     65E7 39                   RTS
     482                            
     483                           *****************************************>>
     484                           * Palette de 16 couleurs
     485                           *****************************************>>
-    486        65E5               TABPALETTE
-    487        65E5 0111                 FDB $0111     * index:0  R:51  V:5>>
-    488        65E7 0143                 FDB $0143     * index:1  R:108 V:1>>
-    489        65E9 0113                 FDB $0113     * index:2  R:107 V:5>>
-    490        65EB 0484                 FDB $0484     * index:3  R:132 V:1>>
-    491        65ED 0112                 FDB $0112     * index:4  R:92  V:6>>
-    492        65EF 0247                 FDB $0247     * index:5  R:180 V:1>>
-    493        65F1 0233                 FDB $0233     * index:6  R:116 V:1>>
-    494        65F3 0177                 FDB $0177     * index:7  R:172 V:1>>
-    495        65F5 0111                 FDB $0111     * index:8  R:60  V:5>>
-    496        65F7 0016                 FDB $0016     * index:9  R:164 V:6>>
-    497        65F9 0698                 FDB $0698     * index:10 R:187 V:1>>
-    498        65FB 0344                 FDB $0344     * index:11 R:132 V:1>>
-    499        65FD 0221                 FDB $0221     * index:12 R:68  V:9>>
-    500        65FF 0452                 FDB $0452     * index:13 R:92  V:1>>
-    501        6601 0356                 FDB $0356     * index:14 R:164 V:1>>
-    502        6603 0125                 FDB $0125     * index:15 R:140 V:1>>
-    503        6605               FINTABPALETTE
+    486        65E8               TABPALETTE
+    487        65E8 0CCD                 FDB $0ccd     * index:0  R:244 V:2>>
+    488        65EA 0BA4                 FDB $0ba4     * index:1  R:164 V:2>>
+    489        65EC 035D                 FDB $035d     * index:2  R:244 V:1>>
+    490        65EE 0D81                 FDB $0d81     * index:3  R:108 V:2>>
+    491        65F0 013B                 FDB $013b     * index:4  R:228 V:1>>
+    492        65F2 0541                 FDB $0541     * index:5  R:100 V:1>>
+    493        65F4 0D30                 FDB $0d30     * index:6  R:43  V:1>>
+    494        65F6 0017                 FDB $0017     * index:7  R:196 V:1>>
+    495        65F8 000B                 FDB $000b     * index:8  R:228 V:2>>
+    496        65FA 0D10                 FDB $0d10     * index:9  R:4   V:1>>
+    497        65FC 0110                 FDB $0110     * index:10 R:28  V:9>>
+    498        65FE 0003                 FDB $0003     * index:11 R:148 V:2>>
+    499        6600 0700                 FDB $0700     * index:12 R:4   V:5>>
+    500        6602 0200                 FDB $0200     * index:13 R:4   V:2>>
+    501        6604 0000                 FDB $0000     * index:14 R:68  V:2>>
+    502        6606 0000                 FDB $0000     * index:15 R:4   V:2>>
+    503        6608               FINTABPALETTE
     504
     505                           *****************************************>>
     506                           * HERO Animations
@@ -524,56 +524,56 @@ Pass2
     523                           * ou frame suivante = 174 a 184
     524                           *****************************************>>
     525
-    526        6605               HERO_ANIMATION_LOAD                      >>
-    527  6     6605 BF   668B            STX HERO_ANIMATION_ADR
-    528  6     6608 BF   668D            STX HERO_ANIMATION_RTN_ADR
-    529  7     660B 7F   6694            CLR HERO_ANIMATION_IMC            >>
-    530        660E               HERO_ANIMATION_LOAD_00
-    531  5+1   660E EC   1E              LDD -2,X                          >>
-    532  2     6610 81   00              CMPA #$00                         >>
-    533  3     6612 27   07              BEQ HERO_ANIMATION_LOAD_01
-    534  5     6614 F0   6677            SUBB HERO_G_SPEED                 >>
-    535  3     6617 24   02              BCC HERO_ANIMATION_LOAD_01
-    536  2     6619 C6   01              LDB #$01                          >>
-    537        661B               HERO_ANIMATION_LOAD_01
-    538  5     661B F7   6696            STB HERO_ANIMATION_FRR            >>
-    539  5     661E B6   6694            LDA HERO_ANIMATION_IMC
-    540  2     6621 C6   05              LDB #$05
-    541  11    6623 3D                   MUL
-    542  7     6624 F3   668B            ADDD HERO_ANIMATION_ADR
-    543  6     6627 1F   02              TFR D,Y
-    544  4+0   6629 E6   A4              LDB ,Y
-    545  2     662B C1   1F              CMPB #$1F                         >>
-    546  3     662D 22   0E              BHI HERO_ANIMATION_LOAD_NOPAGE
-    547  5     662F F7   668F            STB HERO_ANIMATION_PAG            >>
-    548  5+1   6632 AE   21              LDX 1,Y
-    549  6     6634 BF   6692            STX HERO_ANIMATION_DRW
-    550  5+1   6637 AE   23              LDX 3,Y
-    551  6     6639 BF   6690            STX HERO_ANIMATION_DEL
-    552  5     663C 39                   RTS
-    553        663D               HERO_ANIMATION_LOAD_NOPAGE
-    554  2     663D C1   FF              CMPB #$FF
-    555  3     663F 26   0C              BNE HERO_ANIMATION_LOAD_FE
-    556  5+1   6641 AE   23              LDX 3,Y
-    557  6     6643 BF   6694            STX HERO_ANIMATION_IMC            >>
-    558  5+1   6646 AE   21              LDX 1,Y
-    559  6     6648 BF   668B            STX HERO_ANIMATION_ADR
-    560  3     664B 20   C1              BRA HERO_ANIMATION_LOAD_00  * Outp>>
-    561        664D               HERO_ANIMATION_LOAD_FE
-    562  6     664D BE   668D            LDX HERO_ANIMATION_RTN_ADR  * RETU>>
-    563  6     6650 BF   668B            STX HERO_ANIMATION_ADR
-    564  5     6653 F6   6695            LDB HERO_ANIMATION_RTN_IMC
-    565  5     6656 F7   6694            STB HERO_ANIMATION_IMC
-    566  3     6659 20   B3              BRA HERO_ANIMATION_LOAD_00  * Outp>>
+    526        6608               HERO_ANIMATION_LOAD                      >>
+    527  6     6608 BF   668E            STX HERO_ANIMATION_ADR
+    528  6     660B BF   6690            STX HERO_ANIMATION_RTN_ADR
+    529  7     660E 7F   6697            CLR HERO_ANIMATION_IMC            >>
+    530        6611               HERO_ANIMATION_LOAD_00
+    531  5+1   6611 EC   1E              LDD -2,X                          >>
+    532  2     6613 81   00              CMPA #$00                         >>
+    533  3     6615 27   07              BEQ HERO_ANIMATION_LOAD_01
+    534  5     6617 F0   667A            SUBB HERO_G_SPEED                 >>
+    535  3     661A 24   02              BCC HERO_ANIMATION_LOAD_01
+    536  2     661C C6   01              LDB #$01                          >>
+    537        661E               HERO_ANIMATION_LOAD_01
+    538  5     661E F7   6699            STB HERO_ANIMATION_FRR            >>
+    539  5     6621 B6   6697            LDA HERO_ANIMATION_IMC
+    540  2     6624 C6   05              LDB #$05
+    541  11    6626 3D                   MUL
+    542  7     6627 F3   668E            ADDD HERO_ANIMATION_ADR
+    543  6     662A 1F   02              TFR D,Y
+    544  4+0   662C E6   A4              LDB ,Y
+    545  2     662E C1   1F              CMPB #$1F                         >>
+    546  3     6630 22   0E              BHI HERO_ANIMATION_LOAD_NOPAGE
+    547  5     6632 F7   6692            STB HERO_ANIMATION_PAG            >>
+    548  5+1   6635 AE   21              LDX 1,Y
+    549  6     6637 BF   6695            STX HERO_ANIMATION_DRW
+    550  5+1   663A AE   23              LDX 3,Y
+    551  6     663C BF   6693            STX HERO_ANIMATION_DEL
+    552  5     663F 39                   RTS
+    553        6640               HERO_ANIMATION_LOAD_NOPAGE
+    554  2     6640 C1   FF              CMPB #$FF
+    555  3     6642 26   0C              BNE HERO_ANIMATION_LOAD_FE
+    556  5+1   6644 AE   23              LDX 3,Y
+    557  6     6646 BF   6697            STX HERO_ANIMATION_IMC            >>
+    558  5+1   6649 AE   21              LDX 1,Y
+    559  6     664B BF   668E            STX HERO_ANIMATION_ADR
+    560  3     664E 20   C1              BRA HERO_ANIMATION_LOAD_00  * Outp>>
+    561        6650               HERO_ANIMATION_LOAD_FE
+    562  6     6650 BE   6690            LDX HERO_ANIMATION_RTN_ADR  * RETU>>
+    563  6     6653 BF   668E            STX HERO_ANIMATION_ADR
+    564  5     6656 F6   6698            LDB HERO_ANIMATION_RTN_IMC
+    565  5     6659 F7   6697            STB HERO_ANIMATION_IMC
+    566  3     665C 20   B3              BRA HERO_ANIMATION_LOAD_00  * Outp>>
     567
-    568        665B               HERO_ANIMATION_NEXT
-    569  7     665B 7A   6696            DEC HERO_ANIMATION_FRR
-    570  3     665E 27   01              BEQ HERO_ANIMATION_NEXT_00  * BRAN>>
-    571  5     6660 39                   RTS
-    572        6661               HERO_ANIMATION_NEXT_00
-    573  7     6661 7C   6694            INC HERO_ANIMATION_IMC
-    574  6     6664 BE   668B            LDX HERO_ANIMATION_ADR
-    575  3     6667 20   A5              BRA HERO_ANIMATION_LOAD_00  * Outp>>
+    568        665E               HERO_ANIMATION_NEXT
+    569  7     665E 7A   6699            DEC HERO_ANIMATION_FRR
+    570  3     6661 27   01              BEQ HERO_ANIMATION_NEXT_00  * BRAN>>
+    571  5     6663 39                   RTS
+    572        6664               HERO_ANIMATION_NEXT_00
+    573  7     6664 7C   6697            INC HERO_ANIMATION_IMC
+    574  6     6667 BE   668E            LDX HERO_ANIMATION_ADR
+    575  3     666A 20   A5              BRA HERO_ANIMATION_LOAD_00  * Outp>>
     576                            
     577                           *   SAMPLE CODE ANIMATION
     578                           *      ---------------------
@@ -597,76 +597,76 @@ Pass2
     596                           *<ANIMATION_TABLE>
     597                           * Limite a 128 images par animations
     598
-    599        6669 0001                 FDB $0001
-    600        666B               HERO_IDLE_L
-    601        666B               HERO_IDLE_R
-    602        666B               HERO_IDLE_L2
-    603        666B               HERO_SUBIDLE_B
-    604        666B               HERO_WALK_L
-    605        666B               HERO_WALK_R
-    606        666B               HERO_RUN_L
-    607        666B               HERO_RUN_R
-    608        666B 04                   FCB $04
-    609        666C A000                 FDB $A000
-    610        666E A000                 FDB $A000
-    611        6670 FF                   FCB $FF
-    612        6671 666B                 FDB HERO_RUN_R
-    613        6673 0000                 FDB $0000
+    599        666C 0001                 FDB $0001
+    600        666E               HERO_IDLE_L
+    601        666E               HERO_IDLE_R
+    602        666E               HERO_IDLE_L2
+    603        666E               HERO_SUBIDLE_B
+    604        666E               HERO_WALK_L
+    605        666E               HERO_WALK_R
+    606        666E               HERO_RUN_L
+    607        666E               HERO_RUN_R
+    608        666E 04                   FCB $04
+    609        666F A000                 FDB $A000
+    610        6671 A000                 FDB $A000
+    611        6673 FF                   FCB $FF
+    612        6674 666E                 FDB HERO_RUN_R
+    613        6676 0000                 FDB $0000
     614                            
     615                           *****************************************>>
     616                           * HERO Variables
     617                           *****************************************>>
     618                  0400     HERO_WALK_SPD_LIMIT EQU $0400
     619                  0600     HERO_JOG_SPD_LIMIT  EQU $0600
-    620        6675               HERO_X_POS
-    621        6675 50                   FCB $50                     * Hori>>
-    622        6676               HERO_Y_POS
-    623        6676 C8                   FCB $C8                     * Vert>>
-    624        6677               HERO_G_SPEED         * Ground Speed
-    625        6677 0000                 FDB $0000            * First byte >>
-    626        6679               HERO_X_SPEED
-    627        6679 0000                 FDB $0000            * Horizontal >>
-    628        667B               HERO_X_SPS
-    629        667B 0000                 FDB $0000            * Subpixel X >>
-    630        667D               HERO_Y_SPEED
-    631        667D 0000                 FDB $0000            * Vertical Sp>>
-    632        667F               HERO_Y_SPS
-    633        667F 0000                 FDB $0000            * Subpixel Y >>
-    634        6681               HERO_TOP_SPEED
-    635        6681 0600                 FDB $0600        * vitesse maximum>>
-    636        6683               HERO_NEG_TOP_SPEED
-    637        6683 FA00                 FDB $FA00        * vitesse maximum>>
-    638        6685               HERO_ACCELERATION
-    639        6685 000C                 FDB $000C        * constante accel>>
-    640        6687               HERO_DECELERATION
-    641        6687 0080                 FDB $0080        * constante decel>>
-    642        6689               HERO_FRICTION
-    643        6689 000C                 FDB $000C        * constante de fr>>
-    644        668B               HERO_ANIMATION_ADR
-    645        668B 0000                 FDB $0000        * Animation coura>>
-    646        668D               HERO_ANIMATION_RTN_ADR
-    647        668D 0000                 FDB $0000        * Animation coura>>
-    648        668F               HERO_ANIMATION_PAG
-    649        668F 00                   FCB $00          * Animation coura>>
-    650        6690               HERO_ANIMATION_DEL
-    651        6690 0000                 FDB $0000        * Animation coura>>
-    652        6692               HERO_ANIMATION_DRW
-    653        6692 0000                 FDB $0000        * Animation coura>>
-    654        6694               HERO_ANIMATION_IMC
-    655        6694 00                   FCB $00          * Animation coura>>
-    656        6695               HERO_ANIMATION_RTN_IMC
-    657        6695 00                   FCB $00          * Animation coura>>
-    658        6696               HERO_ANIMATION_FRR
-    659        6696 00                   FCB $00          * Animation coura>>
+    620        6678               HERO_X_POS
+    621        6678 50                   FCB $50                     * Hori>>
+    622        6679               HERO_Y_POS
+    623        6679 C8                   FCB $C8                     * Vert>>
+    624        667A               HERO_G_SPEED         * Ground Speed
+    625        667A 0000                 FDB $0000            * First byte >>
+    626        667C               HERO_X_SPEED
+    627        667C 0000                 FDB $0000            * Horizontal >>
+    628        667E               HERO_X_SPS
+    629        667E 0000                 FDB $0000            * Subpixel X >>
+    630        6680               HERO_Y_SPEED
+    631        6680 0000                 FDB $0000            * Vertical Sp>>
+    632        6682               HERO_Y_SPS
+    633        6682 0000                 FDB $0000            * Subpixel Y >>
+    634        6684               HERO_TOP_SPEED
+    635        6684 0600                 FDB $0600        * vitesse maximum>>
+    636        6686               HERO_NEG_TOP_SPEED
+    637        6686 FA00                 FDB $FA00        * vitesse maximum>>
+    638        6688               HERO_ACCELERATION
+    639        6688 000C                 FDB $000C        * constante accel>>
+    640        668A               HERO_DECELERATION
+    641        668A 0080                 FDB $0080        * constante decel>>
+    642        668C               HERO_FRICTION
+    643        668C 000C                 FDB $000C        * constante de fr>>
+    644        668E               HERO_ANIMATION_ADR
+    645        668E 0000                 FDB $0000        * Animation coura>>
+    646        6690               HERO_ANIMATION_RTN_ADR
+    647        6690 0000                 FDB $0000        * Animation coura>>
+    648        6692               HERO_ANIMATION_PAG
+    649        6692 00                   FCB $00          * Animation coura>>
+    650        6693               HERO_ANIMATION_DEL
+    651        6693 0000                 FDB $0000        * Animation coura>>
+    652        6695               HERO_ANIMATION_DRW
+    653        6695 0000                 FDB $0000        * Animation coura>>
+    654        6697               HERO_ANIMATION_IMC
+    655        6697 00                   FCB $00          * Animation coura>>
+    656        6698               HERO_ANIMATION_RTN_IMC
+    657        6698 00                   FCB $00          * Animation coura>>
+    658        6699               HERO_ANIMATION_FRR
+    659        6699 00                   FCB $00          * Animation coura>>
 
 000000 Total Errors
 
 000103 Total Symbols
      0x          Label 6300 BEGIN
-     1x          Label 6383 CLR_SCREEN
-     1x          Label 653D Compute_Position
-     1x          Label 655A Compute_Position_01
-     4x          Label 6574 Compute_Position_02
+     1x          Label 6386 CLR_SCREEN
+     1x          Label 6540 Compute_Position
+     1x          Label 655D Compute_Position_01
+     4x          Label 6577 Compute_Position_02
      1x          Equ   0014 DEBUTECRANA
      1x          Equ   2014 DEBUTECRANB
      1x          Equ   622C DK_dernier_bloc_a_ecrire
@@ -674,95 +674,95 @@ Pass2
      1x          Equ   6205 DK_lecture
      1x          Equ   620A DK_piste
      1x          Equ   620F DK_secteur
-     0x          Label 6576 DRAW_RAM_DATA_TO_CART_160x200
-     1x          Label 6583 DRAW_RAM_DATA_TO_CART_160x200A
-     1x          Label 65B4 DRAW_RAM_DATA_TO_CART_160x200B
+     0x          Label 6579 DRAW_RAM_DATA_TO_CART_160x200
+     1x          Label 6586 DRAW_RAM_DATA_TO_CART_160x200A
+     1x          Label 65B7 DRAW_RAM_DATA_TO_CART_160x200B
      2x          Equ   1F40 FINECRANA
      2x          Equ   3F40 FINECRANB
-     1x          Label 6605 FINTABPALETTE
-     2x          Label 6685 HERO_ACCELERATION
-    13x          Label 668B HERO_ANIMATION_ADR
-     1x          Label 6690 HERO_ANIMATION_DEL
-     3x          Label 6692 HERO_ANIMATION_DRW
-     2x          Label 6696 HERO_ANIMATION_FRR
-     5x          Label 6694 HERO_ANIMATION_IMC
-     1x          Label 6605 HERO_ANIMATION_LOAD
-     3x          Label 660E HERO_ANIMATION_LOAD_00
-     2x          Label 661B HERO_ANIMATION_LOAD_01
-     1x          Label 664D HERO_ANIMATION_LOAD_FE
-     1x          Label 663D HERO_ANIMATION_LOAD_NOPAGE
-     1x          Label 665B HERO_ANIMATION_NEXT
-     1x          Label 6661 HERO_ANIMATION_NEXT_00
-     5x          Label 668F HERO_ANIMATION_PAG
-     2x          Label 668D HERO_ANIMATION_RTN_ADR
-     1x          Label 6695 HERO_ANIMATION_RTN_IMC
-     4x          Label 6687 HERO_DECELERATION
-     2x          Label 6689 HERO_FRICTION
-    17x          Label 6677 HERO_G_SPEED
-     1x          Label 666B HERO_IDLE_L
-     0x          Label 666B HERO_IDLE_L2
-     2x          Label 666B HERO_IDLE_R
+     1x          Label 6608 FINTABPALETTE
+     2x          Label 6688 HERO_ACCELERATION
+    13x          Label 668E HERO_ANIMATION_ADR
+     1x          Label 6693 HERO_ANIMATION_DEL
+     3x          Label 6695 HERO_ANIMATION_DRW
+     2x          Label 6699 HERO_ANIMATION_FRR
+     5x          Label 6697 HERO_ANIMATION_IMC
+     1x          Label 6608 HERO_ANIMATION_LOAD
+     3x          Label 6611 HERO_ANIMATION_LOAD_00
+     2x          Label 661E HERO_ANIMATION_LOAD_01
+     1x          Label 6650 HERO_ANIMATION_LOAD_FE
+     1x          Label 6640 HERO_ANIMATION_LOAD_NOPAGE
+     1x          Label 665E HERO_ANIMATION_NEXT
+     1x          Label 6664 HERO_ANIMATION_NEXT_00
+     5x          Label 6692 HERO_ANIMATION_PAG
+     2x          Label 6690 HERO_ANIMATION_RTN_ADR
+     1x          Label 6698 HERO_ANIMATION_RTN_IMC
+     4x          Label 668A HERO_DECELERATION
+     2x          Label 668C HERO_FRICTION
+    17x          Label 667A HERO_G_SPEED
+     1x          Label 666E HERO_IDLE_L
+     0x          Label 666E HERO_IDLE_L2
+     2x          Label 666E HERO_IDLE_R
      2x          Equ   0600 HERO_JOG_SPD_LIMIT
-     1x          Label 6401 Hero_Move
-     1x          Label 6473 Hero_MoveLeft
-     1x          Label 648D Hero_MoveLeft_00
-     1x          Label 64AB Hero_MoveLeft_01
-     1x          Label 6487 Hero_MoveLeft_03
-     1x          Label 64B7 Hero_MoveRight
-     1x          Label 64CE Hero_MoveRight_00
-     1x          Label 64EC Hero_MoveRight_01
-     1x          Label 64C8 Hero_MoveRight_03
-    11x          Label 64F5 Hero_MoveUpdatePos
-     1x          Label 650F Hero_MoveUpdatePos_00
-     1x          Label 6526 Hero_MoveUpdatePos_01
-     0x          Label 6526 Hero_MoveUpdatePos_03
-     2x          Label 650E Hero_MoveUpdatePos_V00
-     3x          Label 6683 HERO_NEG_TOP_SPEED
-     1x          Label 640A Hero_NotLeft
-     1x          Label 6411 Hero_NotLeftOrRight
-     1x          Label 6448 Hero_NotLeftOrRight_00
-     1x          Label 6431 Hero_NotLeftOrRight_01
-     1x          Label 6442 Hero_NotLeftOrRight_02
-     1x          Label 6445 Hero_NotLeftOrRight_03
-     1x          Label 645C Hero_NotLeftOrRight_11
-     1x          Label 646D Hero_NotLeftOrRight_12
-     1x          Label 6470 Hero_NotLeftOrRight_13
+     1x          Label 6404 Hero_Move
+     1x          Label 6476 Hero_MoveLeft
+     1x          Label 6490 Hero_MoveLeft_00
+     1x          Label 64AE Hero_MoveLeft_01
+     1x          Label 648A Hero_MoveLeft_03
+     1x          Label 64BA Hero_MoveRight
+     1x          Label 64D1 Hero_MoveRight_00
+     1x          Label 64EF Hero_MoveRight_01
+     1x          Label 64CB Hero_MoveRight_03
+    11x          Label 64F8 Hero_MoveUpdatePos
+     1x          Label 6512 Hero_MoveUpdatePos_00
+     1x          Label 6529 Hero_MoveUpdatePos_01
+     0x          Label 6529 Hero_MoveUpdatePos_03
+     2x          Label 6511 Hero_MoveUpdatePos_V00
+     3x          Label 6686 HERO_NEG_TOP_SPEED
+     1x          Label 640D Hero_NotLeft
+     1x          Label 6414 Hero_NotLeftOrRight
+     1x          Label 644B Hero_NotLeftOrRight_00
+     1x          Label 6434 Hero_NotLeftOrRight_01
+     1x          Label 6445 Hero_NotLeftOrRight_02
+     1x          Label 6448 Hero_NotLeftOrRight_03
+     1x          Label 645F Hero_NotLeftOrRight_11
+     1x          Label 6470 Hero_NotLeftOrRight_12
+     1x          Label 6473 Hero_NotLeftOrRight_13
      6x          Equ   9F02 HERO_POS
-     1x          Label 666B HERO_RUN_L
-     2x          Label 666B HERO_RUN_R
-     0x          Label 666B HERO_SUBIDLE_B
-     3x          Label 6681 HERO_TOP_SPEED
-     2x          Label 666B HERO_WALK_L
-     2x          Label 666B HERO_WALK_R
+     1x          Label 666E HERO_RUN_L
+     2x          Label 666E HERO_RUN_R
+     0x          Label 666E HERO_SUBIDLE_B
+     3x          Label 6684 HERO_TOP_SPEED
+     2x          Label 666E HERO_WALK_L
+     2x          Label 666E HERO_WALK_R
      0x          Equ   0400 HERO_WALK_SPD_LIMIT
-     4x          Label 6675 HERO_X_POS
-     2x          Label 6679 HERO_X_SPEED
-     6x          Label 667B HERO_X_SPS
-     4x          Label 6676 HERO_Y_POS
-     1x          Label 667D HERO_Y_SPEED
-     0x          Label 667F HERO_Y_SPS
-     2x          Label 6380 INIT_SCREEN
+     4x          Label 6678 HERO_X_POS
+     2x          Label 667C HERO_X_SPEED
+     6x          Label 667E HERO_X_SPS
+     4x          Label 6679 HERO_Y_POS
+     1x          Label 6680 HERO_Y_SPEED
+     0x          Label 6682 HERO_Y_SPS
+     3x          Label 6383 INIT_SCREEN
      0x          Label 636B INIT_VID
      0x          Equ   000D JOY_B
      0x          Equ   0005 JOY_BD
      0x          Equ   0009 JOY_BG
-     1x          Label 6400 JOY_BTN_STATUS
+     1x          Label 6403 JOY_BTN_STATUS
      0x          Equ   000F JOY_C
      1x          Equ   0007 JOY_D
-     2x          Label 63FF JOY_DIR_STATUS
+     2x          Label 6402 JOY_DIR_STATUS
      1x          Equ   000B JOY_G
      0x          Equ   000E JOY_H
      0x          Equ   0006 JOY_HD
      0x          Equ   000A JOY_HG
-     1x          Label 63E7 JOY_READ
-     1x          Label 639C MAIN
+     1x          Label 63EA JOY_READ
+     1x          Label 639F MAIN
      1x          Label 635C MEM_CART_COPY
-     3x          Label 63B7 SCRC
-     3x          Label 63D2 SCRC0
+     3x          Label 63BA SCRC
+     3x          Label 63D5 SCRC0
      1x          Label 631E SETPALETTE
      3x          Equ   9F00 SSAVE
-     1x          Label 65E5 TABPALETTE
-     1x          Label 63DC VSYNC
-     1x          Label 63DC VSYNC_1
-     1x          Label 63E1 VSYNC_2
+     1x          Label 65E8 TABPALETTE
+     1x          Label 63DF VSYNC
+     1x          Label 63DF VSYNC_1
+     1x          Label 63E4 VSYNC_2
 
