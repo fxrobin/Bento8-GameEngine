@@ -88,6 +88,8 @@ public class CompiledSpriteModeB16v3 {
 			dataLabel   = "DATA_" + spriteName;
 			erasePrefix = "ERASE_";
 			eraseLabel  = erasePrefix + spriteName;
+			
+			System.out.println(getCodePalette(colorModel, 3));
 
 			// System.out.println("Type image:"+image.getType());
 			// Contrôle du format d'image
