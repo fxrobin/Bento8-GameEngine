@@ -55,6 +55,16 @@ BEGIN
 	LDD #FINECRANB
 	STD HERO_POS+2	
 
+********************************************************************************
+* Initialisation de la routine de commutation de page video
+********************************************************************************
+INIT_VID
+	LDB $6081 * A documenter
+	ORB #$10  * mettre le bit d4 a 1
+	STB $6081
+	STB $E7E7
+	JSR SCRC * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+
 ********************************************************************************  
 * Initialisation de la palette de couleurs
 ********************************************************************************
@@ -75,8 +85,8 @@ SETPALETTE
 ********************************************************************************
 * Chargement des pages memoire
 ********************************************************************************
-	LDB #$04							* On monte la page 4
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	LDB #$04                       * On monte la page 4
+	STB $E7E5                      * en RAM Donnees (A000-DFFF)
 	
 	LDD #$0004
 	STD DK_piste
@@ -88,27 +98,14 @@ SETPALETTE
 	STD DK_dernier_bloc_a_ecrire
 	JSR DK_lecture
 	
-	LDB #$04							* On monte la page 4
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	LDB #$65                       * On monte la page 5
+	STB $E7E6                      * en RAM Cartouche (0000-3FFF)
 
-	LDX #$A000        * Copie page 4 en 5
-MEM_CART_COPY
-	LDU ,X
-	INC $E7E5
-	STU ,X++
-	DEC $E7E5
-	CMPX #$E000
-	BNE MEM_CART_COPY
-	
-********************************************************************************
-* Initialisation de la routine de commutation de page video
-********************************************************************************
-INIT_VID
-	LDB $6081 * A documenter
-	ORB #$10  * mettre le bit d4 a 1
-	STB $6081
-	STB $E7E7
-	JSR SCRC * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+    LDY #$4010                     * Nb Bytes +16
+	STY MEM_COPY_DATA_TO_CART_02+2
+    LDU #$A000                     * Source
+    LDY #$0000+16                  * Destination +16 on commence a -16,Y
+    JSR MEM_COPY_DATA_TO_CART      * Copie memoire
 
 ********************************************************************************
 * Initialisation des deux pages videos avec Fond et sprites
@@ -208,9 +205,45 @@ VSYNC_2
 	BMI	VSYNC_2
 	RTS
 
-****************************************
+********************************************************************************
+* Copie Memoire de la zone donnee vers cartouche
+********************************************************************************
+MEM_COPY_DATA_TO_CART
+   STS     MEM_COPY_DATA_TO_CART_03+2    * sauvegarde du pointeur de la pile systeme (auto-modification du code)
+MEM_COPY_DATA_TO_CART_01
+   PULU    D,X,S
+   STD     -16,Y
+   STX     -14,Y
+   STS     -12,Y
+   PULU    D,X,S
+   STD     -10,Y
+   STX     -8,Y
+   STS     -6,Y
+   PULU    D,X,S
+   STD     -4,Y
+   STX     -2,Y
+   STS     ,Y
+   PULU    D,X,S
+   STD     2,Y
+   STX     4,Y
+   STS     6,Y
+   PULU    D,X
+   STD     8,Y
+   STX     10,Y
+   PULU    D,X
+   STD     12,Y
+   STX     14,Y
+   LEAY    32,Y
+MEM_COPY_DATA_TO_CART_02
+   CMPY    #$0030
+   BNE     MEM_COPY_DATA_TO_CART_01
+MEM_COPY_DATA_TO_CART_03
+   LDS     #$0000    * Rechargement du pointeur de la pile systeme
+   RTS
+
+********************************************************************************
 * Get joystick parameters
-****************************************
+********************************************************************************
 JOY_READ
 	ldx    #$e7cf
 	ldy    #$e7cd
@@ -226,9 +259,9 @@ JOY_DIR_STATUS
 JOY_BTN_STATUS
 	FCB $00 * 40 Bouton A enfonce
 
-****************************************************************************
+********************************************************************************
 * Subroutine to	make HERO walk/run
-****************************************************************************
+********************************************************************************
 Hero_Move
 	LDA JOY_DIR_STATUS
 	CMPA #JOY_G
