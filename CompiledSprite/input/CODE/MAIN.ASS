@@ -75,18 +75,17 @@ BEGIN
 	LDB #$65                       * On monte la page 5
 	STB $E7E6                      * en RAM Cartouche (0000-3FFF)
 
-    STS MEM_COPY_DATA_TO_CART_S+2  * sauvegarde du pointeur de la pile systeme (auto-modification du code)
-    LDS #$A000                     * Source
-    LDY #$4000+64                  * Nb Bytes +64
+    LDU #$A000                     * Source
+    LDY #$4000+64                  * Destination Fin +64
 	STY MEM_COPY_DATA_TO_CART_E+2
-    LDY #$0000+64                  * Destination +64 on commence a -64,Y
+    LDY #$2000+64                  * Destination Debut +64 on commence a -64,Y
     JSR MEM_COPY_DATA_TO_CART      * Copie memoire
 	
-	* Initialisation de la page 0
-	*****************************
-	LDB #$60                       * On monte la page 0
-	STB $E7E6                      * en RAM Cartouche (0000-3FFF)
-	JSR CLR_CART
+    LDU #$C000                     * Source
+    LDY #$2000+64                  * Destination Fin +64
+	STY MEM_COPY_DATA_TO_CART_E+2
+    LDY #$0000+64                  * Destination Debut +64 on commence a -64,Y
+    JSR MEM_COPY_DATA_TO_CART      * Copie memoire
 	
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
@@ -96,7 +95,17 @@ INIT_VID
 	ORB #$10  * mettre le bit d4 a 1
 	STB $6081
 	STB $E7E7
-	JSR SCRC * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+	JSR CLR_CART * effacement page 2
+	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
+	JSR CLR_CART * effacement page 0
+	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+
+********************************************************************************  
+* Initialisation du mode video
+********************************************************************************
+	LDA #$7B	* passage en mode 160x200x16c
+	STA $E7DC
 
 ********************************************************************************  
 * Initialisation de la palette de couleurs
@@ -115,27 +124,11 @@ SETPALETTE
 	CMPY #FINTABPALETTE
 	BNE	SETPALETTE
 
-********************************************************************************  
-* Initialisation du mode video
 ********************************************************************************
-	LDA #$7B	* passage en mode 160x200x16c
-	STA $E7DC
-
-********************************************************************************
-* Initialisation des deux pages videos avec Fond et sprites
+* Initialisation des sprites
 ********************************************************************************
 	LDX #HERO_IDLE_R
 	JSR HERO_ANIMATION_LOAD
-
-	JSR CLR_CART
-	LDB HERO_ANIMATION_PAG				* On monte la page 
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	JSR [HERO_ANIMATION_DRW]
-	JSR SCRC                    		* page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
-
-	JSR CLR_CART
-	JSR [HERO_ANIMATION_DRW]
-	JSR SCRC                    		* page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
 
 ********************************************************************************
 * Boucle principale
@@ -144,7 +137,7 @@ MAIN
 	* Effacement et affichage des sprites
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	*JSR [HERO_ANIMATION_DEL]			* Efface le sprite
+	JSR [HERO_ANIMATION_DEL]			* Efface le sprite
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 
 	* Gestion des deplacements
@@ -214,9 +207,9 @@ VSYNC_2
 ********************************************************************************
 * Copie Memoire de la zone donnee vers cartouche
 * Cycles en fonction de l'implementation
-* 256 octets (-128 a 127) x 64  boucles (80448 cy)
-* 128 octets (-64  a 63)  x 128 boucles (81664 cy) Active
-* 32  octets (-16  a 15)  x 512 boucles (87040 cy)
+* 256 octets (-128 a 127) x 64  boucles (80457 cy)
+* 128 octets (-64  a 63)  x 128 boucles (81673 cy) Active
+* 32  octets (-16  a 15)  x 512 boucles (87049 cy)
 ********************************************************************************
 *MEM_COPY_DATA_TO_CART
 *   PULS X,U	
@@ -399,6 +392,9 @@ VSYNC_2
 *   RTS
    
 MEM_COPY_DATA_TO_CART
+   STS MEM_COPY_DATA_TO_CART_S+2  * sauvegarde du pointeur de la pile systeme (auto-modification du code)
+   TFR U,S
+MEM_COPY_DATA_TO_CART_LOOP
    PULS	D,X,U	
    STD	-64,Y
    STX	-62,Y
@@ -483,12 +479,12 @@ MEM_COPY_DATA_TO_CART
    STD	56,Y
    STX	58,Y
    STU	60,Y
-   LDD	,S	
+   PULS	D	
    STD	62,Y
    LEAY 128,Y
 MEM_COPY_DATA_TO_CART_E
    CMPY    #$00C0
-   LBNE     MEM_COPY_DATA_TO_CART
+   LBNE    MEM_COPY_DATA_TO_CART_LOOP
 MEM_COPY_DATA_TO_CART_S
    LDS     #$0000    * Rechargement du pointeur de la pile systeme
    RTS
@@ -524,7 +520,7 @@ MEM_COPY_DATA_TO_CART_S
 *   LDS     #$0000    * Rechargement du pointeur de la pile systeme
 *   RTS
 ********************************************************************************
-* Effacement memoire Cartouche
+* Effacement memoire Cartouche (27000 cy)
 ********************************************************************************
 CLR_CART
     PSHS U,DP
@@ -553,6 +549,89 @@ CLR_CART_3
     LDS #$0000
     PULS DP,U
     RTS
+	
+********************************************************************************  
+* Affichage de l arriere plan 57900 cycles
+********************************************************************************	
+*DRAW_RAM_DATA_TO_CART_160x200
+*	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
+*	STS >SSAVE
+*	
+*	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
+*	LDU #$A000
+*
+*DRAW_RAM_DATA_TO_CART_160x200A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	CMPS #DEBUTECRANA
+*	BNE DRAW_RAM_DATA_TO_CART_160x200A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU B,DP,X,Y
+*	PSHS Y,X,DP,B
+*
+*	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
+*	LDU #$C000
+*
+*DRAW_RAM_DATA_TO_CART_160x200B
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	CMPS #DEBUTECRANB
+*	BNE DRAW_RAM_DATA_TO_CART_160x200B
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU A,B,DP,X,Y
+*	PSHS Y,X,DP,B,A
+*	PULU B,DP,X,Y
+*	PSHS Y,X,DP,B
+*
+*	LDS  >SSAVE		* rechargement des registres
+*	PULS U,DP
+*	RTS
+
+********************************************************************************
+* Palette de 16 couleurs
+********************************************************************************
+TABPALETTE
+ 	FDB $0ccd	* index:0  R:244 V:238 B:238
+ 	FDB $0ba4	* index:1  R:164 V:226 B:228
+ 	FDB $035d	* index:2  R:244 V:178 B:148
+ 	FDB $0d81	* index:3  R:108 V:210 B:244
+ 	FDB $013b	* index:4  R:228 V:146 B:100
+ 	FDB $0541	* index:5  R:100 V:162 B:180
+ 	FDB $0d30	* index:6  R:43  V:153 B:244
+ 	FDB $0017	* index:7  R:196 V:106 B:52 
+ 	FDB $000b	* index:8  R:228 V:2   B:4  
+ 	FDB $0d10	* index:9  R:4   V:106 B:244
+ 	FDB $0110	* index:10 R:28  V:90  B:108
+ 	FDB $0003	* index:11 R:148 V:2   B:4  
+ 	FDB $0700	* index:12 R:4   V:58  B:196
+ 	FDB $0200	* index:13 R:4   V:2   B:132
+ 	FDB $0000	* index:14 R:68  V:2   B:4  
+ 	FDB $0000	* index:15 R:4   V:2   B:4 
+FINTABPALETTE
 
 ********************************************************************************
 * Get joystick parameters
@@ -764,89 +843,6 @@ Compute_Position_01
 	RTS
 Compute_Position_02
 	FDB $0000
-	
-********************************************************************************  
-* Affichage de l arriere plan xxx cycles
-********************************************************************************	
-DRAW_RAM_DATA_TO_CART_160x200
-	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
-	STS >SSAVE
-	
-	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
-	LDU #$A000
-
-DRAW_RAM_DATA_TO_CART_160x200A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	CMPS #DEBUTECRANA
-	BNE DRAW_RAM_DATA_TO_CART_160x200A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU B,DP,X,Y
-	PSHS Y,X,DP,B
-
-	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
-	LDU #$C000
-
-DRAW_RAM_DATA_TO_CART_160x200B
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	CMPS #DEBUTECRANB
-	BNE DRAW_RAM_DATA_TO_CART_160x200B
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU A,B,DP,X,Y
-	PSHS Y,X,DP,B,A
-	PULU B,DP,X,Y
-	PSHS Y,X,DP,B
-
-	LDS  >SSAVE		* rechargement des registres
-	PULS U,DP
-	RTS
-	
-********************************************************************************
-* Palette de 16 couleurs
-********************************************************************************
-TABPALETTE
- 	FDB $0ccd	* index:0  R:244 V:238 B:238
- 	FDB $0ba4	* index:1  R:164 V:226 B:228
- 	FDB $035d	* index:2  R:244 V:178 B:148
- 	FDB $0d81	* index:3  R:108 V:210 B:244
- 	FDB $013b	* index:4  R:228 V:146 B:100
- 	FDB $0541	* index:5  R:100 V:162 B:180
- 	FDB $0d30	* index:6  R:43  V:153 B:244
- 	FDB $0017	* index:7  R:196 V:106 B:52 
- 	FDB $000b	* index:8  R:228 V:2   B:4  
- 	FDB $0d10	* index:9  R:4   V:106 B:244
- 	FDB $0110	* index:10 R:28  V:90  B:108
- 	FDB $0003	* index:11 R:148 V:2   B:4  
- 	FDB $0700	* index:12 R:4   V:58  B:196
- 	FDB $0200	* index:13 R:4   V:2   B:132
- 	FDB $0000	* index:14 R:68  V:2   B:4  
- 	FDB $0000	* index:15 R:4   V:2   B:4 
-FINTABPALETTE
 
 ********************************************************************************
 * HERO Animations
@@ -953,7 +949,7 @@ HERO_RUN_L
 HERO_RUN_R
 	FCB $04
 	FDB $A000
-	FDB $A000
+	FDB $A50A
 	FCB $FF
 	FDB HERO_RUN_R
 	FDB $0000

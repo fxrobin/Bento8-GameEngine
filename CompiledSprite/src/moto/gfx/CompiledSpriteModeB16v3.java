@@ -151,8 +151,7 @@ public class CompiledSpriteModeB16v3 {
 		System.out.println("E Octets 2:  " + octetsCode);
 
 		// Génération du code source pour l'écriture des images
-		//isSelfModifying = true;
-		isSelfModifying = false;
+		isSelfModifying = true;
 		generateCodeArray(1, spriteCode1, spriteData1);
 		cyclesWCode1 = cyclesCode;
 		octetsWCode1 = octetsCode;
@@ -179,7 +178,7 @@ public class CompiledSpriteModeB16v3 {
 		leas = 0;
 		stOffset = 0;
 		if (isSelfModifying) {
-			offsetCode = (pos==1) ? 18+octetsECode2 : 11;
+			offsetCode = (pos==1) ? 21+octetsECode2 : 14;
 		}
 		cyclesCode = 0;
 		octetsCode = 0;
@@ -577,7 +576,7 @@ public class CompiledSpriteModeB16v3 {
 
 		for (Integer indexReg : listeIndexReg) {
 			if (nbBytes == 7) {
-				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
 					if (read.equals("")) {
 						read += "\tPULU ";
 						cyclesCode += 5;
@@ -593,7 +592,7 @@ public class CompiledSpriteModeB16v3 {
 					} else {
 						cyclesCode += 1;
 					}
-				}
+				//}
 
 				if (write.equals("")) {
 					write += "\tPSHS ";
@@ -610,7 +609,7 @@ public class CompiledSpriteModeB16v3 {
 				}
 			}
 			if (nbBytes >= 3 && nbBytes <= 6) {
-				if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
 					if (!read.equals("")) {
 						read = "\n" + read;
 					}
@@ -621,7 +620,7 @@ public class CompiledSpriteModeB16v3 {
 					} else {
 						computeStats8b();
 					}
-				}
+				//}
 
 				if (write.equals("")) {
 					write += "\tPSHS ";
