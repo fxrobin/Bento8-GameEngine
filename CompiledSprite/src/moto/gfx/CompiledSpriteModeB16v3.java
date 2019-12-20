@@ -825,7 +825,11 @@ public class CompiledSpriteModeB16v3 {
 		code.add("\tPSHS U,DP");
 		code.add("\tSTS $"+ssave);
 		code.add("");
-		code.add("\tLDS $" + posLabel);
+		code.add("\tLDS $" + posLabel + ((prefix.contentEquals("")) ? "" : "+4"));
+		if (prefix.contentEquals(""))
+		{
+			code.add("\tSTS $"+posLabel+"+4");
+		}
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		return code;
 	}
@@ -837,7 +841,11 @@ public class CompiledSpriteModeB16v3 {
 	public List<String> getCodeSwitchData(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS $" + posLabel + "+2");
+		code.add("\tLDS $" + posLabel + ((prefix.contentEquals("")) ? "+2" : "+6"));
+		if (prefix.contentEquals(""))
+		{
+			code.add("\tSTS $"+posLabel+"+6");
+		}
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		code.add("");
 		return code;

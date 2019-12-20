@@ -133,6 +133,16 @@ SETPALETTE
 ********************************************************************************
 * Boucle principale
 ********************************************************************************
+	* Init routine effacement sprite
+	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
+	JSR SCRC
+	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
+	JSR SCRC
+	
 MAIN
 	* Effacement et affichage des sprites
 	LDB HERO_ANIMATION_PAG				* On monte la page 
