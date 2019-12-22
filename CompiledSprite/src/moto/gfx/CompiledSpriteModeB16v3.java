@@ -37,7 +37,7 @@ public class CompiledSpriteModeB16v3 {
 	final int[] regCostLDx = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
 	final int[] regCostSTx = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
 	private int leas = 0;
-	private int stOffset = 0;
+	private int stOffset = 0; // Offset pour les STx depuis le dernier LEAS
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
@@ -64,7 +64,7 @@ public class CompiledSpriteModeB16v3 {
 	int cyclesECode2 = 0;
 	int octetsECode2 = 0;
 	boolean isSelfModifying = false;
-	int offsetCode = 0;
+	int offsetCode = 0; // Offset debut code ASM pour calcul poistion auto-modification du code
 
 	public CompiledSpriteModeB16v3(String file, String locspriteName, int nbImages, int numImage) {
 		try {
@@ -244,6 +244,15 @@ public class CompiledSpriteModeB16v3 {
 					// **************************************************************************
 
 					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
+						
+						if (isSelfModifying) {
+							if (stOffset == 0) {
+								spriteCode.add("\tLDA ,S");
+							} else {
+								spriteCode.add("\tLDA " + stOffset + ",S");
+							}
+							spriteCode.add("\tSTA " + eraseLabel + "+" + (offsetCode+octetsCode+((stOffset>-17) ? 4 : 5)));
+						}
 
 						if (leftAlphaPxl == true) {
 							spriteCode.add("\tLDA  #$F0");
@@ -531,6 +540,7 @@ public class CompiledSpriteModeB16v3 {
 
 	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld,
 			ArrayList<Integer> listeIndexReg) {
+		String read_e = new String("");
 		String read = new String("");
 		String write = new String("");
 		String[] pulBytes = { "", "", "", "", "" };
@@ -609,11 +619,29 @@ public class CompiledSpriteModeB16v3 {
 				}
 			}
 			if (nbBytes >= 3 && nbBytes <= 6) {
-				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
-					if (!read.equals("")) {
-						read = "\n" + read;
+				if (isSelfModifying) {
+					if (read.equals("")) {
+						read += "\tPULS ";
+					} else {
+						read += ",";
 					}
-					read = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read;
+					read += pulReg[indexReg];
+					if (!read_e.equals("")) {
+						read_e = "\n" + read_e;
+					}		
+					read_e += "\tST" + pulReg[indexReg] + " " + eraseLabel + "+" + (offsetCode+octetsCode);
+					if (indexReg < 2) {
+						leas += 2;
+					} else {
+						leas += 1;
+					}
+				}
+					
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+					if (!read_e.equals("")) {
+						read_e = "\n" + read_e;
+					}					
+					read_e = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read_e;
 					pulBytesOld[indexReg] = pulBytes[indexReg];
 					if (indexReg < 2) {
 						computeStats16b();
@@ -645,9 +673,14 @@ public class CompiledSpriteModeB16v3 {
 					leas -= 1;
 				}
 				if (isSelfModifying) {
-					read += "\tLD" + pulReg[indexReg] + " " + stOffset + ",S\n";
+					if (stOffset == 0) {
+						read += "\tLD" + pulReg[indexReg] + " ,S\n";
+					} else {
+						read += "\tLD" + pulReg[indexReg] + " " + stOffset + ",S\n";
+					}
 					read += "\tST" + pulReg[indexReg] + " " + eraseLabel + "+" + (offsetCode+octetsCode);
-				}
+				}		
+
 				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
 					if (!read.equals("")) {
 						read += "\n";
@@ -671,6 +704,8 @@ public class CompiledSpriteModeB16v3 {
 				}
 			}
 		}
+		read += read_e;
+		read_e = "";
 
 		// Enregistre les données FDB en sens inverse et filtrées
 		for (int i = listeIndexReg.size() - 1; i >= 0; i--) {
@@ -926,6 +961,8 @@ public class CompiledSpriteModeB16v3 {
 			
 			// Rename .lst File
             File f = new File("codes.lst"); 
+			Path lstFile = Paths.get(spriteName+".lst");
+			Files.deleteIfExists(lstFile);
             f.renameTo(new File(spriteName+".lst"));
 		} 
 		catch (Exception e)
