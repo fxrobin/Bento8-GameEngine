@@ -36,8 +36,7 @@ JOY_B  EQU $0D * Bas
 JOY_H  EQU $0E * Haut
 JOY_C  EQU $0F * Centre
 
-SSAVE    EQU $9F00 * BUFFER for S when using stackblast
-HERO_POS EQU $9F02
+HERO_POS EQU $9F00 * HERO Position
 
 ********************************************************************************  
 * Debut du programme
@@ -45,8 +44,6 @@ HERO_POS EQU $9F02
 BEGIN
 	ORCC #$50	* a documenter (interruption)	
 	
-	LDD #$0000     * Init variables globales 
-	STD SSAVE
 	LDD #FINECRANA
 	STD HERO_POS
 	LDD #FINECRANB
@@ -565,7 +562,7 @@ CLR_CART_3
 ********************************************************************************	
 *DRAW_RAM_DATA_TO_CART_160x200
 *	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
-*	STS >SSAVE
+*	STS DRAW_RAM_DATA_TO_CART_160x200A_E+2
 *	
 *	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
 *	LDU #$A000
@@ -616,8 +613,8 @@ CLR_CART_3
 *	PSHS Y,X,DP,B,A
 *	PULU B,DP,X,Y
 *	PSHS Y,X,DP,B
-*
-*	LDS  >SSAVE		* rechargement des registres
+*DRAW_RAM_DATA_TO_CART_160x200A_E
+*	LDS  #$0000 * rechargement des registres
 *	PULS U,DP
 *	RTS
 

@@ -29,7 +29,6 @@ public class CompiledSpriteModeB16v3 {
 	int width;
 	int height;
 	byte[] pixels;
-	String ssaveAdress;
 
 	// Calcul
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
@@ -50,7 +49,7 @@ public class CompiledSpriteModeB16v3 {
 	List<String> spriteEData1 = new ArrayList<String>();
 	List<String> spriteEData2 = new ArrayList<String>();
 	
-	String drawLabel, eraseLabel, dataLabel, posLabel;
+	String drawLabel, eraseLabel, dataLabel, posLabel, ssaveLabel;
 	String erasePrefix;
 	String posAdress;
 	
@@ -67,7 +66,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int offsetCode = 0;
 
-	public CompiledSpriteModeB16v3(String file, String spriteName, int nbImages, int numImage) {
+	public CompiledSpriteModeB16v3(String file, String locspriteName, int nbImages, int numImage) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -79,14 +78,14 @@ public class CompiledSpriteModeB16v3 {
 			colorModel = image.getColorModel();
 			int pixelSize = colorModel.getPixelSize();
 			// int numComponents = colorModel.getNumComponents();
-			spriteName = spriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
+			spriteName = locspriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 			
 			// Initialisation du code statique
-			ssaveAdress = "9F00";
-			posAdress    = "9F02";
+			posAdress   = "9F00";
 			posLabel    = "POS_"  + spriteName;
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
+			ssaveLabel  = "SSAV_" + spriteName;
 			erasePrefix = "ERASE_";
 			eraseLabel  = erasePrefix + spriteName;
 			
@@ -824,7 +823,7 @@ public class CompiledSpriteModeB16v3 {
 		List<String> code = new ArrayList<String>();
 		code.add(label);
 		code.add("\tPSHS U,DP");
-		code.add("\tSTS $"+ssaveAdress);
+		code.add("\tSTS " + prefix + ssaveLabel + "+2");
 		code.add("");
 		if (prefix.contentEquals(""))
 		{
@@ -859,11 +858,16 @@ public class CompiledSpriteModeB16v3 {
 		code.add("");
 		return code;
 	}
-
+	
 	public List<String> getCodeFooter() {
+		return getCodeFooter("");
+	}
+
+	public List<String> getCodeFooter(String prefix) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS $"+ssaveAdress);
+		code.add(prefix + ssaveLabel);
+		code.add("\tLDS #$0000");
 		code.add("\tPULS U,DP");
 		code.add("\tRTS");
 		code.add("");
@@ -873,8 +877,9 @@ public class CompiledSpriteModeB16v3 {
 	public byte[] getCompiledCode(String org) {
 		byte[]  content = {};
 		List<String> code = new ArrayList<String>();
-		String tempASSFile="TMP.ASS";
-		String tempBINFile="TMP.BIN";
+		String tempFile="TMP";
+		String tempASSFile=tempFile+".ASS";
+		String tempBINFile=tempFile+".BIN";
 		try
 		{
 			// Read PNG and generate assembly code
@@ -898,7 +903,7 @@ public class CompiledSpriteModeB16v3 {
 			Files.write(assemblyFile, getCompiledECode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, getCodeSwitchData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, getCompiledECode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFooter(erasePrefix), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, getCompiledEData(erasePrefix, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, getCompiledEData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			
@@ -917,8 +922,11 @@ public class CompiledSpriteModeB16v3 {
 			
 			// Load binary code
 		    content = Files.readAllBytes(Paths.get(tempBINFile));	
-
 			Files.deleteIfExists(binaryFile);
+			
+			// Rename .lst File
+            File f = new File("codes.lst"); 
+            f.renameTo(new File(spriteName+".lst"));
 		} 
 		catch (Exception e)
 		{
