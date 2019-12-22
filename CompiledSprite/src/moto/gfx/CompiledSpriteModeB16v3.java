@@ -29,7 +29,7 @@ public class CompiledSpriteModeB16v3 {
 	int width;
 	int height;
 	byte[] pixels;
-	String ssave;
+	String ssaveAdress;
 
 	// Calcul
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
@@ -50,9 +50,9 @@ public class CompiledSpriteModeB16v3 {
 	List<String> spriteEData1 = new ArrayList<String>();
 	List<String> spriteEData2 = new ArrayList<String>();
 	
-	String drawLabel, eraseLabel, erasePrefix;
-	String dataLabel;
-	String posLabel;
+	String drawLabel, eraseLabel, dataLabel, posLabel;
+	String erasePrefix;
+	String posAdress;
 	
 	int cyclesCode = 0;
 	int octetsCode = 0;
@@ -82,8 +82,9 @@ public class CompiledSpriteModeB16v3 {
 			spriteName = spriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
 			
 			// Initialisation du code statique
-			ssave       = "9F00";
-			posLabel    = "9F02";
+			ssaveAdress = "9F00";
+			posAdress    = "9F02";
+			posLabel    = "POS_"  + spriteName;
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
 			erasePrefix = "ERASE_";
@@ -823,12 +824,16 @@ public class CompiledSpriteModeB16v3 {
 		List<String> code = new ArrayList<String>();
 		code.add(label);
 		code.add("\tPSHS U,DP");
-		code.add("\tSTS $"+ssave);
+		code.add("\tSTS $"+ssaveAdress);
 		code.add("");
-		code.add("\tLDS $" + posLabel + ((prefix.contentEquals("")) ? "" : "+4"));
 		if (prefix.contentEquals(""))
 		{
-			code.add("\tSTS $"+posLabel+"+4");
+			code.add("\tLDS $" + posAdress);
+			code.add("\tSTS " + posLabel + "_" + pos + "+2"); // auto-modification du code
+		}
+		else {
+			code.add(posLabel + "_" + pos); // label pour auto-modification du code
+			code.add("\tLDS #$0000");
 		}
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		return code;
@@ -841,10 +846,14 @@ public class CompiledSpriteModeB16v3 {
 	public List<String> getCodeSwitchData(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS $" + posLabel + ((prefix.contentEquals("")) ? "+2" : "+6"));
 		if (prefix.contentEquals(""))
 		{
-			code.add("\tSTS $"+posLabel+"+6");
+			code.add("\tLDS $" + posAdress + "+2");
+			code.add("\tSTS " + posLabel + "_" + pos + "+2"); // auto-modification du code
+		}
+		else {
+			code.add(posLabel + "_" + pos); // label pour auto-modification du code
+			code.add("\tLDS #$0000");
 		}
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
 		code.add("");
@@ -854,7 +863,7 @@ public class CompiledSpriteModeB16v3 {
 	public List<String> getCodeFooter() {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS $"+ssave);
+		code.add("\tLDS $"+ssaveAdress);
 		code.add("\tPULS U,DP");
 		code.add("\tRTS");
 		code.add("");
