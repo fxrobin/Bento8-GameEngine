@@ -49,12 +49,14 @@ public class CompiledSpriteModeB16v3 {
 	List<String> spriteEData1 = new ArrayList<String>();
 	List<String> spriteEData2 = new ArrayList<String>();
 	
-	String drawLabel, eraseLabel, dataLabel, posLabel, ssaveLabel;
+	String drawLabel, eraseLabel, dataLabel, erasePosLabel, eraseCodeLabel, ssaveLabel;
 	String erasePrefix;
 	String posAdress;
 	
 	int cyclesCode = 0;
 	int octetsCode = 0;
+	int cyclesCodeSelfMod = 0;
+	int octetsCodeSelfMod = 0;
 	int cyclesWCode1 = 0;
 	int octetsWCode1 = 0;
 	int cyclesWCode2 = 0;
@@ -64,7 +66,7 @@ public class CompiledSpriteModeB16v3 {
 	int cyclesECode2 = 0;
 	int octetsECode2 = 0;
 	boolean isSelfModifying = false;
-	int offsetCode = 0; // Offset debut code ASM pour calcul poistion auto-modification du code
+	int codePart = 0; // Partie de code (1 ou 2)
 
 	public CompiledSpriteModeB16v3(String file, String locspriteName, int nbImages, int numImage) {
 		try {
@@ -82,12 +84,17 @@ public class CompiledSpriteModeB16v3 {
 			
 			// Initialisation du code statique
 			posAdress   = "9F00";
-			posLabel    = "POS_"  + spriteName;
+			
+			// Etiquettes Code d'éctiture et Code d'effacement
 			drawLabel   = "DRAW_" + spriteName;
 			dataLabel   = "DATA_" + spriteName;
 			ssaveLabel  = "SSAV_" + spriteName;
-			erasePrefix = "ERASE_";
-			eraseLabel  = erasePrefix + spriteName;
+			
+			// Etiquettes spécifiques Code d'effacement
+			erasePrefix    = "ERASE_";
+			eraseLabel     = erasePrefix + spriteName;
+			erasePosLabel  = erasePrefix + "POS_"  + spriteName;
+			eraseCodeLabel = erasePrefix + "CODE_"  + spriteName;
 			
 			System.out.println(getCodePalette(colorModel, 3));
 
@@ -139,30 +146,32 @@ public class CompiledSpriteModeB16v3 {
 		// Génération du code source pour l'effacement des images
 		isSelfModifying = false;
 		generateCodeArray(1, spriteECode1, spriteEData1);
-		cyclesECode1 = cyclesCode;
-		octetsECode1 = octetsCode;
-		System.out.println("E Cycles 1:  " + cyclesCode);
-		System.out.println("E Octets 1:  " + octetsCode);
-		
-		generateCodeArray(3, spriteECode2, spriteEData2);
 		cyclesECode2 = cyclesCode;
 		octetsECode2 = octetsCode;
-		System.out.println("E Cycles 2:  " + cyclesCode);
-		System.out.println("E Octets 2:  " + octetsCode);
+		
+		generateCodeArray(3, spriteECode2, spriteEData2);
+		cyclesECode1 = cyclesCode;
+		octetsECode1 = octetsCode;
 
 		// Génération du code source pour l'écriture des images
 		isSelfModifying = true;
 		generateCodeArray(1, spriteCode1, spriteData1);
-		cyclesWCode1 = cyclesCode;
-		octetsWCode1 = octetsCode;
-		System.out.println("W Cycles 1:  " + cyclesCode);
-		System.out.println("W Octets 1:  " + octetsCode);
+		cyclesWCode2 = cyclesCode+cyclesCodeSelfMod;
+		octetsWCode2 = octetsCode+octetsCodeSelfMod;
 		
 		generateCodeArray(3, spriteCode2, spriteData2);
-		cyclesWCode2 = cyclesCode;
-		octetsWCode2 = octetsCode;
-		System.out.println("W Cycles 2:  " + cyclesCode);
-		System.out.println("W Octets 2:  " + octetsCode);
+		cyclesWCode1 = cyclesCode+cyclesCodeSelfMod;
+		octetsWCode1 = octetsCode+octetsCodeSelfMod;
+		
+		System.out.println("W Cycles 1:  " + cyclesWCode1);
+		System.out.println("W Cycles 2:  " + cyclesWCode2);
+		System.out.println("E Cycles 1:  " + cyclesECode1);
+		System.out.println("E Cycles 2:  " + cyclesECode2);
+		
+		System.out.println("W Octets 1:  " + octetsWCode1);
+		System.out.println("W Octets 2:  " + octetsWCode2);
+		System.out.println("E Octets 1:  " + octetsECode1);
+		System.out.println("E Octets 2:  " + octetsECode2);
 		return;
 	}
 
@@ -177,11 +186,11 @@ public class CompiledSpriteModeB16v3 {
 		// Initialisation des variables globales
 		leas = 0;
 		stOffset = 0;
-		if (isSelfModifying) {
-			offsetCode = (pos==1) ? 21+octetsECode2 : 14;
-		}
 		cyclesCode = 0;
 		octetsCode = 0;
+		cyclesCodeSelfMod = 0;
+		octetsCodeSelfMod = 0;
+		codePart = (pos==1 ? 2 : 1);
 
 		ArrayList<String> fdbBytes = new ArrayList<String>();
 		String fdbBytesResult = new String();
@@ -251,7 +260,13 @@ public class CompiledSpriteModeB16v3 {
 							} else {
 								spriteCode.add("\tLDA " + stOffset + ",S");
 							}
-							spriteCode.add("\tSTA " + eraseLabel + "+" + (offsetCode+octetsCode+((stOffset>-17) ? 4 : 5)));
+							computeStatsSelfMod8b(stOffset);
+							
+							spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4)+1)); // +2 pour LDA, +2 ou +3 ou +4 pour ANDA, +1 pour ADDA (instruction seule)
+							cyclesCodeSelfMod += 5;
+							octetsCodeSelfMod += 3;
+							
+							// bug a HIL0_1 + 403 decalage de 1
 						}
 
 						if (leftAlphaPxl == true) {
@@ -295,12 +310,12 @@ public class CompiledSpriteModeB16v3 {
 									|| ((int) pixels[pixel - 4] < 0 || (int) pixels[pixel - 4] > 15))))) {
 
 						motif = optimisationPUL(fdbBytes, pulBytesOld);
-						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif);
+						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, pos);
 						if (fdbBytes.size() / 2 > 2) {
 							writeLEAS(pixel, spriteCode);
 						}
-						if (!result[0][0].equals("")) {
-							spriteCode.add(result[0][0]); // PUL
+						if (!result[0][0].equals("")) {   // In case registers are already sets PUL or LD are skipped
+							spriteCode.add(result[0][0]); // PUL or LD code
 						}
 						spriteCode.add(result[1][0]); // PSH
 						fdbBytesResultLigne += result[2][0];
@@ -370,6 +385,24 @@ public class CompiledSpriteModeB16v3 {
 		}
 	}
 	
+	public void computeStatsSelfMod8b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCodeSelfMod += 4;
+			} else {
+				cyclesCodeSelfMod += 5;
+			}
+			if (offset > -17) {
+				octetsCodeSelfMod += 2;
+			} else {
+				octetsCodeSelfMod += 3;
+			}
+		} else {
+			cyclesCodeSelfMod += 8;
+			octetsCodeSelfMod += 4;
+		}
+	}
+	
 	public void computeStats8b() {
 			cyclesCode += 2;
 			octetsCode += 2;
@@ -390,6 +423,24 @@ public class CompiledSpriteModeB16v3 {
 		} else {
 			cyclesCode += 9;
 			octetsCode += 4;
+		}
+	}
+	
+	public void computeStatsSelfMod16b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCodeSelfMod += 5;
+			} else {
+				cyclesCodeSelfMod += 6;
+			}
+			if (offset > -17) {
+				octetsCodeSelfMod += 2;
+			} else {
+				octetsCodeSelfMod += 3;
+			}
+		} else {
+			cyclesCodeSelfMod += 9;
+			octetsCodeSelfMod += 4;
 		}
 	}
 	
@@ -539,10 +590,11 @@ public class CompiledSpriteModeB16v3 {
 	}
 
 	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld,
-			ArrayList<Integer> listeIndexReg) {
-		String read_e = new String("");
+			ArrayList<Integer> listeIndexReg, int pos) {
 		String read = new String("");
+		String erase_read = new String("");
 		String write = new String("");
+		String erase_write = new String("");
 		String[] pulBytes = { "", "", "", "", "" };
 		String[] pulBytesFiltered = { "", "", "", "", "" };
 		String fdbBytesResult = new String("");
@@ -584,70 +636,71 @@ public class CompiledSpriteModeB16v3 {
 			}
 		}
 
+		// Case 1/3 : 7 bytes to write
+		// ***************************
+		
+		if (nbBytes == 7) {
+			read += "\tPULU A,B,DP,X,Y\n";
+			cyclesCode += 12;
+			octetsCode += 2;
+			erase_read += "";
+			write += "\tPSHS Y,X,DP,B,A\n";
+			cyclesCode += 12;
+			octetsCode += 2;
+			erase_write += "";
+		}
+		
+		// Case 2/3 : 3 to 6 bytes to write
+		// ********************************
+		
+		if (nbBytes >= 3 && nbBytes <= 6 && isSelfModifying) // Construction du code auto-modifié pour l'effacement
+		{
+			for (int i = listeIndexReg.size() - 1, offset = octetsCode+3; i >= 0 ; i--) {
+				// Lecture des registres en sens inverse pour construction du PULS
+				if (erase_read.equals("")) {
+					erase_read += "\tPULS ";
+					cyclesCodeSelfMod += 5;
+					octetsCodeSelfMod += 2;
+				} else {
+					erase_read += ",";
+				}
+				erase_read += pulReg[listeIndexReg.get(i)];
+				if (listeIndexReg.get(i) < 2) { // modification du positionnement pour le PULS
+					leas -= 2; // BUG
+					cyclesCodeSelfMod += 2;
+				} else {
+					leas -= 1;
+					cyclesCodeSelfMod += 1;
+				}
+				
+				// Lecture des registres en sens inverse pour construction des ST
+				erase_write += "\tST" + pulReg[listeIndexReg.get(i)] + " " + eraseCodeLabel + "_" + codePart + "+" + offset + "\n";	
+				if (listeIndexReg.get(i) < 2) {
+					offset += 3;
+					cyclesCodeSelfMod += 6;
+					octetsCodeSelfMod += 3;
+				} else {
+					offset += 2;
+					cyclesCodeSelfMod += 5;
+					octetsCodeSelfMod += 3;
+				}
+			}
+			erase_read += "\n";
+		}
+		
 		for (Integer indexReg : listeIndexReg) {
-			if (nbBytes == 7) {
-				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
-					if (read.equals("")) {
-						read += "\tPULU ";
-						cyclesCode += 5;
-						octetsCode += 2;
-					} else {
-						read += ",";
-					}
-					read += pulReg[indexReg];
-					pulBytesOld[indexReg] = pulBytes[indexReg];
-					pulBytesFiltered[indexReg] += pulBytes[indexReg];
-					if (indexReg < 2) {
-						cyclesCode += 2;
-					} else {
-						cyclesCode += 1;
-					}
-				//}
-
-				if (write.equals("")) {
-					write += "\tPSHS ";
-					cyclesCode += 5;
-					octetsCode += 2;
-				} else {
-					write += ",";
-				}
-				write += pulReg[indexReg];
-				if (indexReg < 2) {
-					cyclesCode += 2;
-				} else {
-					cyclesCode += 1;
-				}
-			}
 			if (nbBytes >= 3 && nbBytes <= 6) {
-				if (isSelfModifying) {
-					if (read.equals("")) {
-						read += "\tPULS ";
-					} else {
-						read += ",";
-					}
-					read += pulReg[indexReg];
-					if (!read_e.equals("")) {
-						read_e = "\n" + read_e;
-					}		
-					read_e += "\tST" + pulReg[indexReg] + " " + eraseLabel + "+" + (offsetCode+octetsCode);
-					if (indexReg < 2) {
-						leas += 2;
-					} else {
-						leas += 1;
-					}
-				}
-					
 				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
-					if (!read_e.equals("")) {
-						read_e = "\n" + read_e;
-					}					
-					read_e = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read_e;
-					pulBytesOld[indexReg] = pulBytes[indexReg];
-					if (indexReg < 2) {
-						computeStats16b();
-					} else {
-						computeStats8b();
-					}
+				if (!read.equals("")) {
+					read = "\n" + read;
+				}
+				read = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read;
+				pulBytesOld[indexReg] = pulBytes[indexReg];
+				if (indexReg < 2) {
+					computeStats16b();
+				} else {
+					computeStats8b();
+				}
 				//}
 
 				if (write.equals("")) {
@@ -664,7 +717,50 @@ public class CompiledSpriteModeB16v3 {
 					cyclesCode += 1;
 				}
 			}
+			
+			// Case 3/3 : 1 to 2 bytes to write
+			// ********************************
 			if (nbBytes <= 2) {
+		
+				if (isSelfModifying) {
+					if (stOffset == 0) {
+						read += "\tLD" + pulReg[indexReg] + " ,S\n";
+					} else {
+						read += "\tLD" + pulReg[indexReg] + " " + stOffset + ",S\n";
+					}
+					
+					// LD Offset
+					if (indexReg < 2) {
+						computeStatsSelfMod16b(stOffset);
+					} else {
+						computeStatsSelfMod8b(stOffset);
+					}
+					
+					read += "\tST" + pulReg[indexReg] + " " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+1); // +1 pour l'octet du LD
+					
+					//ST Offset
+					if (indexReg < 2) {
+						cyclesCodeSelfMod += 6;
+						octetsCodeSelfMod += 3;
+					} else {
+						cyclesCodeSelfMod += 5;
+						octetsCodeSelfMod += 3;
+					}
+				}		
+				
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+				if (!read.equals("")) {
+					read += "\n";
+				}
+				read += "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg];
+				pulBytesOld[indexReg] = pulBytes[indexReg];
+				if (indexReg < 2) {
+					computeStats16b();
+				} else {
+					computeStats8b();
+				}
+				//}
+				
 				if (indexReg < 2) {
 					stOffset -= 2;
 					leas -= 2;
@@ -672,27 +768,7 @@ public class CompiledSpriteModeB16v3 {
 					stOffset -= 1;
 					leas -= 1;
 				}
-				if (isSelfModifying) {
-					if (stOffset == 0) {
-						read += "\tLD" + pulReg[indexReg] + " ,S\n";
-					} else {
-						read += "\tLD" + pulReg[indexReg] + " " + stOffset + ",S\n";
-					}
-					read += "\tST" + pulReg[indexReg] + " " + eraseLabel + "+" + (offsetCode+octetsCode);
-				}		
-
-				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
-					if (!read.equals("")) {
-						read += "\n";
-					}
-					read += "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg];
-					pulBytesOld[indexReg] = pulBytes[indexReg];
-					if (indexReg < 2) {
-						computeStats16b();
-					} else {
-						computeStats8b();
-					}
-				//}
+				
 				if (!write.equals("")) {
 					write += "\n";
 				}
@@ -704,15 +780,13 @@ public class CompiledSpriteModeB16v3 {
 				}
 			}
 		}
-		read += read_e;
-		read_e = "";
 
 		// Enregistre les données FDB en sens inverse et filtrées
 		for (int i = listeIndexReg.size() - 1; i >= 0; i--) {
 			fdbBytesResult += pulBytesFiltered[listeIndexReg.get(i)];
 		}
 
-		result[0] = new String[] { read };
+		result[0] = new String[] { erase_read + erase_write + read };
 		result[1] = new String[] { write };
 		result[2] = new String[] { fdbBytesResult };
 		result[3] = pulBytesOld;
@@ -863,13 +937,22 @@ public class CompiledSpriteModeB16v3 {
 		if (prefix.contentEquals(""))
 		{
 			code.add("\tLDS $" + posAdress);
-			code.add("\tSTS " + posLabel + "_" + pos + "+2"); // auto-modification du code
+			code.add("\tSTS " + erasePosLabel + "_" + pos + "+2"); // auto-modification du code
 		}
 		else {
-			code.add(posLabel + "_" + pos); // label pour auto-modification du code
+			code.add(erasePosLabel + "_" + pos); // label pour auto-modification du code
 			code.add("\tLDS #$0000");
 		}
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
+		
+		if (prefix.contentEquals(""))
+		{
+			code.add("");
+		}
+		else {
+			code.add(eraseCodeLabel + "_" + pos);
+		}
+		
 		return code;
 	}
 	
@@ -883,14 +966,22 @@ public class CompiledSpriteModeB16v3 {
 		if (prefix.contentEquals(""))
 		{
 			code.add("\tLDS $" + posAdress + "+2");
-			code.add("\tSTS " + posLabel + "_" + pos + "+2"); // auto-modification du code
+			code.add("\tSTS " + erasePosLabel + "_" + pos + "+2"); // auto-modification du code
 		}
 		else {
-			code.add(posLabel + "_" + pos); // label pour auto-modification du code
+			code.add(erasePosLabel + "_" + pos); // label pour auto-modification du code
 			code.add("\tLDS #$0000");
 		}
+		
 		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
-		code.add("");
+
+		if (prefix.contentEquals(""))
+		{
+			code.add("");
+		}
+		else {
+			code.add(eraseCodeLabel + "_" + pos);
+		}
 		return code;
 	}
 	
