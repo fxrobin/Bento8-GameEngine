@@ -37,6 +37,7 @@ public class CompiledSpriteModeB16v3 {
 	final int[] regCostLDx = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
 	final int[] regCostSTx = { 6, 5, 99, 4, 4, 5 }; // il n'y a pas de LDx pour DP
 	private int leas = 0;
+	private int leasSelfMod = 0;
 	private int stOffset = 0; // Offset pour les STx depuis le dernier LEAS
 
 	// Code
@@ -185,6 +186,7 @@ public class CompiledSpriteModeB16v3 {
 
 		// Initialisation des variables globales
 		leas = 0;
+		leasSelfMod = 0;
 		stOffset = 0;
 		cyclesCode = 0;
 		octetsCode = 0;
@@ -311,7 +313,7 @@ public class CompiledSpriteModeB16v3 {
 
 						motif = optimisationPUL(fdbBytes, pulBytesOld);
 						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, pos);
-						if (fdbBytes.size() / 2 > 2) {
+						if (fdbBytes.size() / 2 > 2) { // Ecriture du LEAS avant utilisation du PSHS
 							writeLEAS(pixel, spriteCode);
 						}
 						if (!result[0][0].equals("")) {   // In case registers are already sets PUL or LD are skipped
@@ -456,6 +458,7 @@ public class CompiledSpriteModeB16v3 {
 
 		// Initialisation variable globale
 		leas = 0;
+		leasSelfMod = 0;
 
 		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le
 		// même
@@ -518,11 +521,50 @@ public class CompiledSpriteModeB16v3 {
 	}
 
 	public void writeLEAS(int pixel, List<String> spriteCode) {
-		if (pixel > 3 && leas < 0) {
-			spriteCode.add("\tLEAS " + leas + ",S");
-			computeStats8b(leas);
+		if (pixel > 3 && leas+leasSelfMod < 0) {
+			spriteCode.add("\tLEAS " + (leas+leasSelfMod) + ",S");
+
+			// Séparation du comptage entre mode normal ou Self Modification
+			// car le LEAS est commun
+			int c_cyclesCode = 0;
+			int t_cyclesCode = 0;
+			int c_octetsCode = 0;
+			int t_octetsCode = 0;
+			
+			if (leas <0) {
+				if (leas > -129) {
+					c_cyclesCode += 5;
+					if (leas > -17) {
+						c_octetsCode += 2;
+					} else {
+						c_octetsCode += 3;
+					}
+				} else {
+					c_cyclesCode += 8;
+					c_octetsCode += 4;
+				}
+			}
+			
+			if (leas+leasSelfMod > -129) {
+				t_cyclesCode += 5;
+				if (leas+leasSelfMod > -17) {
+					t_octetsCode += 2;
+				} else {
+					t_octetsCode += 3;
+				}
+			} else {
+				t_cyclesCode += 8;
+				t_octetsCode += 4;
+			}	
+			
+			cyclesCode += c_cyclesCode;
+			octetsCode += c_octetsCode;
+			cyclesCodeSelfMod += t_cyclesCode - c_cyclesCode;
+			octetsCodeSelfMod += t_octetsCode - c_octetsCode;
+
 			stOffset = 0;
 			leas = 0;
+			leasSelfMod = 0;
 		}
 	}
 
@@ -666,10 +708,10 @@ public class CompiledSpriteModeB16v3 {
 				}
 				erase_read += pulReg[listeIndexReg.get(i)];
 				if (listeIndexReg.get(i) < 2) { // modification du positionnement pour le PULS
-					leas -= 2; // BUG
+					leasSelfMod -= 2;
 					cyclesCodeSelfMod += 2;
 				} else {
-					leas -= 1;
+					leasSelfMod -= 1;
 					cyclesCodeSelfMod += 1;
 				}
 				
@@ -761,6 +803,7 @@ public class CompiledSpriteModeB16v3 {
 				}
 				//}
 				
+				// Dans le cas ou on n'utilise pas de PSHS pour ecrire il faut faire avancer S
 				if (indexReg < 2) {
 					stOffset -= 2;
 					leas -= 2;
