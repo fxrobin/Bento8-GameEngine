@@ -697,7 +697,7 @@ public class CompiledSpriteModeB16v3 {
 		
 		if (nbBytes >= 3 && nbBytes <= 6 && isSelfModifying) // Construction du code auto-modifié pour l'effacement
 		{
-			for (int i = listeIndexReg.size() - 1, offset = octetsCode+3; i >= 0 ; i--) {
+			for (int i = listeIndexReg.size() - 1, offset = octetsCode+((leas < 0) ? ((leas > -129) ? ((leas > -17) ? 2 : 3) : 4) : 0)+1; i >= 0 ; i--) { // On ajoute le LEAS et +1 pour le premier ST
 				// Lecture des registres en sens inverse pour construction du PULS
 				if (erase_read.equals("")) {
 					erase_read += "\tPULS ";
@@ -763,6 +763,15 @@ public class CompiledSpriteModeB16v3 {
 			// Case 3/3 : 1 to 2 bytes to write
 			// ********************************
 			if (nbBytes <= 2) {
+				
+				// Dans le cas ou on n'utilise pas de PSHS pour ecrire il faut faire avancer S
+				if (indexReg < 2) {
+					stOffset -= 2;
+					leas -= 2;
+				} else {
+					stOffset -= 1;
+					leas -= 1;
+				}
 		
 				if (isSelfModifying) {
 					if (stOffset == 0) {
@@ -802,15 +811,6 @@ public class CompiledSpriteModeB16v3 {
 					computeStats8b();
 				}
 				//}
-				
-				// Dans le cas ou on n'utilise pas de PSHS pour ecrire il faut faire avancer S
-				if (indexReg < 2) {
-					stOffset -= 2;
-					leas -= 2;
-				} else {
-					stOffset -= 1;
-					leas -= 1;
-				}
 				
 				if (!write.equals("")) {
 					write += "\n";
