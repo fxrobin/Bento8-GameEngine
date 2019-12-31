@@ -99,44 +99,50 @@ public class CompiledSpriteModeB16v3 {
 			
 			System.out.println(getCodePalette(colorModel, 3));
 
-			// System.out.println("Type image:"+image.getType());
-			// Contr√¥le du format d'image
-			if (width <= 160 && height <= 200 && pixelSize == 8) { // && numComponents==3
+			if (width % nbImages == 0) { // Est-ce que la division de la largeur par le nombre d'images donne un entier ?
 
-				// Si la largeur d'image est impaire, on ajoute une colonne de pixel transparent
-				// a gauche de l'image
-				if (width % 2 != 0) {
-					pixels = new byte[(width + 1) * height];
-					for (int iSource = 0, iCol = 0, iDest = 0; iDest < (width + 1) * height; iDest++) {
+				int iWidth = width/nbImages; // Largeur de la sous-image
+
+				if (iWidth <= 160 && height <= 200 && pixelSize == 8) { // ContrÙle du format d'image
+					
+					int offsetStart = 1;
+					int offsetEnd = 0;
+					if (iWidth % 2 != 0) { // Si la largeur d'image est impaire, on ajoute une colonne de pixel transparent a gauche de l'image
+						offsetStart = 0;
+						offsetEnd = 1;
+					}
+					
+					pixels = new byte[(iWidth + offsetEnd) * height];
+					for (int iSource = iWidth*numImage, iDest = 0, iCol = offsetStart; iDest < (iWidth + offsetEnd) * height; iDest++) {
 						if (iCol == 0) {
 							pixels[iDest] = 16;
 						} else {
-							pixels[iDest] = (byte) ((DataBufferByte) image.getRaster().getDataBuffer())
-									.getElem(iSource);
+							pixels[iDest] = (byte) ((DataBufferByte) image.getRaster().getDataBuffer()).getElem(iSource);
 							iSource++;
 						}
-						// System.out.println(pixels[iDest]);
 						iCol++;
-						if (iCol == width + 1) {
-							iCol = 0;
+						if (iCol == iWidth + 1) {
+							iCol = offsetStart;
+							iSource += width - iWidth;
 						}
 					}
-					width = width + 1;
-				} else { // Sinon construction du tableau de pixels √† partir de l'image
-					pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-				}
+					iWidth = iWidth + offsetEnd;
 
-				// GÈnÈration du code Assembleur
-				generateCode();
-			} else {
-				// PrÈsente les formats acceptÈs √† l'utilisateur en cas de fichier d'entrÈe
-				// incompatible
-				System.out.println("Le format de fichier de " + file + " n'est pas supportÈ.");
-				System.out.println(
-						"Resolution: " + width + "x" + height + "px (doit √™tre infÈrieur ou Ègal √† 160x200)");
-				System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit √™tre 8)");
-				// System.out.println("Nombre de composants: "+numComponents+" (doit √™tre 3)");
+					// GÈnÈration du code Assembleur
+					width = iWidth;
+					generateCode();
+					
+				} else {
+					System.out.println("Le format de fichier de " + file + " n'est pas supportÈ.");
+					System.out.println("Resolution: " + iWidth + "x" + height + "px (doit √™tre infÈrieur ou Ègal √† 160x200)");
+					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit √™tre 8)");
+					// System.out.println("Nombre de composants: "+numComponents+" (doit √™tre 3)");
+				}
 			}
+			else {
+				System.out.println("La largeur d'image :" + width + " n'est pas divisible par le nombre d'images :" +  nbImages);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(e);
@@ -691,6 +697,9 @@ public class CompiledSpriteModeB16v3 {
 			octetsCode += 2;
 			erase_write += "";
 		}
+		
+		// TODO effacement
+		// TODO PERF remplacer l'effacement des pixels doite ou gauche transparent par un octet entier (7 cy au lieu de 14)
 		
 		// Case 2/3 : 3 to 6 bytes to write
 		// ********************************

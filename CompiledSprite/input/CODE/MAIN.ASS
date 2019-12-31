@@ -736,7 +736,7 @@ Hero_MoveLeft_00		       	* Orientation a GAUCHE
 	SUBD HERO_ACCELERATION 	* acceleration
 	CMPD HERO_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BGT Hero_MoveLeft_01       	* BRANCH si vitesse inferieur au maximum
-	LDX #HERO_RUN_L        * Charge animation WALK L
+	LDX #HERO_RUN_L        * Charge animation RUN L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LDD HERO_NEG_TOP_SPEED 	* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
@@ -767,7 +767,7 @@ Hero_MoveRight_00		      	* Orientation a DROITE
 	ADDD HERO_ACCELERATION 	* acceleration
 	CMPD HERO_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BLT Hero_MoveRight_01       * BRANCH si vitesse inferieur au maximum
-	LDX #HERO_RUN_R			* Charge animation WALK R
+	LDX #HERO_RUN_R			* Charge animation RUN R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	LDD HERO_TOP_SPEED		* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
@@ -925,7 +925,7 @@ HERO_ANIMATION_NEXT_00
 	
 *   SAMPLE CODE ANIMATION
 *	---------------------
-*	FDB $0018		* 00 Absolute 18 Nb frames par image
+*	FDB $0018		* 00 Absolute (Different from $00 means NbFrames relative to GSP) 18 Nb frames par image
 *HERO_IDLE_L
 *	FCB $01			* Page associee a l adresse drw img 00
 *	FDB $A000		* Adresse drw img 00
@@ -948,8 +948,6 @@ HERO_ANIMATION_NEXT_00
 	FDB $0001
 HERO_IDLE_L
 HERO_IDLE_R
-HERO_IDLE_L2
-HERO_SUBIDLE_B
 HERO_WALK_L
 HERO_WALK_R
 HERO_RUN_L
