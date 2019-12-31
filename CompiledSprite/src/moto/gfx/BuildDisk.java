@@ -23,7 +23,7 @@ public class BuildDisk
 	{
 		byte[] binary;
 		int k=0, sector=0, track=0, face=0;
-		HashMap<String, byte[]> compiledImages = new HashMap<String, byte[]>();
+		HashMap<String, String[]> compiledImages = new HashMap<String, String[]>();
 
 		try {
 			confProperties = new ReadProperties(args[0]);
@@ -63,10 +63,10 @@ public class BuildDisk
 			for (String[] i : confProperties.animationImages.values()) {
 				int nbImages = Integer.parseInt(i[5]);
 				for (int j=0; j<nbImages; j++ ) {
-					System.out.println("**************** COMPILE SPRITE " + i[1]+":"+j + " ****************");
-					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j); // todo implementer sous images
+					System.out.println("**************** COMPUTE COMPILED SPRITE LENGTH " + i[1]+":"+j + " ****************");
+					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j);
 					binary = sprite.getCompiledCode("A000");
-					compiledImages.put(i[1]+":"+j, binary);
+					compiledImages.put(i[1]+":"+j, new String[] {i[4], i[1]+j, Integer.toString(nbImages), Integer.toString(j), i[0]});
 					items[k++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length); // id, priority, bytes
 				}
 			}
@@ -86,14 +86,26 @@ public class BuildDisk
 //			    }
 //			}
 
-
 			face=0;
 			track=4;
 			sector=1;
+			int orgOffset=40960; // offset A000
+			int org=0; // relative ORG
+			int[] pages = {4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
 			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
 				Item a = iter.next();
+
+				System.out.println("**************** COMPILE SPRITE " + a.name + " ****************");
+				String[] params = compiledImages.get(a.name);
+				CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(params[0], params[1], Integer.parseInt(params[2]), Integer.parseInt(params[3]));
+				System.out.println(params[4]);
+				System.out.println("\tFCB $" + String.format("%1$02X",pages[0]));
+				System.out.println("\tFDB $" + String.format("%1$04X",orgOffset+org));
+				binary = sprite.getCompiledCode(String.format("%1$04X",orgOffset+org));
+				org += binary.length;
+
 				for (int i=0; i<compiledImages.get(a.name).length; i++) {
-					fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = compiledImages.get(a.name)[i];
+					fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = binary[i];
 				}
 			}
 			
