@@ -16,6 +16,7 @@ import moto.util.knapsack.Solution;
 
 public class BuildDisk
 {
+	
 	static ReadProperties confProperties;
 	static byte[] fdBytes = new byte[655360];
 	static byte[] bootLoaderBytes;
