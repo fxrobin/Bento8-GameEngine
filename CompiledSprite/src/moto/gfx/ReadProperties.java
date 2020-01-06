@@ -8,15 +8,17 @@ import java.util.HashMap;
 
 public class ReadProperties {
 
+	String bootfile;
+	String mainfile;
+	String animationTag;
+	String outputfile;
+	int[] memorypages;
 	HashMap<String, String[]> animationImages = new HashMap<String, String[]>();
 	HashMap<String, String[]> animationScripts = new HashMap<String, String[]>();
 	HashMap<String, String[]> tileImages = new HashMap<String, String[]>();
 	HashMap<String, String[]> tileMaps = new HashMap<String, String[]>();
 	HashMap<String, String[]> raws = new HashMap<String, String[]>();
-	String bootfile = new String();
-	String mainfile = new String();
-	String outputfile = new String();
-	
+
 	public ReadProperties(String file) {
 		try {
 			List<String> allLines = Files.readAllLines(Paths.get(file));
@@ -25,7 +27,21 @@ public class ReadProperties {
 				if (splitedLine.length > 1) {
 					splitedLine = splitedLine[1].split(";");
 				}
-				if (line.startsWith("animation.images=")) {
+				if (line.startsWith("bootfile=")) {
+					bootfile=splitedLine[0];
+				} else if (line.startsWith("mainfile=")) {
+					mainfile=splitedLine[0];
+				} else if (line.startsWith("animation.tag=")) {
+					animationTag=splitedLine[0];
+				} else if (line.startsWith("outputfile=")) {
+					outputfile=splitedLine[0];
+				} else if (line.startsWith("memorypages=")) {
+					int[] mem = new int[splitedLine.length];
+					for (int i=0;i<splitedLine.length;i++) {
+						mem[i]=Integer.parseInt(splitedLine[i]);
+					}
+					memorypages=mem;
+				} else if (line.startsWith("animation.images=")) {
 					animationImages.put(splitedLine[0], splitedLine);
 				} else if (line.startsWith("animation.script")) {
 					animationScripts.put(splitedLine[0], splitedLine);
@@ -35,12 +51,6 @@ public class ReadProperties {
 					tileMaps.put(splitedLine[0], splitedLine);
 				} else if (line.startsWith("raw=")) {
 					raws.put(splitedLine[0], splitedLine);
-				} else if (line.startsWith("bootfile=")) {
-					bootfile=splitedLine[0];
-				} else if (line.startsWith("mainfile=")) {
-					mainfile=splitedLine[0];
-				} else if (line.startsWith("outputfile=")) {
-					outputfile=splitedLine[0];
 				}
 			}
 		} catch (IOException ex) {

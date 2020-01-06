@@ -97,7 +97,7 @@ public class CompiledSpriteModeB16v3 {
 			erasePosLabel  = erasePrefix + "POS_"  + spriteName;
 			eraseCodeLabel = erasePrefix + "CODE_"  + spriteName;
 			
-			System.out.println(getCodePalette(colorModel, 3));
+//			System.out.println(getCodePalette(colorModel, 3));
 
 			if (width % nbImages == 0) { // Est-ce que la division de la largeur par le nombre d'images donne un entier ?
 
@@ -170,15 +170,15 @@ public class CompiledSpriteModeB16v3 {
 		cyclesWCode1 = cyclesCode+cyclesCodeSelfMod;
 		octetsWCode1 = octetsCode+octetsCodeSelfMod;
 		
-		System.out.println("W Cycles 1:  " + cyclesWCode1);
-		System.out.println("W Cycles 2:  " + cyclesWCode2);
-		System.out.println("E Cycles 1:  " + cyclesECode1);
-		System.out.println("E Cycles 2:  " + cyclesECode2);
-		
-		System.out.println("W Octets 1:  " + octetsWCode1);
-		System.out.println("W Octets 2:  " + octetsWCode2);
-		System.out.println("E Octets 1:  " + octetsECode1);
-		System.out.println("E Octets 2:  " + octetsECode2);
+//		System.out.println("W Cycles 1:  " + cyclesWCode1);
+//		System.out.println("W Cycles 2:  " + cyclesWCode2);
+//		System.out.println("E Cycles 1:  " + cyclesECode1);
+//		System.out.println("E Cycles 2:  " + cyclesECode2);
+//		
+//		System.out.println("W Octets 1:  " + octetsWCode1);
+//		System.out.println("W Octets 2:  " + octetsWCode2);
+//		System.out.println("E Octets 1:  " + octetsECode1);
+//		System.out.println("E Octets 2:  " + octetsECode2);
 		return;
 	}
 
