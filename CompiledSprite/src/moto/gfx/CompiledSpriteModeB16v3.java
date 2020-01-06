@@ -190,6 +190,7 @@ public class CompiledSpriteModeB16v3 {
 		boolean leftAlphaPxl = false;
 		boolean rightAlphaPxl = false;
 
+		
 		// Initialisation des variables globales
 		leas = 0;
 		leasSelfMod = 0;
