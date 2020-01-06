@@ -21,7 +21,6 @@ public class BuildDisk
 	static byte[] bootLoaderBytes;
 	static String tempFile = "TMP.BIN";
 	
-	
 	public static void main(String[] args)
 	{
 		byte[] binary;

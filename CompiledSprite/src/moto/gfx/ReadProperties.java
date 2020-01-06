@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 public class ReadProperties {
 
-	
 	String bootfile;
 	String mainfile;
 	String animationTag;
