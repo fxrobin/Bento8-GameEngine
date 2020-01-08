@@ -52,24 +52,34 @@ BEGIN
 ********************************************************************************
 * Chargement des pages memoire
 ********************************************************************************
-	* Chargement de la page 4 depuis la dsk
+	* Chargement des pages depuis la dsk
 	***************************************
-	LDB #$04                       * On monte la page 4
-	STB $E7E5                      * en RAM Donnees (A000-DFFF)
 	
 	LDD #$0004
 	STD DK_piste
 	LDA #$01
 	STA DK_secteur
-	LDD #$A000
-	STD DK_destination
 	LDD #$DF00
 	STD DK_dernier_bloc_a_ecrire
+	
+LDPAGE_LOOP
+	LDB #$04
+	STB $E7E5 * Selection de la page en RAM Donnees (A000-DFFF)
+	
+	LDD #$A000
+	STD DK_destination
 	JSR DK_lecture
 	
+	INC LDPAGE_LOOP+1
+	INC LDPAGE_LOOP+1
+	LDB LDPAGE_LOOP+1
+	CMPB #$1A
+	BLS LDPAGE_LOOP
+		
 	* Copie de la page 4 en page 5
-	******************************	
-	LDB #$65                       * On monte la page 5
+	******************************
+CPPAGE_LOOP	
+	LDB #$65                       * On monte la page
 	STB $E7E6                      * en RAM Cartouche (0000-3FFF)
 
     LDU #$A000                     * Source
@@ -83,6 +93,12 @@ BEGIN
 	STY MEM_COPY_DATA_TO_CART_E+2
     LDY #$0000+64                  * Destination Debut +64 on commence a -64,Y
     JSR MEM_COPY_DATA_TO_CART      * Copie memoire
+    
+	INC CPPAGE_LOOP+1
+	INC CPPAGE_LOOP+1
+	LDB CPPAGE_LOOP+1
+	CMPB #$7A
+	BLS CPPAGE_LOOP
 	
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
@@ -947,6 +963,7 @@ HERO_ANIMATION_NEXT_00
 ********************************************************************************
 
 
+
 	FDB $0108
 HERO_SKID_R
 	FCB $04
@@ -1024,9 +1041,9 @@ HERO_WALK_R
 
 	FDB $0118
 HERO_IDLE_R
-	FCB $14
-	FDB $A000
-	FDB $AA07
+	FCB $08
+	FDB $AA65
+	FDB $B46C
 	FCB $FF
 	FDB HERO_IDLE_R
 	FDB $0000

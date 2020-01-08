@@ -86,7 +86,7 @@ public class BuildDisk
 			// Arrange images in 16ko pages
 			while (items.length>0) {
 				
-				System.out.println("**************** ARRANGE DATA IN 16ko PAGES ****************");
+				System.out.println("**************** ARRANGE DATA IN 16ko PAGES - Current Page : " + pages[currentPageIndex] + " ****************");
 				orgOffset = 40960; // offset A000
 				org = 0; // relative ORG
 						
@@ -205,6 +205,17 @@ public class BuildDisk
 			Files.deleteIfExists(outputfile);
 			Files.createFile(outputfile);
 			Files.write(outputfile, fdBytes);
+			
+			// Display memory usage
+			System.out.print("\nUsed Pages :");
+			for (int usedPagesIndex=0; usedPagesIndex<currentPageIndex; usedPagesIndex++) {
+				System.out.print(pages[usedPagesIndex]+" ");
+			}
+			System.out.print("("+currentPageIndex*16+"ko)\nFree Pages :");
+			for (int freePagesIndex=currentPageIndex; freePagesIndex<pages.length; freePagesIndex++) {
+				System.out.print(pages[freePagesIndex]+" ");
+			}
+			System.out.print("("+(pages.length-currentPageIndex)*16+" ko)\n");
 		}
 		catch (Exception e)
 		{
