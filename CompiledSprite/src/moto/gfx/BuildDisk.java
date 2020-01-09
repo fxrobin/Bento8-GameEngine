@@ -111,6 +111,7 @@ public class BuildDisk
 						if (track > 79) {
 							face += 1;
 							track = 0;
+							
 							if (face>1) {
 								throw new Exception("No more space on fd image.");
 							}
