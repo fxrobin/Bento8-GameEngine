@@ -80,6 +80,8 @@ public class BuildDisk
 			sector = 1; // 1-16
 			int orgOffset;
 			int org;
+			int iPos;
+			int iPosCumul;
 			int[] pages = confProperties.memorypages; // free usable memory pages
 			int currentPageIndex = 0;
 			
@@ -89,23 +91,12 @@ public class BuildDisk
 				System.out.println("**************** ARRANGE DATA IN 16ko PAGES - Current Page : " + pages[currentPageIndex] + " ****************");
 				orgOffset = 40960; // offset A000
 				org = 0; // relative ORG
+				iPosCumul = 0;
 						
 				if (currentPageIndex >= pages.length) {
 					throw new Exception("No more available pages.");
 				}
 
-				if (sector>16) {
-					track += 1;
-					sector = 1;
-					if (track > 79) {
-						face += 1;
-						track = 0;
-						if (face>1) {
-							throw new Exception("No more space on fd image.");
-						}
-					}
-				}
-				
 				Knapsack knapsack = new Knapsack(items, 16384); //16Ko
 				knapsack.display();
 				Solution solution = knapsack.solve();
@@ -113,6 +104,18 @@ public class BuildDisk
 
 				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
 					Item currentItem = iter.next();
+					
+					//if (sector>16) {
+						//track += 1;
+						//sector = 1;
+						if (track > 79) {
+							face += 1;
+							track = 0;
+							if (face>1) {
+								throw new Exception("No more space on fd image.");
+							}
+						}
+					//}
 
 					System.out.println("**************** COMPILE SPRITE " + currentItem.name + " ****************");
 					String[] params = compiledImages.get(currentItem.name);
@@ -121,9 +124,11 @@ public class BuildDisk
 					imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",pages[currentPageIndex]) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org+binary.length));
 					org += binary.length;
 					
-					for (int i=0; i<compiledImages.get(currentItem.name).length; i++) {
-						fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = binary[i];
+					System.out.println("Ecriture en :"+(iPosCumul+(face*327680)+(track*4096)+((sector-1)*256))+" ($"+String.format("%1$04X",(iPosCumul+(face*327680)+(track*4096)+((sector-1)*256)))+")");
+					for (iPos = 0; iPos < binary.length; iPos++) {
+						fdBytes[iPos+iPosCumul+(face*327680)+(track*4096)+((sector-1)*256)] = binary[iPos];
 					}
+					iPosCumul += iPos;
 
 					for (int itemIndex=0; itemIndex<items.length; itemIndex++) {
 						if (items[itemIndex].name.contentEquals(currentItem.name)) {
@@ -139,9 +144,8 @@ public class BuildDisk
 						}
 					}
 				}
-				
 				currentPageIndex++;
-				sector += 4;
+				track += 4;
 			}
 			
 			// ********** Animation scripts *******
@@ -196,6 +200,7 @@ public class BuildDisk
 			track=0;
 			sector=2;
 			byte[] mainBIN = Files.readAllBytes(Paths.get(tempFile));
+			System.out.println("Ecriture en :"+((face*327680)+(track*4096)+((sector-1)*256))+" ($"+String.format("%1$04X",((face*327680)+(track*4096)+((sector-1)*256)))+")");
 			for (int i = 0; i < mainBIN.length; i++) {
 				fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = mainBIN[i];
 			}
@@ -209,11 +214,11 @@ public class BuildDisk
 			// Display memory usage
 			System.out.print("\nUsed Pages :");
 			for (int usedPagesIndex=0; usedPagesIndex<currentPageIndex; usedPagesIndex++) {
-				System.out.print(pages[usedPagesIndex]+" ");
+				System.out.print(pages[usedPagesIndex]+" ($"+String.format("%1$02X",pages[usedPagesIndex])+") ");
 			}
 			System.out.print("("+currentPageIndex*16+"ko)\nFree Pages :");
 			for (int freePagesIndex=currentPageIndex; freePagesIndex<pages.length; freePagesIndex++) {
-				System.out.print(pages[freePagesIndex]+" ");
+				System.out.print(pages[freePagesIndex]+" ($"+String.format("%1$02X",pages[freePagesIndex])+") ");
 			}
 			System.out.print("("+(pages.length-currentPageIndex)*16+" ko)\n");
 		}
