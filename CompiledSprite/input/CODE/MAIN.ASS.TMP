@@ -139,6 +139,7 @@ SETPALETTE
 * Initialisation des sprites
 ********************************************************************************
 	LDX #HERO_IDLE_R
+	STX HERO_ANIMATION_ADR_OLD
 	JSR HERO_ANIMATION_LOAD
 
 ********************************************************************************
@@ -150,11 +151,7 @@ SETPALETTE
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 	JSR SCRC
-	LDB HERO_ANIMATION_PAG				* On monte la page 
-	STB HERO_ANIMATION_PAG_DEL+1
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
-	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
-	JSR SCRC
+	BRA MAIN_0
 	
 MAIN
 	* Effacement et affichage des sprites
@@ -162,12 +159,23 @@ MAIN
 	STB HERO_ANIMATION_PAG_DEL
 	STA $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DEL]			* Efface le sprite
-	
+MAIN_0
+	LDD HERO_ANIMATION_DEL+2			* On monte la page 
+	STD HERO_ANIMATION_DEL
+
 	* Gestion des deplacements
 	JSR JOY_READ
 	JSR Hero_Move
 	JSR Compute_Position
-	JSR HERO_ANIMATION_NEXT	
+	LDX HERO_ANIMATION_ADR
+	CMPX HERO_ANIMATION_ADR_OLD
+	BNE MAIN_1
+	JSR HERO_ANIMATION_NEXT
+	BRA MAIN_2
+MAIN_1
+	STX HERO_ANIMATION_ADR_OLD
+	JSR HERO_ANIMATION_LOAD
+MAIN_2
 	
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB HERO_ANIMATION_PAG_DEL+1
@@ -238,185 +246,6 @@ VSYNC_2
 * 128 octets (-64  a 63)  x 128 boucles (81673 cy) Active
 * 32  octets (-16  a 15)  x 512 boucles (87049 cy)
 ********************************************************************************
-*MEM_COPY_DATA_TO_CART
-*   PULS X,U	
-*   STX	-128,Y
-*   STU	-126,Y
-*   PULS	D,X,U	
-*   STD	-124,Y
-*   STX	-122,Y
-*   STU	-120,Y
-*   PULS	D,X,U	
-*   STD	-118,Y
-*   STX	-116,Y
-*   STU	-114,Y
-*   PULS	D,X,U	
-*   STD	-112,Y
-*   STX	-110,Y
-*   STU	-108,Y
-*   PULS	D,X,U	
-*   STD	-106,Y
-*   STX	-104,Y
-*   STU	-102,Y
-*   PULS	D,X,U	
-*   STD	-100,Y
-*   STX	-98,Y
-*   STU	-96,Y
-*   PULS	D,X,U	
-*   STD	-94,Y
-*   STX	-92,Y
-*   STU	-90,Y
-*   PULS	D,X,U	
-*   STD	-88,Y
-*   STX	-86,Y
-*   STU	-84,Y
-*   PULS	D,X,U	
-*   STD	-82,Y
-*   STX	-80,Y
-*   STU	-78,Y
-*   PULS	D,X,U	
-*   STD	-76,Y
-*   STX	-74,Y
-*   STU	-72,Y
-*   PULS	D,X,U	
-*   STD	-70,Y
-*   STX	-68,Y
-*   STU	-66,Y
-*   PULS	D,X,U	
-*   STD	-64,Y
-*   STX	-62,Y
-*   STU	-60,Y
-*   PULS	D,X,U	
-*   STD	-58,Y
-*   STX	-56,Y
-*   STU	-54,Y
-*   PULS	D,X,U	
-*   STD	-52,Y
-*   STX	-50,Y
-*   STU	-48,Y
-*   PULS	D,X,U	
-*   STD	-46,Y
-*   STX	-44,Y
-*   STU	-42,Y
-*   PULS	D,X,U	
-*   STD	-40,Y
-*   STX	-38,Y
-*   STU	-36,Y
-*   PULS	D,X,U	
-*   STD	-34,Y
-*   STX	-32,Y
-*   STU	-30,Y
-*   PULS	D,X,U	
-*   STD	-28,Y
-*   STX	-26,Y
-*   STU	-24,Y
-*   PULS	D,X,U	
-*   STD	-22,Y
-*   STX	-20,Y
-*   STU	-18,Y
-*   PULS	D,X,U	
-*   STD	-16,Y
-*   STX	-14,Y
-*   STU	-12,Y
-*   PULS	D,X,U	
-*   STD	-10,Y
-*   STX	-8,Y
-*   STU	-6,Y
-*   PULS	D,X,U	
-*   STD	-4,Y
-*   STX	-2,Y
-*   STU	,Y
-*   PULS	D,X,U	
-*   STD	2,Y
-*   STX	4,Y
-*   STU	6,Y
-*   PULS	D,X,U	
-*   STD	8,Y
-*   STX	10,Y
-*   STU	12,Y
-*   PULS	D,X,U	
-*   STD	14,Y
-*   STX	16,Y
-*   STU	18,Y
-*   PULS	D,X,U	
-*   STD	20,Y
-*   STX	22,Y
-*   STU	24,Y
-*   PULS	D,X,U	
-*   STD	26,Y
-*   STX	28,Y
-*   STU	30,Y
-*   PULS	D,X,U	
-*   STD	32,Y
-*   STX	34,Y
-*   STU	36,Y
-*   PULS	D,X,U	
-*   STD	38,Y
-*   STX	40,Y
-*   STU	42,Y
-*   PULS	D,X,U	
-*   STD	44,Y
-*   STX	46,Y
-*   STU	48,Y
-*   PULS	D,X,U	
-*   STD	50,Y
-*   STX	52,Y
-*   STU	54,Y
-*   PULS	D,X,U	
-*   STD	56,Y
-*   STX	58,Y
-*   STU	60,Y
-*   PULS	D,X,U	
-*   STD	62,Y
-*   STX	64,Y
-*   STU	66,Y
-*   PULS	D,X,U	
-*   STD	68,Y
-*   STX	70,Y
-*   STU	72,Y
-*   PULS	D,X,U	
-*   STD	74,Y
-*   STX	76,Y
-*   STU	78,Y
-*   PULS	D,X,U	
-*   STD	80,Y
-*   STX	82,Y
-*   STU	84,Y
-*   PULS	D,X,U	
-*   STD	86,Y
-*   STX	88,Y
-*   STU	90,Y
-*   PULS	D,X,U	
-*   STD	92,Y
-*   STX	94,Y
-*   STU	96,Y
-*   PULS	D,X,U	
-*   STD	98,Y
-*   STX	100,Y
-*   STU	102,Y
-*   PULS	D,X,U	
-*   STD	104,Y
-*   STX	106,Y
-*   STU	108,Y
-*   PULS	D,X,U	
-*   STD	110,Y
-*   STX	112,Y
-*   STU	114,Y
-*   PULS	D,X,U	
-*   STD	116,Y
-*   STX	118,Y
-*   STU	120,Y
-*   PULS	D,X,U	
-*   STD	122,Y
-*   STX	124,Y
-*   STU	126,Y
-*   LEAY 256,Y
-*MEM_COPY_DATA_TO_CART_E
-*   CMPY    #$0180
-*   LBNE     MEM_COPY_DATA_TO_CART
-*MEM_COPY_DATA_TO_CART_S
-*   LDS     #$0000    * Rechargement du pointeur de la pile systeme
-*   RTS
    
 MEM_COPY_DATA_TO_CART
    STS MEM_COPY_DATA_TO_CART_S+2  * sauvegarde du pointeur de la pile systeme (auto-modification du code)
@@ -516,36 +345,6 @@ MEM_COPY_DATA_TO_CART_S
    LDS     #$0000    * Rechargement du pointeur de la pile systeme
    RTS
 
-*MEM_COPY_DATA_TO_CART
-*   PULS    D,X,U
-*   STD     -16,Y
-*   STX     -14,Y
-*   STU     -12,Y
-*   PULS    D,X,U
-*   STD     -10,Y
-*   STX     -8,Y
-*   STU     -6,Y
-*   PULS    D,X,U
-*   STD     -4,Y
-*   STX     -2,Y
-*   STU     ,Y
-*   PULS    D,X,U
-*   STD     2,Y
-*   STX     4,Y
-*   STU     6,Y
-*   PULS    D,X
-*   STD     8,Y
-*   STX     10,Y
-*   PULS    D,X
-*   STD     12,Y
-*   STX     14,Y
-*   LEAY    32,Y
-*MEM_COPY_DATA_TO_CART_E
-*   CMPY    #$0030
-*   BNE     MEM_COPY_DATA_TO_CART
-*MEM_COPY_DATA_TO_CART_S
-*   LDS     #$0000    * Rechargement du pointeur de la pile systeme
-*   RTS
 ********************************************************************************
 * Effacement memoire Cartouche (27000 cy)
 ********************************************************************************
@@ -698,11 +497,14 @@ Hero_NotLeftOrRight            * XREF: Hero_NotLeft
 	BLT Hero_NotLeftOrRight_00 * se deplace a gauche
 	SUBD HERO_FRICTION     * se deplace a droite on soustrait la friction a la vitesse
 	BCC Hero_NotLeftOrRight_01 * si on passe en dessous de 0 on repositionne a 0
+	CMPD #$0000
+	LBEQ Hero_MoveUpdatePos  * Si la vitesse est deja nulle on passe
 	LDD #$0000
 	STD HERO_G_SPEED
 	STD HERO_X_SPS
 	LDX #HERO_IDLE_R        * Charge animation IDLE R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	LBRA Hero_MoveUpdatePos
 Hero_NotLeftOrRight_01	       
 	CMPD #HERO_JOG_SPD_LIMIT
@@ -710,6 +512,7 @@ Hero_NotLeftOrRight_01
 	STD HERO_G_SPEED
 	LDX #HERO_WALK_R        * Charge animation WALK R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	BRA Hero_NotLeftOrRight_03
 Hero_NotLeftOrRight_02	
 	STD HERO_G_SPEED
@@ -722,6 +525,7 @@ Hero_NotLeftOrRight_00
 	STD HERO_G_SPEED
 	LDX #HERO_IDLE_L        * Charge animation IDLE L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	LBRA Hero_MoveUpdatePos
 Hero_NotLeftOrRight_11	       
 	CMPD #HERO_JOG_SPD_LIMIT
@@ -729,6 +533,7 @@ Hero_NotLeftOrRight_11
 	STD HERO_G_SPEED
 	LDX #HERO_WALK_L        * Charge animation WALK L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	BRA Hero_NotLeftOrRight_13
 Hero_NotLeftOrRight_12	
 	STD HERO_G_SPEED
@@ -747,10 +552,6 @@ Hero_MoveLeft_03
 	STD HERO_G_SPEED       	* On stocke la vitesse
 	LBRA Hero_MoveUpdatePos	   	* Mise a jour des coordonnees
 Hero_MoveLeft_00		       	* Orientation a GAUCHE 
-*	CMPD #$0000					* Comparaison avec la vitesse nulle
-*	BNE Hero_MoveLeft_02     	* BRANCH vitesse au sol non nulle
-*	LDD #$FEFF					* init vitesse de depart
-*Hero_MoveLeft_02
 	CMPD HERO_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos     	* vitesse au sol deja au maximum - Mise a jour des coordonnees
 	SUBD HERO_ACCELERATION 	* acceleration
@@ -758,6 +559,7 @@ Hero_MoveLeft_00		       	* Orientation a GAUCHE
 	BGT Hero_MoveLeft_01       	* BRANCH si vitesse inferieur au maximum
 	LDX #HERO_RUN_L        * Charge animation RUN L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	LDD HERO_NEG_TOP_SPEED 	* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos    	* Mise a jour des coordonnees
@@ -765,6 +567,7 @@ Hero_MoveLeft_01
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
 	LDX #HERO_WALK_L        * Charge animation WALK L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	LBRA Hero_MoveUpdatePos
 
 Hero_MoveRight                  * XREF: Hero_NotLeft
@@ -778,10 +581,6 @@ Hero_MoveRight_03
 	STD HERO_G_SPEED        * On stocke la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_00		      	* Orientation a DROITE 
-*	CMPD #$0000					* Comparaison avec la vitesse nulle
-*	BNE Hero_MoveRight_02     	* BRANCH vitesse au sol non nulle
-*	LDD #$0100					* init vitesse de depart
-*Hero_MoveRight_02
 	CMPD HERO_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos      * vitesse au sol deja au maximum - Mise a jour des coordonnees
 	ADDD HERO_ACCELERATION 	* acceleration
@@ -789,6 +588,7 @@ Hero_MoveRight_00		      	* Orientation a DROITE
 	BLT Hero_MoveRight_01       * BRANCH si vitesse inferieur au maximum
 	LDX #HERO_RUN_R			* Charge animation RUN R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 	LDD HERO_TOP_SPEED		* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
@@ -796,6 +596,7 @@ Hero_MoveRight_01
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
 	LDX #HERO_WALK_R        * Charge animation WALK R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
 
 Hero_MoveUpdatePos
 	LDD HERO_G_SPEED		* Chargement de la vitesse au sol
@@ -819,13 +620,13 @@ Hero_MoveUpdatePos_00
 	LDB HERO_X_POS
 	SUBB Hero_MoveUpdatePos_V00 * Ajout de la vitesse a la position
 Hero_MoveUpdatePos_01
-*	CMPB #$50					* Test de butee ecran a droite
-*	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
-*	LDB #$50					* Butee atteinte on limite a la butee
-*Hero_MoveUpdatePos_02
-*    CMPB #$0C					* Test de la butee ecran a gauche
-*	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
-*	LDB #$0C					* Butee atteinte on limite a la butee
+	CMPB #$50					* Test de butee ecran a droite
+	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
+	LDB #$50					* Butee atteinte on limite a la butee
+Hero_MoveUpdatePos_02
+    CMPB #$0C					* Test de la butee ecran a gauche
+	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
+	LDB #$0C					* Butee atteinte on limite a la butee
 Hero_MoveUpdatePos_03
 	STB HERO_X_POS			
 	LDB #$00					
@@ -900,7 +701,12 @@ HERO_ANIMATION_LOAD_00
 	LDD -2,X					* Load Frames informations
 	CMPA #$00					* Different from $00 means NbFrames relative to GSP
 	BEQ HERO_ANIMATION_LOAD_01
-	SUBB HERO_G_SPEED			* G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
+	LDA HERO_G_SPEED
+	BGE HERO_ANIMATION_LOAD_01A
+	NEGA                        * valeur absolue de la vitesse negative
+HERO_ANIMATION_LOAD_01A
+	STA HERO_ANIMATION_LOAD_01A+4 * Auto modification du SUBB ci dessous
+	SUBB #$00			* G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
 	BCC HERO_ANIMATION_LOAD_01
 	LDB #$01					* Minimun 1 frame/image
 HERO_ANIMATION_LOAD_01
@@ -913,12 +719,17 @@ HERO_ANIMATION_LOAD_01
 	LDB ,Y
 	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
 	BHI HERO_ANIMATION_LOAD_NOPAGE
-	STB HERO_ANIMATION_PAG		* optim remplacer par push pull
-	STB HERO_ANIMATION_PAG_REF
+	LDA HERO_ANIMATION_PAG      
+	STB HERO_ANIMATION_PAG
+	CMPA HERO_ANIMATION_PAG_REF
+	BEQ HERO_ANIMATION_LOAD_02
+	INC HERO_ANIMATION_PAG * si la page precedente etait diff de la REF on recale a nouvelle page en +1
+HERO_ANIMATION_LOAD_02
+	STB HERO_ANIMATION_PAG_REF  * on sauvegarde la PAGE comme REF
 	LDX 1,Y
 	STX HERO_ANIMATION_DRW
 	LDX 3,Y
-	STX HERO_ANIMATION_DEL
+	STX HERO_ANIMATION_DEL+2
 	RTS
 HERO_ANIMATION_LOAD_NOPAGE
 	CMPB #$FF
@@ -969,7 +780,7 @@ HERO_ANIMATION_NEXT_00
 
 
 
-	FDB $0108
+	FDB $0008
 HERO_SKID_R
 	FCB $04
 	FDB $D5AB
@@ -1002,7 +813,7 @@ HERO_SKID_R
 	FDB HERO_SKID_R
 	FDB $0000
 
-	FDB $0008
+	FDB $0108
 HERO_WALK_R
 	FCB $04
 	FDB $A000
@@ -1044,7 +855,7 @@ HERO_WALK_R
 	FDB HERO_WALK_R
 	FDB $0000
 
-	FDB $0118
+	FDB $0018
 HERO_IDLE_R
 	FCB $08
 	FDB $AA65
@@ -1053,7 +864,7 @@ HERO_IDLE_R
 	FDB HERO_IDLE_R
 	FDB $0000
 
-	FDB $0008
+	FDB $0108
 HERO_RUN_R
 	FCB $0C
 	FDB $BBD6
@@ -1089,7 +900,7 @@ HERO_RUN_R
 	FDB HERO_RUN_R
 	FDB $0000
 
-	FDB $0008
+	FDB $0108
 HERO_WALK_L
 	FCB $0C
 	FDB $A000
@@ -1131,7 +942,7 @@ HERO_WALK_L
 	FDB HERO_WALK_L
 	FDB $0000
 
-	FDB $0008
+	FDB $0108
 HERO_RUN_L
 	FCB $16
 	FDB $CF43
@@ -1167,7 +978,7 @@ HERO_RUN_L
 	FDB HERO_RUN_L
 	FDB $0000
 
-	FDB $0108
+	FDB $0008
 HERO_SKID_L
 	FCB $14
 	FDB $AA07
@@ -1200,7 +1011,7 @@ HERO_SKID_L
 	FDB HERO_SKID_L
 	FDB $0000
 
-	FDB $0118
+	FDB $0018
 HERO_IDLE_L
 	FCB $14
 	FDB $A000
@@ -1240,6 +1051,8 @@ HERO_FRICTION
 	FDB $000C        * constante de friction 0.046875 = 12/256
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
+HERO_ANIMATION_ADR_OLD
+	FDB $0000        * Sauvegarde ancienne animation
 HERO_ANIMATION_RTN_ADR
 	FDB $0000        * Animation courante - Pointeur Adresse Retour Animation apellante
 HERO_ANIMATION_PAG
@@ -1247,8 +1060,10 @@ HERO_ANIMATION_PAG
 HERO_ANIMATION_PAG_REF
 	FCB $00          * Animation courante - Pointeur Page de reference
 HERO_ANIMATION_PAG_DEL
-	FDB $0000        * Animation courante - Pointeur 2 dernieres Pages effacement
+	FCB $00        * Animation courante - Pointeur Page Effacement img-1
+	FCB $00        * Animation courante - Pointeur Page Effacement
 HERO_ANIMATION_DEL
+	FDB $0000        * Animation courante - Pointeur Effacement img-1
 	FDB $0000        * Animation courante - Pointeur Effacement
 HERO_ANIMATION_DRW
 	FDB $0000        * Animation courante - Pointeur Dessin

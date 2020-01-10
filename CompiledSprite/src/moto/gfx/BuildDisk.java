@@ -152,7 +152,7 @@ public class BuildDisk
 			// ********** Animation scripts *******
 			String sAnimationScript = new String();
 			for (String[] animationScript : confProperties.animationScripts.values()) {
-				sAnimationScript += "\n\n\tFDB $"+(animationScript[2].contentEquals("GSP") ? "00" : "01")+String.format("%1$02X", Integer.parseInt(animationScript[1]));
+				sAnimationScript += "\n\n\tFDB $"+(animationScript[2].contentEquals("GSP") ? "01" : "00")+String.format("%1$02X", Integer.parseInt(animationScript[1]));
 				sAnimationScript += "\n"+animationScript[0];
 				
 				for (int subImage = 3; subImage < animationScript.length; subImage++) {
