@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +17,9 @@ import java.nio.file.StandardOpenOption;
 import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class CompiledSpriteModeB16v3 {
 	// Convertisseur d'image PNG en "Compiled Sprite"
@@ -26,6 +30,7 @@ public class CompiledSpriteModeB16v3 {
 	BufferedImage image;
 	ColorModel colorModel;
 	String spriteName;
+	String eraseAddress;
 	int width;
 	int height;
 	byte[] pixels;
@@ -1108,6 +1113,14 @@ public class CompiledSpriteModeB16v3 {
 			Path lstFile = Paths.get(spriteName+".lst");
 			Files.deleteIfExists(lstFile);
             f.renameTo(new File(spriteName+".lst"));
+            
+            Pattern pattern = Pattern.compile(".*Label (.*) ERASE_"+spriteName);
+            try (Stream<String> lines = Files.lines(Paths.get(spriteName+".lst"), Charset.forName("ISO-8859-1"))) {
+                lines.map(pattern::matcher)
+                .filter(Matcher::matches)
+                .findFirst()
+                .ifPresent(matcher -> eraseAddress = matcher.group(1));
+            }
 		} 
 		catch (Exception e)
 		{

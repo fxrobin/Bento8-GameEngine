@@ -146,28 +146,34 @@ SETPALETTE
 ********************************************************************************
 	* Init routine effacement sprite
 	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 	JSR SCRC
 	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL+1
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 	JSR SCRC
 	
 MAIN
 	* Effacement et affichage des sprites
-	LDB HERO_ANIMATION_PAG				* On monte la page 
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	LDD HERO_ANIMATION_PAG_DEL			* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL
+	STA $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DEL]			* Efface le sprite
-	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
-
+	
 	* Gestion des deplacements
 	JSR JOY_READ
 	JSR Hero_Move
 	JSR Compute_Position
+	JSR HERO_ANIMATION_NEXT	
 	
-	JSR HERO_ANIMATION_NEXT
-
+	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL+1
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
+	
 	JSR SCRC        					* changement de page ecran
 	BRA MAIN
 
@@ -197,7 +203,7 @@ SCRC
 
 	LDB SCRC0+1
 	ANDB #$01
-	ADDB HERO_ANIMATION_PAG
+	ADDB HERO_ANIMATION_PAG_REF
 	STB HERO_ANIMATION_PAG
 	
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
@@ -908,6 +914,7 @@ HERO_ANIMATION_LOAD_01
 	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
 	BHI HERO_ANIMATION_LOAD_NOPAGE
 	STB HERO_ANIMATION_PAG		* optim remplacer par push pull
+	STB HERO_ANIMATION_PAG_REF
 	LDX 1,Y
 	STX HERO_ANIMATION_DRW
 	LDX 3,Y
@@ -966,31 +973,31 @@ HERO_ANIMATION_NEXT_00
 HERO_SKID_R
 	FCB $04
 	FDB $D5AB
-	FDB $DFF4
+	FDB $DC3C
 	FCB $06
 	FDB $D455
-	FDB $DFDF
+	FDB $DBA9
 	FCB $04
 	FDB $CA37
-	FDB $D5AB
+	FDB $D179
 	FCB $0A
 	FDB $D414
-	FDB $DFF4
+	FDB $DB9F
 	FCB $04
 	FDB $BF4A
-	FDB $CA37
+	FDB $C638
 	FCB $04
 	FDB $B40C
-	FDB $BF4A
+	FDB $BB2B
 	FCB $06
 	FDB $C904
-	FDB $D455
+	FDB $D02F
 	FCB $04
 	FDB $A8F4
-	FDB $B40C
+	FDB $AFFB
 	FCB $08
 	FDB $D42E
-	FDB $DFD9
+	FDB $DB91
 	FCB $FF
 	FDB HERO_SKID_R
 	FDB $0000
@@ -999,40 +1006,40 @@ HERO_SKID_R
 HERO_WALK_R
 	FCB $04
 	FDB $A000
-	FDB $A8F4
+	FDB $A5B5
 	FCB $06
 	FDB $BF54
-	FDB $C904
+	FDB $C580
 	FCB $08
 	FDB $C8B9
-	FDB $D42E
+	FDB $D004
 	FCB $0A
 	FDB $C85C
-	FDB $D414
+	FDB $CFD0
 	FCB $0A
 	FDB $BCDC
-	FDB $C85C
+	FDB $C42B
 	FCB $06
 	FDB $B43B
-	FDB $BF54
+	FDB $BB43
 	FCB $06
 	FDB $AA5F
-	FDB $B43B
+	FDB $B0A4
 	FCB $06
 	FDB $A000
-	FDB $AA5F
+	FDB $A69E
 	FCB $08
 	FDB $BE9E
-	FDB $C8B9
+	FDB $C514
 	FCB $0C
 	FDB $D35D
-	FDB $DF09
+	FDB $DACE
 	FCB $0C
 	FDB $C7CC
-	FDB $D35D
+	FDB $CF29
 	FCB $08
 	FDB $B46C
-	FDB $BE9E
+	FDB $BAE8
 	FCB $FF
 	FDB HERO_WALK_R
 	FDB $0000
@@ -1041,7 +1048,7 @@ HERO_WALK_R
 HERO_IDLE_R
 	FCB $08
 	FDB $AA65
-	FDB $B46C
+	FDB $B0C3
 	FCB $FF
 	FDB HERO_IDLE_R
 	FDB $0000
@@ -1050,34 +1057,34 @@ HERO_IDLE_R
 HERO_RUN_R
 	FCB $0C
 	FDB $BBD6
-	FDB $C7CC
+	FDB $C36C
 	FCB $08
 	FDB $A000
-	FDB $AA65
+	FDB $A697
 	FCB $0A
 	FDB $B2F9
-	FDB $BCDC
+	FDB $B93A
 	FCB $0A
 	FDB $A944
-	FDB $B2F9
+	FDB $AF75
 	FCB $0E
 	FDB $D42B
-	FDB $DF58
+	FDB $DB4B
 	FCB $12
 	FDB $D308
-	FDB $DF86
+	FDB $DAF3
 	FCB $0A
 	FDB $A000
-	FDB $A944
+	FDB $A5E4
 	FCB $0C
 	FDB $B28C
-	FDB $BBD6
+	FDB $B872
 	FCB $0C
 	FDB $A8F4
-	FDB $B28C
+	FDB $AF13
 	FCB $0E
 	FDB $C954
-	FDB $D42B
+	FDB $D03C
 	FCB $FF
 	FDB HERO_RUN_R
 	FDB $0000
@@ -1086,40 +1093,40 @@ HERO_RUN_R
 HERO_WALK_L
 	FCB $0C
 	FDB $A000
-	FDB $A8F4
+	FDB $A5B5
 	FCB $0E
 	FDB $BFA4
-	FDB $C954
+	FDB $C5D0
 	FCB $0E
 	FDB $B440
-	FDB $BFA4
+	FDB $BB82
 	FCB $10
 	FDB $D410
-	FDB $DFC8
+	FDB $DB84
 	FCB $10
 	FDB $C89F
-	FDB $D410
+	FDB $CFE5
 	FCB $12
 	FDB $C7EF
-	FDB $D308
+	FDB $CEF7
 	FCB $0E
 	FDB $AA64
-	FDB $B440
+	FDB $B0A9
 	FCB $0E
 	FDB $A000
-	FDB $AA64
+	FDB $A6A1
 	FCB $10
 	FDB $BE84
-	FDB $C89F
+	FDB $C4FA
 	FCB $12
 	FDB $BC52
-	FDB $C7EF
+	FDB $C3BB
 	FCB $14
 	FDB $D400
-	FDB $DF91
+	FDB $DB5D
 	FCB $10
 	FDB $B44D
-	FDB $BE84
+	FDB $BACC
 	FCB $FF
 	FDB HERO_WALK_L
 	FDB $0000
@@ -1128,34 +1135,34 @@ HERO_WALK_L
 HERO_RUN_L
 	FCB $16
 	FDB $CF43
-	FDB $DB48
+	FDB $D6E2
 	FCB $10
 	FDB $A9E3
-	FDB $B44D
+	FDB $B07D
 	FCB $10
 	FDB $A000
-	FDB $A9E3
+	FDB $A641
 	FCB $12
 	FDB $B293
-	FDB $BC52
+	FDB $B8CA
 	FCB $14
 	FDB $C8C9
-	FDB $D400
+	FDB $CFEF
 	FCB $16
 	FDB $C2D9
-	FDB $CF43
+	FDB $CAB8
 	FCB $12
 	FDB $A94A
-	FDB $B293
+	FDB $AF31
 	FCB $12
 	FDB $A000
-	FDB $A94A
+	FDB $A5E6
 	FCB $14
 	FDB $BF2C
-	FDB $C8C9
+	FDB $C54E
 	FCB $14
 	FDB $B450
-	FDB $BF2C
+	FDB $BB3B
 	FCB $FF
 	FDB HERO_RUN_L
 	FDB $0000
@@ -1164,31 +1171,31 @@ HERO_RUN_L
 HERO_SKID_L
 	FCB $14
 	FDB $AA07
-	FDB $B450
+	FDB $B098
 	FCB $16
 	FDB $B74F
-	FDB $C2D9
+	FDB $BEA3
 	FCB $16
 	FDB $ABE0
-	FDB $B74F
+	FDB $B31F
 	FCB $16
 	FDB $A000
-	FDB $ABE0
+	FDB $A78B
 	FCB $18
 	FDB $CD61
-	FDB $D853
+	FDB $D452
 	FCB $18
 	FDB $C223
-	FDB $CD61
+	FDB $C942
 	FCB $18
 	FDB $B6CD
-	FDB $C223
+	FDB $BDFB
 	FCB $18
 	FDB $ABB0
-	FDB $B6CD
+	FDB $B2BA
 	FCB $18
 	FDB $A000
-	FDB $ABB0
+	FDB $A766
 	FCB $FF
 	FDB HERO_SKID_L
 	FDB $0000
@@ -1197,7 +1204,7 @@ HERO_SKID_L
 HERO_IDLE_L
 	FCB $14
 	FDB $A000
-	FDB $AA07
+	FDB $A65E
 	FCB $FF
 	FDB HERO_IDLE_L
 	FDB $0000
@@ -1236,7 +1243,11 @@ HERO_ANIMATION_ADR
 HERO_ANIMATION_RTN_ADR
 	FDB $0000        * Animation courante - Pointeur Adresse Retour Animation apellante
 HERO_ANIMATION_PAG
-	FCB $00          * Animation courante - Pointeur Page
+	FCB $00          * Animation courante - Pointeur Page actif
+HERO_ANIMATION_PAG_REF
+	FCB $00          * Animation courante - Pointeur Page de reference
+HERO_ANIMATION_PAG_DEL
+	FDB $0000        * Animation courante - Pointeur 2 dernieres Pages effacement
 HERO_ANIMATION_DEL
 	FDB $0000        * Animation courante - Pointeur Effacement
 HERO_ANIMATION_DRW

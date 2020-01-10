@@ -122,7 +122,7 @@ public class BuildDisk
 					String[] params = compiledImages.get(currentItem.name);
 					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(params[0], params[1], Integer.parseInt(params[2]), Integer.parseInt(params[3]));
 					binary = sprite.getCompiledCode(String.format("%1$04X",orgOffset+org));
-					imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",pages[currentPageIndex]) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org+binary.length));
+					imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",pages[currentPageIndex]) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org) + "\n\tFDB $" + sprite.eraseAddress);
 					org += binary.length;
 					
 					System.out.println("Ecriture en :"+(iPosCumul+(face*327680)+(track*4096)+((sector-1)*256))+" ($"+String.format("%1$04X",(iPosCumul+(face*327680)+(track*4096)+((sector-1)*256)))+")");

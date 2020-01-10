@@ -146,28 +146,34 @@ SETPALETTE
 ********************************************************************************
 	* Init routine effacement sprite
 	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 	JSR SCRC
 	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL+1
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
 	JSR SCRC
 	
 MAIN
 	* Effacement et affichage des sprites
-	LDB HERO_ANIMATION_PAG				* On monte la page 
-	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	LDD HERO_ANIMATION_PAG_DEL			* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL
+	STA $E7E5							* en RAM Donnees (A000-DFFF)
 	JSR [HERO_ANIMATION_DEL]			* Efface le sprite
-	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
-
+	
 	* Gestion des deplacements
 	JSR JOY_READ
 	JSR Hero_Move
 	JSR Compute_Position
+	JSR HERO_ANIMATION_NEXT	
 	
-	JSR HERO_ANIMATION_NEXT
-
+	LDB HERO_ANIMATION_PAG				* On monte la page 
+	STB HERO_ANIMATION_PAG_DEL+1
+	STB $E7E5							* en RAM Donnees (A000-DFFF)
+	JSR [HERO_ANIMATION_DRW]			* Sauve arriere plan et affiche le sprite
+	
 	JSR SCRC        					* changement de page ecran
 	BRA MAIN
 
@@ -197,7 +203,7 @@ SCRC
 
 	LDB SCRC0+1
 	ANDB #$01
-	ADDB HERO_ANIMATION_PAG
+	ADDB HERO_ANIMATION_PAG_REF
 	STB HERO_ANIMATION_PAG
 	
 	LDB SCRC0+1	* charge la valeur du LDB suivant SCRC0 en lisant directement dans le code
@@ -908,6 +914,7 @@ HERO_ANIMATION_LOAD_01
 	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
 	BHI HERO_ANIMATION_LOAD_NOPAGE
 	STB HERO_ANIMATION_PAG		* optim remplacer par push pull
+	STB HERO_ANIMATION_PAG_REF
 	LDX 1,Y
 	STX HERO_ANIMATION_DRW
 	LDX 3,Y
@@ -996,7 +1003,11 @@ HERO_ANIMATION_ADR
 HERO_ANIMATION_RTN_ADR
 	FDB $0000        * Animation courante - Pointeur Adresse Retour Animation apellante
 HERO_ANIMATION_PAG
-	FCB $00          * Animation courante - Pointeur Page
+	FCB $00          * Animation courante - Pointeur Page actif
+HERO_ANIMATION_PAG_REF
+	FCB $00          * Animation courante - Pointeur Page de reference
+HERO_ANIMATION_PAG_DEL
+	FDB $0000        * Animation courante - Pointeur 2 dernieres Pages effacement
 HERO_ANIMATION_DEL
 	FDB $0000        * Animation courante - Pointeur Effacement
 HERO_ANIMATION_DRW
