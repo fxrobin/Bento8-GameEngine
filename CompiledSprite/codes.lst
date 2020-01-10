@@ -4,7 +4,7 @@
  * Fichier source      : ./input/CODE/MAIN.ASS.TMP
  * Fichier destination : TMP.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     21070
+ *     Main     0:MAIN.ASM     21145
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -495,11 +495,11 @@ Pass2
     494        65AE               Hero_NotLeftOrRight            * XREF: He>>
     495  6     65AE FC   691B            LDD HERO_G_SPEED
     496  5     65B1 1083 0000            CMPD #$0000
-    497  3     65B5 2D   36              BLT Hero_NotLeftOrRight_00 * se de>>
-    498  7     65B7 B3   692D            SUBD HERO_FRICTION     * se deplac>>
-    499  3     65BA 24   1A              BCC Hero_NotLeftOrRight_01 * si on>>
-    500  5     65BC 1083 0000            CMPD #$0000
-    501  6     65C0 1027 00D6            LBEQ Hero_MoveUpdatePos  * Si la v>>
+    497  6     65B5 1027 00E1            LBEQ Hero_MoveUpdatePos  * Si la v>>
+    498  3     65B9 2D   32              BLT Hero_NotLeftOrRight_00 * se de>>
+    499  7     65BB B3   692D            SUBD HERO_FRICTION     * se deplac>>
+    500  5     65BE 1083 0000            CMPD #$0000
+    501  3     65C2 2E   12              BGT Hero_NotLeftOrRight_01 * si on>>
     502  3     65C4 CC   0000            LDD #$0000
     503  6     65C7 FD   691B            STD HERO_G_SPEED
     504  6     65CA FD   691F            STD HERO_X_SPS
@@ -529,7 +529,7 @@ Pass2
     528
     529  5     65FE 16   0099            LBRA Hero_MoveUpdatePos
     530        6601               Hero_NotLeftOrRight_11
-    531  5     6601 1083 0600            CMPD #HERO_JOG_SPD_LIMIT
+    531  5     6601 1083 FA00            CMPD #HERO_JOG_NEG_SPD_LIMIT
     532  3     6605 2F   0B              BLE Hero_NotLeftOrRight_12
     533  6     6607 FD   691B            STD HERO_G_SPEED
     534  3     660A 8E   685F            LDX #HERO_WALK_L        * Charge a>>
@@ -1025,59 +1025,61 @@ Pass2
    1024                           * HERO Variables
    1025                           *****************************************>>
    1026                  0400     HERO_WALK_SPD_LIMIT EQU $0400
-   1027                  0600     HERO_JOG_SPD_LIMIT  EQU $0600
-   1028        6919               HERO_X_POS
-   1029        6919 50                   FCB $50                     * Hori>>
-   1030        691A               HERO_Y_POS
-   1031        691A C8                   FCB $C8                     * Vert>>
-   1032        691B               HERO_G_SPEED         * Ground Speed
-   1033        691B 0000                 FDB $0000            * First byte >>
-   1034        691D               HERO_X_SPEED
-   1035        691D 0000                 FDB $0000            * Horizontal >>
-   1036        691F               HERO_X_SPS
-   1037        691F 0000                 FDB $0000            * Subpixel X >>
-   1038        6921               HERO_Y_SPEED
-   1039        6921 0000                 FDB $0000            * Vertical Sp>>
-   1040        6923               HERO_Y_SPS
-   1041        6923 0000                 FDB $0000            * Subpixel Y >>
-   1042        6925               HERO_TOP_SPEED
-   1043        6925 0600                 FDB $0600        * vitesse maximum>>
-   1044        6927               HERO_NEG_TOP_SPEED
-   1045        6927 FA00                 FDB $FA00        * vitesse maximum>>
-   1046        6929               HERO_ACCELERATION
-   1047        6929 000C                 FDB $000C        * constante accel>>
-   1048        692B               HERO_DECELERATION
-   1049        692B 0080                 FDB $0080        * constante decel>>
-   1050        692D               HERO_FRICTION
-   1051        692D 000C                 FDB $000C        * constante de fr>>
-   1052        692F               HERO_ANIMATION_ADR
-   1053        692F 0000                 FDB $0000        * Animation coura>>
-   1054        6931               HERO_ANIMATION_ADR_OLD
-   1055        6931 0000                 FDB $0000        * Sauvegarde anci>>
-   1056        6933               HERO_ANIMATION_RTN_ADR
-   1057        6933 0000                 FDB $0000        * Animation coura>>
-   1058        6935               HERO_ANIMATION_PAG
-   1059        6935 00                   FCB $00          * Animation coura>>
-   1060        6936               HERO_ANIMATION_PAG_REF
-   1061        6936 00                   FCB $00          * Animation coura>>
-   1062        6937               HERO_ANIMATION_PAG_DEL
-   1063        6937 00                   FCB $00        * Animation courant>>
-   1064        6938 00                   FCB $00        * Animation courant>>
-   1065        6939               HERO_ANIMATION_DEL
-   1066        6939 0000                 FDB $0000        * Animation coura>>
-   1067        693B 0000                 FDB $0000        * Animation coura>>
-   1068        693D               HERO_ANIMATION_DRW
-   1069        693D 0000                 FDB $0000        * Animation coura>>
-   1070        693F               HERO_ANIMATION_IMC
-   1071        693F 00                   FCB $00          * Animation coura>>
-   1072        6940               HERO_ANIMATION_RTN_IMC
-   1073        6940 00                   FCB $00          * Animation coura>>
-   1074        6941               HERO_ANIMATION_FRR
-   1075        6941 00                   FCB $00          * Animation coura>>
+   1027                  FC00     HERO_WALK_NEG_SPD_LIMIT EQU $FC00
+   1028                  0600     HERO_JOG_SPD_LIMIT  EQU $0600
+   1029                  FA00     HERO_JOG_NEG_SPD_LIMIT  EQU $FA00
+   1030        6919               HERO_X_POS
+   1031        6919 50                   FCB $50                     * Hori>>
+   1032        691A               HERO_Y_POS
+   1033        691A C8                   FCB $C8                     * Vert>>
+   1034        691B               HERO_G_SPEED         * Ground Speed
+   1035        691B 0000                 FDB $0000            * First byte >>
+   1036        691D               HERO_X_SPEED
+   1037        691D 0000                 FDB $0000            * Horizontal >>
+   1038        691F               HERO_X_SPS
+   1039        691F 0000                 FDB $0000            * Subpixel X >>
+   1040        6921               HERO_Y_SPEED
+   1041        6921 0000                 FDB $0000            * Vertical Sp>>
+   1042        6923               HERO_Y_SPS
+   1043        6923 0000                 FDB $0000            * Subpixel Y >>
+   1044        6925               HERO_TOP_SPEED
+   1045        6925 0600                 FDB $0600        * vitesse maximum>>
+   1046        6927               HERO_NEG_TOP_SPEED
+   1047        6927 FA00                 FDB $FA00        * vitesse maximum>>
+   1048        6929               HERO_ACCELERATION
+   1049        6929 000C                 FDB $000C        * constante accel>>
+   1050        692B               HERO_DECELERATION
+   1051        692B 0080                 FDB $0080        * constante decel>>
+   1052        692D               HERO_FRICTION
+   1053        692D 000C                 FDB $000C        * constante de fr>>
+   1054        692F               HERO_ANIMATION_ADR
+   1055        692F 0000                 FDB $0000        * Animation coura>>
+   1056        6931               HERO_ANIMATION_ADR_OLD
+   1057        6931 0000                 FDB $0000        * Sauvegarde anci>>
+   1058        6933               HERO_ANIMATION_RTN_ADR
+   1059        6933 0000                 FDB $0000        * Animation coura>>
+   1060        6935               HERO_ANIMATION_PAG
+   1061        6935 00                   FCB $00          * Animation coura>>
+   1062        6936               HERO_ANIMATION_PAG_REF
+   1063        6936 00                   FCB $00          * Animation coura>>
+   1064        6937               HERO_ANIMATION_PAG_DEL
+   1065        6937 00                   FCB $00        * Animation courant>>
+   1066        6938 00                   FCB $00        * Animation courant>>
+   1067        6939               HERO_ANIMATION_DEL
+   1068        6939 0000                 FDB $0000        * Animation coura>>
+   1069        693B 0000                 FDB $0000        * Animation coura>>
+   1070        693D               HERO_ANIMATION_DRW
+   1071        693D 0000                 FDB $0000        * Animation coura>>
+   1072        693F               HERO_ANIMATION_IMC
+   1073        693F 00                   FCB $00          * Animation coura>>
+   1074        6940               HERO_ANIMATION_RTN_IMC
+   1075        6940 00                   FCB $00          * Animation coura>>
+   1076        6941               HERO_ANIMATION_FRR
+   1077        6941 00                   FCB $00          * Animation coura>>
 
 000000 Total Errors
 
-000114 Total Symbols
+000116 Total Symbols
      0x          Label 6300 BEGIN
      2x          Label 6528 CLR_CART
      1x          Label 6541 CLR_CART_2
@@ -1122,7 +1124,8 @@ Pass2
     17x          Label 691B HERO_G_SPEED
      2x          Label 690F HERO_IDLE_L
      3x          Label 681A HERO_IDLE_R
-     2x          Equ   0600 HERO_JOG_SPD_LIMIT
+     1x          Equ   FA00 HERO_JOG_NEG_SPD_LIMIT
+     1x          Equ   0600 HERO_JOG_SPD_LIMIT
      1x          Label 659E Hero_Move
      1x          Label 6618 Hero_MoveLeft
      1x          Label 6632 Hero_MoveLeft_00
@@ -1155,6 +1158,7 @@ Pass2
      1x          Label 67A3 HERO_SKID_R
      3x          Label 6925 HERO_TOP_SPEED
      3x          Label 685F HERO_WALK_L
+     0x          Equ   FC00 HERO_WALK_NEG_SPD_LIMIT
      3x          Label 67D7 HERO_WALK_R
      0x          Equ   0400 HERO_WALK_SPD_LIMIT
      4x          Label 6919 HERO_X_POS

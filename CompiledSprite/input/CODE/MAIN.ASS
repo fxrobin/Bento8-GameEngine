@@ -494,11 +494,11 @@ Hero_NotLeft                   * XREF: Hero_Move
 Hero_NotLeftOrRight            * XREF: Hero_NotLeft
 	LDD HERO_G_SPEED
 	CMPD #$0000
+	LBEQ Hero_MoveUpdatePos  * Si la vitesse est deja nulle on passe
 	BLT Hero_NotLeftOrRight_00 * se deplace a gauche
 	SUBD HERO_FRICTION     * se deplace a droite on soustrait la friction a la vitesse
-	BCC Hero_NotLeftOrRight_01 * si on passe en dessous de 0 on repositionne a 0
-	CMPD #$0000
-	LBEQ Hero_MoveUpdatePos  * Si la vitesse est deja nulle on passe
+	CMPD #$0000	
+	BGT Hero_NotLeftOrRight_01 * si on passe en dessous de 0 on repositionne a 0
 	LDD #$0000
 	STD HERO_G_SPEED
 	STD HERO_X_SPS
@@ -520,7 +520,7 @@ Hero_NotLeftOrRight_03
 	LBRA Hero_MoveUpdatePos
 Hero_NotLeftOrRight_00	
 	ADDD HERO_FRICTION     * se deplace a gauche on ajoute la friction a la vitesse negative
-	BCC Hero_NotLeftOrRight_11 * si on passe au dessus de 0 on repositionne a 0
+	BCC Hero_NotLeftOrRight_11 * si on passe au dessus de 0 on repositionne a 0. Remarque le passage de FFFF a 0000 declenche un depassement contrairement au passage de 0001 a 1 (cas droite)
 	LDD #$0000
 	STD HERO_G_SPEED
 	LDX #HERO_IDLE_L        * Charge animation IDLE L
@@ -528,7 +528,7 @@ Hero_NotLeftOrRight_00
 
 	LBRA Hero_MoveUpdatePos
 Hero_NotLeftOrRight_11	       
-	CMPD #HERO_JOG_SPD_LIMIT
+	CMPD #HERO_JOG_NEG_SPD_LIMIT
 	BLE Hero_NotLeftOrRight_12
 	STD HERO_G_SPEED
 	LDX #HERO_WALK_L        * Charge animation WALK L
@@ -784,7 +784,9 @@ HERO_ANIMATION_NEXT_00
 * HERO Variables
 ********************************************************************************
 HERO_WALK_SPD_LIMIT EQU $0400
+HERO_WALK_NEG_SPD_LIMIT EQU $FC00
 HERO_JOG_SPD_LIMIT  EQU $0600
+HERO_JOG_NEG_SPD_LIMIT  EQU $FA00
 HERO_X_POS
 	FCB $50			* Horizontal Position
 HERO_Y_POS
