@@ -68,9 +68,9 @@ public class BuildDisk
 				int nbImages = Integer.parseInt(i[5]);
 				for (int j=0; j<nbImages; j++ ) {
 					System.out.println("**************** COMPUTE COMPILED SPRITE LENGTH " + i[1]+":"+j + " ****************");
-					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j);
+					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(i[4], i[1]+j, nbImages, j, Integer.parseInt(i[6]));
 					binary = sprite.getCompiledCode("A000");
-					compiledImages.put(i[1]+":"+j, new String[] {i[4], i[1]+j, Integer.toString(nbImages), Integer.toString(j), i[0]});
+					compiledImages.put(i[1]+":"+j, new String[] {i[4], i[1]+j, Integer.toString(nbImages), Integer.toString(j), i[6], i[0]});
 					items[k++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length); // id, priority, bytes
 				}
 			}
@@ -120,7 +120,7 @@ public class BuildDisk
 
 					System.out.println("**************** COMPILE SPRITE " + currentItem.name + " ****************");
 					String[] params = compiledImages.get(currentItem.name);
-					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(params[0], params[1], Integer.parseInt(params[2]), Integer.parseInt(params[3]));
+					CompiledSpriteModeB16v3 sprite = new CompiledSpriteModeB16v3(params[0], params[1], Integer.parseInt(params[2]), Integer.parseInt(params[3]), Integer.parseInt(params[4]));
 					binary = sprite.getCompiledCode(String.format("%1$04X",orgOffset+org));
 					imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",pages[currentPageIndex]) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org) + "\n\tFDB $" + sprite.eraseAddress);
 					org += binary.length;

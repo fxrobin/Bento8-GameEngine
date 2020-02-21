@@ -1,22 +1,28 @@
 package moto.gfx;
 
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import javax.imageio.ImageIO;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -74,7 +80,7 @@ public class CompiledSpriteModeB16v3 {
 	boolean isSelfModifying = false;
 	int codePart = 0; // Partie de code (1 ou 2)
 
-	public CompiledSpriteModeB16v3(String file, String locspriteName, int nbImages, int numImage) {
+	public CompiledSpriteModeB16v3(String file, String locspriteName, int nbImages, int numImage, int flip) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -102,8 +108,83 @@ public class CompiledSpriteModeB16v3 {
 			erasePosLabel  = erasePrefix + "POS_"  + spriteName;
 			eraseCodeLabel = erasePrefix + "CODE_"  + spriteName;
 			
-//			System.out.println(getCodePalette(colorModel, 3));
+			// On inverse l'image horizontalement si le flag flip est positionné à 1
+			if (flip==1) {
+			    AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+			    tx.translate(-image.getWidth(null), 0);
+			    AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+			    image = op.filter(image, null);
+			}
+			
+			if (pixelSize == 32) {
+				final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+				final int width = image.getWidth();
+				final int height = image.getHeight();
+				final boolean hasAlphaChannel = image.getAlphaRaster() != null;
 
+				int[][] result = new int[height][width];
+				int alpha, red, green, blue;
+				int[] palette = new int[256];
+				byte[][] paletteRGBA = new byte[4][256];
+				palette[0] = 0; // transparent
+				int paletteSize = 1; // le premier index est la couleur transparente
+				int i;
+				boolean found = false;
+				if (hasAlphaChannel) {
+					final int pixelLength = 4;
+					for (int pixel = 0, row = 0, col = 0; pixel + 3 < pixels.length; pixel += pixelLength) {
+						alpha = (((int) pixels[pixel] & 0xff) << 24); // alpha
+						blue = ((int) pixels[pixel + 1] & 0xff); // blue
+						green = (((int) pixels[pixel + 2] & 0xff) << 8); // green
+						red = (((int) pixels[pixel + 3] & 0xff) << 16); // red
+						
+						if (alpha==0) {
+							result[row][col] = 0;
+						} else {
+							found = false;
+							for (i = 1; i < palette.length-1; i++) {
+								if (palette[i] == alpha+blue+green+red) {
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								palette[paletteSize] = alpha+blue+green+red;
+								paletteRGBA[0][paletteSize] = (byte) red;
+								paletteRGBA[1][paletteSize] = (byte) green;
+								paletteRGBA[2][paletteSize] = (byte) blue;
+								paletteRGBA[3][paletteSize] = (byte) alpha;
+								result[row][col] = paletteSize;
+								paletteSize++;
+							} else {
+								result[row][col] = i;
+							}
+
+							col++;
+							if (col == width) {
+								col = 0;
+								row++;
+							}
+						}
+					}
+				}
+				
+				IndexColorModel newColorModel = new IndexColorModel(8,256,paletteRGBA[0],paletteRGBA[1],paletteRGBA[2],0);
+				BufferedImage indexedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, newColorModel);
+				
+	            for (int x = 0; x < indexedImage.getWidth(); x++) {
+	                for (int y = 0; y < indexedImage.getHeight(); y++) {
+	                	indexedImage.setRGB(x, y, image.getRGB(x, y));
+	                }
+	            }
+
+				image=indexedImage;
+				colorModel = image.getColorModel();
+				pixelSize = colorModel.getPixelSize();
+			}
+			
+			System.out.println(getCodePalette(colorModel, 3));
+			
 			if (width % nbImages == 0) { // Est-ce que la division de la largeur par le nombre d'images donne un entier ?
 
 				int iWidth = width/nbImages; // Largeur de la sous-image
