@@ -114,6 +114,7 @@ public class CompiledSpriteModeB16v3 {
 			    tx.translate(-image.getWidth(null), 0);
 			    AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			    image = op.filter(image, null);
+			    numImage = (nbImages-1) - numImage;
 			}
 			
 			if (pixelSize == 32) {
@@ -150,10 +151,10 @@ public class CompiledSpriteModeB16v3 {
 							}
 							if (!found) {
 								palette[paletteSize] = alpha+blue+green+red;
-								paletteRGBA[0][paletteSize] = (byte) red;
-								paletteRGBA[1][paletteSize] = (byte) green;
-								paletteRGBA[2][paletteSize] = (byte) blue;
-								paletteRGBA[3][paletteSize] = (byte) alpha;
+								paletteRGBA[0][paletteSize] = pixels[pixel + 3];
+								paletteRGBA[1][paletteSize] = pixels[pixel + 2];
+								paletteRGBA[2][paletteSize] = pixels[pixel + 1];
+								paletteRGBA[3][paletteSize] = pixels[pixel + 0];
 								result[row][col] = paletteSize;
 								paletteSize++;
 							} else {
@@ -203,7 +204,11 @@ public class CompiledSpriteModeB16v3 {
 						if (iCol == 0) {
 							pixels[iDest] = 16;
 						} else {
-							pixels[iDest] = (byte) ((DataBufferByte) image.getRaster().getDataBuffer()).getElem(iSource);
+							if ((byte) ((DataBufferByte) image.getRaster().getDataBuffer()).getElem(iSource) == 0) {
+								pixels[iDest] = (byte) 16;
+							} else {
+								pixels[iDest] = (byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(iSource)-1);
+							}
 							iSource++;
 						}
 						iCol++;

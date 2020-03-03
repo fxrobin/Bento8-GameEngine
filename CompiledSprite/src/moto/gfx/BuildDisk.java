@@ -72,6 +72,9 @@ public class BuildDisk
 					binary = sprite.getCompiledCode("A000");
 					compiledImages.put(i[1]+":"+j, new String[] {i[4], i[1]+j, Integer.toString(nbImages), Integer.toString(j), i[6], i[0]});
 					items[k++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length); // id, priority, bytes
+					System.out.println(i[1]+":"+j+":"+binary.length+":");
+					for (int idx=0; idx<binary.length; idx++)
+						System.out.print(String.format("%x", Byte.toUnsignedInt(binary[idx])));
 				}
 			}
 
