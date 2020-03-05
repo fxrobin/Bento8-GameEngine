@@ -16,6 +16,12 @@ import moto.util.knapsack.Solution;
 
 public class BuildDisk
 {
+	// Plan d'adressage - disquette taille 655360 octets (640ko)
+	// face (0-1) track (0-79) sector (1-16: 256 octets)
+	// face=0 track=0 sector=1 : 0 - 127 : Bootloader
+	// face=0 track=0 sector=2 : 256 - 16383 : Main (ASM)
+	// face=0 track=4 sector=1 : 16384 - 32767 : init video
+	// face=0 track=8 sector=1 : 32768 - x : Pages
 	
 	static ReadProperties confProperties;
 	static byte[] fdBytes = new byte[655360];
@@ -54,6 +60,17 @@ public class BuildDisk
 				fdBytes[i] = bootLoaderBytes[i];
 			}
 			
+			// ********** Video Memory Init
+			face=0;
+			track=4;
+			sector=1;
+			PngToMemoryPage initVideo = new PngToMemoryPage(confProperties.initVideo);
+			byte[] initVideoBIN = initVideo.getBIN();
+			System.out.println("Ecriture en :"+((face*327680)+(track*4096)+((sector-1)*256))+" ($"+String.format("%1$04X",((face*327680)+(track*4096)+((sector-1)*256)))+")");
+			for (int i = 0; i < initVideoBIN.length; i++) {
+				fdBytes[i+(face*327680)+(track*4096)+((sector-1)*256)] = initVideoBIN[i];
+			}
+			
 			// ********** Compiled Sprites **********
 			// Count total images to sort
 			for (String[] i : confProperties.animationImages.values()) {
@@ -79,7 +96,7 @@ public class BuildDisk
 			}
 
 			face = 0; // 0-1
-			track = 4; // 0-79
+			track = 8; // 0-79
 			sector = 1; // 1-16
 			int orgOffset;
 			int org;

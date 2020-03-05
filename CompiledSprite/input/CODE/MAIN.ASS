@@ -63,7 +63,7 @@ BEGIN
 	STD DK_dernier_bloc_a_ecrire
 	
 LDPAGE_LOOP
-	LDB #$04
+	LDB #$00
 	STB $E7E5 * Selection de la page en RAM Donnees (A000-DFFF)
 	
 	LDA #$01
@@ -75,7 +75,7 @@ LDPAGE_LOOP
 	* Duplication de la page p en p+1
 	*********************************
 CPPAGE_LOOP	
-	LDB #$65                       * On monte la page
+	LDB #$62                       * On monte la page
 	STB $E7E6                      * en RAM Cartouche (0000-3FFF)
 
     LDU #$A000                     * Source
@@ -89,7 +89,20 @@ CPPAGE_LOOP
 	STY MEM_COPY_DATA_TO_CART_E+2
     LDY #$0000+64                  * Destination Debut +64 on commence a -64,Y
     JSR MEM_COPY_DATA_TO_CART      * Copie memoire
-    
+
+PAGEINITNEXT    
+    BRA PAGEINIT
+
+PAGEINIT
+	LDA #$04
+	STA LDPAGE_LOOP+1
+    LDA #$65
+    STA CPPAGE_LOOP+1
+    LDA #$11
+	STA PAGEINITNEXT+1
+    BRA LDPAGE_LOOP    
+
+PAGENEXT
     INC CPPAGE_LOOP+1
 	INC CPPAGE_LOOP+1	
 	INC LDPAGE_LOOP+1
@@ -107,10 +120,10 @@ INIT_VID
 	STB $6081
 	STB $E7E7
 	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
-	JSR CLR_CART * effacement page 2
-	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
-	JSR CLR_CART * effacement page 0
-	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+*	JSR CLR_CART * effacement page 2
+*	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
+*	JSR CLR_CART * effacement page 0
+*	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
 
 ********************************************************************************  
 * Initialisation du mode video
@@ -145,6 +158,7 @@ SETPALETTE
 ********************************************************************************
 * Boucle principale
 ********************************************************************************
+
 	* Init routine effacement sprite
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB HERO_ANIMATION_PAG_DEL
@@ -379,63 +393,63 @@ CLR_CART_3
 ********************************************************************************  
 * Affichage de l arriere plan 57900 cycles
 ********************************************************************************	
-*DRAW_RAM_DATA_TO_CART_160x200
-*	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
-*	STS DRAW_RAM_DATA_TO_CART_160x200A_E+2
-*	
-*	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
-*	LDU #$A000
-*
-*DRAW_RAM_DATA_TO_CART_160x200A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	CMPS #DEBUTECRANA
-*	BNE DRAW_RAM_DATA_TO_CART_160x200A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU B,DP,X,Y
-*	PSHS Y,X,DP,B
-*
-*	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
-*	LDU #$C000
-*
-*DRAW_RAM_DATA_TO_CART_160x200B
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	CMPS #DEBUTECRANB
-*	BNE DRAW_RAM_DATA_TO_CART_160x200B
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU B,DP,X,Y
-*	PSHS Y,X,DP,B
-*DRAW_RAM_DATA_TO_CART_160x200A_E
-*	LDS  #$0000 * rechargement des registres
-*	PULS U,DP
-*	RTS
+DRAW_RAM_DATA_TO_CART_160x200
+	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
+	STS DRAW_RAM_DATA_TO_CART_160x200A_E+2
+	
+	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
+	LDU #$A000
+
+DRAW_RAM_DATA_TO_CART_160x200A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	CMPS #DEBUTECRANA
+	BNE DRAW_RAM_DATA_TO_CART_160x200A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU B,DP,X,Y
+	PSHS Y,X,DP,B
+
+	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
+	LDU #$C000
+
+DRAW_RAM_DATA_TO_CART_160x200B
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	CMPS #DEBUTECRANB
+	BNE DRAW_RAM_DATA_TO_CART_160x200B
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU B,DP,X,Y
+	PSHS Y,X,DP,B
+DRAW_RAM_DATA_TO_CART_160x200A_E
+	LDS  #$0000 * rechargement des registres
+	PULS U,DP
+	RTS
 
 ********************************************************************************
 * Palette de 16 couleurs
@@ -654,7 +668,7 @@ Compute_Position
 	MUL
 	ADDD Compute_Position_02
 	STD HERO_POS
-	ADDD #$2000
+	ADDD #$2000					* position dans la seconde page
 	STD HERO_POS+2
 	RTS
 Compute_Position_01
@@ -790,7 +804,7 @@ HERO_JOG_NEG_SPD_LIMIT  EQU $FA00
 HERO_X_POS
 	FCB $50			* Horizontal Position
 HERO_Y_POS
-	FCB $C8			* Vertical Position
+	FCB $A6			* Vertical Position
 HERO_G_SPEED		* Ground Speed
 	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED

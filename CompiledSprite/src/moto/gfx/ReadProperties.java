@@ -18,7 +18,7 @@ public class ReadProperties {
 	HashMap<String, String[]> animationScripts = new HashMap<String, String[]>();
 	HashMap<String, String[]> tileImages = new HashMap<String, String[]>();
 	HashMap<String, String[]> tileMaps = new HashMap<String, String[]>();
-	HashMap<String, String[]> rawImages = new HashMap<String, String[]>();
+	String initVideo;
 
 	public ReadProperties(String file) {
 		try {
@@ -50,8 +50,8 @@ public class ReadProperties {
 					tileImages.put(splitedLine[0], splitedLine);
 				} else if (line.startsWith("tile.map=")) {
 					tileMaps.put(splitedLine[0], splitedLine);
-				} else if (line.startsWith("raw.image=")) {
-					rawImages.put(splitedLine[0], splitedLine);
+				} else if (line.startsWith("init.video=")) {
+					initVideo=splitedLine[0];
 				}
 			}
 		} catch (IOException ex) {
