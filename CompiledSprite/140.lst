@@ -1,0 +1,76 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : TMP.ASS
+ * Fichier destination : TMP.BIN
+ * Contenu :
+ *     Main     0:TMP.ASS      623
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+      2        A000                      ORG $A000
+      3        A000               DRAW_140
+      4  5+3   A000 34   48              PSHS U,DP
+      5  7     A002 10FF A024            STS SSAV_140+2
+      6
+      7  7     A006 10FE 9F00            LDS $9F00
+      8  7     A00A 10FF A031            STS ERASE_POS_140_1+2
+      9  3     A00E CE   A029            LDU #DATA_140_1
+     10
+     11
+     12  7     A011 10FE 9F02            LDS $9F00+2
+     13  7     A015 10FF A038            STS ERASE_POS_140_2+2
+     14  3     A019 CE   A029            LDU #DATA_140_2
+     15
+     16  4+1   A01C 32   E8 88           LEAS -120,S
+     17  4+1   A01F 32   E8 B0           LEAS -80,S
+     18
+     19        A022               SSAV_140
+     20  4     A022 10CE 0000            LDS #$0000
+     21  5+3   A026 35   48              PULS U,DP
+     22  5     A028 39                   RTS
+     23
+     24        A029               DATA_140_2
+     25        A029               DATA_140_1
+     26        A029               ERASE_140
+     27  5+3   A029 34   48              PSHS U,DP
+     28  7     A02B 10FF A045            STS ERASE_SSAV_140+2
+     29
+     30        A02F               ERASE_POS_140_1
+     31  4     A02F 10CE 0000            LDS #$0000
+     32  3     A033 CE   A04A            LDU #ERASE_DATA_140_1
+     33        A036               ERASE_CODE_140_1
+     34
+     35        A036               ERASE_POS_140_2
+     36  4     A036 10CE 0000            LDS #$0000
+     37  3     A03A CE   A04A            LDU #ERASE_DATA_140_2
+     38        A03D               ERASE_CODE_140_2
+     39  4+1   A03D 32   E8 88           LEAS -120,S
+     40  4+1   A040 32   E8 B0           LEAS -80,S
+     41
+     42        A043               ERASE_SSAV_140
+     43  4     A043 10CE 0000            LDS #$0000
+     44  5+3   A047 35   48              PULS U,DP
+     45  5     A049 39                   RTS
+     46
+     47        A04A               ERASE_DATA_140_2
+     48        A04A               ERASE_DATA_140_1
+
+000000 Total Errors
+
+000012 Total Symbols
+     1x          Label A029 DATA_140_1
+     1x          Label A029 DATA_140_2
+     0x          Label A000 DRAW_140
+     0x          Label A029 ERASE_140
+     0x          Label A036 ERASE_CODE_140_1
+     0x          Label A03D ERASE_CODE_140_2
+     1x          Label A04A ERASE_DATA_140_1
+     1x          Label A04A ERASE_DATA_140_2
+     1x          Label A02F ERASE_POS_140_1
+     1x          Label A036 ERASE_POS_140_2
+     1x          Label A043 ERASE_SSAV_140
+     1x          Label A022 SSAV_140
+

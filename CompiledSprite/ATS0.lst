@@ -1,0 +1,112 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : TMP.ASS
+ * Fichier destination : TMP.BIN
+ * Contenu :
+ *     Main     0:TMP.ASS      1154
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+      2        A000                      ORG $A000
+      3        A000               DRAW_ATS0
+      4  5+3   A000 34   48              PSHS U,DP
+      5  7     A002 10FF A05B            STS SSAV_ATS0+2
+      6
+      7  7     A006 10FE 9F00            LDS $9F00
+      8  7     A00A 10FF A068            STS ERASE_POS_ATS0_1+2
+      9  3     A00E CE   A060            LDU #DATA_ATS0_1
+     10
+     11
+     12  7     A011 10FE 9F02            LDS $9F00+2
+     13  7     A015 10FF A06F            STS ERASE_POS_ATS0_2+2
+     14  3     A019 CE   A060            LDU #DATA_ATS0_2
+     15
+     16  4+0   A01C A6   E4              LDA ,S
+     17  5     A01E B7   A079            STA ERASE_CODE_ATS0_2+5
+     18  2     A021 86   F0              LDA  #$F0
+     19  4+0   A023 A4   E4              ANDA ,S
+     20  2     A025 8B   03              ADDA #$03
+     21  4+0   A027 A7   E4              STA ,S
+     22  4+1   A029 A6   E8 D8           LDA -40,S
+     23  5     A02C B7   A082            STA ERASE_CODE_ATS0_2+14
+     24  2     A02F 86   F0              LDA  #$F0
+     25  4+1   A031 A4   E8 D8           ANDA -40,S
+     26  2     A034 8B   02              ADDA #$02
+     27  4+1   A036 A7   E8 D8           STA -40,S
+     28  4+1   A039 A6   E8 B0           LDA -80,S
+     29  5     A03C B7   A08C            STA ERASE_CODE_ATS0_2+24
+     30  2     A03F 86   F0              LDA  #$F0
+     31  4+1   A041 A4   E8 B0           ANDA -80,S
+     32  2     A044 8B   01              ADDA #$01
+     33  4+1   A046 A7   E8 B0           STA -80,S
+     34  4+1   A049 A6   E8 89           LDA -119,S
+     35  5     A04C B7   A096            STA ERASE_CODE_ATS0_2+34
+     36  2     A04F 86   F0              LDA  #$F0
+     37  4+1   A051 A4   E8 89           ANDA -119,S
+     38  2     A054 8B   00              ADDA #$00
+     39  4+1   A056 A7   E8 89           STA -119,S
+     40
+     41        A059               SSAV_ATS0
+     42  4     A059 10CE 0000            LDS #$0000
+     43  5+3   A05D 35   48              PULS U,DP
+     44  5     A05F 39                   RTS
+     45
+     46        A060               DATA_ATS0_2
+     47        A060               DATA_ATS0_1
+     48        A060               ERASE_ATS0
+     49  5+3   A060 34   48              PSHS U,DP
+     50  7     A062 10FF A09C            STS ERASE_SSAV_ATS0+2
+     51
+     52        A066               ERASE_POS_ATS0_1
+     53  4     A066 10CE 0000            LDS #$0000
+     54  3     A06A CE   A0A1            LDU #ERASE_DATA_ATS0_1
+     55        A06D               ERASE_CODE_ATS0_1
+     56
+     57        A06D               ERASE_POS_ATS0_2
+     58  4     A06D 10CE 0000            LDS #$0000
+     59  3     A071 CE   A0A1            LDU #ERASE_DATA_ATS0_2
+     60        A074               ERASE_CODE_ATS0_2
+     61  2     A074 86   F0              LDA  #$F0
+     62  4+0   A076 A4   E4              ANDA ,S
+     63  2     A078 8B   03              ADDA #$03
+     64  4+0   A07A A7   E4              STA ,S
+     65  2     A07C 86   F0              LDA  #$F0
+     66  4+1   A07E A4   E8 D8           ANDA -40,S
+     67  2     A081 8B   02              ADDA #$02
+     68  4+1   A083 A7   E8 D8           STA -40,S
+     69  2     A086 86   F0              LDA  #$F0
+     70  4+1   A088 A4   E8 B0           ANDA -80,S
+     71  2     A08B 8B   01              ADDA #$01
+     72  4+1   A08D A7   E8 B0           STA -80,S
+     73  2     A090 86   F0              LDA  #$F0
+     74  4+1   A092 A4   E8 89           ANDA -119,S
+     75  2     A095 8B   00              ADDA #$00
+     76  4+1   A097 A7   E8 89           STA -119,S
+     77
+     78        A09A               ERASE_SSAV_ATS0
+     79  4     A09A 10CE 0000            LDS #$0000
+     80  5+3   A09E 35   48              PULS U,DP
+     81  5     A0A0 39                   RTS
+     82
+     83        A0A1               ERASE_DATA_ATS0_2
+     84        A0A1               ERASE_DATA_ATS0_1
+
+000000 Total Errors
+
+000012 Total Symbols
+     1x          Label A060 DATA_ATS0_1
+     1x          Label A060 DATA_ATS0_2
+     0x          Label A000 DRAW_ATS0
+     0x          Label A060 ERASE_ATS0
+     0x          Label A06D ERASE_CODE_ATS0_1
+     4x          Label A074 ERASE_CODE_ATS0_2
+     1x          Label A0A1 ERASE_DATA_ATS0_1
+     1x          Label A0A1 ERASE_DATA_ATS0_2
+     1x          Label A066 ERASE_POS_ATS0_1
+     1x          Label A06D ERASE_POS_ATS0_2
+     1x          Label A09A ERASE_SSAV_ATS0
+     1x          Label A059 SSAV_ATS0
+
