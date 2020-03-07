@@ -63,7 +63,7 @@ BEGIN
 	STD DK_dernier_bloc_a_ecrire
 	
 LDPAGE_LOOP
-	LDB #$04
+	LDB #$00
 	STB $E7E5 * Selection de la page en RAM Donnees (A000-DFFF)
 	
 	LDA #$01
@@ -75,7 +75,7 @@ LDPAGE_LOOP
 	* Duplication de la page p en p+1
 	*********************************
 CPPAGE_LOOP	
-	LDB #$65                       * On monte la page
+	LDB #$62                       * On monte la page
 	STB $E7E6                      * en RAM Cartouche (0000-3FFF)
 
     LDU #$A000                     * Source
@@ -89,7 +89,20 @@ CPPAGE_LOOP
 	STY MEM_COPY_DATA_TO_CART_E+2
     LDY #$0000+64                  * Destination Debut +64 on commence a -64,Y
     JSR MEM_COPY_DATA_TO_CART      * Copie memoire
-    
+
+PAGEINITNEXT    
+    BRA PAGEINIT
+
+PAGEINIT
+	LDA #$04
+	STA LDPAGE_LOOP+1
+    LDA #$65
+    STA CPPAGE_LOOP+1
+    LDA #$11
+	STA PAGEINITNEXT+1
+    BRA LDPAGE_LOOP    
+
+PAGENEXT
     INC CPPAGE_LOOP+1
 	INC CPPAGE_LOOP+1	
 	INC LDPAGE_LOOP+1
@@ -107,10 +120,10 @@ INIT_VID
 	STB $6081
 	STB $E7E7
 	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
-	JSR CLR_CART * effacement page 2
-	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
-	JSR CLR_CART * effacement page 0
-	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+*	JSR CLR_CART * effacement page 2
+*	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
+*	JSR CLR_CART * effacement page 0
+*	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
 
 ********************************************************************************  
 * Initialisation du mode video
@@ -145,6 +158,7 @@ SETPALETTE
 ********************************************************************************
 * Boucle principale
 ********************************************************************************
+
 	* Init routine effacement sprite
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB HERO_ANIMATION_PAG_DEL
@@ -352,10 +366,10 @@ CLR_CART
     PSHS U,DP
     STS CLR_CART_3+2
     LDS #$4000
-    LDU #$0000
-    LDY #$0000
-    LDX #$0000
-    LDD #$0000
+    LDU #$0C0C
+    LDY #$0C0C
+    LDX #$0C0C
+    LDD #$0C0C
     TFR A,DP
 CLR_CART_2
     PSHS U,Y,X,DP,B,A
@@ -379,63 +393,63 @@ CLR_CART_3
 ********************************************************************************  
 * Affichage de l arriere plan 57900 cycles
 ********************************************************************************	
-*DRAW_RAM_DATA_TO_CART_160x200
-*	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
-*	STS DRAW_RAM_DATA_TO_CART_160x200A_E+2
-*	
-*	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
-*	LDU #$A000
-*
-*DRAW_RAM_DATA_TO_CART_160x200A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	CMPS #DEBUTECRANA
-*	BNE DRAW_RAM_DATA_TO_CART_160x200A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU B,DP,X,Y
-*	PSHS Y,X,DP,B
-*
-*	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
-*	LDU #$C000
-*
-*DRAW_RAM_DATA_TO_CART_160x200B
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	CMPS #DEBUTECRANB
-*	BNE DRAW_RAM_DATA_TO_CART_160x200B
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU A,B,DP,X,Y
-*	PSHS Y,X,DP,B,A
-*	PULU B,DP,X,Y
-*	PSHS Y,X,DP,B
-*DRAW_RAM_DATA_TO_CART_160x200A_E
-*	LDS  #$0000 * rechargement des registres
-*	PULS U,DP
-*	RTS
+DRAW_RAM_DATA_TO_CART_160x200
+	PSHS U,DP		* sauvegarde des registres pour utilisation du stack blast
+	STS DRAW_RAM_DATA_TO_CART_160x200A_E+2
+	
+	LDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)
+	LDU #$A000
+
+DRAW_RAM_DATA_TO_CART_160x200A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	CMPS #DEBUTECRANA
+	BNE DRAW_RAM_DATA_TO_CART_160x200A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU B,DP,X,Y
+	PSHS Y,X,DP,B
+
+	LDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)
+	LDU #$C000
+
+DRAW_RAM_DATA_TO_CART_160x200B
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	CMPS #DEBUTECRANB
+	BNE DRAW_RAM_DATA_TO_CART_160x200B
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU A,B,DP,X,Y
+	PSHS Y,X,DP,B,A
+	PULU B,DP,X,Y
+	PSHS Y,X,DP,B
+DRAW_RAM_DATA_TO_CART_160x200A_E
+	LDS  #$0000 * rechargement des registres
+	PULS U,DP
+	RTS
 
 ********************************************************************************
 * Palette de 16 couleurs
@@ -654,7 +668,7 @@ Compute_Position
 	MUL
 	ADDD Compute_Position_02
 	STD HERO_POS
-	ADDD #$2000
+	ADDD #$2000					* position dans la seconde page
 	STD HERO_POS+2
 	RTS
 Compute_Position_01
@@ -693,39 +707,42 @@ Compute_Position_02
 * ou frame suivante = 174 a 184
 ********************************************************************************
 
-HERO_ANIMATION_LOAD				* Input X : Animation Adress
+HERO_ANIMATION_LOAD				  * Input X : Animation Adress
 	STX HERO_ANIMATION_ADR
 	STX HERO_ANIMATION_RTN_ADR
-	CLR HERO_ANIMATION_IMC		* Set first image to $00
+	CLR HERO_ANIMATION_IMC		  * Set first image to $00
 HERO_ANIMATION_LOAD_00
-	LDD -2,X					* Load Frames informations
-	CMPA #$00					* Different from $00 means NbFrames relative to GSP
+	LDD -2,X					  * Load Frames informations
+	CMPA #$00					  * Different from $00 means NbFrames relative to GSP
 	BEQ HERO_ANIMATION_LOAD_01
 	LDA HERO_G_SPEED
 	BGE HERO_ANIMATION_LOAD_01A
-	NEGA                        * valeur absolue de la vitesse negative
+	NEGA                          * valeur absolue de la vitesse negative
+	DECA
 HERO_ANIMATION_LOAD_01A
-	STA HERO_ANIMATION_LOAD_01A+4 * Auto modification du SUBB ci dessous
-	SUBB #$00			* G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
+	LSLA
+	LSLA                          * multiplication de la vitesse par 4
+	STA HERO_ANIMATION_LOAD_01A+6 * Auto modification du SUBB ci dessous
+	SUBB #$00			          * G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
 	BCC HERO_ANIMATION_LOAD_01
-	LDB #$01					* Minimun 1 frame/image
+	LDB #$01					  * Minimun 1 frame/image
 HERO_ANIMATION_LOAD_01
-	STB HERO_ANIMATION_FRR		* Store remaining Frames for this loaded image
+	STB HERO_ANIMATION_FRR		  * Store remaining Frames for this loaded image
 	LDA HERO_ANIMATION_IMC
 	LDB #$05
 	MUL
 	ADDD HERO_ANIMATION_ADR
 	TFR D,Y
 	LDB ,Y
-	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
+	CMPB #$1F					  * Si > 31 on est plus sur une page (0-31)
 	BHI HERO_ANIMATION_LOAD_NOPAGE
 	LDA HERO_ANIMATION_PAG      
 	STB HERO_ANIMATION_PAG
 	CMPA HERO_ANIMATION_PAG_REF
 	BEQ HERO_ANIMATION_LOAD_02
-	INC HERO_ANIMATION_PAG * si la page precedente etait diff de la REF on recale a nouvelle page en +1
+	INC HERO_ANIMATION_PAG        * si la page precedente etait diff de la REF on recale a nouvelle page en +1
 HERO_ANIMATION_LOAD_02
-	STB HERO_ANIMATION_PAG_REF  * on sauvegarde la PAGE comme REF
+	STB HERO_ANIMATION_PAG_REF    * on sauvegarde la PAGE comme REF
 	LDX 1,Y
 	STX HERO_ANIMATION_DRW
 	LDX 3,Y
@@ -735,7 +752,7 @@ HERO_ANIMATION_LOAD_NOPAGE
 	CMPB #$FF
 	BNE HERO_ANIMATION_LOAD_FE
 	LDX 3,Y
-	STX HERO_ANIMATION_IMC		* Save IMC and RTN_IMC
+	STX HERO_ANIMATION_IMC		  * Save IMC and RTN_IMC
 	LDX 1,Y
 	STX HERO_ANIMATION_ADR
 	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
@@ -783,41 +800,41 @@ HERO_ANIMATION_NEXT_00
 	FDB $0108
 HERO_WALK_R
 	FCB $04
-	FDB $D5CC
-	FDB $DB69
+	FDB $D7C5
+	FDB $DD62
 	FCB $04
-	FDB $CC10
-	FDB $D242
+	FDB $CED0
+	FDB $D502
+	FCB $0C
+	FDB $D475
+	FDB $DBAE
+	FCB $0C
+	FDB $C9EB
+	FDB $D14E
+	FCB $0C
+	FDB $BF8C
+	FDB $C6D1
 	FCB $04
-	FDB $C0AB
-	FDB $C7E4
+	FDB $C4D3
+	FDB $CBD4
 	FCB $04
-	FDB $B504
-	FDB $BC67
+	FDB $BC1A
+	FDB $C22A
 	FCB $04
-	FDB $A989
-	FDB $B0CE
-	FCB $06
-	FDB $D441
-	FDB $DB42
+	FDB $B2BF
+	FDB $B939
+	FCB $04
+	FDB $A97B
+	FDB $AFE3
+	FCB $0C
+	FDB $B519
+	FDB $BC5B
+	FCB $0C
+	FDB $AACB
+	FDB $B1F8
 	FCB $04
 	FDB $A000
-	FDB $A610
-	FCB $06
-	FDB $CA12
-	FDB $D08C
-	FCB $06
-	FDB $C004
-	FDB $C66C
-	FCB $06
-	FDB $B49E
-	FDB $BBE0
-	FCB $08
-	FDB $D382
-	FDB $DAAF
-	FCB $06
-	FDB $AA3B
-	FDB $B0D0
+	FDB $A695
 	FCB $FF
 	FDB HERO_WALK_R
 	FDB $0000
@@ -825,86 +842,86 @@ HERO_WALK_R
 	FDB $0018
 HERO_IDLE_R
 	FCB $06
-	FDB $A000
-	FDB $A67F
+	FDB $D656
+	FDB $DCD5
 	FCB $FF
 	FDB HERO_IDLE_R
 	FDB $0000
 
 	FDB $0108
 HERO_RUN_R
-	FCB $08
-	FDB $C788
-	FDB $CF1D
-	FCB $08
-	FDB $BD45
-	FDB $C3C3
-	FCB $08
-	FDB $B325
-	FDB $B98B
-	FCB $08
-	FDB $A9D4
-	FDB $AFC3
-	FCB $0A
-	FDB $D3E0
-	FDB $DB0A
-	FCB $0A
-	FDB $C7A2
-	FDB $CF5F
-	FCB $08
+	FCB $0C
 	FDB $A000
-	FDB $A641
-	FCB $0A
-	FDB $BDA6
-	FDB $C3FE
-	FCB $0A
-	FDB $B3B0
-	FDB $BA04
-	FCB $0A
-	FDB $A8D0
-	FDB $AFB8
+	FDB $A795
+	FCB $06
+	FDB $CD08
+	FDB $D386
+	FCB $06
+	FDB $C3DB
+	FDB $CA41
+	FCB $06
+	FDB $BB41
+	FDB $C130
+	FCB $0E
+	FDB $D430
+	FDB $DB5A
+	FCB $0E
+	FDB $C927
+	FDB $D0E4
+	FCB $06
+	FDB $B237
+	FDB $B878
+	FCB $06
+	FDB $A91E
+	FDB $AF76
+	FCB $06
+	FDB $A000
+	FDB $A654
+	FCB $08
+	FDB $D5F9
+	FDB $DCE1
 	FCB $FF
 	FDB HERO_RUN_R
 	FDB $0000
 
 	FDB $0108
 HERO_WALK_L
-	FCB $0A
-	FDB $A000
-	FDB $A59D
-	FCB $0C
-	FDB $D624
-	FDB $DC56
-	FCB $0C
-	FDB $CAD0
-	FDB $D200
-	FCB $0C
-	FDB $BF29
-	FDB $C68C
-	FCB $0C
-	FDB $B3BD
-	FDB $BAF9
+	FCB $08
+	FDB $CDD4
+	FDB $D371
+	FCB $08
+	FDB $C4DF
+	FDB $CB11
 	FCB $0E
-	FDB $D43A
-	FDB $DB3B
-	FCB $0C
-	FDB $AA34
-	FDB $B044
-	FCB $0C
-	FDB $A000
-	FDB $A67D
-	FCB $0E
-	FDB $CA27
-	FDB $D092
-	FCB $0E
-	FDB $BED0
+	FDB $BEDA
 	FDB $C60A
-	FCB $10
-	FDB $D485
-	FDB $DBB5
 	FCB $0E
-	FDB $B468
-	FDB $BB00
+	FDB $B450
+	FDB $BBB3
+	FCB $0E
+	FDB $A9FD
+	FDB $B139
+	FCB $0E
+	FDB $A000
+	FDB $A701
+	FCB $08
+	FDB $BC26
+	FDB $C236
+	FCB $08
+	FDB $B2C7
+	FDB $B944
+	FCB $08
+	FDB $A97F
+	FDB $AFEA
+	FCB $10
+	FDB $D450
+	FDB $DB8A
+	FCB $10
+	FDB $C9FE
+	FDB $D12E
+	FCB $08
+	FDB $A000
+	FDB $A698
 	FCB $FF
 	FDB HERO_WALK_L
 	FDB $0000
@@ -912,42 +929,42 @@ HERO_WALK_L
 	FDB $0108
 HERO_RUN_L
 	FCB $10
-	FDB $C87C
-	FDB $D01A
-	FCB $0E
-	FDB $AA20
-	FDB $B0A1
-	FCB $0E
+	FDB $BF27
+	FDB $C6C5
+	FCB $0A
+	FDB $D66A
+	FDB $DCEB
+	FCB $0A
+	FDB $CD3D
+	FDB $D3A3
+	FCB $0A
+	FDB $C49B
+	FDB $CA90
+	FCB $10
+	FDB $B4E3
+	FDB $BC0D
+	FCB $10
+	FDB $A9EA
+	FDB $B19B
+	FCB $0A
+	FDB $BB8D
+	FDB $C1D1
+	FCB $0A
+	FDB $B274
+	FDB $B8CC
+	FCB $0A
+	FDB $A95A
+	FDB $AFAB
+	FCB $10
 	FDB $A000
-	FDB $A666
-	FCB $10
-	FDB $BF21
-	FDB $C516
-	FCB $10
-	FDB $B3D5
-	FDB $BAFF
-	FCB $12
-	FDB $BF02
-	FDB $C6B3
-	FCB $10
-	FDB $A9FC
-	FDB $B040
-	FCB $10
-	FDB $A000
-	FDB $A658
-	FCB $12
-	FDB $B511
-	FDB $BB62
-	FCB $12
-	FDB $AA3B
-	FDB $B11D
+	FDB $A6E2
 	FCB $FF
 	FDB HERO_RUN_L
 	FDB $0000
 
 	FDB $0018
 HERO_IDLE_L
-	FCB $12
+	FCB $0A
 	FDB $A000
 	FDB $A67F
 	FCB $FF
@@ -957,14 +974,14 @@ HERO_IDLE_L
 ********************************************************************************
 * HERO Variables
 ********************************************************************************
-HERO_WALK_SPD_LIMIT EQU $0400
-HERO_WALK_NEG_SPD_LIMIT EQU $FC00
-HERO_JOG_SPD_LIMIT  EQU $0600
-HERO_JOG_NEG_SPD_LIMIT  EQU $FA00
+HERO_WALK_SPD_LIMIT EQU $0100          * 0400
+HERO_WALK_NEG_SPD_LIMIT EQU $FF00      * FC00
+HERO_JOG_SPD_LIMIT  EQU $0180          * 0600
+HERO_JOG_NEG_SPD_LIMIT  EQU $FE80      * FA00
 HERO_X_POS
-	FCB $50			* Horizontal Position
+	FCB $18			* Horizontal Position
 HERO_Y_POS
-	FCB $C8			* Vertical Position
+	FCB $A2			* Vertical Position
 HERO_G_SPEED		* Ground Speed
 	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED
@@ -976,15 +993,15 @@ HERO_Y_SPEED
 HERO_Y_SPS
 	FDB $0000		* Subpixel Y speed
 HERO_TOP_SPEED
-	FDB $0600        * vitesse maximum autorisee 6 = 1536/256
+	FDB $0180        * 0600 vitesse maximum autorisee 6 = 1536/256
 HERO_NEG_TOP_SPEED
-	FDB $FA00        * vitesse maximum autorisee -6 = -1536/256
+	FDB $FE80        * FA00 vitesse maximum autorisee -6 = -1536/256
 HERO_ACCELERATION
-	FDB $000C        * constante acceleration 0.046875 = 12/256
+	FDB $0003        * 000C constante acceleration 0.046875 = 12/256
 HERO_DECELERATION
-	FDB $0080        * constante deceleration 0.5 = 128/256
+	FDB $0020        * 0080 constante deceleration 0.5 = 128/256
 HERO_FRICTION
-	FDB $000C        * constante de friction 0.046875 = 12/256
+	FDB $0003        * 000C constante de friction 0.046875 = 12/256
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
 HERO_ANIMATION_ADR_OLD

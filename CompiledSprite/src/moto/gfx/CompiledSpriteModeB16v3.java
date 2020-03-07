@@ -78,6 +78,7 @@ public class CompiledSpriteModeB16v3 {
 	int cyclesECode2 = 0;
 	int octetsECode2 = 0;
 	boolean isSelfModifying = false;
+	boolean isDeleteCode = false;
 	int codePart = 0; // Partie de code (1 ou 2)
 
 	public CompiledSpriteModeB16v3(String file, String locspriteName, int nbImages, int numImage, int flip) {
@@ -243,6 +244,7 @@ public class CompiledSpriteModeB16v3 {
 	public void generateCode() {
 		// Génération du code source pour l'effacement des images
 		isSelfModifying = false;
+		isDeleteCode = true;
 		generateCodeArray(1, spriteECode1, spriteEData1);
 		cyclesECode2 = cyclesCode;
 		octetsECode2 = octetsCode;
@@ -253,6 +255,7 @@ public class CompiledSpriteModeB16v3 {
 
 		// Génération du code source pour l'écriture des images
 		isSelfModifying = true;
+		isDeleteCode = false;
 		generateCodeArray(1, spriteCode1, spriteData1);
 		cyclesWCode2 = cyclesCode+cyclesCodeSelfMod;
 		octetsWCode2 = octetsCode+octetsCodeSelfMod;
@@ -362,29 +365,39 @@ public class CompiledSpriteModeB16v3 {
 							}
 							computeStatsSelfMod8b(stOffset);
 							
-							spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4)+1)); // +2 pour LDA, +2 ou +3 ou +4 pour ANDA, +1 pour ADDA (instruction seule)
+							//spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4)+1)); // +2 pour LDA, +2 ou +3 ou +4 pour ANDA, +1 pour ADDA (instruction seule)
+							spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+1));
+							octetsCode -= 2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4);
 							cyclesCodeSelfMod += 5;
 							octetsCodeSelfMod += 3;
 							
 							// bug a HIL0_1 + 403 decalage de 1
 						}
-
-						if (leftAlphaPxl == true) {
-							spriteCode.add("\tLDA  #$F0");
-						} else {
-							spriteCode.add("\tLDA  #$0F");
-						}
-						computeStats8b();
- 
-						if (stOffset == 0) {
-							spriteCode.add("\tANDA ,S");
-						} else {
-							spriteCode.add("\tANDA " + stOffset + ",S");
-						}
-						computeStats8b(stOffset);
 						
-						spriteCode.add("\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
-						computeStats8b();
+						if (!isDeleteCode) {
+							if (leftAlphaPxl == true) {
+								spriteCode.add("\tLDA  #$F0");
+							} else {
+								spriteCode.add("\tLDA  #$0F");
+							}
+							computeStats8b();
+
+							if (stOffset == 0) {
+								spriteCode.add("\tANDA ,S");
+							} else {
+								spriteCode.add("\tANDA " + stOffset + ",S");
+							}
+							computeStats8b(stOffset);
+
+							spriteCode.add("\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
+							computeStats8b();
+						} else {
+							// si on ecrit du code compilé pour réappliquer le fond
+							// on ne gère pas les pixels transparent à gauche ou droite
+							// pour des raisons d'optimisation on réapplique le bloc de deux pixels d'un coup
+							spriteCode.add("\tLDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
+							computeStats8b();
+						}
 						
 						if (stOffset == 0) {
 							spriteCode.add("\tSTA ,S");

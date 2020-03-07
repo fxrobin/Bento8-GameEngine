@@ -366,10 +366,10 @@ CLR_CART
     PSHS U,DP
     STS CLR_CART_3+2
     LDS #$4000
-    LDU #$0000
-    LDY #$0000
-    LDX #$0000
-    LDD #$0000
+    LDU #$0C0C
+    LDY #$0C0C
+    LDX #$0C0C
+    LDD #$0C0C
     TFR A,DP
 CLR_CART_2
     PSHS U,Y,X,DP,B,A
@@ -707,39 +707,42 @@ Compute_Position_02
 * ou frame suivante = 174 a 184
 ********************************************************************************
 
-HERO_ANIMATION_LOAD				* Input X : Animation Adress
+HERO_ANIMATION_LOAD				  * Input X : Animation Adress
 	STX HERO_ANIMATION_ADR
 	STX HERO_ANIMATION_RTN_ADR
-	CLR HERO_ANIMATION_IMC		* Set first image to $00
+	CLR HERO_ANIMATION_IMC		  * Set first image to $00
 HERO_ANIMATION_LOAD_00
-	LDD -2,X					* Load Frames informations
-	CMPA #$00					* Different from $00 means NbFrames relative to GSP
+	LDD -2,X					  * Load Frames informations
+	CMPA #$00					  * Different from $00 means NbFrames relative to GSP
 	BEQ HERO_ANIMATION_LOAD_01
 	LDA HERO_G_SPEED
 	BGE HERO_ANIMATION_LOAD_01A
-	NEGA                        * valeur absolue de la vitesse negative
+	NEGA                          * valeur absolue de la vitesse negative
+	DECA
 HERO_ANIMATION_LOAD_01A
-	STA HERO_ANIMATION_LOAD_01A+4 * Auto modification du SUBB ci dessous
-	SUBB #$00			* G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
+	LSLA
+	LSLA                          * multiplication de la vitesse par 4
+	STA HERO_ANIMATION_LOAD_01A+6 * Auto modification du SUBB ci dessous
+	SUBB #$00			          * G_SPEED First byte : Frame (used here), Second byte : 1/256 Frame (not used here)
 	BCC HERO_ANIMATION_LOAD_01
-	LDB #$01					* Minimun 1 frame/image
+	LDB #$01					  * Minimun 1 frame/image
 HERO_ANIMATION_LOAD_01
-	STB HERO_ANIMATION_FRR		* Store remaining Frames for this loaded image
+	STB HERO_ANIMATION_FRR		  * Store remaining Frames for this loaded image
 	LDA HERO_ANIMATION_IMC
 	LDB #$05
 	MUL
 	ADDD HERO_ANIMATION_ADR
 	TFR D,Y
 	LDB ,Y
-	CMPB #$1F					* Si > 31 on est plus sur une page (0-31)
+	CMPB #$1F					  * Si > 31 on est plus sur une page (0-31)
 	BHI HERO_ANIMATION_LOAD_NOPAGE
 	LDA HERO_ANIMATION_PAG      
 	STB HERO_ANIMATION_PAG
 	CMPA HERO_ANIMATION_PAG_REF
 	BEQ HERO_ANIMATION_LOAD_02
-	INC HERO_ANIMATION_PAG * si la page precedente etait diff de la REF on recale a nouvelle page en +1
+	INC HERO_ANIMATION_PAG        * si la page precedente etait diff de la REF on recale a nouvelle page en +1
 HERO_ANIMATION_LOAD_02
-	STB HERO_ANIMATION_PAG_REF  * on sauvegarde la PAGE comme REF
+	STB HERO_ANIMATION_PAG_REF    * on sauvegarde la PAGE comme REF
 	LDX 1,Y
 	STX HERO_ANIMATION_DRW
 	LDX 3,Y
@@ -749,7 +752,7 @@ HERO_ANIMATION_LOAD_NOPAGE
 	CMPB #$FF
 	BNE HERO_ANIMATION_LOAD_FE
 	LDX 3,Y
-	STX HERO_ANIMATION_IMC		* Save IMC and RTN_IMC
+	STX HERO_ANIMATION_IMC		  * Save IMC and RTN_IMC
 	LDX 1,Y
 	STX HERO_ANIMATION_ADR
 	BRA HERO_ANIMATION_LOAD_00	* Output X : Animation Adress
@@ -797,14 +800,14 @@ HERO_ANIMATION_NEXT_00
 ********************************************************************************
 * HERO Variables
 ********************************************************************************
-HERO_WALK_SPD_LIMIT EQU $0400
-HERO_WALK_NEG_SPD_LIMIT EQU $FC00
-HERO_JOG_SPD_LIMIT  EQU $0600
-HERO_JOG_NEG_SPD_LIMIT  EQU $FA00
+HERO_WALK_SPD_LIMIT EQU $0100          * 0400
+HERO_WALK_NEG_SPD_LIMIT EQU $FF00      * FC00
+HERO_JOG_SPD_LIMIT  EQU $0180          * 0600
+HERO_JOG_NEG_SPD_LIMIT  EQU $FE80      * FA00
 HERO_X_POS
-	FCB $50			* Horizontal Position
+	FCB $18			* Horizontal Position
 HERO_Y_POS
-	FCB $A6			* Vertical Position
+	FCB $A2			* Vertical Position
 HERO_G_SPEED		* Ground Speed
 	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED
@@ -816,15 +819,15 @@ HERO_Y_SPEED
 HERO_Y_SPS
 	FDB $0000		* Subpixel Y speed
 HERO_TOP_SPEED
-	FDB $0600        * vitesse maximum autorisee 6 = 1536/256
+	FDB $0180        * 0600 vitesse maximum autorisee 6 = 1536/256
 HERO_NEG_TOP_SPEED
-	FDB $FA00        * vitesse maximum autorisee -6 = -1536/256
+	FDB $FE80        * FA00 vitesse maximum autorisee -6 = -1536/256
 HERO_ACCELERATION
-	FDB $000C        * constante acceleration 0.046875 = 12/256
+	FDB $0003        * 000C constante acceleration 0.046875 = 12/256
 HERO_DECELERATION
-	FDB $0080        * constante deceleration 0.5 = 128/256
+	FDB $0020        * 0080 constante deceleration 0.5 = 128/256
 HERO_FRICTION
-	FDB $000C        * constante de friction 0.046875 = 12/256
+	FDB $0003        * 000C constante de friction 0.046875 = 12/256
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
 HERO_ANIMATION_ADR_OLD
