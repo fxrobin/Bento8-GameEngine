@@ -48,6 +48,29 @@ BEGIN
 	STD HERO_POS
 	LDD #FINECRANB
 	STD HERO_POS+2	
+	
+********************************************************************************  
+* Initialisation du mode video
+********************************************************************************
+	LDA #$7B	* passage en mode 160x200x16c
+	STA $E7DC
+
+********************************************************************************  
+* Initialisation de la palette de couleurs
+********************************************************************************
+	LDY #TABPALETTE
+	CLRA
+SETPALETTE
+	PSHS A
+	ASLA
+	STA $E7DB
+	LDD ,Y++
+	STB $E7DA
+	STA $E7DA
+	PULS A
+	INCA
+	CMPY #FINTABPALETTE
+	BNE	SETPALETTE
 
 ********************************************************************************
 * Chargement des pages memoire
@@ -124,29 +147,6 @@ INIT_VID
 *	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
 *	JSR CLR_CART * effacement page 0
 *	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
-
-********************************************************************************  
-* Initialisation du mode video
-********************************************************************************
-	LDA #$7B	* passage en mode 160x200x16c
-	STA $E7DC
-
-********************************************************************************  
-* Initialisation de la palette de couleurs
-********************************************************************************
-	LDY #TABPALETTE
-	CLRA
-SETPALETTE
-	PSHS A
-	ASLA
-	STA $E7DB
-	LDD ,Y++
-	STB $E7DA
-	STA $E7DA
-	PULS A
-	INCA
-	CMPY #FINTABPALETTE
-	BNE	SETPALETTE
 
 ********************************************************************************
 * Initialisation des sprites
@@ -455,22 +455,22 @@ DRAW_RAM_DATA_TO_CART_160x200A_E
 * Palette de 16 couleurs
 ********************************************************************************
 TABPALETTE
-	FDB $0000	* index:1  R:0   V:0   B:0  
-	FDB $0004	* index:2  R:138 V:29  B:0  
-	FDB $047d	* index:3  R:236 V:171 B:136
-	FDB $0028	* index:4  R:188 V:98  B:35 
-	FDB $006a	* index:5  R:206 V:159 B:0  
-	FDB $01a7	* index:6  R:168 V:208 B:65 
-	FDB $0061	* index:7  R:75  V:165 B:4  
-	FDB $0020	* index:8  R:16  V:94  B:3  
-	FDB $0000	* index:9  R:0   V:1   B:0  
-	FDB $0010	* index:10 R:0   V:47  B:15 
-	FDB $0220	* index:11 R:22  V:87  B:103
-	FDB $0b82	* index:12 R:104 V:183 B:222
-	FDB $0ddd	* index:13 R:239 V:240 B:241
-	FDB $0d30	* index:14 R:12  V:115 B:239
-	FDB $0700	* index:15 R:13  V:32  B:177
-	FDB $0001	* index:16 R:52  V:8   B:10 
+ 	FDB $0000	* index:1  R:0   V:0   B:0  
+ 	FDB $0004	* index:2  R:139 V:27  B:0  
+ 	FDB $047d	* index:3  R:236 V:170 B:135
+ 	FDB $0028	* index:4  R:189 V:99  B:37 
+ 	FDB $006a	* index:5  R:206 V:159 B:0  
+ 	FDB $01a6	* index:6  R:167 V:208 B:66 
+ 	FDB $0061	* index:7  R:75  V:165 B:4  
+ 	FDB $0020	* index:8  R:16  V:94  B:4  
+ 	FDB $0010	* index:9  R:0   V:47  B:15 
+ 	FDB $0220	* index:10 R:22  V:87  B:103
+ 	FDB $0b82	* index:11 R:103 V:183 B:223
+ 	FDB $0ddd	* index:12 R:239 V:240 B:241
+ 	FDB $0d30	* index:13 R:9   V:114 B:239
+ 	FDB $0700	* index:14 R:12  V:32  B:175
+ 	FDB $0001	* index:15 R:53  V:7   B:9  
+ 	FDB $000c	* index:16 R:225 V:0   B:1  
 FINTABPALETTE
 
 ********************************************************************************
