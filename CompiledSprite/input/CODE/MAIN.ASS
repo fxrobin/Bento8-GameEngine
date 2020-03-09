@@ -607,32 +607,39 @@ Hero_MoveRight_00		      	* Orientation a DROITE
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_01
-	STD HERO_G_SPEED		* Enregistrement de la vitesse
-	LDX #HERO_WALK_R        * Charge animation WALK R
-	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+	STD HERO_G_SPEED				* Enregistrement de la vitesse
+	LDX #HERO_WALK_R        		* Charge animation WALK R
+	STX HERO_ANIMATION_ADR			* Sauvegarde animation
 
+*******************************************************************
+* Mise a jour de la position X et Y a partir de la vitesse au sol *
+*******************************************************************
 
 Hero_MoveUpdatePos
-	LDD HERO_G_SPEED		* Chargement de la vitesse au sol
-	STD HERO_X_SPEED        * Stockage vitesse X TODO xsp = gsp*cos(angle)
-	CMPD #$0000                 * Test orientation
-	BLT Hero_MoveUpdatePos_00   * BRANCH si orientation a GAUCHE
-	ADDD HERO_X_SPS         * Ajout du reste subpixel
-	STB HERO_X_SPS+1		* sauvegarde du nouveau reste subpixel
-	TFR A,B                     * Division par 256
-	ADDB HERO_X_POS			* Ajout de la vitesse a la position
-	BRA Hero_MoveUpdatePos_01
-Hero_MoveUpdatePos_V00
-	FCB $00
-Hero_MoveUpdatePos_00
+	LDD HERO_G_SPEED				* Chargement de la vitesse au sol
+	BGE Hero_MoveUpdatePos_00   	* BRANCH si orientation a GAUCHE
+	LDA #$C0						* code de l'instruction SUBB
+	STA Hero_MoveUpdatePos_00C		* Auto-modification de code on positionne SUBB
 	LDD #$0000
-	SUBD HERO_X_SPEED		* La vitesse negative est convertie en positive
-	ADDD HERO_X_SPS         * Ajout du reste subpixel
-	STB HERO_X_SPS+1		* sauvegarde du nouveau reste subpixel
-	TFR A,B                     * Division par 256
-	STB Hero_MoveUpdatePos_V00
+	SUBD HERO_G_SPEED				* La vitesse negative est convertie en positive 
+	BRA Hero_MoveUpdatePos_00A
+Hero_MoveUpdatePos_00
+	LDA #$CB						* code de l'instruction ADDB
+	STA Hero_MoveUpdatePos_00C		* Auto-modification de code on positionne ADDB
+	LDD HERO_G_SPEED
+Hero_MoveUpdatePos_00A	
+	ADDD HERO_X_SPS         		* Ajout du reste subpixel
+	STA Hero_MoveUpdatePos_00B+1 	* Sauvegarde par auto-modification de code
+	ANDA #$03               		* on garde le reliquat de la division par 4 frames
+	STD HERO_X_SPS					* sauvegarde du nouveau reste subpixel
+Hero_MoveUpdatePos_00B
+	LDB #$00						* restauration du calcul de frame
+	LSRB							* gestion pixel aspect ratio 2:1
+	LSRB							* gestion pixel block 2x
+	STB Hero_MoveUpdatePos_00C+1 	* auto-modification de code
 	LDB HERO_X_POS
-	SUBB Hero_MoveUpdatePos_V00 * Ajout de la vitesse a la position
+Hero_MoveUpdatePos_00C
+	ADDB #$00						* Ajout de la vitesse a la position
 Hero_MoveUpdatePos_01
 	CMPB #$50					* Test de butee ecran a droite
 	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
@@ -642,14 +649,10 @@ Hero_MoveUpdatePos_02
 	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
 	LDB #$0C					* Butee atteinte on limite a la butee
 Hero_MoveUpdatePos_03
-	STB HERO_X_POS			
-	LDB #$00					
-	STB HERO_X_SPS				* reste subpixel est sur un octet stocké sur deux
-	LDD #$0000                  * TODO ysp = gsp*-sin(angle)
-	STD HERO_Y_SPEED
-	TFR A,B                     * division par 256
-	ADDB HERO_Y_POS
-	STB HERO_Y_POS
+	STB HERO_X_POS
+* TODO MAJ HERO_X_SPEED : xsp = gsp*cos(angle)
+* TODO MAJ HERO_Y_SPEED : ysp = gsp*-sin(angle)
+* TODO MAJ HERO_Y_POS
 	RTS
 
 * TODO : Braking Animation
@@ -715,23 +718,11 @@ HERO_ANIMATION_LOAD_00
 	LDD -2,X					  * Load Frames informations
 	CMPA #$00					  * Different from $00 means NbFrames relative to GSP
 	BEQ HERO_ANIMATION_LOAD_01
-	
-	LDD HERO_G_SPEED              * G_SPEED First byte : Frame (A reg), Second byte : 1/256 Frame (B Reg)
+	LDA HERO_G_SPEED              * G_SPEED First byte : Frame (A reg), Second byte : 1/256 Frame (B Reg)
 	BGE HERO_ANIMATION_LOAD_01A
 	NEGA                          * valeur absolue de la vitesse negative
-	DECA                          * decrement de 1 sinon une vitesse neg FF est convertie en 1 au lieu de 0
-	NEGB
-	
+	DECA
 HERO_ANIMATION_LOAD_01A
-	LSLA
-	LSLA
-	STA HERO_G_SPEED_4X           * Multiplication par 4 de la vitesse Frame
-	
-	LDA #$04                      * Multiplication par 4 de la vitesse 1/256 Frame
-	MUL                           * pour compensation (pixel de largeur 2 + avancement par 2px)
-	ADDA HERO_G_SPEED_4X
-	
-	LDB -1,X
 	STA HERO_ANIMATION_LOAD_01B+1 * Auto modification du SUBB ci dessous
 HERO_ANIMATION_LOAD_01B
 	SUBB #$00			          * substract animation frames with speed 
@@ -777,7 +768,7 @@ HERO_ANIMATION_LOAD_FE
 
 HERO_ANIMATION_NEXT
 	DEC HERO_ANIMATION_FRR
-	BEQ HERO_ANIMATION_NEXT_00	* BRANCH if no more frame to wait
+	BLE HERO_ANIMATION_NEXT_00	* BRANCH if no more frame to wait
 	RTS
 HERO_ANIMATION_NEXT_00
 	INC HERO_ANIMATION_IMC
@@ -812,18 +803,16 @@ HERO_ANIMATION_NEXT_00
 ********************************************************************************
 * HERO Variables
 ********************************************************************************
-*HERO_WALK_SPD_LIMIT EQU $0100          * 0400
-*HERO_WALK_NEG_SPD_LIMIT EQU $FE00      * FC00
-HERO_JOG_SPD_LIMIT  EQU $0180          * 0600
-HERO_JOG_NEG_SPD_LIMIT  EQU $FE80      * FA00
+*HERO_WALK_SPD_LIMIT EQU $0400         * 0400
+*HERO_WALK_NEG_SPD_LIMIT EQU $FC00     * FC00
+HERO_JOG_SPD_LIMIT  EQU $0600          * 0600
+HERO_JOG_NEG_SPD_LIMIT  EQU $FA00      * FA00
 HERO_X_POS
 	FCB $18			* Horizontal Position
 HERO_Y_POS
 	FCB $A2			* Vertical Position
 HERO_G_SPEED		* Ground Speed
 	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
-HERO_G_SPEED_4X		* Ground Speed temp space
-	FCB $00
 HERO_X_SPEED
 	FDB $0000		* Horizontal Speed
 HERO_X_SPS
@@ -833,15 +822,15 @@ HERO_Y_SPEED
 HERO_Y_SPS
 	FDB $0000		* Subpixel Y speed
 HERO_TOP_SPEED
-	FDB $0180        * 0600 vitesse maximum autorisee 6 = 1536/256
+	FDB $0600        * 0600 vitesse maximum autorisee 6 = 1536/256
 HERO_NEG_TOP_SPEED
-	FDB $FE80        * FA00 vitesse maximum autorisee -6 = -1536/256
+	FDB $FA00        * FA00 vitesse maximum autorisee -6 = -1536/256
 HERO_ACCELERATION
-	FDB $0003        * 000C constante acceleration 0.046875 = 12/256
+	FDB $000C        * 000C constante acceleration 0.046875 = 12/256
 HERO_DECELERATION
-	FDB $0020        * 0080 constante deceleration 0.5 = 128/256
+	FDB $0080        * 0080 constante deceleration 0.5 = 128/256
 HERO_FRICTION
-	FDB $0003        * 000C constante de friction 0.046875 = 12/256
+	FDB $000C        * 000C constante de friction 0.046875 = 12/256
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
 HERO_ANIMATION_ADR_OLD
