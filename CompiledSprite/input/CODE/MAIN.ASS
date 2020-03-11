@@ -35,42 +35,41 @@ JOY_G  EQU $0B * Gauche
 JOY_B  EQU $0D * Bas
 JOY_H  EQU $0E * Haut
 JOY_C  EQU $0F * Centre
+JOY_A  EQU $40 * Bouton
 
-HERO_POS EQU $9F00 * HERO Position
+HERO_POS EQU $9F00 * Emplacement memoire pour stockage HERO Position
 
 ********************************************************************************  
 * Debut du programme
 ********************************************************************************
 BEGIN
 	ORCC #$50	* a documenter (interruption)	
-
-	LDD #FINECRANA
-	STD HERO_POS
-	LDD #FINECRANB
-	STD HERO_POS+2	
 	
 ********************************************************************************  
 * Initialisation du mode video
 ********************************************************************************
 	LDA #$7B	* passage en mode 160x200x16c
 	STA $E7DC
-
+	
 ********************************************************************************  
-* Initialisation de la palette de couleurs
+* Initialisation de la palette en noir
 ********************************************************************************
-	LDY #TABPALETTE
-	CLRA
-SETPALETTE
-	PSHS A
-	ASLA
-	STA $E7DB
-	LDD ,Y++
-	STB $E7DA
-	STA $E7DA
-	PULS A
-	INCA
-	CMPY #FINTABPALETTE
-	BNE	SETPALETTE
+
+	LDD #$0000
+SETBLACKPALETTE
+	STA $E7DB	* determine l'indice de couleur
+	STB $E7DA	* set de la couleur Vert et Rouge
+	STB $E7DA   * set de la couleur Bleu
+	ADDA #$02	* increment de l'indice de couleur (x2)
+	CMPA #$20	* si on atteint 32 sortie
+	BNE	SETBLACKPALETTE
+	
+	* Bordure initialisee avec couleur 0
+	************************************
+	
+    LDB $E7DD
+	ANDB #$F0
+	STB $E7DD
 
 ********************************************************************************
 * Chargement des pages memoire
@@ -133,7 +132,7 @@ PAGENEXT
 	LDB LDPAGE_LOOP+1
 	CMPB #$16
 	BLS LDPAGE_LOOP
-	
+
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
 ********************************************************************************
@@ -143,10 +142,44 @@ INIT_VID
 	STB $6081
 	STB $E7E7
 	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
-*	JSR CLR_CART * effacement page 2
-*	JSR SCRC     * page 0 en RAM Cartouche (0000-3FFF) - page 2 en RAM Ecran (4000-5FFF)
-*	JSR CLR_CART * effacement page 0
-*	JSR SCRC     * page 2 en RAM Cartouche (0000-3FFF) - page 0 en RAM Ecran (4000-5FFF)
+
+********************************************************************************  
+* Initialisation de la palette de couleurs
+********************************************************************************
+* Ecriture en $E7DB de l'adresse ou sera stockee la couleur.
+*
+* les adresses vont de deux en deux car il y a deux octets a stocker par couleur.
+* couleur: 0, adresse: 00
+* couleur: 1, adresse: 02
+* couleur: 2, adresse: 04
+* ...
+*
+* Deux ecritures en $E7DA (auto-increment a partir de l'adresse couleur
+*                          positionnee en $E7DB) pour la valeur de couleur.
+*
+*                             V V V V                 R R R R
+* Premiere adresse        fondamentale V          fondamentale R
+*
+* Deuxieme adresse            X X X M                 B B B B
+* auto-incrementee        bit de marquage         fondamentale B
+*
+* Piste d'optim pour changer plus de couleurs par raster :
+* ne changer que la moditie des donnees d'une couleur par retour de ligne
+********************************************************************************
+
+	LDY #TABPALETTE
+	CLRA				* registre A a 0
+SETPALETTE
+	PSHS A				* sauvegarde A
+	ASLA				* multiplication par deux de A 
+	STA $E7DB			* determine l'indice de couleur (x2): 0=0, 1=2, 2=4, .. 15=30
+	LDD ,Y++			* chargement de la couleur et increment du poiteur Y
+	STB $E7DA			* set de la couleur Vert et Rouge
+	STA $E7DA           * set de la couleur Bleu
+	PULS A				* rechargement de A
+	INCA				* et increment de A
+	CMPY #FINTABPALETTE * test fin de liste
+	BNE	SETPALETTE      * on reboucle si fin de liste pas atteinte
 
 ********************************************************************************
 * Initialisation des sprites
@@ -160,6 +193,7 @@ INIT_VID
 ********************************************************************************
 
 	* Init routine effacement sprite
+	JSR Compute_Position
 	LDB HERO_ANIMATION_PAG				* On monte la page 
 	STB HERO_ANIMATION_PAG_DEL
 	STB $E7E5							* en RAM Donnees (A000-DFFF)
@@ -490,11 +524,38 @@ JOY_DIR_STATUS
 	FCB $00 * Position Pad
 JOY_BTN_STATUS
 	FCB $00 * 40 Bouton A enfonce
+JOY_BTN_LOCK
+	FCB $00	* flag is jumping $00:Faux $01:Vrai
 
 ********************************************************************************
 * Subroutine to	make HERO walk/run
 ********************************************************************************
 Hero_Move
+* si bouton jump: Maj ysp Jump start & charge anim & jump en cours
+	LDD JOY_BTN_STATUS
+	BEQ Hero_OnGround		* si le bouton n'est pas appuye et qu'un saut n'est pas en cours: on est au sol
+	TSTB
+	BNE Hero_alreadyJumping	* si saut deja en cours on passe le code de demarrage de saut
+	INC JOY_BTN_LOCK		* set flag is jumping a 1
+	*choix L ou R a implementer
+	LDX #HERO_JUMP_L        * Charge animation
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+
+Hero_alreadyJumping
+* si jump en cours :
+* Maj xsp en fonction de G ou D joystick
+* Top xsp
+* Maj xsp Air drag
+* Maj ysp Jump cut
+* Maj ysp with gravity
+* Top ysp
+* Maj X et Y pos
+* si on ground :
+* Save jump plus en cours
+* Load ANIM en fonction de xsp
+* Load gsp en focntion de xsp
+
+Hero_OnGround
 	LDA JOY_DIR_STATUS
 	CMPA #JOY_G
 	BNE Hero_NotLeft
@@ -720,8 +781,9 @@ HERO_ANIMATION_LOAD_00
 	BEQ HERO_ANIMATION_LOAD_01
 	LDA HERO_G_SPEED              * G_SPEED First byte : Frame (A reg), Second byte : 1/256 Frame (B Reg)
 	BGE HERO_ANIMATION_LOAD_01A
-	NEGA                          * valeur absolue de la vitesse negative
-	DECA
+	LDD #$0000
+	SUBD HERO_G_SPEED			  * La vitesse negative est convertie en positive 
+	LDB -1,X					  * Load Remaining Frames informations 
 HERO_ANIMATION_LOAD_01A
 	STA HERO_ANIMATION_LOAD_01B+1 * Auto modification du SUBB ci dessous
 HERO_ANIMATION_LOAD_01B
@@ -803,34 +865,54 @@ HERO_ANIMATION_NEXT_00
 ********************************************************************************
 * HERO Variables
 ********************************************************************************
-*HERO_WALK_SPD_LIMIT EQU $0400         * 0400
-*HERO_WALK_NEG_SPD_LIMIT EQU $FC00     * FC00
-HERO_JOG_SPD_LIMIT  EQU $0600          * 0600
-HERO_JOG_NEG_SPD_LIMIT  EQU $FA00      * FA00
-HERO_X_POS
-	FCB $18			* Horizontal Position
-HERO_Y_POS
-	FCB $A2			* Vertical Position
-HERO_G_SPEED		* Ground Speed
-	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
-HERO_X_SPEED
-	FDB $0000		* Horizontal Speed
-HERO_X_SPS
-	FDB $0000		* Subpixel X speed
-HERO_Y_SPEED
-	FDB $0000		* Vertical Speed
-HERO_Y_SPS
-	FDB $0000		* Subpixel Y speed
+
 HERO_TOP_SPEED
-	FDB $0600        * 0600 vitesse maximum autorisee 6 = 1536/256
+	FDB $0600        * 0600 vitesse X maximum autorisee 6 = 1536/256
 HERO_NEG_TOP_SPEED
-	FDB $FA00        * FA00 vitesse maximum autorisee -6 = -1536/256
+	FDB $FA00        * FA00 vitesse X maximum autorisee -6 = -1536/256
+HERO_Y_TOP_SPEED
+	FDB $1000        * 0010 vitesse Y maximum autorisee 16 = 4096/256
 HERO_ACCELERATION
 	FDB $000C        * 000C constante acceleration 0.046875 = 12/256
 HERO_DECELERATION
 	FDB $0080        * 0080 constante deceleration 0.5 = 128/256
 HERO_FRICTION
 	FDB $000C        * 000C constante de friction 0.046875 = 12/256
+HERO_AIR_ACCELERATION
+	FDB $0018        * 0018 constate air acceleration 0.09375 = 24/256
+HERO_AIR_GRAVITY
+	FDB $0038        * 0038 constante gravite 0.21875 = 56/256
+HERO_AIR_DRAG
+	FDB $00F8        * 00F8 constante air drag 0.96875 = 248/256
+HERO_AIR_JUMP_VEL
+	FDB $0680		 * 0680 constante air jump start velocity 6.5 = 1664/256
+HERO_AIR_JUMP_CUT
+	FDB $FC00		 * FC constante air jump cut -4 = -1024/256
+	
+*HERO_WALK_SPD_LIMIT
+*   EQU $0400        * 0400
+*HERO_WALK_NEG_SPD_LIMIT
+*   EQU $FC00        * FC00
+HERO_JOG_SPD_LIMIT
+    EQU $0600        * 0600
+HERO_JOG_NEG_SPD_LIMIT
+    EQU $FA00        * FA00
+
+HERO_X_POS
+	FCB $18			* Horizontal Position
+HERO_Y_POS
+	FCB $A2			* Vertical Position
+HERO_G_SPEED
+	FDB $0000		* Ground Speed First byte : Frame, Second byte : 1/256 Frame
+HERO_X_SPEED
+	FDB $0000		* Horizontal Speed
+HERO_X_SPS
+	FDB $0000		* Subpixel X speed (reliquat entre deux frames)
+HERO_Y_SPEED
+	FDB $0000		* Vertical Speed
+HERO_Y_SPS
+	FDB $0000		* Subpixel Y speed (reliquat entre deux frames)
+	
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
 HERO_ANIMATION_ADR_OLD
