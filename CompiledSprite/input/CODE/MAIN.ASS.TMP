@@ -35,6 +35,7 @@ JOY_G  EQU $0B * Gauche
 JOY_B  EQU $0D * Bas
 JOY_H  EQU $0E * Haut
 JOY_C  EQU $0F * Centre
+JOY_A  EQU $40 * Bouton
 
 HERO_POS EQU $9F00 * Emplacement memoire pour stockage HERO Position
 
@@ -49,6 +50,10 @@ BEGIN
 ********************************************************************************
 	LDA #$7B	* passage en mode 160x200x16c
 	STA $E7DC
+	
+********************************************************************************  
+* Initialisation de la palette en noir
+********************************************************************************
 
 	LDD #$0000
 SETBLACKPALETTE
@@ -60,6 +65,8 @@ SETBLACKPALETTE
 	BNE	SETBLACKPALETTE
 	
 	* Bordure initialisee avec couleur 0
+	************************************
+	
     LDB $E7DD
 	ANDB #$F0
 	STB $E7DD
@@ -504,6 +511,8 @@ FINTABPALETTE
 * Get joystick parameters
 ********************************************************************************
 JOY_READ
+	LDA	JOY_BTN_STATUS
+	STA JOY_BTN_STATUS_OLD
 	ldx    #$e7cf
 	ldy    #$e7cd
 	ldd    #$400f 
@@ -517,11 +526,127 @@ JOY_DIR_STATUS
 	FCB $00 * Position Pad
 JOY_BTN_STATUS
 	FCB $00 * 40 Bouton A enfonce
+JOY_BTN_STATUS_OLD
+	FCB $00 * 40 Bouton A enfonce
+HERO_ISJUMPING
+	FCB $00	* flag is jumping $00:Faux $01:Vrai
 
 ********************************************************************************
 * Subroutine to	make HERO walk/run
 ********************************************************************************
 Hero_Move
+* si bouton jump: Maj ysp Jump start & charge anim & jump en cours
+	LDD JOY_BTN_STATUS
+	CMPD #$4000
+	BNE Hero_alreadyJumping	* si saut deja en cours on passe le code de demarrage de saut
+	LDB HERO_ISJUMPING
+	BNE Hero_alreadyJumping		* si un saut n'est pas en cours: on est au sol
+	INC HERO_ISJUMPING		* set flag is jumping a 1
+	LDD HERO_G_SPEED		* charge la vitesse (negative ou positive)
+	BLT Hero_JumpLeft      * si vitesse negative on branche pour animation gauche
+	LDX #HERO_JUMP_R        * Charge animation Saut Droite
+	BRA Hero_Jump
+Hero_JumpLeft	
+	LDX #HERO_JUMP_L        * Charge animation Saut Gauche
+Hero_Jump
+	STX HERO_ANIMATION_ADR	* Sauvegarde animation
+	STD HERO_X_SPEED		* Initialisation de la vitesse X
+	LDD HERO_AIR_JUMP_VEL	* Initialisation de la vitesse Y
+	STD HERO_Y_SPEED
+	LDD #$0000
+	STD HERO_X_SPS
+	STD HERO_Y_SPS
+
+Hero_alreadyJumping
+* Maj xsp en fonction de G ou D joystick
+	LDB HERO_ISJUMPING
+	LBEQ Hero_OnGround		* si un saut n'est pas en cours: on est au sol
+	LDA JOY_DIR_STATUS
+	CMPA #JOY_D
+	BEQ Hero_JumpAccelD
+	CMPA #JOY_G
+	BEQ Hero_JumpAccelG
+	LDD HERO_X_SPEED
+	BRA Hero_JumpCapTopXSpeed
+Hero_JumpAccelD
+	LDD HERO_X_SPEED
+	ADDD HERO_AIR_X_ACCELERATION
+	BRA Hero_JumpCapTopXSpeed
+Hero_JumpAccelG
+	LDD HERO_X_SPEED
+	SUBD HERO_AIR_X_ACCELERATION
+
+Hero_JumpCapTopXSpeed
+* Top xsp
+	CMPD HERO_X_TOP_SPEED
+	BLE Hero_JumpAirDrag
+	LDD HERO_X_TOP_SPEED
+	
+Hero_JumpAirDrag	
+* Maj xsp Air drag
+	STD HERO_X_SPEED
+	LDD HERO_Y_SPEED	* si ysp (ysp < 0 && ysp > -$0400) on applique le air drag
+	BGE Hero_JumpCut
+	CMPD #$FC00
+	BLE Hero_JumpCut
+	LDD HERO_X_SPEED
+	BGE Hero_JumpAirDragPositive
+	LDB #$C3				* ADD
+	STB Hero_AirDragSUB
+	LDD #$0000
+	SUBD HERO_X_SPEED
+	BRA Hero_JumpAirDragCommon
+Hero_JumpAirDragPositive
+	LDB #$83				* SUB
+	STB Hero_AirDragSUB
+	LDD HERO_X_SPEED
+Hero_JumpAirDragCommon	
+	LSRA	* Division par 32 du registre D (vitesse X)
+	RORB
+	LSRA
+	RORB
+	LSRA
+	RORB
+	LSRA
+	RORB
+	LSRA
+	RORB
+	STB Hero_AirDragSUB+2	* STB suffisant tant que la vitesse max est <= #$2000 sinon utiliser STD Hero_AirDragSUB+1
+	LDD HERO_X_SPEED
+Hero_AirDragSUB
+	SUBD #$0000
+	STD HERO_X_SPEED
+
+Hero_JumpCut
+* Maj ysp Jump cut
+	LDD HERO_Y_SPEED
+	TST JOY_BTN_STATUS	* si le bouton n'est plus appuye
+	BNE Hero_JumpGravity
+	CMPD HERO_AIR_JUMP_CUT	* et si ysp < HERO_AIR_JUMP_CUT
+	BGE Hero_JumpGravity
+	LDD HERO_AIR_JUMP_CUT	* ysp est limite a HERO_AIR_JUMP_CUT
+
+Hero_JumpGravity
+* Maj ysp with gravity
+	ADDD HERO_AIR_Y_GRAVITY	* ajout de la gravite a la vitesse ysp (ce qui fait retomber le hero)
+
+Hero_JumpCapTopYSpeed
+* Top ysp
+	CMPD HERO_Y_TOP_SPEED	* si la vitesse positive Y (en chute) d�passe la limite
+	BLE Hero_JumpPosUpdate
+	LDD HERO_Y_TOP_SPEED	* on repositionne la vitesse Y a la limite
+
+Hero_JumpPosUpdate
+	STD HERO_Y_SPEED
+	
+* Maj X et Y pos
+	JSR Hero_MoveUpdatePosJump
+	RTS
+
+* Gestion a Terre
+********************************
+
+Hero_OnGround
 	LDA JOY_DIR_STATUS
 	CMPA #JOY_G
 	BNE Hero_NotLeft
@@ -593,15 +718,15 @@ Hero_MoveLeft_03
 	STD HERO_G_SPEED       	* On stocke la vitesse
 	LBRA Hero_MoveUpdatePos	   	* Mise a jour des coordonnees
 Hero_MoveLeft_00		       	* Orientation a GAUCHE 
-	CMPD HERO_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
+	CMPD HERO_X_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos     	* vitesse au sol deja au maximum - Mise a jour des coordonnees
 	SUBD HERO_ACCELERATION 	* acceleration
-	CMPD HERO_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
+	CMPD HERO_X_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BGT Hero_MoveLeft_01       	* BRANCH si vitesse inferieur au maximum
 	LDX #HERO_RUN_L        * Charge animation RUN L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
-	LDD HERO_NEG_TOP_SPEED 	* Limitation de la vitesse au maximum
+	LDD HERO_X_NEG_TOP_SPEED 	* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos    	* Mise a jour des coordonnees
 Hero_MoveLeft_01               	
@@ -622,15 +747,15 @@ Hero_MoveRight_03
 	STD HERO_G_SPEED        * On stocke la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_00		      	* Orientation a DROITE 
-	CMPD HERO_TOP_SPEED		* Comparaison avec la vitesse maximum
+	CMPD HERO_X_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BEQ Hero_MoveUpdatePos      * vitesse au sol deja au maximum - Mise a jour des coordonnees
 	ADDD HERO_ACCELERATION 	* acceleration
-	CMPD HERO_TOP_SPEED		* Comparaison avec la vitesse maximum
+	CMPD HERO_X_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BLT Hero_MoveRight_01       * BRANCH si vitesse inferieur au maximum
 	LDX #HERO_RUN_R			* Charge animation RUN R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
-	LDD HERO_TOP_SPEED		* Limitation de la vitesse au maximum
+	LDD HERO_X_TOP_SPEED		* Limitation de la vitesse au maximum
 	STD HERO_G_SPEED		* Enregistrement de la vitesse
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_01
@@ -639,47 +764,96 @@ Hero_MoveRight_01
 	STX HERO_ANIMATION_ADR			* Sauvegarde animation
 
 *******************************************************************
-* Mise a jour de la position X et Y a partir de la vitesse au sol *
+* Mise a jour de la vitesse X et Y a partir de la vitesse au sol  *
 *******************************************************************
 
 Hero_MoveUpdatePos
 	LDD HERO_G_SPEED				* Chargement de la vitesse au sol
-	BGE Hero_MoveUpdatePos_00   	* BRANCH si orientation a GAUCHE
+* TODO MAJ HERO_X_SPEED : xsp = gsp*cos(angle)
+* TODO MAJ HERO_Y_SPEED : ysp = gsp*-sin(angle)
+	STD HERO_X_SPEED
+	CLR HERO_Y_SPEED
+
+*******************************************************************
+* Mise a jour de la position X et Y a partir de la vitesse X et Y *
+*******************************************************************
+
+* Coordonnees X
+***************
+
+Hero_MoveUpdatePosJump
+	LDD HERO_X_SPEED
+	BGE Hero_MoveUpdateXPos_00   	* BRANCH si orientation vers la DROITE
 	LDA #$C0						* code de l'instruction SUBB
-	STA Hero_MoveUpdatePos_00C		* Auto-modification de code on positionne SUBB
+	STA Hero_MoveUpdateXPos_00C		* Auto-modification de code on positionne SUBB
 	LDD #$0000
-	SUBD HERO_G_SPEED				* La vitesse negative est convertie en positive 
-	BRA Hero_MoveUpdatePos_00A
-Hero_MoveUpdatePos_00
+	SUBD HERO_X_SPEED				* La vitesse negative est convertie en positive 
+	BRA Hero_MoveUpdateXPos_00A
+Hero_MoveUpdateXPos_00
 	LDA #$CB						* code de l'instruction ADDB
-	STA Hero_MoveUpdatePos_00C		* Auto-modification de code on positionne ADDB
-	LDD HERO_G_SPEED
-Hero_MoveUpdatePos_00A	
+	STA Hero_MoveUpdateXPos_00C		* Auto-modification de code on positionne ADDB
+	LDD HERO_X_SPEED
+Hero_MoveUpdateXPos_00A	
 	ADDD HERO_X_SPS         		* Ajout du reste subpixel
-	STA Hero_MoveUpdatePos_00B+1 	* Sauvegarde par auto-modification de code
+	STA Hero_MoveUpdateXPos_00B+1 	* Sauvegarde par auto-modification de code
 	ANDA #$03               		* on garde le reliquat de la division par 4 frames
 	STD HERO_X_SPS					* sauvegarde du nouveau reste subpixel
-Hero_MoveUpdatePos_00B
+Hero_MoveUpdateXPos_00B
 	LDB #$00						* restauration du calcul de frame
 	LSRB							* gestion pixel aspect ratio 2:1
 	LSRB							* gestion pixel block 2x
-	STB Hero_MoveUpdatePos_00C+1 	* auto-modification de code
+	STB Hero_MoveUpdateXPos_00C+1 	* auto-modification de code
 	LDB HERO_X_POS
-Hero_MoveUpdatePos_00C
-	ADDB #$00						* Ajout de la vitesse a la position
-Hero_MoveUpdatePos_01
+Hero_MoveUpdateXPos_00C
+	ADDB #$00						* Mise a jour de la position
+Hero_MoveUpdateXPos_01
 	CMPB #$50					* Test de butee ecran a droite
-	BLE Hero_MoveUpdatePos_02	* Butee non atteinte
+	BLE Hero_MoveUpdateXPos_02	* Butee non atteinte
 	LDB #$50					* Butee atteinte on limite a la butee
-Hero_MoveUpdatePos_02
+Hero_MoveUpdateXPos_02
     CMPB #$0C					* Test de la butee ecran a gauche
-	BGE Hero_MoveUpdatePos_03	* Butee non atteinte
+	BGE Hero_MoveUpdateXPos_03	* Butee non atteinte
 	LDB #$0C					* Butee atteinte on limite a la butee
-Hero_MoveUpdatePos_03
+Hero_MoveUpdateXPos_03
 	STB HERO_X_POS
-* TODO MAJ HERO_X_SPEED : xsp = gsp*cos(angle)
-* TODO MAJ HERO_Y_SPEED : ysp = gsp*-sin(angle)
-* TODO MAJ HERO_Y_POS
+
+* Coordonnees Y
+***************
+
+	LDD HERO_Y_SPEED				* TODO voir si gain de cycles si on utilise une autre methode que l'automodif
+	BGE Hero_MoveUpdateYPos_00   	* BRANCH si orientation vers le HAUT
+	LDA #$C0						* code de l'instruction SUBB
+	STA Hero_MoveUpdateYPos_00C		* Auto-modification de code on positionne SUBB
+	LDD #$0000
+	SUBD HERO_Y_SPEED				* La vitesse negative est convertie en positive 
+	BRA Hero_MoveUpdateYPos_00A
+Hero_MoveUpdateYPos_00
+	LDA #$CB						* code de l'instruction ADDB
+	STA Hero_MoveUpdateYPos_00C		* Auto-modification de code on positionne ADDB
+	LDD HERO_Y_SPEED
+Hero_MoveUpdateYPos_00A	
+	ADDD HERO_Y_SPS         		* Ajout du reste subpixel
+	STB HERO_Y_SPS+1				* sauvegarde du nouveau reste subpixel
+	STA Hero_MoveUpdateYPos_00C+1 	* auto-modification de code
+	LDB HERO_Y_POS
+Hero_MoveUpdateYPos_00C
+	ADDB #$00						* Mise a jour de la position
+Hero_MoveUpdateYPos_01
+	CMPB #$A2						* Test de butee ecran en BAS
+	BLS Hero_MoveUpdateYPos_03		* Butee non atteinte
+	LDB #$A2						* Butee atteinte on limite a la butee
+	TST HERO_ISJUMPING
+	BEQ Hero_MoveUpdateYPos_03	* pas de saut en cours
+	STB HERO_Y_POS
+* si retombe au sol on repositionne animation idle walk ou jog puis flag jump off et maj gsp
+	CLR HERO_ISJUMPING
+	LDD HERO_X_SPEED
+	STD HERO_G_SPEED
+	LDX #HERO_IDLE_R        		* Charge animation WALK R
+	STX HERO_ANIMATION_ADR			* Sauvegarde animation
+	RTS
+Hero_MoveUpdateYPos_03
+	STB HERO_Y_POS
 	RTS
 
 * TODO : Braking Animation
@@ -717,8 +891,8 @@ Compute_Position_02
 	FDB $0000
 
 ********************************************************************************
-* HERO Animations
-* ---------------
+* HERO Animations nb Cycles
+* -------------------------
 * Note: Speed abs +0, rel +8, rel cap +10
 *
 * Chargement nouvelle animation
@@ -957,7 +1131,7 @@ HERO_WALK_L
 	FDB HERO_WALK_L
 	FDB $0000
 
-	FDB $0103
+	FDB $0104
 HERO_JUMP_R
 	FCB $08
 	FDB $A000
@@ -1047,7 +1221,7 @@ HERO_RUN_L
 	FDB HERO_RUN_L
 	FDB $0000
 
-	FDB $0103
+	FDB $0104
 HERO_JUMP_L
 	FCB $0E
 	FDB $A000
@@ -1113,34 +1287,50 @@ HERO_IDLE_L
 ********************************************************************************
 * HERO Variables
 ********************************************************************************
-*HERO_WALK_SPD_LIMIT EQU $0400         * 0400
-*HERO_WALK_NEG_SPD_LIMIT EQU $FC00     * FC00
-HERO_JOG_SPD_LIMIT  EQU $0600          * 0600
-HERO_JOG_NEG_SPD_LIMIT  EQU $FA00      * FA00
-HERO_X_POS
-	FCB $18			* Horizontal Position
-HERO_Y_POS
-	FCB $A2			* Vertical Position
-HERO_G_SPEED		* Ground Speed
-	FDB $0000		* First byte : Frame, Second byte : 1/256 Frame
-HERO_X_SPEED
-	FDB $0000		* Horizontal Speed
-HERO_X_SPS
-	FDB $0000		* Subpixel X speed
-HERO_Y_SPEED
-	FDB $0000		* Vertical Speed
-HERO_Y_SPS
-	FDB $0000		* Subpixel Y speed
-HERO_TOP_SPEED
-	FDB $0600        * 0600 vitesse maximum autorisee 6 = 1536/256
-HERO_NEG_TOP_SPEED
-	FDB $FA00        * FA00 vitesse maximum autorisee -6 = -1536/256
+
+HERO_X_TOP_SPEED
+	FDB $0600        * 0600 vitesse X maximum autorisee 6 = 1536/256
+HERO_X_NEG_TOP_SPEED
+	FDB $FA00        * FA00 vitesse X maximum autorisee -6 = -1536/256
+HERO_Y_TOP_SPEED
+	FDB $1000        * 0010 vitesse Y maximum autorisee 16 = 4096/256
 HERO_ACCELERATION
 	FDB $000C        * 000C constante acceleration 0.046875 = 12/256
 HERO_DECELERATION
 	FDB $0080        * 0080 constante deceleration 0.5 = 128/256
 HERO_FRICTION
 	FDB $000C        * 000C constante de friction 0.046875 = 12/256
+HERO_AIR_X_ACCELERATION
+	FDB $0018        * 0018 constate air acceleration 0.09375 = 24/256
+HERO_AIR_Y_GRAVITY
+	FDB $0038        * 0038 constante gravite 0.21875 = 56/256
+HERO_AIR_X_DRAG
+	FDB $00F8        * 00F8 constante air drag 0.96875 = 248/256
+HERO_AIR_JUMP_VEL
+	FDB $F980		 * F980 constante air jump start velocity -6.5 = -1664/256
+HERO_AIR_JUMP_CUT
+	FDB $FC00		 * FC constante air jump cut -4 = -1024/256
+	
+*HERO_WALK_SPD_LIMIT EQU $0400		* 0400
+*HERO_WALK_NEG_SPD_LIMIT EQU $FC00  * FC00
+HERO_JOG_SPD_LIMIT EQU $0600        * 0600
+HERO_JOG_NEG_SPD_LIMIT EQU $FA00    * FA00
+
+HERO_X_POS
+	FCB $18			* Horizontal Position
+HERO_Y_POS
+	FCB $A2			* Vertical Position
+HERO_G_SPEED
+	FDB $0000		* Ground Speed First byte : Frame, Second byte : 1/256 Frame
+HERO_X_SPEED
+	FDB $0000		* Horizontal Speed
+HERO_X_SPS
+	FDB $0000		* Subpixel X speed (reliquat entre deux frames)
+HERO_Y_SPEED
+	FDB $0000		* Vertical Speed
+HERO_Y_SPS
+	FDB $0000		* Subpixel Y speed (reliquat entre deux frames)
+	
 HERO_ANIMATION_ADR
 	FDB $0000        * Animation courante - Pointeurs Adresse
 HERO_ANIMATION_ADR_OLD
