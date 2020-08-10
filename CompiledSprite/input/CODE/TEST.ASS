@@ -544,10 +544,10 @@ Hero_Move
 	INC HERO_ISJUMPING		* set flag is jumping a 1
 	LDD HERO_G_SPEED		* charge la vitesse (negative ou positive)
 	BLT Hero_JumpLeft      * si vitesse negative on branche pour animation gauche
-	LDX #HERO_JUMP_R        * Charge animation Saut Droite
+	LDX #HERO_IDLE_R        * Charge animation Saut Droite
 	BRA Hero_Jump
 Hero_JumpLeft	
-	LDX #HERO_JUMP_L        * Charge animation Saut Gauche
+	LDX #HERO_IDLE_R        * Charge animation Saut Gauche
 Hero_Jump
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 	STD HERO_X_SPEED		* Initialisation de la vitesse X
@@ -676,7 +676,7 @@ Hero_NotLeftOrRight_01
 	CMPD #HERO_JOG_SPD_LIMIT
 	BGE Hero_NotLeftOrRight_02
 	STD HERO_G_SPEED
-	LDX #HERO_WALK_R        * Charge animation WALK R
+	LDX #HERO_IDLE_R        * Charge animation WALK R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 	BRA Hero_NotLeftOrRight_03
@@ -689,7 +689,7 @@ Hero_NotLeftOrRight_00
 	BCC Hero_NotLeftOrRight_11 * si on passe au dessus de 0 on repositionne a 0. Remarque le passage de FFFF a 0000 declenche un depassement contrairement au passage de 0001 a 1 (cas droite)
 	LDD #$0000
 	STD HERO_G_SPEED
-	LDX #HERO_IDLE_L        * Charge animation IDLE L
+	LDX #HERO_IDLE_R        * Charge animation IDLE L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 	LBRA Hero_MoveUpdatePos
@@ -697,7 +697,7 @@ Hero_NotLeftOrRight_11
 	CMPD #HERO_JOG_NEG_SPD_LIMIT
 	BLE Hero_NotLeftOrRight_12
 	STD HERO_G_SPEED
-	LDX #HERO_WALK_L        * Charge animation WALK L
+	LDX #HERO_IDLE_R        * Charge animation WALK L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 	BRA Hero_NotLeftOrRight_13
@@ -723,7 +723,7 @@ Hero_MoveLeft_00		       	* Orientation a GAUCHE
 	SUBD HERO_ACCELERATION 	* acceleration
 	CMPD HERO_X_NEG_TOP_SPEED	* Comparaison avec la vitesse maximum
 	BGT Hero_MoveLeft_01       	* BRANCH si vitesse inferieur au maximum
-	LDX #HERO_RUN_L        * Charge animation RUN L
+	LDX #HERO_IDLE_R        * Charge animation RUN L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 	LDD HERO_X_NEG_TOP_SPEED 	* Limitation de la vitesse au maximum
@@ -731,7 +731,7 @@ Hero_MoveLeft_00		       	* Orientation a GAUCHE
 	LBRA Hero_MoveUpdatePos    	* Mise a jour des coordonnees
 Hero_MoveLeft_01               	
 	STD HERO_G_SPEED       	* Enregistrement de la vitesse
-	LDX #HERO_WALK_L        * Charge animation WALK L
+	LDX #HERO_IDLE_R        * Charge animation WALK L
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 	LBRA Hero_MoveUpdatePos
@@ -752,7 +752,7 @@ Hero_MoveRight_00		      	* Orientation a DROITE
 	ADDD HERO_ACCELERATION 	* acceleration
 	CMPD HERO_X_TOP_SPEED		* Comparaison avec la vitesse maximum
 	BLT Hero_MoveRight_01       * BRANCH si vitesse inferieur au maximum
-	LDX #HERO_RUN_R			* Charge animation RUN R
+	LDX #HERO_IDLE_R			* Charge animation RUN R
 	STX HERO_ANIMATION_ADR	* Sauvegarde animation
 
 	LDD HERO_X_TOP_SPEED		* Limitation de la vitesse au maximum
@@ -760,7 +760,7 @@ Hero_MoveRight_00		      	* Orientation a DROITE
 	LBRA Hero_MoveUpdatePos		* Mise a jour des coordonnees
 Hero_MoveRight_01
 	STD HERO_G_SPEED				* Enregistrement de la vitesse
-	LDX #HERO_WALK_R        		* Charge animation WALK R
+	LDX #HERO_IDLE_R        		* Charge animation WALK R
 	STX HERO_ANIMATION_ADR			* Sauvegarde animation
 
 *******************************************************************

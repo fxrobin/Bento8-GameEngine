@@ -1,64 +1,85 @@
 package moto.gfx;
 
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.ColorModel;
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
 import javax.imageio.ImageIO;
+
 import java.util.ArrayList;
 import java.util.List;
-
-// METAL SLUG : 3192 cycles - Taille : A0B5 (41141) a A69E (42654) = 1513 octets
-// optim ADDA : 3012 cycles - Taille : A0B5 (41141) a A670 (42608) = 1467 octets
-
-// TODO
-// Ajout optim LEAS ,--S au lieu de LEAS -2,S
-// Ajout génération complete du code
-// Modification de l'algo pour LD Ã  la place du PUL
-// Calcul nb cycles
-// Ajout gestion de l'avance par 1 pixel
-// Ajout methode d'effacement du fond d'ecran
-// Ajout gestion bit depth 4+Transparence ou bit depth 8+T
-// Ajout mode non indexé avec Transparence
-// Ajout GUI + gestion resize avec aspect ratio
-// Ajout diminution de palette et selection manuelle de la couleur Transparente
-// Mode batch
-// Gestion Raster Effect
-// Ajout priority flag (avant plan ou arriere plan)
-// Gestion flip horizontal ou vertical
-// rotate, scaling, warping
-// slice (tranche a gauche et tranche a droite) effect d'entrelacement explosion : ou apparition en empilement de lignes
-// effet de chaleur en variant les retours de ligne
-// clignotement
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class CompiledSpriteModeB16 {
 	// Convertisseur d'image PNG en "Compiled Sprite"
-	// Thomson MO5NR, MO6, TO8, TO9 et TO9+
+	// Thomson TO8/TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
 
 	// Image
 	BufferedImage image;
 	ColorModel colorModel;
 	String spriteName;
+	String eraseAddress;
 	int width;
 	int height;
 	byte[] pixels;
 
 	// Calcul
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
+	final String[] pulReg = { "Y", "X", "DP", "B", "A", "D" };
+	final int[] regSize = { 2, 2, 1, 1, 1, 2 };
+	final int[] regCostPULPSHx = { 2, 2, 1, 1, 1, 2 };
+	final int[] regCostLDx = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
+	final int[] regInstSizeLDx = { 2, 1, 99, 1, 1, 1 }; // il n'y a pas de LDx pour DP
+	final int[] regCostSTx = { 7, 6, 99, 5, 5, 6 }; // il n'y a pas de LDx pour DP
+	private int leas = 0;
+	private int leasSelfMod = 0;
+	private int stOffset = 0; // Offset pour les STx depuis le dernier LEAS
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
 	List<String> spriteCode2 = new ArrayList<String>();
 	List<String> spriteData1 = new ArrayList<String>();
 	List<String> spriteData2 = new ArrayList<String>();
+	List<String> spriteECode1 = new ArrayList<String>();
+	List<String> spriteECode2 = new ArrayList<String>();
+	List<String> spriteEData1 = new ArrayList<String>();
+	List<String> spriteEData2 = new ArrayList<String>();
+	
+	String drawLabel, eraseLabel, dataLabel, erasePosLabel, eraseCodeLabel, ssaveLabel;
+	String erasePrefix;
+	String posAdress;
+	
+	int cyclesCode = 0;
+	int octetsCode = 0;
+	int cyclesCodeSelfMod = 0;
+	int octetsCodeSelfMod = 0;
+	int cyclesWCode1 = 0;
+	int octetsWCode1 = 0;
+	int cyclesWCode2 = 0;
+	int octetsWCode2 = 0;
+	int cyclesECode1 = 0;
+	int octetsECode1 = 0;
+	int cyclesECode2 = 0;
+	int octetsECode2 = 0;
+	boolean isSelfModifying = false;
+	boolean isDeleteCode = false;
+	int codePart = 0; // Partie de code (1 ou 2)
 
-	String posLabel;
-	String drawLabel;
-	String dataLabel;
-
-	public CompiledSpriteModeB16(String file) {
+	public CompiledSpriteModeB16(String file, String locspriteName, int nbImages, int numImage, int flip) {
 		try {
 			// Construction des combinaisons des 5 registres pour le PSH
 			ComputeRegCombos();
@@ -70,51 +91,148 @@ public class CompiledSpriteModeB16 {
 			colorModel = image.getColorModel();
 			int pixelSize = colorModel.getPixelSize();
 			// int numComponents = colorModel.getNumComponents();
-			spriteName = removeExtension(file).toUpperCase().replaceAll("[^A-Za-z0-9]", "");
-
+			spriteName = locspriteName.toUpperCase().replaceAll("[^A-Za-z0-9]", "");
+			
 			// Initialisation du code statique
-			posLabel = "POS_" + spriteName;
-			drawLabel = "DRAW_" + spriteName;
-			dataLabel = "DATA_" + spriteName;
+			posAdress   = "9F00";
+			
+			// Etiquettes Code d'éctiture et Code d'effacement
+			drawLabel   = "DRAW_" + spriteName;
+			dataLabel   = "DATA_" + spriteName;
+			ssaveLabel  = "SSAV_" + spriteName;
+			
+			// Etiquettes spécifiques Code d'effacement
+			erasePrefix    = "ERASE_";
+			eraseLabel     = erasePrefix + spriteName;
+			erasePosLabel  = erasePrefix + "POS_"  + spriteName;
+			eraseCodeLabel = erasePrefix + "CODE_"  + spriteName;
+			
+			// On inverse l'image horizontalement si le flag flip est positionné à 1
+			if (flip==1) {
+			    AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+			    tx.translate(-image.getWidth(null), 0);
+			    AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+			    image = op.filter(image, null);
+			    numImage = (nbImages-1) - numImage;
+			}
+			
+//			if (pixelSize == 32) {
+//				final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+//				final int width = image.getWidth();
+//				final int height = image.getHeight();
+//				final boolean hasAlphaChannel = image.getAlphaRaster() != null;
+//
+//				int[][] result = new int[height][width];
+//				int alpha, red, green, blue;
+//				int[] palette = new int[256];
+//				byte[][] paletteRGBA = new byte[4][256];
+//				palette[0] = 0; // transparent
+//				int paletteSize = 1; // le premier index est la couleur transparente
+//				int i;
+//				boolean found = false;
+//				if (hasAlphaChannel) {
+//					final int pixelLength = 4;
+//					for (int pixel = 0, row = 0, col = 0; pixel + 3 < pixels.length; pixel += pixelLength) {
+//						alpha = (((int) pixels[pixel] & 0xff) << 24); // alpha
+//						blue = ((int) pixels[pixel + 1] & 0xff); // blue
+//						green = (((int) pixels[pixel + 2] & 0xff) << 8); // green
+//						red = (((int) pixels[pixel + 3] & 0xff) << 16); // red
+//						
+//						if (alpha==0) {
+//							result[row][col] = 0;
+//						} else {
+//							found = false;
+//							for (i = 1; i < palette.length-1; i++) {
+//								if (palette[i] == alpha+blue+green+red) {
+//									found = true;
+//									break;
+//								}
+//							}
+//							if (!found) {
+//								palette[paletteSize] = alpha+blue+green+red;
+//								paletteRGBA[0][paletteSize] = pixels[pixel + 3];
+//								paletteRGBA[1][paletteSize] = pixels[pixel + 2];
+//								paletteRGBA[2][paletteSize] = pixels[pixel + 1];
+//								paletteRGBA[3][paletteSize] = pixels[pixel + 0];
+//								result[row][col] = paletteSize;
+//								paletteSize++;
+//							} else {
+//								result[row][col] = i;
+//							}
+//
+//							col++;
+//							if (col == width) {
+//								col = 0;
+//								row++;
+//							}
+//						}
+//					}
+//				}
+//				
+//				IndexColorModel newColorModel = new IndexColorModel(8,256,paletteRGBA[0],paletteRGBA[1],paletteRGBA[2],0);
+//				BufferedImage indexedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, newColorModel);
+//				
+//	            for (int x = 0; x < indexedImage.getWidth(); x++) {
+//	                for (int y = 0; y < indexedImage.getHeight(); y++) {
+//	                	indexedImage.setRGB(x, y, image.getRGB(x, y));
+//	                }
+//	            }
+//
+//				image=indexedImage;
+//				colorModel = image.getColorModel();
+//				pixelSize = colorModel.getPixelSize();
+//			}
+			
+			System.out.println(getCodePalette(colorModel, 2));
+			
+			if (width % nbImages == 0) { // Est-ce que la division de la largeur par le nombre d'images donne un entier ?
 
-			// System.out.println("Type image:"+image.getType());
-			// ContrÃ´le du format d'image
-			if (width <= 160 && height <= 200 && pixelSize == 8) { // && numComponents==3
+				int iWidth = width/nbImages; // Largeur de la sous-image
 
-				// Si la largeur d'image est impaire, on ajoute une colonne de pixel transparent
-				// a gauche de l'image
-				if (width % 2 != 0) {
-					pixels = new byte[(width + 1) * height];
-					for (int iSource = 0, iCol = 0, iDest = 0; iDest < (width + 1) * height; iDest++) {
+				if (iWidth <= 160 && height <= 200 && pixelSize == 8) { // Contrôle du format d'image
+					
+					int offsetStart = 1;
+					int offsetEnd = 0;
+					if (iWidth % 2 != 0) { // Si la largeur d'image est impaire, on ajoute une colonne de pixel transparent a gauche de l'image
+						offsetStart = 0;
+						offsetEnd = 1;
+					}
+					
+					pixels = new byte[(iWidth + offsetEnd) * height];
+					for (int iSource = iWidth*numImage, iDest = 0, iCol = offsetStart; iDest < (iWidth + offsetEnd) * height; iDest++) {
 						if (iCol == 0) {
 							pixels[iDest] = 16;
 						} else {
-							pixels[iDest] = (byte) ((DataBufferByte) image.getRaster().getDataBuffer())
-									.getElem(iSource);
+							if ((byte) ((DataBufferByte) image.getRaster().getDataBuffer()).getElem(iSource) == 0) {
+								pixels[iDest] = (byte) 16;
+							} else {
+								pixels[iDest] = (byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(iSource)-1);
+							}
 							iSource++;
 						}
-						// System.out.println(pixels[iDest]);
 						iCol++;
-						if (iCol == width + 1) {
-							iCol = 0;
+						if (iCol == iWidth + 1) {
+							iCol = offsetStart;
+							iSource += width - iWidth;
 						}
 					}
-					width = width + 1;
-				} else { // Sinon construction du tableau de pixels Ã  partir de l'image
-					pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-				}
+					iWidth = iWidth + offsetEnd;
 
-				// Génération du code Assembleur
-				generateCode();
-			} else {
-				// Présente les formats acceptés Ã  l'utilisateur en cas de fichier d'entrée
-				// incompatible
-				System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
-				System.out.println(
-						"Resolution: " + width + "x" + height + "px (doit Ãªtre inférieur ou égal Ã  160x200)");
-				System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit Ãªtre 8)");
-				// System.out.println("Nombre de composants: "+numComponents+" (doit Ãªtre 3)");
+					// Génération du code Assembleur
+					width = iWidth;
+					generateCode();
+					
+				} else {
+					System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
+					System.out.println("Resolution: " + iWidth + "x" + height + "px (doit Ãªtre inférieur ou égal Ã  160x200)");
+					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit Ãªtre 8)");
+					// System.out.println("Nombre de composants: "+numComponents+" (doit Ãªtre 3)");
+				}
 			}
+			else {
+				System.out.println("La largeur d'image :" + width + " n'est pas divisible par le nombre d'images :" +  nbImages);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(e);
@@ -122,27 +240,59 @@ public class CompiledSpriteModeB16 {
 	}
 
 	public void generateCode() {
-		// Génération du code source pour l'écriture des images
+		// Génération du code source pour l'effacement des images
+		isSelfModifying = false;
+		isDeleteCode = true;
+		generateCodeArray(1, spriteECode1, spriteEData1);
+		cyclesECode2 = cyclesCode;
+		octetsECode2 = octetsCode;
+		
+		generateCodeArray(3, spriteECode2, spriteEData2);
+		cyclesECode1 = cyclesCode;
+		octetsECode1 = octetsCode;
 
-		List<String>[] sprite = generateCodeArray(1);
-		spriteCode1 = sprite[0];
-		spriteData1 = sprite[1];
-		sprite = generateCodeArray(3);
-		spriteCode2 = sprite[0];
-		spriteData2 = sprite[1];
+		// Génération du code source pour l'écriture des images
+		isSelfModifying = true;
+		isDeleteCode = false;
+		generateCodeArray(1, spriteCode1, spriteData1);
+		cyclesWCode2 = cyclesCode+cyclesCodeSelfMod;
+		octetsWCode2 = octetsCode+octetsCodeSelfMod;
+		
+		generateCodeArray(3, spriteCode2, spriteData2);
+		cyclesWCode1 = cyclesCode+cyclesCodeSelfMod;
+		octetsWCode1 = octetsCode+octetsCodeSelfMod;
+		
+		System.out.println("W Cycles 1:  " + cyclesWCode1);
+		System.out.println("W Cycles 2:  " + cyclesWCode2);
+		System.out.println("E Cycles 1:  " + cyclesECode1);
+		System.out.println("E Cycles 2:  " + cyclesECode2);
+//		
+		System.out.println("W Octets 1:  " + octetsWCode1);
+		System.out.println("W Octets 2:  " + octetsWCode2);
+		System.out.println("E Octets 1:  " + octetsECode1);
+		System.out.println("E Octets 2:  " + octetsECode2);
 		return;
 	}
 
-	public List<String>[] generateCodeArray(int pos) {
+	public void generateCodeArray(int pos, List<String> spriteCode, List<String> spriteData) {
 		int col = width;
 		int row = height;
 		int chunk = 1;
 		int doubleFwd = 0;
 		boolean leftAlphaPxl = false;
 		boolean rightAlphaPxl = false;
-		String sLeas = "";
 
-		List<String> spriteCode = new ArrayList<String>();
+		
+		// Initialisation des variables globales
+		leas = 0;
+		leasSelfMod = 0;
+		stOffset = 0;
+		cyclesCode = 0;
+		octetsCode = 0;
+		cyclesCodeSelfMod = 0;
+		octetsCodeSelfMod = 0;
+		codePart = (pos==1 ? 2 : 1);
+
 		ArrayList<String> fdbBytes = new ArrayList<String>();
 		String fdbBytesResult = new String();
 		String fdbBytesResultLigne = new String();
@@ -155,7 +305,7 @@ public class CompiledSpriteModeB16 {
 		// 0-15 couleur utile
 		// 16-255 considéré comme couleur transparente
 		// **************************************************************
-
+		
 		for (int pixel = (width * height) - 1; pixel >= 0; pixel = ((row - 1) * width) + col - 1) {
 
 			// Initialisation en début de paire
@@ -177,10 +327,8 @@ public class CompiledSpriteModeB16 {
 						// **************************************************************
 						// Gestion des sauts de ligne
 						// **************************************************************
-						sLeas = ComputeLEAS (pixel+3, col+3, pos);
-						if (!sLeas.equals("")) {
-							spriteCode.add(sLeas);
-						}
+						computeLEAS(pixel + 3, col + 3, pos, spriteCode);
+						writeLEAS(pixel, spriteCode);
 					}
 					doubleFwd = 1;
 				} else {
@@ -206,68 +354,86 @@ public class CompiledSpriteModeB16 {
 					// **************************************************************************
 
 					if (chunk == pos + 1 && (leftAlphaPxl == true || rightAlphaPxl == true)) {
-
-						if (pixel >= (width * height) - (fdbBytes.size() * 2)) {
-							spriteCode.add("\tLEAS -" + fdbBytes.size() / 2 + ",S");
-						}
-
-						if (leftAlphaPxl == true) {
-							spriteCode.add("\tLDA  #$F0");
-						} else {
-							spriteCode.add("\tLDA  #$0F");
-						}
-
-						spriteCode.add("\tANDA ,S");
-						spriteCode.add("\tADDA #$"+fdbBytes.get(fdbBytes.size()-1)+fdbBytes.get(fdbBytes.size()-2));
-
-						if (fdbBytes.size() == 2) { // il n'y a pas d'ensemble PSH en cours on traite
-							spriteCode.add("\tSTA  ,S");
-							pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
-							fdbBytes.clear();
-
-							// **************************************************************
-							// Gestion des sauts de ligne
-							// **************************************************************
-							sLeas = ComputeLEAS (pixel, col, pos);
-							if (!sLeas.equals("")) {
-								spriteCode.add(sLeas);
+						
+						if (isSelfModifying) {
+							if (stOffset == 0) {
+								spriteCode.add("\tLDA ,S");
+							} else {
+								spriteCode.add("\tLDA " + stOffset + ",S");
 							}
-
-						} else {
-							// il y a un ensemble PSH en cours on traite l'ecriture sur le PSH (Registre A)
-							spriteCode.add("\tLEAS " + fdbBytes.size() / 2 + ",S"); 
+							computeStatsSelfMod8b(stOffset);
+							
+							//spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4)+1)); // +2 pour LDA, +2 ou +3 ou +4 pour ANDA, +1 pour ADDA (instruction seule)
+							spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+1));
+							octetsCode -= 2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4);
+							cyclesCodeSelfMod += 5;
+							octetsCodeSelfMod += 3;
+							
+							// bug a HIL0_1 + 403 decalage de 1
 						}
+						
+						if (!isDeleteCode) {
+							if (leftAlphaPxl == true) {
+								spriteCode.add("\tLDA  #$F0");
+							} else {
+								spriteCode.add("\tLDA  #$0F");
+							}
+							computeStats8b();
+
+							if (stOffset == 0) {
+								spriteCode.add("\tANDA ,S");
+							} else {
+								spriteCode.add("\tANDA " + stOffset + ",S");
+							}
+							computeStats8b(stOffset);
+
+							spriteCode.add("\tADDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
+							computeStats8b();
+						} else {
+							// si on ecrit du code compilé pour réappliquer le fond
+							// on ne gère pas les pixels transparent à gauche ou droite
+							// pour des raisons d'optimisation on réapplique le bloc de deux pixels d'un coup
+							spriteCode.add("\tLDA #$" + fdbBytes.get(fdbBytes.size() - 1) + fdbBytes.get(fdbBytes.size() - 2));
+							computeStats8b();
+						}
+						
+						if (stOffset == 0) {
+							spriteCode.add("\tSTA ,S");
+						} else {
+							spriteCode.add("\tSTA " + stOffset + ",S");
+						}
+						computeStats8b(stOffset);
+
+						pulBytesOld[4] = "zz"; // invalide l'historique du registre car transparence
+						fdbBytes.clear();
+
+						computeLEAS(pixel, col, pos, spriteCode);
 					}
 
 					// **************************************************************
 					// Gestion d'une paire de pixels pleins
 					// **************************************************************
-					
-					if (chunk == pos + 1 && fdbBytes.size() > 0
-							&& (fdbBytes.size() == 14 || // 14px max par PUSH
+
+					if (chunk == pos + 1 && fdbBytes.size() > 0 && (fdbBytes.size() == 12 || // 12px max par PSH
 							(pixel <= 2) || // ou fin de l'image
 							(col <= 3 && width < 160) || // ou fin de ligne avec image qui n'est pas plein ecran
-							(leftAlphaPxl == true || rightAlphaPxl == true) ||
-							(pixel >= 4 && ((int) pixels[pixel-3] < 0 || (int) pixels[pixel-3] > 15)
-							            && ((int) pixels[pixel-4] < 0 || (int) pixels[pixel-4] > 15)) )) { 
+							(pixel >= 4 && (((int) pixels[pixel - 3] < 0 || (int) pixels[pixel - 3] > 15)
+									|| ((int) pixels[pixel - 4] < 0 || (int) pixels[pixel - 4] > 15))))) {
 
-						motif = optimisationPUL(fdbBytes, pulBytesOld, fdbBytes.size() / 2, leftAlphaPxl!=rightAlphaPxl);
-						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, leftAlphaPxl!=rightAlphaPxl);
-						if (!result[0][0].equals("")) {
-							spriteCode.add(result[0][0]); // PUL
+						motif = optimisationPUL(fdbBytes, pulBytesOld);
+						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, pos);
+						if (fdbBytes.size() / 2 > 2) { // Ecriture du LEAS avant utilisation du PSHS
+							writeLEAS(pixel, spriteCode);
+						}
+						if (!result[0][0].equals("")) {   // In case registers are already sets PUL or LD are skipped
+							spriteCode.add(result[0][0]); // PUL or LD code
 						}
 						spriteCode.add(result[1][0]); // PSH
 						fdbBytesResultLigne += result[2][0];
 						pulBytesOld = result[3];
 						fdbBytes.clear();
 
-						// **************************************************************
-						// Gestion des sauts de ligne
-						// **************************************************************
-						sLeas = ComputeLEAS (pixel, col, pos);
-						if (!sLeas.equals("")) {
-							spriteCode.add(sLeas);
-						}
+						computeLEAS(pixel, col, pos, spriteCode);
 					}
 				}
 
@@ -309,54 +475,129 @@ public class CompiledSpriteModeB16 {
 			fdbBytesResultLigne = "";
 		}
 
-		@SuppressWarnings("unchecked")
-		List<String>[] sprite = new ArrayList[2];
-		sprite[0] = spriteCode;
-		sprite[1] = generateDataFDB(fdbBytesResult, (pos == 1) ? 2 : 1); // Construction du code des données
-		return sprite;
+		generateDataFDB(fdbBytesResult, spriteData); // Construction du code des données
 	}
 
-	public String ComputeLEAS(int pixel, int col, int pos) {
-		int leas = 0;
+	public void computeStats8b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCode += 4;
+			} else {
+				cyclesCode += 5;
+			}
+			if (offset > -17) {
+				octetsCode += 2;
+			} else {
+				octetsCode += 3;
+			}
+		} else {
+			cyclesCode += 8;
+			octetsCode += 4;
+		}
+	}
+	
+	public void computeStatsSelfMod8b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCodeSelfMod += 4;
+			} else {
+				cyclesCodeSelfMod += 5;
+			}
+			if (offset > -17) {
+				octetsCodeSelfMod += 2;
+			} else {
+				octetsCodeSelfMod += 3;
+			}
+		} else {
+			cyclesCodeSelfMod += 8;
+			octetsCodeSelfMod += 4;
+		}
+	}
+	
+	public void computeStats8b() {
+			cyclesCode += 2;
+			octetsCode += 2;
+	}
+
+	public void computeStats16b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCode += 5;
+			} else {
+				cyclesCode += 6;
+			}
+			if (offset > -17) {
+				octetsCode += 2;
+			} else {
+				octetsCode += 3;
+			}
+		} else {
+			cyclesCode += 9;
+			octetsCode += 4;
+		}
+	}
+	
+	public void computeStatsSelfMod16b(int offset) {
+		if (offset > -129) {
+			if (offset == 0) {
+				cyclesCodeSelfMod += 5;
+			} else {
+				cyclesCodeSelfMod += 6;
+			}
+			if (offset > -17) {
+				octetsCodeSelfMod += 2;
+			} else {
+				octetsCodeSelfMod += 3;
+			}
+		} else {
+			cyclesCodeSelfMod += 9;
+			octetsCodeSelfMod += 4;
+		}
+	}
+	
+	public void computeLEAS(int pixel, int col, int pos, List<String> spriteCode) {
 		int fpixel = pixel; // intialisation des variables de travail
 		int fcol = col;
 		int offset = 0;
-		String sLeas = "";
 
-		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le même
-		if (((width/2) == (width/4)*2) || pos == 3) {
+		// Initialisation variable globale
+		leas = 0;
+		leasSelfMod = 0;
+
+		// en fonction du nombre de A ou B par image le retour à la ligne n'est pas le
+		// même
+		if (((width / 2) == (width / 4) * 2) || pos == 3) {
 			offset = 0;
 		} else {
 			offset = 1;
 		}
-		
+
 		// On regarde ce qui suit ...
 		// *** CAS: Saut de ligne ***
 		if (fcol <= 3) {
 			fcol = width - pos;
 			leas += -40 + (width / 4) + offset; // Remarque : dans le cas d'une image plein ecran leas=0
-			if (((width/2) == (width/4)*2)) {
+			if (((width / 2) == (width / 4) * 2)) {
 				fpixel -= 4;
 			} else if (pos == 1) {
 				fpixel -= 2;
 			} else if (pos == 3) {
 				fpixel -= 6;
 			}
-		}
-		else {
+		} else {
 			fcol -= 4;
 			fpixel -= 4;
 		}
 
 		// *** CAS : Pixels transparents par paires ***
-		while (fpixel > 0 && ((int) pixels[fpixel]   < 0 || (int) pixels[fpixel]   > 15)
-				          && ((int) pixels[fpixel+1] < 0 || (int) pixels[fpixel+1] > 15)) {
+		while (fpixel > 0 && ((int) pixels[fpixel] < 0 || (int) pixels[fpixel] > 15)
+				&& ((int) pixels[fpixel + 1] < 0 || (int) pixels[fpixel + 1] > 15)) {
 			fcol -= 4;
-			leas--;			
+			leas--;
 			if (fcol <= -1) {
 				fcol = width - pos;
 				leas += -40 + (width / 4) + offset;
-				if (((width/2) == (width/4)*2)) {
+				if (((width / 2) == (width / 4) * 2)) {
 					fpixel -= 4;
 				} else if (pos == 1) {
 					fpixel -= 2;
@@ -369,59 +610,76 @@ public class CompiledSpriteModeB16 {
 		}
 
 		// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
-		if ((fpixel > 0) && ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
-				           && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
-				          || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
-				           && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
+		if ((fpixel > 0) && ((((int) pixels[fpixel] >= 0 && (int) pixels[fpixel] <= 15)
+				&& ((int) pixels[fpixel + 1] < 0 || (int) pixels[fpixel + 1] > 15))
+				|| (((int) pixels[fpixel] < 0 || (int) pixels[fpixel] > 15)
+						&& ((int) pixels[fpixel + 1] >= 0 && (int) pixels[fpixel + 1] <= 15)))) {
 			leas--;
-		} else {
-			// on recherche une paire de pixel dont un seul transparent (gauche ou droite)
-			// précédée d'un maximum de 12 pixels pleins
-			int frpixel = fpixel;
-			int frcol = fcol;
-			int fleas = leas;
-			while (((fcol > 0 && width < 160) || (width == 160))
-			       && fpixel >= 0
-				   && frpixel - fpixel <= 28
-				   && ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15))
-					 && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15))) {
-				leas--;
-				fpixel -= 4;
-				fcol -= 4;
+		}
+		stOffset += leas;
+		leas = stOffset;
+
+		if (stOffset < -128) {
+			writeLEAS(fpixel, spriteCode);
+		}
+	}
+
+	public void writeLEAS(int pixel, List<String> spriteCode) {
+		if (leas+leasSelfMod < 0) {
+			spriteCode.add("\tLEAS " + (leas+leasSelfMod) + ",S");
+
+			// Séparation du comptage entre mode normal ou Self Modification
+			// car le LEAS est commun
+			int c_cyclesCode = 0;
+			int t_cyclesCode = 0;
+			int c_octetsCode = 0;
+			int t_octetsCode = 0;
+			
+			if (leas <0) {
+				if (leas > -129) {
+					c_cyclesCode += 5;
+					if (leas > -17) {
+						c_octetsCode += 2;
+					} else {
+						c_octetsCode += 3;
+					}
+				} else {
+					c_cyclesCode += 8;
+					c_octetsCode += 4;
+				}
 			}
 			
-			// S'il y a un pixel transparent (gauche ou droite) on avance de 1 et stop
-			if (((fcol > 0 && width < 160) || (width == 160))
-			    && fpixel >= 0
-				&& frpixel - fpixel <= 28
-				&& ((((int) pixels[fpixel]   >= 0 && (int) pixels[fpixel]   <= 15)
-				  && ((int) pixels[fpixel+1]  < 0 || (int) pixels[fpixel+1]  > 15))
-				 || (((int) pixels[fpixel]    < 0 || (int) pixels[fpixel]    > 15)
-				  && ((int) pixels[fpixel+1] >= 0 && (int) pixels[fpixel+1] <= 15)))) {
-				leas--;
+			if (leas+leasSelfMod > -129) {
+				t_cyclesCode += 5;
+				if (leas+leasSelfMod > -17) {
+					t_octetsCode += 2;
+				} else {
+					t_octetsCode += 3;
+				}
 			} else {
-				// on revient au point de départ
-				fpixel = frpixel;
-				fcol = frcol;
-				leas = fleas;
-			}
+				t_cyclesCode += 8;
+				t_octetsCode += 4;
+			}	
+			
+			cyclesCode += c_cyclesCode;
+			octetsCode += c_octetsCode;
+			cyclesCodeSelfMod += t_cyclesCode - c_cyclesCode;
+			octetsCodeSelfMod += t_octetsCode - c_octetsCode;
+
+			stOffset = 0;
+			leas = 0;
+			leasSelfMod = 0;
 		}
-		// Ecriture du LEAS
-		if (fpixel > 3 && leas < 0) {
-			sLeas = "\tLEAS " + leas + ",S";
-		}
-		return sLeas;
 	}
-	
-	public ArrayList<Integer> optimisationPUL(ArrayList<String> fdbBytes, String[] pulBytesOld, int nbBytes,
-			boolean leftAlphaPxl) {
+
+	public ArrayList<Integer> optimisationPUL(ArrayList<String> fdbBytes, String[] pulBytesOld) {
 		int somme = 0;
-		int minSomme = 15;
+		int minSomme = 99;
 		ArrayList<Integer> listeRegistres = new ArrayList<Integer>();
 		ArrayList<Integer> minlr = new ArrayList<Integer>();
 		int ilst = 0;
-		Integer scr = 0;
 		String[] pulBytes = new String[5];
+		int nbBytes = fdbBytes.size() / 2;
 
 		// **************************************************************
 		// Test de toutes les combinaisons de registres pour savoir
@@ -445,15 +703,25 @@ public class CompiledSpriteModeB16 {
 				}
 
 				if (!pulBytes[cr].equals(pulBytesOld[cr])) {
-					somme += pulBytes[cr].length();
+					if (nbBytes == 7) {
+						somme += regCostPULPSHx[cr];
+					}
+					if (nbBytes >= 3 && nbBytes <= 6) {
+						somme += regCostLDx[cr];
+					}
+					if (nbBytes <= 2) {
+						somme += regCostLDx[cr];
+					}
 				}
+
+				if (nbBytes <= 2) {
+					somme += regCostSTx[cr];
+				}
+
 				listeRegistres.add(cr);
-				scr = cr;
 			}
 
-			// Dans le cas d'un pixel T a gauche on force la selection d'une combinaison
-			// comprenant A
-			if (somme < minSomme && ((leftAlphaPxl == false) || (leftAlphaPxl == true && scr == 4))) {
+			if (somme < minSomme) {
 				minlr = new ArrayList<>(listeRegistres);
 				minSomme = somme;
 			}
@@ -468,57 +736,178 @@ public class CompiledSpriteModeB16 {
 	}
 
 	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld,
-			ArrayList<Integer> listeIndexReg, boolean leftAlphaPxl) {
-		String pul = new String("");
-		String psh = new String("");
+			ArrayList<Integer> listeIndexReg, int pos) {
+		String read = new String("");
+		String erase_read = new String("");
+		String write = new String("");
+		String erase_write = new String("");
 		String[] pulBytes = { "", "", "", "", "" };
 		String[] pulBytesFiltered = { "", "", "", "", "" };
 		String fdbBytesResult = new String("");
 		String[][] result = new String[4][];
-		final String[] pulReg = { "X", "Y", "DP", "B", "A" };
 		int ilst = 0;
+		int nbBytes = fdbBytes.size() / 2;
 
 		// **************************************************************
-		// Construction du PUL et du PSH
+		// Construction du PUL/LD et du PSH/ST
 		// **************************************************************
-
-		for (Integer indexReg : listeIndexReg) {
-			// Copie en sens inverse
-			
-			if (indexReg < 2) { // X ou Y
-				pulBytes[indexReg] += fdbBytes.get(ilst + 3);
-				pulBytes[indexReg] += fdbBytes.get(ilst + 2);
-				pulBytes[indexReg] += fdbBytes.get(ilst + 1);
-				pulBytes[indexReg] += fdbBytes.get(ilst);
-				ilst += 4;
-			} else if (!(leftAlphaPxl == true && indexReg == 4)){
-				pulBytes[indexReg] += fdbBytes.get(ilst + 1);
-				pulBytes[indexReg] += fdbBytes.get(ilst);
-				ilst += 2;
-			}
-
-			// Dans le cas d'un pixel transparent Ã  gauche traité dans le PSH
-			// on ne renseigne pas le registre sur le PUL car traité dans un LDA
-			if (!pulBytes[indexReg].equals(pulBytesOld[indexReg]) && !(leftAlphaPxl == true && indexReg == 4)) {
-				if (pul.equals("")) {
-					pul += "\tPULU ";
+		if (nbBytes >= 3 && nbBytes <= 7) {
+			for (int i = 0; i < listeIndexReg.size(); i++) {
+				if (listeIndexReg.get(i) < 2) {
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 3);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 2);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 4;
 				} else {
-					pul += ",";
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 2;
 				}
-				pul += pulReg[indexReg];
 			}
+		}
+		if (nbBytes <= 2) {
+			for (int i = listeIndexReg.size() - 1; i >= 0; i--) {
+				if (listeIndexReg.get(i) < 2) {
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 3);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 2);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 4;
+				} else {
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst + 1);
+					pulBytes[listeIndexReg.get(i)] += fdbBytes.get(ilst);
+					ilst += 2;
+				}
+			}
+		}
 
-			if (!pulBytes[indexReg].equals(pulBytesOld[indexReg]) || (leftAlphaPxl == true && indexReg == 4)) {
+		// Case 1/3 : 7 bytes to write
+		// ***************************
+		
+//		if (nbBytes == 7) {
+//			read += "\tPULU A,B,DP,X,Y\n";
+//			cyclesCode += 12;
+//			octetsCode += 2;
+//			erase_read += "";
+//			write += "\tPSHS Y,X,DP,B,A\n";
+//			cyclesCode += 12;
+//			octetsCode += 2;
+//			erase_write += "";
+//		}
+		
+		// Case 2/3 : 3 to 6 bytes to write
+		// ********************************
+		
+		if (nbBytes >= 3 && nbBytes <= 6 && isSelfModifying) // Construction du code auto-modifié pour l'effacement
+		{
+			int offset = octetsCode+((leas < 0) ? ((leas > -129) ? ((leas > -17) ? 2 : 3) : 4) : 0);  // On ajoute le LEAS
+			for (int i = listeIndexReg.size() - 1; i >= 0 ; i--) {
+				// Lecture des registres en sens inverse pour construction du PULS
+				if (erase_read.equals("")) {
+					erase_read += "\tPULS ";
+					cyclesCodeSelfMod += 5;
+					octetsCodeSelfMod += 2;
+				} else {
+					erase_read += ",";
+				}
+				erase_read += pulReg[listeIndexReg.get(i)];
+
+				leasSelfMod -= regSize[listeIndexReg.get(i)]; // modification du positionnement avant le PULS
+				cyclesCodeSelfMod += regCostPULPSHx[listeIndexReg.get(i)];
+				
+				// Lecture des registres en sens inverse pour construction des ST
+				offset += regInstSizeLDx[listeIndexReg.get(i)];
+				erase_write += "\tST" + pulReg[listeIndexReg.get(i)] + " " + eraseCodeLabel + "_" + codePart + "+" + offset + "\n";
+				offset += regSize[listeIndexReg.get(i)];
+				
+				// Mise à jour stats (A faire : gestion des cyles en fonction du mode d'adressage)
+				cyclesCodeSelfMod += regCostSTx[listeIndexReg.get(i)];
+				octetsCodeSelfMod += regInstSizeLDx[listeIndexReg.get(i)];
+			}
+			erase_read += "\n";
+		}
+		
+		for (Integer indexReg : listeIndexReg) {
+			if (nbBytes >= 3 && nbBytes <= 6) {
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+				if (!read.equals("")) {
+					read = "\n" + read;
+				}
+				read = "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg] + read;
 				pulBytesOld[indexReg] = pulBytes[indexReg];
-				pulBytesFiltered[indexReg] += pulBytes[indexReg];
-			}
 
-			if (psh.equals("")) {
-				psh += "\tPSHS ";
-			} else {
-				psh += ",";
+				cyclesCode += regCostLDx[indexReg];
+				octetsCode += regInstSizeLDx[indexReg] + regSize[indexReg];
+				//}
+
+				if (write.equals("")) {
+					write += "\tPSHS ";
+					cyclesCode += 5;
+					octetsCode += 2;
+				} else {
+					write += ",";
+				}
+				write += pulReg[indexReg];
+				
+				cyclesCode += regCostPULPSHx[indexReg];
 			}
-			psh += pulReg[indexReg];
+			
+			// Case 3/3 : 1 to 2 bytes to write
+			// ********************************
+			if (nbBytes <= 2) {
+				
+				// Dans le cas ou on n'utilise pas de PSHS pour ecrire il faut faire avancer S
+				if (indexReg < 2) {
+					stOffset -= 2;
+					leas -= 2;
+				} else {
+					stOffset -= 1;
+					leas -= 1;
+				}
+		
+				if (isSelfModifying) {
+					if (stOffset == 0) {
+						read += "\tLD" + pulReg[indexReg] + " ,S\n";
+					} else {
+						read += "\tLD" + pulReg[indexReg] + " " + stOffset + ",S\n";
+					}
+					
+					// LD Offset
+					if (indexReg < 2) {
+						computeStatsSelfMod16b(stOffset);
+					} else {
+						computeStatsSelfMod8b(stOffset);
+					}
+					
+					read += "\tST" + pulReg[indexReg] + " " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+1); // +1 pour l'octet du LD
+					
+					//ST Offset
+					cyclesCodeSelfMod += regCostSTx[indexReg];
+					octetsCodeSelfMod += 3;
+				}		
+				
+				//if (!pulBytes[indexReg].equals(pulBytesOld[indexReg])) {
+				if (!read.equals("")) {
+					read += "\n";
+				}
+				read += "\tLD" + pulReg[indexReg] + " #$" + pulBytes[indexReg];
+				pulBytesOld[indexReg] = pulBytes[indexReg];
+
+				cyclesCode += regCostLDx[indexReg];
+				octetsCode += regInstSizeLDx[indexReg] + regSize[indexReg];
+				//}
+				
+				if (!write.equals("")) {
+					write += "\n";
+				}
+				write += "\tST" + pulReg[indexReg] + " " + stOffset + ",S";
+				if (indexReg < 2) {
+					computeStats16b(stOffset);
+				} else {
+					computeStats8b(stOffset);
+				}
+			}
 		}
 
 		// Enregistre les données FDB en sens inverse et filtrées
@@ -526,8 +915,8 @@ public class CompiledSpriteModeB16 {
 			fdbBytesResult += pulBytesFiltered[listeIndexReg.get(i)];
 		}
 
-		result[0] = new String[] { pul };
-		result[1] = new String[] { psh };
+		result[0] = new String[] { erase_read + erase_write + read };
+		result[1] = new String[] { write };
 		result[2] = new String[] { fdbBytesResult };
 		result[3] = pulBytesOld;
 		return result;
@@ -569,41 +958,39 @@ public class CompiledSpriteModeB16 {
 		return;
 	}
 
-	public List<String> generateDataFDB(String pixels, int x) {
+	public void generateDataFDB(String pixels, List<String> spriteData) {
 		int bitIndex = 0;
-		List<String> spriteData = new ArrayList<String>();
+		int bitIndexEnd = 4;
 		String dataLine = new String();
 
 		// **************************************************************
 		// Construit un tableau de données en assembleur
 		// **************************************************************
 
-		spriteData.add(dataLabel + "_" + x);
+		spriteData.add("");
 
 		for (int i = 0; i < pixels.length(); i++) {
 			bitIndex++;
-			if (bitIndex == 1) {
+			if (bitIndex == 1 && i < pixels.length() - 2) {
 				dataLine = "\tFDB $";
+			} else if (bitIndex == 1) {
+				dataLine = "\tFCB $";
+				bitIndexEnd = 2;				
 			}
 
 			dataLine += pixels.charAt(i);
 
-			if (bitIndex == 4) {
+			if (bitIndex == bitIndexEnd) {
 				spriteData.add(dataLine);
 				bitIndex = 0;
 			}
 		}
 
-		// On complete le mot pour la dernière ligne de données
-		if (bitIndex > 0) {
-			while (bitIndex < 4) {
-				dataLine += "0";
-				bitIndex++;
-			}
+		// On complete le FCB ou FDB pour la dernière ligne de données
+		if (dataLine.length() == 7 || dataLine.length() == 9) {
+			dataLine += "0";
 			spriteData.add(dataLine);
 		}
-
-		return spriteData;
 	}
 
 	public String removeExtension(String s) {
@@ -636,270 +1023,204 @@ public class CompiledSpriteModeB16 {
 	}
 
 	public List<String> getCompiledData(int i) {
+		return getCompiledData("", i);
+	}	
+	
+	public List<String> getCompiledData(String prefix, int i) {
+		if (i == 1) {
+			spriteData2.set(0, prefix + dataLabel + "_2");
+		} else {
+			spriteData1.set(0, prefix + dataLabel + "_1");
+		}
 		return (i == 1) ? spriteData2 : spriteData1;
 	}
 
-	public List<String> getCodeStart() {
-		List<String> code = new ArrayList<String>();
-		code.add("********************************************************************************");
-		code.add("*                               CompiledSprite                                 *");
-		code.add("********************************************************************************");
-		code.add("* Auteur  :                                                                    *");
-		code.add("* Date    :                                                                    *");
-		code.add("* Licence :                                                                    *");
-		code.add("********************************************************************************");
-		code.add("*");
-		code.add("********************************************************************************");
-		code.add("");
-		code.add("(main)" + spriteName.substring(0, Math.min(spriteName.length(), 8)) + ".asm");
-		code.add("\tORG $A000");
-		code.add("");
-		code.add("********************************************************************************  ");
-		code.add("* Constantes et variables");
-		code.add("********************************************************************************");
-		code.add("DEBUTECRANA EQU $0000	* debut de la RAM A video");
-		code.add("FINECRANA EQU $1F40	* fin de la RAM A video");
-		code.add("DEBUTECRANB EQU $2000	* debut de la RAM B video");
-		code.add("FINECRANB EQU $3F40	* fin de la RAM B video");
-		code.add("");
-		code.add("SSAVE FDB $0000");
-		code.add("");
-		code.add("********************************************************************************  ");
-		code.add("* Debut du programme");
-		code.add("********************************************************************************");
-		code.add("\tORCC #$50	* a documenter (interruption)");
-		code.add("\t");
-		code.add("\tLDA #$7B	* passage en mode 160x200x16c");
-		code.add("\tSTA $E7DC	");
-		code.add("");
-		code.add("********************************************************************************  ");
-		code.add("* Initialisation de la palette de couleurs");
-		code.add("********************************************************************************");
-		code.add("\tLDY #TABPALETTE");
-		code.add("\tCLRA");
-		code.add("SETPALETTE");
-		code.add("\tPSHS A");
-		code.add("\tASLA");
-		code.add("\tSTA $E7DB");
-		code.add("\tLDD ,Y++");
-		code.add("\tSTB $E7DA");
-		code.add("\tSTA $E7DA");
-		code.add("\tPULS A");
-		code.add("\tINCA");
-		code.add("\tCMPY #FINTABPALETTE");
-		code.add("\tBNE	SETPALETTE");
-		code.add("\t");
-		code.add("********************************************************************************  ");
-		code.add("* Initialisation de la couleur de bordure");
-		code.add("********************************************************************************");
-		code.add("INITBORD");
-		code.add("\tLDA	#$04	* couleur 4");
-		code.add("\tSTA	$E7DD");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Initialisation de la routine de commutation de page video");
-		code.add("********************************************************************************");
-		code.add("\tLDB $6081");
-		code.add("\tORB #$10");
-		code.add("\tSTB $6081");
-		code.add("\tSTB $E7E7");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Effacement ecran (les deux pages)");
-		code.add("********************************************************************************");
-		code.add("\tJSR SCRC");
-		code.add("\tJSR EFF");
-		code.add("\tJSR SCRC");
-		code.add("\tJSR EFF");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Boucle principale");
-		code.add("********************************************************************************");
-		code.add("MAIN");
-		code.add("\tJSR DRAWBCKGRN");
-		code.add("\t*LDX >" + posLabel);
-		code.add("\t*LEAX -1,X");
-		code.add("\t*STX >" + posLabel);
-		code.add("\tJSR " + drawLabel);
-		code.add("\tJSR SCRC        * changement de page ecran");
-		code.add("\tBRA MAIN");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Changement de page ecran");
-		code.add("********************************************************************************");
-		code.add("SCRC");
-		code.add("\tLDB SCRC0+1");
-		code.add("\tANDB #$80          * BANK1 utilisee ou pas pour l affichage / fond couleur 0");
-		code.add("\tORB #$0A           * contour ecran = couleur A");
-		code.add("\tSTB $E7DD");
-		code.add("\tCOM SCRC0+1");
-		code.add("SCRC0");
-		code.add("\tLDB #$00");
-		code.add("\tANDB #$02          * page RAM no0 ou no2 utilisee dans l espace cartouche");
-		code.add("\tORB #$60           * espace cartouche recouvert par RAM / ecriture autorisee");
-		code.add("\tSTB $E7E6");
-		code.add("\tRTS");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Effacement de l ecran");
-		code.add("********************************************************************************");
-		code.add("EFF");
-		code.add("\tLDA #$AA  * couleur fond");
-		code.add("\tLDY #$0000");
-		code.add("EFF_RAM");
-		code.add("\tSTA ,Y+");
-		code.add("\tCMPY #$3FFF");
-		code.add("\tBNE EFF_RAM");
-		code.add("\tRTS");
-		code.add("");
-		code.add("********************************************************************************  ");
-		code.add("* Affichage de l arriere plan xxx cycles");
-		code.add("********************************************************************************	");
-		code.add("DRAWBCKGRN");
-		code.add("\tPSHS U,DP		* sauvegarde des registres pour utilisation du stack blast");
-		code.add("\tSTS >SSAVE");
-		code.add("\t");
-		code.add("\tLDS #FINECRANA	* init pointeur au bout de la RAM A video (ecriture remontante)");
-		code.add("\tLDU #TILEBCKGRNDA");
-		code.add("\tPULU X,Y,DP,D");
-		code.add("");
-		code.add("DRWBCKGRNDA");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP");
-		code.add("\tCMPS #DEBUTECRANA");
-		code.add("\tBNE DRWBCKGRNDA");
-		code.add("\t");
-		code.add("\tLDS #FINECRANB	* init pointeur au bout de la RAM B video (ecriture remontante)");
-		code.add("\tLDU #TILEBCKGRNDB");
-		code.add("\tPULU X,Y,DP,D");
-		code.add("");
-		code.add("DRWBCKGRNDB");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP,D");
-		code.add("\tPSHS X,Y,DP");
-		code.add("\tCMPS #DEBUTECRANB");
-		code.add("\tBNE DRWBCKGRNDB");
-		code.add("\t");
-		code.add("\tLDS  >SSAVE		* rechargement des registres");
-		code.add("\tPULS U,DP");
-		code.add("\tRTS");
-		code.add("");
-		code.add("********************************************************************************");
-		code.add("* Affiche un computed sprite en xxx cycles");
-		code.add("********************************************************************************");
-		return code;
+
+	public List<String> getCompiledECode(int i) {
+		return (i == 1) ? spriteECode2 : spriteECode1;
 	}
 
-	public List<String> getCodeEnd() {
-		List<String> code = new ArrayList<String>();
-		code.add("********************************************************************************  ");
-		code.add("* Tile arriere plan   ");
-		code.add("********************************************************************************");
-		code.add("TILEBCKGRNDA");
-		code.add("\tFDB $eeee");
-		code.add("\tFDB $eeee");
-		code.add("\tFDB $eeee");
-		code.add("\tFDB $eeee");
-		code.add("");
-		code.add("TILEBCKGRNDB");
-		code.add("\tFDB $ffff");
-		code.add("\tFDB $ffff");
-		code.add("\tFDB $ffff");
-		code.add("\tFDB $ffff");
-		return code;
+	public List<String> getCompiledEData(int i) {
+		return getCompiledEData("", i);
+	}	
+	
+	public List<String> getCompiledEData(String prefix, int i) {
+		if (i == 1) {
+			spriteEData2.set(0, prefix + dataLabel + "_2");
+		} else {
+			spriteEData1.set(0, prefix + dataLabel + "_1");
+		}
+		return (i == 1) ? spriteEData2 : spriteEData1;
 	}
 
-	public List<String> getCodeHeader(int pos) {
+	public List<String> getCodeHeader(String label, int pos) {
+		return getCodeHeader("", label, pos);
+	}	
+	
+	public List<String> getCodeHeader(String prefix, String label, int pos) {
 		List<String> code = new ArrayList<String>();
-		code.add(drawLabel);
+		code.add(label);
 		code.add("\tPSHS U,DP");
-		code.add("\tSTS >SSAVE");
+		code.add("\tSTS " + prefix + ssaveLabel + "+2");
 		code.add("");
-		code.add("\tLDS >" + posLabel);
-		code.add("\tLDU #" + dataLabel + "_" + pos);
-		code.add("");
+		if (prefix.contentEquals(""))
+		{
+			code.add("\tLDS $" + posAdress);
+			code.add("\tSTS " + erasePosLabel + "_" + pos + "+2"); // auto-modification du code
+		}
+		else {
+			code.add(erasePosLabel + "_" + pos); // label pour auto-modification du code
+			code.add("\tLDS #$0000");
+		}
+		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
+		
+		if (prefix.contentEquals(""))
+		{
+			code.add("");
+		}
+		else {
+			code.add(eraseCodeLabel + "_" + pos);
+		}
+		
 		return code;
 	}
-
+	
 	public List<String> getCodeSwitchData(int pos) {
-		List<String> code = new ArrayList<String>();
-		code.add("");
-		code.add("\tLDS >" + posLabel);
-		code.add("\tLEAS 8192,S");
-		code.add("\tLDU #" + dataLabel + "_" + pos);
-		code.add("");
-		return code;
+		return getCodeSwitchData("", pos);
 	}
 
-	public List<String> getCodeFooter() {
+	public List<String> getCodeSwitchData(String prefix, int pos) {
 		List<String> code = new ArrayList<String>();
 		code.add("");
-		code.add("\tLDS  >SSAVE");
+		if (prefix.contentEquals(""))
+		{
+			code.add("\tLDS $" + posAdress + "+2");
+			code.add("\tSTS " + erasePosLabel + "_" + pos + "+2"); // auto-modification du code
+		}
+		else {
+			code.add(erasePosLabel + "_" + pos); // label pour auto-modification du code
+			code.add("\tLDS #$0000");
+		}
+		
+		code.add("\tLDU #" + prefix + dataLabel + "_" + pos);
+
+		if (prefix.contentEquals(""))
+		{
+			code.add("");
+		}
+		else {
+			code.add(eraseCodeLabel + "_" + pos);
+		}
+		return code;
+	}
+	
+	public List<String> getCodeFooter() {
+		return getCodeFooter("");
+	}
+
+	public List<String> getCodeFooter(String prefix) {
+		List<String> code = new ArrayList<String>();
+		code.add("");
+		code.add(prefix + ssaveLabel);
+		code.add("\tLDS #$0000");
 		code.add("\tPULS U,DP");
 		code.add("\tRTS");
 		code.add("");
 		return code;
 	}
-
-	public List<String> getCodeDataPos() {
+	
+	public byte[] getCompiledCode(String org) {
+		byte[]  content = {};
 		List<String> code = new ArrayList<String>();
-		code.add(posLabel);
-		code.add("\tFDB $1F40");
-		code.add("");
-		return code;
+		String tempFile="TMP";
+		String tempASSFile=tempFile+".ASS";
+		String tempBINFile=tempFile+".BIN";
+		try
+		{
+			// Read PNG and generate assembly code
+			Path assemblyFile = Paths.get(tempASSFile);
+			Files.deleteIfExists(assemblyFile);
+			Files.createFile(assemblyFile);
+			
+			code.add("(main)"+tempASSFile);
+			code.add("\tORG $"+org);
+			Files.write(assemblyFile, code, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeHeader(drawLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledCode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledCode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledData(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			//Files.write(assemblyFile, getCodeDataPos(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+
+			Files.write(assemblyFile, getCodeHeader(erasePrefix, eraseLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledECode(1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeSwitchData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledECode(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFooter(erasePrefix), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledEData(erasePrefix, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCompiledEData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			
+		    // Delete binary file
+			Path binaryFile = Paths.get(tempBINFile);
+			Files.deleteIfExists(binaryFile);
+			
+			// Generate binary code from assembly code
+			Process p = new ProcessBuilder("c6809.exe", "-bd", tempASSFile, tempBINFile).start();
+			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line;
+			while((line=br.readLine())!=null){
+				 System.out.println(line);
+			}
+			p.waitFor();
+			
+			// Load binary code
+		    content = Files.readAllBytes(Paths.get(tempBINFile));	
+			Files.deleteIfExists(binaryFile);
+			
+			// Rename .lst File
+            File f = new File("codes.lst"); 
+			Path lstFile = Paths.get(spriteName+".lst");
+			Files.deleteIfExists(lstFile);
+            f.renameTo(new File(spriteName+".lst"));
+            
+            Pattern pattern = Pattern.compile(".*Label (.*) ERASE_"+spriteName);
+            try (Stream<String> lines = Files.lines(Paths.get(spriteName+".lst"), Charset.forName("ISO-8859-1"))) {
+                lines.map(pattern::matcher)
+                .filter(Matcher::matches)
+                .findFirst()
+                .ifPresent(matcher -> eraseAddress = matcher.group(1));
+            }
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace(); 
+			System.out.println(e); 
+		}
+        return content;
 	}
-
-	public List<String> getCodePalette() {
+	
+	public List<String> getCodePalette(ColorModel colorModel, double gamma) {
+		// std gamma: 3
+		// suggestion : 2 pour couleurs pastel
 		List<String> code = new ArrayList<String>();
-
+		code.add("");
 		code.add("TABPALETTE");
 		// Construction de la palette de couleur
-		for (int j = 0; j < 16; j++) {
+		for (int j = 1; j < 17; j++) {
 			Color couleur = new Color(colorModel.getRGB(j));
-			code.add("\tFDB $0" + Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getBlue() / 255.0), 3)))
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getGreen() / 255.0), 3)))
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getRed() / 255.0), 3))) + "\t* index:"
-					+ String.format("%-2.2s", j) + " R:" + String.format("%-3.3s", couleur.getRed()) + " V:"
-					+ String.format("%-3.3s", couleur.getGreen()) + " B:" + String.format("%-3.3s", couleur.getBlue()));
+			code.add("\tFDB $0"
+					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getBlue() / 255.0), gamma)))
+					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getGreen() / 255.0), gamma)))
+					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getRed() / 255.0), gamma)))
+					+ "\t* index:"
+					+ String.format("%-2.2s", j)
+					+ " R:" + String.format("%-3.3s", couleur.getRed())
+					+ " V:" + String.format("%-3.3s", couleur.getGreen())
+					+ " B:" + String.format("%-3.3s", couleur.getBlue()));
 		}
 		code.add("FINTABPALETTE");
 		return code;
-	}
-
-	// public static BufferedImage rgbaToIndexedBufferedImage(BufferedImage
-	// sourceBufferedImage) {
-	// //With this constructor we create an indexed bufferedimage with the same
-	// dimensiosn and with a default 256 color model
-	// BufferedImage indexedImage= new
-	// BufferedImage(sourceBufferedImage.getWidth(),sourceBufferedImage.getHeight(),BufferedImage.TYPE_BYTE_INDEXED);
-	//
-	//
-	// ColorModel cm = indexedImage.getColorModel();
-	// IndexColorModel icm=(IndexColorModel) cm;
-	//
-	// int size=icm.getMapSize();
-	//
-	// byte[] reds = new byte[size];
-	// byte[] greens = new byte[size];
-	// byte[] blues = new byte[size];
-	// icm.getReds(reds);
-	// icm.getGreens(greens);
-	// icm.getBlues(blues);
-	//
-	// WritableRaster raster=indexedImage.getRaster();
-	// int pixel = raster.getSample(0, 0, 0);
-	// IndexColorModel icm2 = new IndexColorModel(8, size, reds, greens,
-	// blues,pixel);
-	// indexedImage=new BufferedImage(icm2,
-	// raster,sourceBufferedImage.isAlphaPremultiplied(), null);
-	// indexedImage.getGraphics().drawImage(sourceBufferedImage, 0, 0, null);
-	// return indexedImage;
-	// }
+	}	
 }

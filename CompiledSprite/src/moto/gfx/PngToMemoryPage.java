@@ -38,14 +38,12 @@ public class PngToMemoryPage {
 				// RAMA
 				for (i = 0, j = 8192; i < width*height; i += 4) {
 					pixelsAB[j] = (byte)((pixels[i]-1) << 4 | (pixels[i+1]-1) & 0x0F );
-					//pixelsAB[j] = (byte)((pixels[i+1]-1) << 4 | (pixels[i]-1) & 0x0F );
 					j++;
 				}
 				
 				// RAMB
 				for (i = 2, j = 0; i < width*height; i += 4) {
 					pixelsAB[j] = (byte)((pixels[i]-1) << 4 | (pixels[i+1]-1) & 0x0F );
-					//pixelsAB[j] = (byte)((pixels[i+1]-1) << 4 | (pixels[i]-1) & 0x0F );
 					j++;
 				}	
 			} else {
