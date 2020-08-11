@@ -1,4 +1,4 @@
-package moto.gfx;
+package fr.bento8.to8.compiledSprite;
 
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -32,7 +32,7 @@ public class CompiledSpriteModeB16 {
 	BufferedImage image;
 	ColorModel colorModel;
 	String spriteName;
-	String eraseAddress;
+	public String eraseAddress;
 	int width;
 	int height;
 	byte[] pixels;
@@ -41,10 +41,15 @@ public class CompiledSpriteModeB16 {
 	ArrayList<ArrayList<ArrayList<Integer>>> regCombos = new ArrayList<ArrayList<ArrayList<Integer>>>();
 	final String[] pulReg = { "Y", "X", "DP", "B", "A", "D" };
 	final int[] regSize = { 2, 2, 1, 1, 1, 2 };
+	
+	// Cycles
 	final int[] regCostPULPSHx = { 2, 2, 1, 1, 1, 2 };
 	final int[] regCostLDx = { 4, 3, 99, 2, 2, 3 }; // il n'y a pas de LDx pour DP
-	final int[] regInstSizeLDx = { 2, 1, 99, 1, 1, 1 }; // il n'y a pas de LDx pour DP
 	final int[] regCostSTx = { 7, 6, 99, 5, 5, 6 }; // il n'y a pas de LDx pour DP
+	
+	// Taille mémoire
+	final int[] regInstSizeLDx = { 2, 1, 99, 1, 1, 1 }; // il n'y a pas de LDx pour DP
+	
 	private int leas = 0;
 	private int leasSelfMod = 0;
 	private int stOffset = 0; // Offset pour les STx depuis le dernier LEAS
@@ -923,14 +928,12 @@ public class CompiledSpriteModeB16 {
 	}
 
 	public void ComputeRegCombos() {
-		final int[] registres = { 2, 2, 1, 1, 1 }; // taille en octet de chaque registre dans l'ordre du PSH X, Y, DP,
-													// B, A
 		ArrayList<Integer> registresCourant = new ArrayList<Integer>();
 		regCombos.clear();
 
 		// **************************************************************
 		// Construit un tableau dont l'indice est un nombre d'octet
-		// de 0 Ã  7. Chaque indice contient les listes de toutes les
+		// de 0 à 7. Chaque indice contient les listes de toutes les
 		// combinaisons des registres dont la taille totale correspond
 		// au nombre d'octets défini dans l'indice.
 		// **************************************************************
@@ -947,7 +950,7 @@ public class CompiledSpriteModeB16 {
 				;
 				if (x == 1) {
 					registresCourant.add(j);
-					nbBytes += registres[j];
+					nbBytes += regSize[j];
 				}
 				j++;
 			}

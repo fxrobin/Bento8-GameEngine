@@ -1,4 +1,4 @@
-package moto.gfx;
+package fr.bento8.to8.image;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -8,8 +8,6 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 public class PngToMemoryPage {
-	// Charge un PNG et génère une page mémoire prête à l'affichage pour TO8
-
 	BufferedImage image;
 	ColorModel colorModel;
 	int width;
@@ -17,6 +15,11 @@ public class PngToMemoryPage {
 	byte[] pixels;
 	byte[] pixelsAB;
 
+	/**
+	 * Charge un PNG et génère une page mémoire prête à l'affichage pour TO8
+	 * Les données sont copiées à l'envers pour utilisation PUL/PSH remontant
+	 * @param nom du fichier image
+	 */
 	public PngToMemoryPage(String file) {
 		try {
 			// Lecture de l'image a traiter
@@ -48,8 +51,7 @@ public class PngToMemoryPage {
 				}	
 			} else {
 				System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
-				System.out.println(
-						"Resolution: " + width + "x" + height + "px (doit être égal à  160x200)");
+				System.out.println("Resolution: " + width + "x" + height + "px (doit être égal à 160x200)");
 				System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
 			}
 		} catch (Exception e) {

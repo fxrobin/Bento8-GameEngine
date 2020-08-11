@@ -1,4 +1,4 @@
-package moto.util.knapsack;
+package fr.bento8.to8.util.knapsack;
 
 import java.util.ArrayList;
 import java.util.List;

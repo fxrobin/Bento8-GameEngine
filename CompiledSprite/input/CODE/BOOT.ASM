@@ -1,7 +1,7 @@
 *********************************************
 * Boot loader / Routine de lecture disquette
 *********************************************
-(main)BOOT.ASS
+(main)BOOT
    setdp $60
    org $6200
    
