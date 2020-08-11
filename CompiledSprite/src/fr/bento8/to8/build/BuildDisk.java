@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16;
 import fr.bento8.to8.disk.FdUtil;
-import fr.bento8.to8.image.PngToMemoryPage;
+import fr.bento8.to8.image.PngToReverseModeB16;
 import fr.bento8.to8.util.knapsack.Item;
 import fr.bento8.to8.util.knapsack.Knapsack;
 import fr.bento8.to8.util.knapsack.Solution;
@@ -103,7 +103,7 @@ public class BuildDisk
 				fd.setIndex(0, 0, 1);
 				fd.write(bootLoaderBytes);
 
-				PngToMemoryPage initVideo = new PngToMemoryPage(initVideoFile); // Initialisation de la mémoire vidéo
+				PngToReverseModeB16 initVideo = new PngToReverseModeB16(initVideoFile); // Initialisation de la mémoire vidéo
 				byte[] initVideoBIN = initVideo.getBIN();
 
 				fd.setIndex(0, 4, 1);

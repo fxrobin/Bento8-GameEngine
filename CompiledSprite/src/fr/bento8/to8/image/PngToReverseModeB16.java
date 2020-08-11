@@ -7,7 +7,7 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
-public class PngToMemoryPage {
+public class PngToReverseModeB16 {
 	BufferedImage image;
 	ColorModel colorModel;
 	int width;
@@ -20,7 +20,7 @@ public class PngToMemoryPage {
 	 * Les données sont copiées à l'envers pour utilisation PUL/PSH remontant
 	 * @param nom du fichier image
 	 */
-	public PngToMemoryPage(String file) {
+	public PngToReverseModeB16(String file) {
 		try {
 			// Lecture de l'image a traiter
 			image = ImageIO.read(new File(file));
