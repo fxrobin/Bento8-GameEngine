@@ -487,22 +487,22 @@ DRAW_RAM_DATA_TO_CART_160x200A_E
 * Palette de 16 couleurs
 ********************************************************************************
 TABPALETTE
- 	FDB $0000	* index:1  R:0   V:0   B:0  
- 	FDB $0004	* index:2  R:139 V:27  B:0  
- 	FDB $047d	* index:3  R:236 V:170 B:135
- 	FDB $0028	* index:4  R:189 V:99  B:37 
- 	FDB $006a	* index:5  R:206 V:159 B:0  
- 	FDB $01a6	* index:6  R:167 V:208 B:66 
- 	FDB $0061	* index:7  R:75  V:165 B:4  
- 	FDB $0020	* index:8  R:16  V:94  B:4  
- 	FDB $0010	* index:9  R:0   V:47  B:15 
- 	FDB $0220	* index:10 R:22  V:87  B:103
- 	FDB $0b82	* index:11 R:103 V:183 B:223
- 	FDB $0ddd	* index:12 R:239 V:240 B:241
- 	FDB $0d30	* index:13 R:9   V:114 B:239
- 	FDB $0700	* index:14 R:12  V:32  B:175
- 	FDB $0000	* index:15 R:53  V:7   B:9  
- 	FDB $000c	* index:16 R:225 V:0   B:1  
+	FDB $0fff	* index:1  R:255 V:255 B:255
+	FDB $0000	* index:2  R:0   V:0   B:0
+	FDB $00ff	* index:3  R:254 V:255 B:5
+	FDB $00f0	* index:4  R:10  V:255 B:5
+	FDB $0e6e	* index:5  R:243 V:163 B:243
+	FDB $0003	* index:6  R:117 V:0   B:30
+	FDB $0000	* index:7  R:0   V:0   B:0
+	FDB $0000	* index:8  R:0   V:0   B:0
+	FDB $0000	* index:9  R:0   V:0   B:0
+	FDB $0000	* index:10 R:0   V:0   B:0
+	FDB $0000	* index:11 R:0   V:0   B:0             
+	FDB $0000	* index:12 R:0   V:0   B:0
+	FDB $0000	* index:13 R:0   V:0   B:0 
+	FDB $0000	* index:14 R:0   V:0   B:0
+	FDB $0000	* index:15 R:0   V:0   B:0
+	FDB $043f	* index:16 R:253 V:105 B:131
 FINTABPALETTE
 
 ********************************************************************************
@@ -836,9 +836,9 @@ Hero_MoveUpdateYPos_00A
 Hero_MoveUpdateYPos_00C
 	ADDB #$00						* Mise a jour de la position
 Hero_MoveUpdateYPos_01
-	CMPB #$A2						* Test de butee ecran en BAS
+	CMPB #$C3						* Test de butee ecran en BAS
 	BLS Hero_MoveUpdateYPos_03		* Butee non atteinte
-	LDB #$A2						* Butee atteinte on limite a la butee
+	LDB #$C3						* Butee atteinte on limite a la butee
 	TST HERO_ISJUMPING
 	BEQ Hero_MoveUpdateYPos_03	* pas de saut en cours
 	STB HERO_Y_POS
@@ -1034,7 +1034,7 @@ HERO_JOG_NEG_SPD_LIMIT EQU $FA00    * FA00
 HERO_X_POS
 	FCB $18			* Horizontal Position
 HERO_Y_POS
-	FCB $A2			* Vertical Position
+	FCB $C3			* Vertical Position
 HERO_G_SPEED
 	FDB $0000		* Ground Speed First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED

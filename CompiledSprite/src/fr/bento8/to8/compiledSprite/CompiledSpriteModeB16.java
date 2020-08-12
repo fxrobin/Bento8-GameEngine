@@ -1126,8 +1126,7 @@ public class CompiledSpriteModeB16 {
 		code.add("");
 		code.add(prefix + ssaveLabel);
 		code.add("\tLDS #$0000");
-		code.add("\tPULS U,DP");
-		code.add("\tRTS");
+		code.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)");
 		code.add("");
 		return code;
 	}
