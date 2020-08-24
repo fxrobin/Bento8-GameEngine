@@ -368,13 +368,10 @@ public class CompiledSpriteModeB16 {
 							}
 							computeStatsSelfMod8b(stOffset);
 							
-							//spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4)+1)); // +2 pour LDA, +2 ou +3 ou +4 pour ANDA, +1 pour ADDA (instruction seule)
 							spriteCode.add("\tSTA " + eraseCodeLabel + "_" + codePart + "+" + (octetsCode+1));
 							octetsCode -= 2+((stOffset > -129) ? ((stOffset > -17) ? 2 : 3) : 4);
 							cyclesCodeSelfMod += 5;
 							octetsCodeSelfMod += 3;
-							
-							// bug a HIL0_1 + 403 decalage de 1
 						}
 						
 						if (!isDeleteCode) {
@@ -426,7 +423,7 @@ public class CompiledSpriteModeB16 {
 									|| ((int) pixels[pixel - 4] < 0 || (int) pixels[pixel - 4] > 15))))) {
 
 						motif = optimisationPUL(fdbBytes, pulBytesOld);
-						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, pos);
+						String[][] result = generateCodePULPSH(fdbBytes, pulBytesOld, motif, pos, (pixel == (width * height) - 1 - pos ? true:false));
 						if (fdbBytes.size() / 2 > 2) { // Ecriture du LEAS avant utilisation du PSHS
 							writeLEAS(pixel, spriteCode);
 						}
@@ -741,7 +738,7 @@ public class CompiledSpriteModeB16 {
 	}
 
 	public String[][] generateCodePULPSH(ArrayList<String> fdbBytes, String[] pulBytesOld,
-			ArrayList<Integer> listeIndexReg, int pos) {
+			ArrayList<Integer> listeIndexReg, int pos, boolean init) {
 		String read = new String("");
 		String erase_read = new String("");
 		String write = new String("");
@@ -863,12 +860,9 @@ public class CompiledSpriteModeB16 {
 			if (nbBytes <= 2) {
 				
 				// Dans le cas ou on n'utilise pas de PSHS pour ecrire il faut faire avancer S
-				if (indexReg < 2) {
-					stOffset -= 2;
-					leas -= 2;
-				} else {
-					stOffset -= 1;
-					leas -= 1;
+				if (!init) {
+					stOffset -= regSize[indexReg];
+					leas -= regSize[indexReg];
 				}
 		
 				if (isSelfModifying) {

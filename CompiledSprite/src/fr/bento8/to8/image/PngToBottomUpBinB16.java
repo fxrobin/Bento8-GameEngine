@@ -7,7 +7,7 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
-public class PngToReverseModeB16 {
+public class PngToBottomUpBinB16 {
 	BufferedImage image;
 	ColorModel colorModel;
 	int width;
@@ -20,8 +20,10 @@ public class PngToReverseModeB16 {
 	 * Les données sont copiées à l'envers pour utilisation PUL/PSH remontant
 	 * @param nom du fichier image
 	 */
-	public PngToReverseModeB16(String file) {
+	public PngToBottomUpBinB16(String file) {
 		try {
+			System.out.println("**************** Conversion binaire pour PUL/PSH remontant "+file+" ****************");
+			
 			// Lecture de l'image a traiter
 			image = ImageIO.read(new File(file));
 			width = image.getWidth();
