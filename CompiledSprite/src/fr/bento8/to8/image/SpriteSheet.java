@@ -92,6 +92,7 @@ public class SpriteSheet {
 	public void prepareImages() {
 		// sépare l'image en deux parties pour la RAM A et RAM B
 		// ajoute les pixels transparents pour constituer une image linéaire de largeur 2x80px
+		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de même taille
 		pixels = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
