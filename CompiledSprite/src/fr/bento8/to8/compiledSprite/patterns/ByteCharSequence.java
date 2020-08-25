@@ -32,19 +32,3 @@ public class ByteCharSequence implements CharSequence {
     }
 
 }
-
-//public void testExpression() {
-//	byte[] data = new byte[] { 'a', '\r', '\r', 'c' };
-//	Pattern p = Pattern.compile("\r\n?|\n\r?");
-//	Matcher m = p.matcher(new ByteCharSequence(data));
-//
-//	assertEquals(true, m.find(0));
-//	assertEquals(1, m.start());
-//	assertEquals(2, m.end());
-//
-//	assertEquals(true, m.find(2));
-//	assertEquals(2, m.start());
-//	assertEquals(3, m.end());
-//
-//	assertEquals(false, m.find(3));
-//}

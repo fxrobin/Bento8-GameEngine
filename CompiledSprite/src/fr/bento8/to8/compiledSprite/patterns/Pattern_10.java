@@ -5,17 +5,53 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class Pattern_10 {
-	public final static Pattern p = Pattern.compile("^[^\\\\x00]\\x00");
 	public final static int nbPixels = 2;
 	public final static int nbBytes = nbPixels/2;
-	public final static List<String> asmCode = new ArrayList<String>();
-
-	public Pattern_10 (int offset) {
-		asmCode.add("\tLDA "+offset+",S");
-		asmCode.add("\tSTA ");	
-		asmCode.add("\tANDA #0F");	
-		asmCode.add("\tORA ");	
-		asmCode.add("\tSTA ");	
+	
+	List<String> asmCode = new ArrayList<String>();
+	public int drawCycles = 0;
+	public int backgroundBackupCycles = 0;
+	
+	public Pattern_10() {
 	}
 	
+	public static boolean matches (byte[] data, int offset) {
+		return Pattern.matches("^.{"+offset+"}[^\\x00]\\x00", new ByteCharSequence(data));
 	}
+
+	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
+		List<String> asmCode = new ArrayList<String>();
+		
+		asmCode.add("\tLDA "+offset+",S");
+		backgroundBackupCycles += Register.costIndexedLD[0] + Register.getIndexedOffsetCost(offset);
+		
+		asmCode.add("\tSTA "+tag);
+		backgroundBackupCycles += Register.costExtendedST[0];
+		
+		return asmCode;
+	}
+
+	public List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception {
+		asmCode = new ArrayList<String>();
+		drawCycles = 0;
+		int registerIndex = 0;
+		String registerName = Register.name[registerIndex];
+		
+		// AND Immédiat
+		asmCode.add("\tAND"+registerName+" #$0F");
+		drawCycles += Register.costImmediateAND[registerIndex];
+		
+		// OR Immédiat
+		registerIndex = 0;
+		asmCode.add("\tOR"+registerName+" "+"#$"+String.format("%02x", data[position]&0xff));
+		drawCycles += Register.costImmediateOR[registerIndex];
+
+		
+		// ST Indexé
+		asmCode.add("\tST"+registerName+" "+offset+",S");	
+		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
+		
+		return asmCode;
+	}
+}
+

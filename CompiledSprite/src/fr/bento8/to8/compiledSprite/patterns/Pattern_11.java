@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class Pattern_01 {
+public class Pattern_11 {
 	public final static int nbPixels = 2;
 	public final static int nbBytes = nbPixels/2;
 	
@@ -12,11 +12,11 @@ public class Pattern_01 {
 	public int drawCycles = 0;
 	public int backgroundBackupCycles = 0;
 	
-	public Pattern_01() {
+	public Pattern_11() {
 	}
 	
 	public static boolean matches (byte[] data, int offset) {
-		return Pattern.matches("^.{"+offset+"}\\x00[^\\x00]", new ByteCharSequence(data));
+		return Pattern.matches("^.{"+offset+"}[^\\x00]{2}", new ByteCharSequence(data));
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
@@ -34,24 +34,25 @@ public class Pattern_01 {
 	public List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception {
 		asmCode = new ArrayList<String>();
 		drawCycles = 0;
-		int registerIndex = 0;
-		String registerName = Register.name[registerIndex];
+		String registerName = "";
+		int registerIndex = -1;
 		
-		// AND Immédiat
-		asmCode.add("\tAND"+registerName+" #$F0");
-		drawCycles += Register.costImmediateAND[registerIndex];
+		// Recherche d'un registre réutilisable
+		registerIndex = Register.getPreLoadedRegister(1, data, position, direction, registerValues);
 		
-		// OR Immédiat
-		registerIndex = 0;
-		asmCode.add("\tOR"+registerName+" "+"#$"+String.format("%02x", data[position]&0xff));
-		drawCycles += Register.costImmediateOR[registerIndex];
-
+		// LD Immédiat
+		if (registerIndex == -1) {
+			registerIndex = 0;
+			asmCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
+			drawCycles += Register.costImmediateLD[registerIndex];
+		}
 		
 		// ST Indexé
+		registerName = Register.name[registerIndex];
 		asmCode.add("\tST"+registerName+" "+offset+",S");	
 		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
 		
 		return asmCode;
 	}
-}
 
+}
