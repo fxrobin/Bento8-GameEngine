@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class Pattern_10 {
+public class Pattern_10 extends Snippet {
+	public String pattern = "[^\\x00]\\x00";
 	public final static int nbPixels = 2;
 	public final static int nbBytes = nbPixels/2;
 	
@@ -15,8 +16,8 @@ public class Pattern_10 {
 	public Pattern_10() {
 	}
 	
-	public static boolean matches (byte[] data, int offset) {
-		return Pattern.matches("^.{"+offset+"}[^\\x00]\\x00", new ByteCharSequence(data));
+	public boolean matches (byte[] data, int offset) {
+		return Pattern.matches(getPatternByOffset(pattern, offset), new ByteCharSequence(data));
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
@@ -53,5 +54,10 @@ public class Pattern_10 {
 		
 		return asmCode;
 	}
+	
+	public String getPattern() {
+		return pattern;
+	}
+	
 }
 

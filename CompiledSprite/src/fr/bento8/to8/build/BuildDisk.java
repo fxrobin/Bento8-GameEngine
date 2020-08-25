@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16;
+import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16v2;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.SpriteSheet;
@@ -113,9 +114,10 @@ public class BuildDisk
 				for (index = 0; index < spriteSheet.getSubImageNb(); index++) {
 					System.out.println("RAM 0: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 0)));
 					System.out.println("RAM 1: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 1)));
+					CompiledSpriteModeB16v2 cs = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 0));
+					cs.buildCode();
 				}
 			}
-			
 			
 
 //			// Il est nécessaire de faire une première compilation de sprite pour connaitre leur taille
