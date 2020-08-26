@@ -113,9 +113,14 @@ public class BuildDisk
 			for (SpriteSheet spriteSheet : spriteSheets) {
 				for (index = 0; index < spriteSheet.getSubImageNb(); index++) {
 					System.out.println("RAM 0: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 0)));
+					CompiledSpriteModeB16v2 cs0 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 0));
+					cs0.buildCode();
+					cs0.displaySolutions();
+					
 					System.out.println("RAM 1: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 1)));
-					CompiledSpriteModeB16v2 cs = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 0));
-					cs.buildCode();
+					CompiledSpriteModeB16v2 cs1 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 1));
+					cs1.buildCode();
+					cs1.displaySolutions();
 				}
 			}
 			

@@ -5,59 +5,54 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class Pattern_11 extends Snippet {
-	public String pattern = "[^\\x00]{2}";
-	public final static int nbPixels = 2;
-	public final static int nbBytes = nbPixels/2;
-	
-	List<String> asmCode = new ArrayList<String>();
-	public int drawCycles = 0;
-	public int backgroundBackupCycles = 0;
-	
+
 	public Pattern_11() {
+		pattern = "[^\\x00]{2}";
+		nbPixels = 2;
+		nbBytes = nbPixels/2;
 	}
-	
+
 	public boolean matches (byte[] data, int offset) {
 		return Pattern.matches(getPatternByOffset(pattern, offset), new ByteCharSequence(data));
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
-		List<String> asmCode = new ArrayList<String>();
-		
-		asmCode.add("\tLDA "+offset+",S");
+		asmBCode = new ArrayList<String>();
+		backgroundBackupCycles = 0;
+		backgroundBackupSize = 0;
+
+		asmBCode.add("\tLDA "+offset+",S");
 		backgroundBackupCycles += Register.costIndexedLD[0] + Register.getIndexedOffsetCost(offset);
-		
-		asmCode.add("\tSTA "+tag);
+
+		asmBCode.add("\tSTA "+tag);
 		backgroundBackupCycles += Register.costExtendedST[0];
-		
-		return asmCode;
+
+		return asmBCode;
 	}
 
 	public List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception {
-		asmCode = new ArrayList<String>();
+		asmDCode = new ArrayList<String>();
 		drawCycles = 0;
+		drawSize = 0;
+
 		String registerName = "";
 		int registerIndex = -1;
-		
+
 		// Recherche d'un registre réutilisable
 		registerIndex = Register.getPreLoadedRegister(1, data, position, direction, registerValues);
-		
+
 		// LD Immédiat
 		if (registerIndex == -1) {
 			registerIndex = 0;
-			asmCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
+			asmDCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
 			drawCycles += Register.costImmediateLD[registerIndex];
 		}
-		
+
 		// ST Indexé
 		registerName = Register.name[registerIndex];
-		asmCode.add("\tST"+registerName+" "+offset+",S");	
+		asmDCode.add("\tST"+registerName+" "+offset+",S");	
 		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
-		
-		return asmCode;
-	}
-	
-	public String getPattern() {
-		return pattern;
-	}
 
+		return asmDCode;
+	}
 }
