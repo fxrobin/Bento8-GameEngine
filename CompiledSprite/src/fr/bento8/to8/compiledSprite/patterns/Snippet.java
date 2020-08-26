@@ -4,7 +4,6 @@ import java.util.List;
 
 public abstract class Snippet {
 
-	protected String pattern;
 	protected int nbPixels;
 	protected int nbBytes;
 	protected List<String> asmBCode;
@@ -18,18 +17,6 @@ public abstract class Snippet {
 	public abstract List<String> getBackgroundBackupCode (int offset, String tag) throws Exception;
 	public abstract List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception;
 
-	public String getPatternByOffset (String pattern, int offset) {
-		if (offset > 0) {
-			pattern = ".{"+offset+"}" + pattern;
-		}
-		pattern = "^" + pattern + ".*";
-		return pattern;
-	}
-
-	public String getPattern() {
-		return this.pattern;
-	}
-	
 	public int getNbPixels() {
 		return nbPixels;
 	}

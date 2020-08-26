@@ -2,18 +2,19 @@ package fr.bento8.to8.compiledSprite.patterns;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class Pattern_1111 extends Snippet {
 
 	public Pattern_1111() {
-		pattern = "[^\\x00]{4}";
 		nbPixels = 4;
 		nbBytes = nbPixels/2;
 	}
 
 	public boolean matches (byte[] data, int offset) {
-		return Pattern.matches(getPatternByOffset(pattern, offset), new ByteCharSequence(data));
+		if (offset+3 >= data.length) {
+			return false;
+		}
+		return (data[offset] != 0x00 && data[offset+1] != 0x00 && data[offset+2] != 0x00 && data[offset+3] != 0x00);
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {

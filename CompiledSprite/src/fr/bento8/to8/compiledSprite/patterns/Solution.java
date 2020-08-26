@@ -42,7 +42,7 @@ public class Solution {
 		String display = "[Cycles: "+getCycles()+" Octets: "+getSize()+" ";
 		ListIterator<Integer> it = positions.listIterator();
 		for (Snippet snippet : patterns) {
-			display = display + "("+it.next()+"){" + snippet.getPattern() + "}";
+			display = display + "("+it.next()+":"+snippet.getClass().getSimpleName()+")";
 		}
 		return display;
 	}

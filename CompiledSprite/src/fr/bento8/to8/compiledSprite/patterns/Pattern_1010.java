@@ -3,18 +3,18 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pattern_11 extends Snippet {
+public class Pattern_1010 extends Snippet {
 
-	public Pattern_11() {
-		nbPixels = 2;
+	public Pattern_1010() {
+		nbPixels = 4;
 		nbBytes = nbPixels/2;
 	}
 
 	public boolean matches (byte[] data, int offset) {
-		if (offset+2 >= data.length) {
+		if (offset+3 >= data.length) {
 			return false;
 		}
-		return (data[offset] != 0x00 && data[offset+1] != 0x00);
+		return (data[offset] != 0x00 && data[offset+1] == 0x00 && data[offset+2] != 0x00 && data[offset+3] == 0x00);
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
@@ -22,11 +22,11 @@ public class Pattern_11 extends Snippet {
 		backgroundBackupCycles = 0;
 		backgroundBackupSize = 0;
 
-		asmBCode.add("\tLDA "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[0] + Register.getIndexedOffsetCost(offset);
+		asmBCode.add("\tLDD "+offset+",S");
+		backgroundBackupCycles += Register.costIndexedLD[2] + Register.getIndexedOffsetCost(offset);
 
-		asmBCode.add("\tSTA "+tag);
-		backgroundBackupCycles += Register.costExtendedST[0];
+		asmBCode.add("\tSTD "+tag);
+		backgroundBackupCycles += Register.costExtendedST[2];
 
 		return asmBCode;
 	}
@@ -40,12 +40,12 @@ public class Pattern_11 extends Snippet {
 		int registerIndex = -1;
 
 		// Recherche d'un registre réutilisable
-		registerIndex = Register.getPreLoadedRegister(1, data, position, direction, registerValues);
+		registerIndex = Register.getPreLoadedRegister(2, data, position, direction, registerValues);
 
 		// LD Immédiat
 		if (registerIndex == -1) {
-			registerIndex = 0;
-			asmDCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
+			registerIndex = 2;
+			asmDCode.add("\tLDD "+"#$"+String.format("%02x%02x", data[position]&0xff, data[position+direction]&0xff));
 			drawCycles += Register.costImmediateLD[registerIndex];
 		}
 
