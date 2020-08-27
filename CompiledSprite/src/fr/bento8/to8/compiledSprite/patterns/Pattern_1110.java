@@ -10,11 +10,18 @@ public class Pattern_1110 extends Snippet {
 		nbBytes = nbPixels/2;
 	}
 
-	public boolean matches (byte[] data, int offset) {
+	public boolean matchesForward (byte[] data, int offset) {
 		if (offset+3 >= data.length) {
 			return false;
 		}
 		return (data[offset] != 0x00 && data[offset+1] != 0x00 && data[offset+2] != 0x00 && data[offset+3] == 0x00);
+	}
+	
+	public boolean matchesRearward (byte[] data, int offset) {
+		if (offset-2 < 0) {
+			return false;
+		}
+		return (data[offset-2] != 0x00 && data[offset-1] != 0x00 && data[offset] != 0x00 && data[offset+1] == 0x00);
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
@@ -31,7 +38,7 @@ public class Pattern_1110 extends Snippet {
 		return asmBCode;
 	}
 
-	public List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception {
+	public List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception {
 		asmDCode = new ArrayList<String>();
 		drawCycles = 0;
 		drawSize = 0;
@@ -40,12 +47,12 @@ public class Pattern_1110 extends Snippet {
 		int registerIndex = -1;
 
 		// Recherche d'un registre réutilisable
-		registerIndex = Register.getPreLoadedRegister(2, data, position, direction, registerValues);
+		registerIndex = Register.getPreLoadedRegister(2, data, position, registerValues);
 
 		// LD Immédiat
 		if (registerIndex == -1) {
 			registerIndex = 2;
-			asmDCode.add("\tLDD "+"#$"+String.format("%02x%02x", data[position]&0xff, data[position+direction]&0xff));
+			asmDCode.add("\tLDD "+"#$"+String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff));
 			drawCycles += Register.costImmediateLD[registerIndex];
 		}
 

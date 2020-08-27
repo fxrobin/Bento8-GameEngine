@@ -36,6 +36,7 @@ public class BuildDisk
 	private static String outputFileName;
 	private static String tmpDirName;
 	private static String compiler;
+	private static String drawDirection;
 	private static String animationTag;
 	private static String memoryPages;
 	private static int[] pages;
@@ -114,12 +115,12 @@ public class BuildDisk
 				for (index = 0; index < spriteSheet.getSubImageNb(); index++) {
 					System.out.println("RAM 0: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 0)));
 					CompiledSpriteModeB16v2 cs0 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 0));
-					cs0.buildCode();
+					cs0.buildCode(drawDirection);
 					cs0.displaySolutions();
 					
 					System.out.println("RAM 1: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 1)));
 					CompiledSpriteModeB16v2 cs1 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 1));
-					cs1.buildCode();
+					cs1.buildCode(drawDirection);
 					cs1.displaySolutions();
 				}
 			}
@@ -304,7 +305,12 @@ public class BuildDisk
 			if (compiler == null) {
 				throw new Exception("Paramètre compiler manquant dans le fichier "+file);
 			}
-
+			
+			drawDirection = prop.getProperty("drawdirection");
+			if (drawDirection == null) {
+				throw new Exception("Paramètre drawdirection manquant dans le fichier "+file);
+			}
+			
 			animationTag  = prop.getProperty("animation.tag");
 			if (animationTag == null) {
 				throw new Exception("Paramètre animation.tag manquant dans le fichier "+file);

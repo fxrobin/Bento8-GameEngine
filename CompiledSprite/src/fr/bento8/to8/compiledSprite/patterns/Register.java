@@ -27,12 +27,12 @@ public class Register {
 	public static final int[] rangeMinIndexedOffset = new int[] {0, -16, -128, -32768};
 	public static final int[] rangeMaxIndexedOffset = new int[] {0, 15, 127, 32767};
 
-	public static int getPreLoadedRegister(int nbByte, byte[] data, int position, int direction, byte[][] registerValues) {
+	public static int getPreLoadedRegister(int nbByte, byte[] data, int position, byte[][] registerValues) {
 		for (int i = 0; i < registerValues.length; i++) {
 			if (size[i] == nbByte && registerValues[i][0]==data[position]) {
 				return i;
 			}	
-			if (size[i] == nbByte && registerValues[i][0]==data[position] && registerValues[i][1]==data[position+direction]) {
+			if (size[i] == nbByte && registerValues[i][0]==data[position] && registerValues[i][1]==data[position]) {
 				return i;
 			}	
 		}

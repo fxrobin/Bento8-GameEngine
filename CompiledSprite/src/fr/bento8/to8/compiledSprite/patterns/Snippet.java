@@ -12,10 +12,12 @@ public abstract class Snippet {
 	protected int backgroundBackupCycles = 0;
 	protected int drawSize = 0;
 	protected int backgroundBackupSize = 0;
+	protected boolean useIndexedAddressing = true;
 
-	public abstract boolean matches (byte[] data, int offset);
+	public abstract boolean matchesForward (byte[] data, int offset);
+	public abstract boolean matchesRearward (byte[] data, int offset);
 	public abstract List<String> getBackgroundBackupCode (int offset, String tag) throws Exception;
-	public abstract List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception;
+	public abstract List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception;
 
 	public int getNbPixels() {
 		return nbPixels;
@@ -32,7 +34,11 @@ public abstract class Snippet {
 	public int getSize() {
 		return this.backgroundBackupSize + this.drawSize;
 	}
-
+	
+	public boolean useIndexedAddressing() {
+		return this.useIndexedAddressing;
+	}
+	
 	public List<String> getBackgroundBackupAsmCode() {
 		return asmBCode;
 	}

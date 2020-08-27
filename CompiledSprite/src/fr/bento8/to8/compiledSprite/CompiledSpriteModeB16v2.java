@@ -17,14 +17,48 @@ public class CompiledSpriteModeB16v2 {
 		image = data;
 	}
 
-	public void buildCode () throws Exception {
-		this.solutions = buildCodeR(0);
+	public void buildCode (String direction) throws Exception {
+		if (direction.contentEquals("R")) {
+			this.solutions = buildCodeRearward(this.image.length-2); // -1 (fin de tableau) + -1 (pixel par paire)
+		} else {
+			this.solutions = buildCodeForward(0);
+		}
 	}
 
-	private List<Solution> buildCodeR(int i) {
+	private List<Solution> buildCodeRearward(int i) {
 		List<Solution> localSolution =  new ArrayList<Solution>();
 
-		while (i < image.length && image[i] == 0x00 && image[i+1] == 0x00) {
+		while (i >= 0 && image[i] == 0x00 && image[i+1] == 0x00) {
+			i -= 2;
+		}
+
+		if (i < 0) {
+			localSolution.add(new Solution());
+			return localSolution;
+		}
+
+		for (Snippet snippet : snippets) {
+			if (snippet.matchesRearward(image, i)) {
+				List<Solution> bottomSolution = buildCodeRearward(i-snippet.getNbPixels());
+				if (!bottomSolution.isEmpty()) {
+					for (Solution eachSolution : bottomSolution) {
+						eachSolution.add(snippet, -((this.image.length-2)-i)/2-snippet.getNbBytes()+1);
+						localSolution.add(eachSolution);
+					}
+				}
+				// retirer ce return permet d'avoir toutes les combinaisons possibles au lieu de une seule
+				// trop de combinaisons, implémenter une méthode pour éliminer les combinaisons non viables
+				// dès le départ afin de réduire leur nombre
+				return localSolution;
+			}
+		}
+		return localSolution;
+	}
+	
+	private List<Solution> buildCodeForward(int i) {
+		List<Solution> localSolution =  new ArrayList<Solution>();
+
+		while (i+1 < image.length && image[i] == 0x00 && image[i+1] == 0x00) {
 			i += 2;
 		}
 
@@ -34,15 +68,17 @@ public class CompiledSpriteModeB16v2 {
 		}
 
 		for (Snippet snippet : snippets) {
-			if (snippet.matches(image, i)) {
-				List<Solution> bottomSolution = buildCodeR(i+snippet.getNbPixels());
+			if (snippet.matchesForward(image, i)) {
+				List<Solution> bottomSolution = buildCodeForward(i+snippet.getNbPixels());
 				if (!bottomSolution.isEmpty()) {
 					for (Solution eachSolution : bottomSolution) {
-						eachSolution.add(snippet, i);
+						eachSolution.add(snippet, i/2);
 						localSolution.add(eachSolution);
 					}
 				}
-				// fast method
+				// retirer ce return permet d'avoir toutes les combinaisons possibles au lieu de une seule
+				// trop de combinaisons, implémenter une méthode pour éliminer les combinaisons non viables
+				// dès le départ afin de réduire leur nombre
 				return localSolution;
 			}
 		}

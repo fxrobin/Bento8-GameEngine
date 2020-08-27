@@ -10,8 +10,15 @@ public class Pattern_10 extends Snippet {
 		nbBytes = nbPixels/2;
 	}
 	
-	public boolean matches (byte[] data, int offset) {
-		if (offset+2 >= data.length) {
+	public boolean matchesForward (byte[] data, int offset) {
+		if (offset+1 >= data.length) {
+			return false;
+		}
+		return (data[offset] != 0x00 && data[offset+1] == 0x00);
+	}
+	
+	public boolean matchesRearward (byte[] data, int offset) {
+		if (offset < 0) {
 			return false;
 		}
 		return (data[offset] != 0x00 && data[offset+1] == 0x00);
@@ -31,7 +38,7 @@ public class Pattern_10 extends Snippet {
 		return asmBCode;
 	}
 
-	public List<String> getDrawCode (byte[] data, int position, int direction, byte[][] registerValues, int offset) throws Exception {
+	public List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception {
 		asmDCode = new ArrayList<String>();
 		drawCycles = 0;
 		drawSize = 0;
