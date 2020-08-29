@@ -24,6 +24,7 @@ import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16v2;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.SpriteSheet;
+import fr.bento8.to8.util.clustering.AgglomerativeClustering1D;
 import fr.bento8.to8.util.knapsack.Item;
 import fr.bento8.to8.util.knapsack.Knapsack;
 import fr.bento8.to8.util.knapsack.Solution;
@@ -37,6 +38,7 @@ public class BuildDisk
 	private static String tmpDirName;
 	private static String compiler;
 	private static String drawDirection;
+	private static boolean isForward;
 	private static String animationTag;
 	private static String memoryPages;
 	private static int[] pages;
@@ -115,12 +117,18 @@ public class BuildDisk
 				for (index = 0; index < spriteSheet.getSubImageNb(); index++) {
 					System.out.println("RAM 0: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 0)));
 					CompiledSpriteModeB16v2 cs0 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 0));
-					cs0.buildCode(drawDirection);
+					cs0.buildCode(isForward);
+					fr.bento8.to8.compiledSprite.patterns.Solution solution = cs0.getSolutions().get(0);
+					AgglomerativeClustering1D cluster = new AgglomerativeClustering1D(solution);
+					cluster.cluster(isForward);
 					cs0.displaySolutions();
 					
 					System.out.println("RAM 1: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 1)));
 					CompiledSpriteModeB16v2 cs1 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 1));
-					cs1.buildCode(drawDirection);
+					cs1.buildCode(isForward);
+					solution = cs1.getSolutions().get(0);
+					cluster = new AgglomerativeClustering1D(solution);
+					cluster.cluster(isForward);
 					cs1.displaySolutions();
 				}
 			}
@@ -309,6 +317,11 @@ public class BuildDisk
 			drawDirection = prop.getProperty("drawdirection");
 			if (drawDirection == null) {
 				throw new Exception("Paramètre drawdirection manquant dans le fichier "+file);
+			}
+			if (drawDirection.equals("R")) {
+				isForward = false;
+			} else {
+				isForward = true;
 			}
 			
 			animationTag  = prop.getProperty("animation.tag");

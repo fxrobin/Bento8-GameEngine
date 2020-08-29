@@ -1,6 +1,7 @@
 package fr.bento8.to8.compiledSprite.patterns;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -10,12 +11,17 @@ public class Solution {
 	public List<Integer> computedNodes;
 	public List<Snippet> computedPatterns;
 	public List<Integer> computedOffsets;
+	public HashMap<Integer, Integer> computedLeas;
 	private int cycles;
 	private int size;
 
 	public Solution() {
 		patterns = new ArrayList<Snippet>();
 		offsets = new ArrayList<Integer>();
+		computedNodes = new ArrayList<Integer>();
+		computedPatterns = new ArrayList<Snippet>();
+		computedOffsets = new ArrayList<Integer>();
+		computedLeas = new HashMap<Integer, Integer>();
 		cycles = 0;
 		size = 0;
 	}
@@ -23,6 +29,7 @@ public class Solution {
 	public void add(Snippet pattern, int i) {
 		patterns.add(0, pattern);
 		offsets.add(0, i);
+		computedOffsets.add(0, 0);
 	}
 
 	public void computeStats() {

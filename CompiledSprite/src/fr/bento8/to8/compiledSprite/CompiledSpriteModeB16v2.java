@@ -17,11 +17,12 @@ public class CompiledSpriteModeB16v2 {
 		image = data;
 	}
 
-	public void buildCode (String direction) throws Exception {
-		if (direction.contentEquals("R")) {
-			this.solutions = buildCodeRearward(this.image.length-2); // -1 (fin de tableau) + -1 (pixel par paire)
-		} else {
+	public void buildCode (boolean isForward) throws Exception {
+		if (isForward) {
 			this.solutions = buildCodeForward(0);
+		} else {
+			this.solutions = buildCodeRearward(this.image.length-2); // -1 (fin de tableau) + -1 (pixel par paire)
+			
 		}
 	}
 
