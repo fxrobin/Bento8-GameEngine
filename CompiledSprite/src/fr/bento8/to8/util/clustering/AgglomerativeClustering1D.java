@@ -44,14 +44,20 @@ public class AgglomerativeClustering1D{
 	}
 
 	private void clusterPatternsToExistingNodes(boolean isForward) {	   
-		int distance;
+		int distance, nodeStart = -1;
 
 		// Traite les noeuds fixes imposés par les patterns n'utilisant pas l'indexation
 		// Cherche pour chacun tous les pattern indexés pouvant s'y rattacher (-128 +127)
-		for (int i = 1; i < solution.computedNodes.size(); i++) {
+		for (int i = 0; i < solution.computedNodes.size(); i++) {
 			if (!solution.patterns.get(i).useIndexedAddressing()) {
-				solution.computedLeas.put(i, solution.offsets.get(i));
+				// Noeud imposé on recherche les patterns pouvant y etre rattachés
 				for (int j = 0; j < solution.computedNodes.size(); j++) {
+					// Si le Noeud imposé actuel est suivi d'un autre noeud imposé on ne traite pas la suite
+					if (j == i+1 && !solution.patterns.get(j).useIndexedAddressing()) {
+						break;
+					}
+					
+					// On cherche des patterns indexés non affectés
 					if (solution.patterns.get(j).useIndexedAddressing() && AssignedPatterns.get(j) == -1) {
 						if (isForward) {
 							distance = solution.computedNodes.get(j) - solution.computedNodes.get(i);
@@ -60,20 +66,35 @@ public class AgglomerativeClustering1D{
 						}
 						if ( -128 <= distance && distance <= 127) {
 							AssignedPatterns.set(j, i);
-							solution.computedNodes.set(j, i);
+							if (nodeStart == -1) {
+								if (i < j) {
+									nodeStart = i;
+								} else {
+									nodeStart = j;
+								}
+							}
+							solution.computedNodes.set(j, nodeStart);
+							solution.computedOffsets.set(j, solution.offsets.get(j)-solution.offsets.get(i));
 						}
 					}
 				}
+				
+				// s'il n'y a pas de pattern avant le noeud imposé, on utilisé le noeud imposé comme noeud de départ
+				if (nodeStart == -1 || i < nodeStart) {
+					nodeStart = i;
+				}
+				solution.computedLeas.put(nodeStart, solution.offsets.get(i));
+				solution.computedNodes.set(i, nodeStart);
+				nodeStart = -1;
 			}
 		}
-		displayDebug();
 	}
 
 	private void createNewNodesAndClusterRemainingPatterns() {	 
-		
+
 		List<Integer> minMaxI = new ArrayList<Integer>();
 		int i = 0, j;
-		
+
 		//  Selecion des patterns à regrouper en noeuds
 		while (i < solution.computedNodes.size()) {
 			while (i < solution.computedNodes.size() && AssignedPatterns.get(i) != -1) {
@@ -86,7 +107,7 @@ public class AgglomerativeClustering1D{
 			}
 			minMaxI.add(i-1);
 		}
-		
+
 		// Regroupement
 		ListIterator<Integer> it1 = minMaxI.listIterator();
 		int start, end, node;
@@ -97,27 +118,28 @@ public class AgglomerativeClustering1D{
 			i = start;
 
 			while (i <= end) {
-				
+
 				while (i++ < end && Math.abs(solution.offsets.get(start) - solution.offsets.get(i)) < 256) {
 				}
 
 				node = ((Math.abs(solution.offsets.get(start) - solution.offsets.get(i-1))+1) / 2) + solution.offsets.get(start);
 				solution.computedLeas.put(start, node);
-				
+
 				for (j = start; j < i; j++) {
+					solution.computedNodes.set(j, start);
 					solution.computedOffsets.set(j, solution.offsets.get(j)-node);
 				}
-				
+
 				start = i;
 			}
 		}
 		displayDebug();
 	}
-	
+
 	public void displayDebug() {
 		ListIterator<Integer> it1 = solution.offsets.listIterator();
-		ListIterator<Integer> it2 = AssignedPatterns.listIterator();
-		ListIterator<Integer> it3 = solution.computedNodes.listIterator();
+		ListIterator<Integer> it2 = solution.computedNodes.listIterator();
+		ListIterator<Integer> it3 = solution.computedOffsets.listIterator();
 		int i=0;
 		for (Snippet snippet : solution.patterns) {
 			System.out.println("("+i+":"+it1.next()+":"+it2.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
