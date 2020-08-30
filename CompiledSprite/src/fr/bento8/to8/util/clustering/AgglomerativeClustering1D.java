@@ -19,7 +19,9 @@ public class AgglomerativeClustering1D{
 	public void cluster(boolean isForward) {
 		if (initAssignmentStep()) {
 			clusterPatternsToExistingNodes(isForward);
-			createNewNodesAndClusterRemainingPatterns();
+			createNewNodesAndClusterRemainingPatterns(isForward);
+			setLEAOffsetRelativeToEachOthers();
+			displayDebug();
 		}
 	}
 
@@ -90,12 +92,12 @@ public class AgglomerativeClustering1D{
 		}
 	}
 
-	private void createNewNodesAndClusterRemainingPatterns() {	 
+	private void createNewNodesAndClusterRemainingPatterns(boolean isForward) {	 
 
 		List<Integer> minMaxI = new ArrayList<Integer>();
 		int i = 0, j;
 
-		//  Selecion des patterns à regrouper en noeuds
+		//  Séléction des patterns à regrouper en noeuds
 		while (i < solution.computedNodes.size()) {
 			while (i < solution.computedNodes.size() && AssignedPatterns.get(i) != -1) {
 				i++;
@@ -122,7 +124,11 @@ public class AgglomerativeClustering1D{
 				while (i++ < end && Math.abs(solution.offsets.get(start) - solution.offsets.get(i)) < 256) {
 				}
 
-				node = ((Math.abs(solution.offsets.get(start) - solution.offsets.get(i-1))+1) / 2) + solution.offsets.get(start);
+				if (isForward) {
+					node = ((Math.abs(solution.offsets.get(start) - solution.offsets.get(i-1))+1) / 2) + solution.offsets.get(start);
+				} else {
+					node = -((Math.abs(solution.offsets.get(start) - solution.offsets.get(i-1))+1) / 2) + solution.offsets.get(start);
+				}
 				solution.computedLeas.put(start, node);
 
 				for (j = start; j < i; j++) {
@@ -133,7 +139,19 @@ public class AgglomerativeClustering1D{
 				start = i;
 			}
 		}
-		displayDebug();
+	}
+	
+	public void setLEAOffsetRelativeToEachOthers() {
+		// Remplace les valeurs d'offset des LEA relatives au départ par des valeurs relatives entre les LEA
+		int curOffset = 0, newOffset = 0, lastOffset = 0;
+		for (int i = 0; i < solution.patterns.size(); i++) {
+			if (solution.computedLeas.containsKey(i)) {
+				curOffset = solution.computedLeas.get(i);
+				newOffset = curOffset - lastOffset;
+				solution.computedLeas.replace(i, newOffset);
+				lastOffset = curOffset;
+			}
+		}
 	}
 
 	public void displayDebug() {
