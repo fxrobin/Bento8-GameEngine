@@ -3,11 +3,14 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pattern_01 extends Snippet {
+import fr.bento8.to8.compiledSprite.Register;
+
+public class Pattern_01 extends Pattern {
 
 	public Pattern_01() {
 		nbPixels = 2;
 		nbBytes = nbPixels/2;
+		isBackgroundBackupAndDrawDissociable = false;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {
@@ -30,10 +33,12 @@ public class Pattern_01 extends Snippet {
 		backgroundBackupSize = 0;
 
 		asmBCode.add("\tLDA "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[0] + Register.getIndexedOffsetCost(offset);
+		backgroundBackupCycles += Register.costIndexedLD[Register.A] + Register.getIndexedOffsetCost(offset);
+		backgroundBackupSize += Register.sizeIndexedLD[Register.A] + Register.getIndexedOffsetSize(offset);
 
 		asmBCode.add("\tSTA "+tag);
-		backgroundBackupCycles += Register.costExtendedST[0];
+		backgroundBackupCycles += Register.costExtendedST[Register.A];
+		backgroundBackupSize += Register.sizeExtendedST[Register.A];
 
 		return asmBCode;
 	}
@@ -43,23 +48,22 @@ public class Pattern_01 extends Snippet {
 		drawCycles = 0;
 		drawSize = 0;
 
-		int registerIndex = 0;
-		String registerName = Register.name[registerIndex];
-
 		// AND Immédiat
-		asmDCode.add("\tAND"+registerName+" #$F0");
-		drawCycles += Register.costImmediateAND[registerIndex];
+		asmDCode.add("\tANDA #$F0");
+		drawCycles += Register.costImmediateAND[Register.A];
+		drawSize += Register.sizeImmediateAND[Register.A]; 
 
 		// OR Immédiat
-		registerIndex = 0;
-		asmDCode.add("\tOR"+registerName+" "+"#$"+String.format("%02x", data[position]&0xff));
-		drawCycles += Register.costImmediateOR[registerIndex];
+		asmDCode.add("\tORA "+"#$"+String.format("%02x", data[position]&0xff));
+		drawCycles += Register.costImmediateOR[Register.A];
+		drawSize += Register.sizeImmediateOR[Register.A];
 
 
 		// ST Indexé
-		asmDCode.add("\tST"+registerName+" "+offset+",S");	
-		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
-
+		asmDCode.add("\tSTA "+offset+",S");	
+		drawCycles += Register.costIndexedST[Register.A] + Register.getIndexedOffsetCost(offset);
+		drawSize += Register.sizeIndexedST[Register.A] + Register.getIndexedOffsetSize(offset);
+		
 		return asmDCode;
 	}
 }

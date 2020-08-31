@@ -3,7 +3,9 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pattern_1101 extends Snippet {
+import fr.bento8.to8.compiledSprite.Register;
+
+public class Pattern_1101 extends Pattern {
 
 	public Pattern_1101() {
 		nbPixels = 4;

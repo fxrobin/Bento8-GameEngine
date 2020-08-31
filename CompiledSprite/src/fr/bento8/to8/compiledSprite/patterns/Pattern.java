@@ -2,7 +2,7 @@ package fr.bento8.to8.compiledSprite.patterns;
 
 import java.util.List;
 
-public abstract class Snippet {
+public abstract class Pattern {
 
 	protected int nbPixels;
 	protected int nbBytes;
@@ -12,7 +12,9 @@ public abstract class Snippet {
 	protected int backgroundBackupCycles = 0;
 	protected int drawSize = 0;
 	protected int backgroundBackupSize = 0;
+	
 	protected boolean useIndexedAddressing = true;
+	protected boolean isBackgroundBackupAndDrawDissociable = true;
 
 	public abstract boolean matchesForward (byte[] data, int offset);
 	public abstract boolean matchesRearward (byte[] data, int offset);

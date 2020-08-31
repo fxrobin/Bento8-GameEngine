@@ -1,17 +1,16 @@
-package fr.bento8.to8.util.clustering;
+package fr.bento8.to8.compiledSprite;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import fr.bento8.to8.compiledSprite.patterns.Snippet;
-import fr.bento8.to8.compiledSprite.patterns.Solution;
+import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
-public class AgglomerativeClustering1D{
+public class Cluster{
 	public Solution solution;
 	private List<Integer> AssignedPatterns;
 
-	public AgglomerativeClustering1D(Solution solution) {
+	public Cluster(Solution solution) {
 		this.solution = solution;
 		AssignedPatterns = new ArrayList<Integer>();
 	}
@@ -159,7 +158,7 @@ public class AgglomerativeClustering1D{
 		ListIterator<Integer> it2 = solution.computedNodes.listIterator();
 		ListIterator<Integer> it3 = solution.computedOffsets.listIterator();
 		int i=0;
-		for (Snippet snippet : solution.patterns) {
+		for (Pattern snippet : solution.patterns) {
 			System.out.println("("+i+":"+it1.next()+":"+it2.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
 			i++;
 		}

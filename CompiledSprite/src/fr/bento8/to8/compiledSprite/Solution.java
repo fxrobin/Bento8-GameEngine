@@ -1,32 +1,34 @@
-package fr.bento8.to8.compiledSprite.patterns;
+package fr.bento8.to8.compiledSprite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 
+import fr.bento8.to8.compiledSprite.patterns.Pattern;
+
 public class Solution {
-	public List<Snippet> patterns;
+	public List<Pattern> patterns;
 	public List<Integer> offsets;
 	public List<Integer> computedNodes;
-	public List<Snippet> computedPatterns;
+	public List<Pattern> computedPatterns;
 	public List<Integer> computedOffsets;
 	public HashMap<Integer, Integer> computedLeas;
 	private int cycles;
 	private int size;
 
 	public Solution() {
-		patterns = new ArrayList<Snippet>();
+		patterns = new ArrayList<Pattern>();
 		offsets = new ArrayList<Integer>();
 		computedNodes = new ArrayList<Integer>();
-		computedPatterns = new ArrayList<Snippet>();
+		computedPatterns = new ArrayList<Pattern>();
 		computedOffsets = new ArrayList<Integer>();
 		computedLeas = new HashMap<Integer, Integer>();
 		cycles = 0;
 		size = 0;
 	}
 
-	public void add(Snippet pattern, int i) {
+	public void add(Pattern pattern, int i) {
 		patterns.add(0, pattern);
 		offsets.add(0, i);
 		computedOffsets.add(0, 0);
@@ -36,7 +38,7 @@ public class Solution {
 		cycles = 0;
 		size = 0;
 
-		for (Snippet pattern : patterns) {
+		for (Pattern pattern : patterns) {
 			this.cycles += pattern.getCycles();
 			this.size += pattern.getSize();
 		}
@@ -47,7 +49,7 @@ public class Solution {
 		
 		String display = "[Cycles: "+getCycles()+" Octets: "+getSize()+" ";
 		ListIterator<Integer> it = offsets.listIterator();
-		for (Snippet snippet : patterns) {
+		for (Pattern snippet : patterns) {
 			display = display + "("+it.next()+":"+snippet.getClass().getSimpleName()+")";
 		}
 		return display;

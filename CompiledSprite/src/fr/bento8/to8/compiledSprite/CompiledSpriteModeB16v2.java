@@ -10,7 +10,7 @@ public class CompiledSpriteModeB16v2 {
 	// Thomson TO8/TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
 	private byte[] image;
-	private Snippet[] snippets = {new Pattern_111111111111(), new Pattern_1111111111(), new Pattern_11111111(), new Pattern_111111(), new Pattern_1111(), new Pattern_0111(), new Pattern_1011(), new Pattern_1101(), new Pattern_1110(), new Pattern_0101(), new Pattern_1001(), new Pattern_0110(), new Pattern_1010(), new Pattern_11(), new Pattern_01(), new Pattern_10()}; // Trier du plus rapide au plus lent
+	private Pattern[] snippets = {new Pattern_111111111111(), new Pattern_1111111111(), new Pattern_11111111(), new Pattern_111111(), new Pattern_1111(), new Pattern_0111(), new Pattern_1011(), new Pattern_1101(), new Pattern_1110(), new Pattern_0101(), new Pattern_1001(), new Pattern_0110(), new Pattern_1010(), new Pattern_11(), new Pattern_01(), new Pattern_10()}; // Trier du plus rapide au plus lent
 	private List<Solution> solutions;
 
 	public CompiledSpriteModeB16v2 (byte[] data) {
@@ -38,7 +38,7 @@ public class CompiledSpriteModeB16v2 {
 			return localSolution;
 		}
 
-		for (Snippet snippet : snippets) {
+		for (Pattern snippet : snippets) {
 			if (snippet.matchesRearward(image, i)) {
 				List<Solution> bottomSolution = buildCodeRearward(i-snippet.getNbPixels());
 				if (!bottomSolution.isEmpty()) {
@@ -68,7 +68,7 @@ public class CompiledSpriteModeB16v2 {
 			return localSolution;
 		}
 
-		for (Snippet snippet : snippets) {
+		for (Pattern snippet : snippets) {
 			if (snippet.matchesForward(image, i)) {
 				List<Solution> bottomSolution = buildCodeForward(i+snippet.getNbPixels());
 				if (!bottomSolution.isEmpty()) {
