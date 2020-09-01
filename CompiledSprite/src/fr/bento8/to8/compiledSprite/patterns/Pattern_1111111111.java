@@ -3,14 +3,11 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.bento8.to8.compiledSprite.Register;
-
-public class Pattern_1111111111 extends Pattern {
+public class Pattern_1111111111 extends Pattern_LD_PSHS {
 
 	public Pattern_1111111111() {
 		nbPixels = 10;
 		nbBytes = nbPixels/2;
-		useIndexedAddressing = false;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {
@@ -28,42 +25,9 @@ public class Pattern_1111111111 extends Pattern {
 	}
 
 	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
-		asmBCode = new ArrayList<String>();
-		backgroundBackupCycles = 0;
-		backgroundBackupSize = 0;
-
-		asmBCode.add("\tLDD "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[2] + Register.getIndexedOffsetCost(offset);
-
-		asmBCode.add("\tSTD "+tag);
-		backgroundBackupCycles += Register.costExtendedST[2];
-
-		return asmBCode;
-	}
-
-	public List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception {
-		asmDCode = new ArrayList<String>();
-		drawCycles = 0;
-		drawSize = 0;
-
-		String registerName = "";
-		int registerIndex = -1;
-
-		// Recherche d'un registre réutilisable
-		registerIndex = Register.getPreLoadedRegister(2, data, position, registerValues);
-
-		// LD Immédiat
-		if (registerIndex == -1) {
-			registerIndex = 2;
-			asmDCode.add("\tLDD "+"#$"+String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff));
-			drawCycles += Register.costImmediateLD[registerIndex];
-		}
-
-		// ST Indexé
-		registerName = Register.name[registerIndex];
-		asmDCode.add("\tST"+registerName+" "+offset+",S");	
-		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
-
-		return asmDCode;
+		List<String> asmCode = new ArrayList<String>();
+		asmCode.add("\tPULS A,X,Y");
+		asmCode.add("\tPSHU Y,X,A");
+		return asmCode;
 	}
 }

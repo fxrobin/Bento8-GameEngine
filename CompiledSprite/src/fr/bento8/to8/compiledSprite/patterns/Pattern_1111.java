@@ -32,11 +32,13 @@ public class Pattern_1111 extends Pattern {
 		backgroundBackupSize = 0;
 
 		asmBCode.add("\tLDD "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[2] + Register.getIndexedOffsetCost(offset);
+		backgroundBackupCycles += Register.costIndexedLD[Register.D] + Register.getIndexedOffsetCost(offset);
+		backgroundBackupSize += Register.sizeIndexedLD[Register.D] + Register.getIndexedOffsetSize(offset);
 
 		asmBCode.add("\tSTD "+tag);
-		backgroundBackupCycles += Register.costExtendedST[2];
-
+		backgroundBackupCycles += Register.costExtendedST[Register.D];
+		backgroundBackupSize += Register.sizeExtendedST[Register.D];
+				
 		return asmBCode;
 	}
 
@@ -45,23 +47,15 @@ public class Pattern_1111 extends Pattern {
 		drawCycles = 0;
 		drawSize = 0;
 
-		String registerName = "";
-		int registerIndex = -1;
+		// Recherche d'un registre réutilisable ou non utilisé
+		int registerIndex = Register.getPreLoadedRegister(nbBytes, data, position, registerValues)[0];
+		asmDCode.add("\tLD"+Register.name[registerIndex]+" #$"+String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff));
+		drawCycles += Register.costImmediateLD[registerIndex];
+		drawSize += Register.sizeImmediateLD[registerIndex];
 
-		// Recherche d'un registre réutilisable
-		registerIndex = Register.getPreLoadedRegister(2, data, position, registerValues);
-
-		// LD Immédiat
-		if (registerIndex == -1) {
-			registerIndex = 2;
-			asmDCode.add("\tLDD "+"#$"+String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff));
-			drawCycles += Register.costImmediateLD[registerIndex];
-		}
-
-		// ST Indexé
-		registerName = Register.name[registerIndex];
-		asmDCode.add("\tST"+registerName+" "+offset+",S");	
+		asmDCode.add("\tST"+Register.name[registerIndex]+" "+offset+",S");	
 		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
+		drawSize += Register.sizeIndexedST[registerIndex] + Register.getIndexedOffsetSize(offset);
 
 		return asmDCode;
 	}

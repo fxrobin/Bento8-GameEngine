@@ -48,18 +48,14 @@ public class Pattern_01 extends Pattern {
 		drawCycles = 0;
 		drawSize = 0;
 
-		// AND Immédiat
 		asmDCode.add("\tANDA #$F0");
 		drawCycles += Register.costImmediateAND[Register.A];
 		drawSize += Register.sizeImmediateAND[Register.A]; 
 
-		// OR Immédiat
 		asmDCode.add("\tORA "+"#$"+String.format("%02x", data[position]&0xff));
 		drawCycles += Register.costImmediateOR[Register.A];
 		drawSize += Register.sizeImmediateOR[Register.A];
 
-
-		// ST Indexé
 		asmDCode.add("\tSTA "+offset+",S");	
 		drawCycles += Register.costIndexedST[Register.A] + Register.getIndexedOffsetCost(offset);
 		drawSize += Register.sizeIndexedST[Register.A] + Register.getIndexedOffsetSize(offset);

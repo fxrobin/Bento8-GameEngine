@@ -10,6 +10,7 @@ public class Pattern_1101 extends Pattern {
 	public Pattern_1101() {
 		nbPixels = 4;
 		nbBytes = nbPixels/2;
+		isBackgroundBackupAndDrawDissociable = false;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {
@@ -32,36 +33,36 @@ public class Pattern_1101 extends Pattern {
 		backgroundBackupSize = 0;
 
 		asmBCode.add("\tLDD "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[2] + Register.getIndexedOffsetCost(offset);
+		backgroundBackupCycles += Register.costIndexedLD[Register.D] + Register.getIndexedOffsetCost(offset);
+		backgroundBackupSize += Register.sizeIndexedLD[Register.D] + Register.getIndexedOffsetSize(offset);
 
 		asmBCode.add("\tSTD "+tag);
-		backgroundBackupCycles += Register.costExtendedST[2];
-
+		backgroundBackupCycles += Register.costExtendedST[Register.D];
+		backgroundBackupSize += Register.sizeExtendedST[Register.D];
+				
 		return asmBCode;
 	}
-
+	
 	public List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception {
 		asmDCode = new ArrayList<String>();
 		drawCycles = 0;
 		drawSize = 0;
+		
+		asmDCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
+		drawCycles += Register.costImmediateOR[Register.A];
+		drawSize += Register.sizeImmediateOR[Register.A];
 
-		String registerName = "";
-		int registerIndex = -1;
+		asmDCode.add("\tANDB #$F0");
+		drawCycles += Register.costImmediateAND[Register.B];
+		drawSize += Register.sizeImmediateAND[Register.B]; 
 
-		// Recherche d'un registre réutilisable
-		registerIndex = Register.getPreLoadedRegister(2, data, position, registerValues);
+		asmDCode.add("\tORB "+"#$"+String.format("%02x", data[position+1]&0xff));
+		drawCycles += Register.costImmediateOR[Register.B];
+		drawSize += Register.sizeImmediateOR[Register.B];
 
-		// LD Immédiat
-		if (registerIndex == -1) {
-			registerIndex = 2;
-			asmDCode.add("\tLDD "+"#$"+String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff));
-			drawCycles += Register.costImmediateLD[registerIndex];
-		}
-
-		// ST Indexé
-		registerName = Register.name[registerIndex];
-		asmDCode.add("\tST"+registerName+" "+offset+",S");	
-		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
+		asmDCode.add("\tSTD "+offset+",S");	
+		drawCycles += Register.costIndexedST[Register.D] + Register.getIndexedOffsetCost(offset);
+		drawSize += Register.sizeIndexedST[Register.D] + Register.getIndexedOffsetSize(offset);
 
 		return asmDCode;
 	}

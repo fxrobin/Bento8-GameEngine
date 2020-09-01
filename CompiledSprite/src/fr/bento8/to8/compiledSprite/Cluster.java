@@ -19,7 +19,7 @@ public class Cluster{
 		if (initAssignmentStep()) {
 			clusterPatternsToExistingNodes(isForward);
 			createNewNodesAndClusterRemainingPatterns(isForward);
-			setLEAOffsetRelativeToEachOthers();
+			setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incrément du LEA impacte le calcul : A corriger
 			displayDebug();
 		}
 	}

@@ -59,23 +59,101 @@ public class Register {
 	public static final int[] sizeDirectOR = new int[] {2, 2};
 	public static final int[] sizeIndexedOR = new int[] {2, 2};
 	public static final int[] sizeExtendedOR= new int[] {3, 3};
-
+	
 	public static final int[] costIndexedOffset = new int[] {0, 1, 1, 4};
 	public static final int[] sizeIndexedOffset = new int[] {0, 1, 1, 2};
 	public static final int[] rangeMinIndexedOffset = new int[] {0, -16, -128, -32768};
 	public static final int[] rangeMaxIndexedOffset = new int[] {0, 15, 127, 32767};
-
-	public static int getPreLoadedRegister(int nbByte, byte[] data, int position, byte[][] registerValues) {
-		for (int i = 0; i < registerValues.length; i++) {
-			if (size[i] == nbByte && registerValues[i][0]==data[position]) {
-				return i;
-			}	
-			if (size[i] == nbByte && registerValues[i][0]==data[position] && registerValues[i][1]==data[position]) {
-				return i;
-			}	
-		}
-		return -1;
+	
+	public static final int sizeImmediatePULPSH = 2;
+	public static int getCostImmediatePULPSH(int nbByte) {
+		return 5+nbByte;
 	}
+
+//	public static int[] getPreLoadedRegister(int nbByte, byte[] data, int position, byte[][] registerValues) {
+//		int result[] = null;
+//		
+//		switch (nbByte) {
+//		case 1:
+//			
+//			// Recherche des registres déjà chargés avec la valeur recherchée
+//			for (int i = 0; i < registerValues.length; i++) {
+//				if (size[i] == 1 && registerValues[i][0] == data[position]) {
+//					result = new int[] {i};
+//				}	
+//			}
+//			
+//			// Sinon on cherche des registres vides (Limite à A, B, D, X en attendant un nouvel algo)
+//			for (int i = 0; i < 4; i++) {
+//				if (size[i] == 1 && registerValues[i][0] == -1) {
+//					result = new int[] {i};
+//				}	
+//			}
+//			
+//			if (result == null) {
+//				result = new int[] {A};
+//			}
+//			break;
+//			
+//		case 2:
+//			
+//			// Recherche des registres déjà chargés avec la valeur recherchée
+//			for (int i = 0; i < registerValues.length; i++) {
+//				if (size[i] == 2 && registerValues[i][0] == data[position] && registerValues[i][1] == data[position+1]) {
+//					return new int[] {i};
+//				}	
+//			}
+//			
+//			// Sinon on cherche des registres vides (Limite à A, B, D, X en attendant un nouvel algo)
+//			for (int i = 0; i < 4; i++) {
+//				if (size[i] == 2 && registerValues[i][0] == -1 && registerValues[i][1] == -1) {
+//					return new int[] {i};
+//				}	
+//			}
+//			
+//			if (result == null) {
+//				result = new int[] {D};
+//			}
+//			break;
+//			
+//		case 3:
+//			// AX, BX, AY (+1c), BY (+1c)
+//			result = new int[] {A,X};
+//			break;
+//			
+//		case 4:
+//			// DX, DY (+1c), XY (+1c)
+//			result = new int[] {D,X};
+//			break;
+//			
+//		case 5:
+//			// AXY, BXY (+1c)
+//			result = new int[] {A,X,Y};
+//			break;
+//			
+//		case 6:
+//			
+//			result = new int[] {D,X,Y};
+//			break;
+//			
+//		default:
+//			result = new int[] {-1};
+//		}
+//		
+//		return result;
+//	}
+//	
+//	public static void initRegisters(byte[][] registerValues) {
+//		for (int i = 0; i < registerValues.length; i++) {
+//			registerValues[i][0] = -1;
+//			registerValues[i][1] = -1;
+//		}
+//	}
+//	
+//	public static void initRegister(byte[][] registerValues, int i) {
+//		registerValues[i][0] = -1;
+//		registerValues[i][1] = -1;
+//	}
 
 	public static int getIndexedOffsetCost(int offset) throws Exception {
 		int cost = -1;
@@ -108,5 +186,4 @@ public class Register {
 
 		return size;
 	}
-
 }
