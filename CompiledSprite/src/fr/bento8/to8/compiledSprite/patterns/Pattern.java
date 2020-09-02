@@ -7,9 +7,9 @@ public abstract class Pattern {
 	protected int nbPixels;
 	protected int nbBytes;
 	
-	protected boolean useIndexedAddressing = true;
-	protected boolean isBackgroundBackupAndDrawDissociable = true;
-	protected boolean[] resetRegisters = null;
+	protected boolean useIndexedAddressing;
+	protected boolean isBackgroundBackupAndDrawDissociable;
+	protected boolean[] resetRegisters;
 
 	public abstract boolean matchesForward (byte[] data, int offset);
 	public abstract boolean matchesRearward (byte[] data, int offset);

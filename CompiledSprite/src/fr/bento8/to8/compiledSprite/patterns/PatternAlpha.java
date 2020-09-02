@@ -6,8 +6,6 @@ import java.util.List;
 import fr.bento8.to8.compiledSprite.Register;
 
 public abstract class PatternAlpha extends Pattern{
-
-	protected boolean isBackgroundBackupAndDrawDissociable = false;
 	
 	public List<String> getBackgroundBackupCode (int[] registerIndexes, int offset, String tag) throws Exception {
 		List<String> asmCode = new ArrayList<String>();

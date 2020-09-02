@@ -7,8 +7,6 @@ import fr.bento8.to8.compiledSprite.Register;
 
 public abstract class PatternStackBlast extends Pattern{
 
-	protected boolean useIndexedAddressing = false;
-
 	public int getBackgroundBackupCodeCycles (int[] registerIndexes, int offset) throws Exception {
 		int cycles = 0;
 		cycles += Register.getCostImmediatePULPSH(nbBytes);

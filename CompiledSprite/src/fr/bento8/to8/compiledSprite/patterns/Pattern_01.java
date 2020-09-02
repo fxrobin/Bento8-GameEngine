@@ -10,6 +10,9 @@ public class Pattern_01 extends PatternAlpha {
 	public Pattern_01() {
 		nbPixels = 2;
 		nbBytes = nbPixels/2;
+		useIndexedAddressing = true;
+		isBackgroundBackupAndDrawDissociable = false;
+		resetRegisters = null;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {

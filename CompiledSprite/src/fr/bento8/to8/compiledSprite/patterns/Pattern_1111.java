@@ -10,6 +10,9 @@ public class Pattern_1111 extends Pattern {
 	public Pattern_1111() {
 		nbPixels = 4;
 		nbBytes = nbPixels/2;
+		useIndexedAddressing = true;
+		isBackgroundBackupAndDrawDissociable = true;
+		resetRegisters = null;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {

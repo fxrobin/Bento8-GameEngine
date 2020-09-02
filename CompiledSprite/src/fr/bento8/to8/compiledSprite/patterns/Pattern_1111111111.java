@@ -8,6 +8,9 @@ public class Pattern_1111111111 extends PatternStackBlast {
 	public Pattern_1111111111() {
 		nbPixels = 10;
 		nbBytes = nbPixels/2;
+		useIndexedAddressing = false;
+		isBackgroundBackupAndDrawDissociable = true;
+		resetRegisters = null;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {

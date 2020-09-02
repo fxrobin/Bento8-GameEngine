@@ -5,11 +5,14 @@ import java.util.List;
 
 import fr.bento8.to8.compiledSprite.Register;
 
-public class Pattern_0101 extends PatternAlpha2B {
+public class Pattern_0101 extends PatternAlpha {
 
 	public Pattern_0101() {
 		nbPixels = 4;
 		nbBytes = nbPixels/2;
+		useIndexedAddressing = true;
+		isBackgroundBackupAndDrawDissociable = false;
+		resetRegisters = new boolean[] {true, true, true, false, false, false, false};
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {
