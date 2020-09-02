@@ -26,37 +26,45 @@ public class Pattern_1111 extends Pattern {
 		return (data[offset-2] != 0x00 && data[offset-1] != 0x00 && data[offset] != 0x00 && data[offset+1] != 0x00);
 	}
 
-	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
-		asmBCode = new ArrayList<String>();
-		backgroundBackupCycles = 0;
-		backgroundBackupSize = 0;
-
-		asmBCode.add("\tLDD "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[Register.D] + Register.getIndexedOffsetCost(offset);
-		backgroundBackupSize += Register.sizeIndexedLD[Register.D] + Register.getIndexedOffsetSize(offset);
-
-		asmBCode.add("\tSTD "+tag);
-		backgroundBackupCycles += Register.costExtendedST[Register.D];
-		backgroundBackupSize += Register.sizeExtendedST[Register.D];
-				
-		return asmBCode;
+	public List<String> getBackgroundBackupCode (int[] registerIndexes, int offset, String tag) throws Exception {
+		List<String> asmCode = new ArrayList<String>();
+		asmCode.add("\tLDA "+offset+",S");
+		asmCode.add("\tSTA "+tag);
+		return asmCode;
 	}
 
-	public List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception {
-		asmDCode = new ArrayList<String>();
-		drawCycles = 0;
-		drawSize = 0;
+	public int getBackgroundBackupCodeCycles (int[] registerIndexes, int offset) throws Exception {
+		int cycles = 0;
+		cycles += Register.costIndexedLD[Register.D] + Register.getIndexedOffsetCost(offset);
+		cycles += Register.costExtendedST[Register.D];
+		return cycles;
+	}
 
-		// Recherche d'un registre réutilisable ou non utilisé
-		int registerIndex = Register.getPreLoadedRegister(nbBytes, data, position, registerValues)[0];
-		asmDCode.add("\tLD"+Register.name[registerIndex]+" #$"+String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff));
-		drawCycles += Register.costImmediateLD[registerIndex];
-		drawSize += Register.sizeImmediateLD[registerIndex];
+	public int getBackgroundBackupCodeSize (int[] registerIndexes, int offset) throws Exception {
+		int size = 0;
+		size += Register.sizeIndexedLD[Register.D] + Register.getIndexedOffsetSize(offset);
+		size += Register.sizeExtendedST[Register.D];
+		return size;
+	}
 
-		asmDCode.add("\tST"+Register.name[registerIndex]+" "+offset+",S");	
-		drawCycles += Register.costIndexedST[registerIndex] + Register.getIndexedOffsetCost(offset);
-		drawSize += Register.sizeIndexedST[registerIndex] + Register.getIndexedOffsetSize(offset);
-
-		return asmDCode;
+	public List<String> getDrawCode (byte[] data, int position, int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+		List<String> asmCode = new ArrayList<String>();		
+		asmCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
+		asmCode.add("\tSTA "+offset+",S");
+		return asmCode;
+	}
+	
+	public int getDrawCodeCycles (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+		int cycles = 0;
+		cycles += Register.costImmediateLD[Register.D];
+		cycles += Register.costIndexedST[Register.D] + Register.getIndexedOffsetCost(offset);
+		return cycles;
+	}
+	
+	public int getDrawCodeSize (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+		int size = 0;
+		size += Register.sizeImmediateLD[Register.D];
+		size += Register.sizeIndexedST[Register.D] + Register.getIndexedOffsetSize(offset);
+		return size;	
 	}
 }

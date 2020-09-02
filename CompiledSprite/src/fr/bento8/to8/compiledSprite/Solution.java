@@ -34,19 +34,7 @@ public class Solution {
 		computedOffsets.add(0, 0);
 	}
 
-	public void computeStats() {
-		cycles = 0;
-		size = 0;
-
-		for (Pattern pattern : patterns) {
-			this.cycles += pattern.getCycles();
-			this.size += pattern.getSize();
-		}
-	}
-	
 	public String toString() {
-		computeStats();
-		
 		String display = "[Cycles: "+getCycles()+" Octets: "+getSize()+" ";
 		ListIterator<Integer> it = offsets.listIterator();
 		for (Pattern snippet : patterns) {

@@ -5,12 +5,11 @@ import java.util.List;
 
 import fr.bento8.to8.compiledSprite.Register;
 
-public class Pattern_1101 extends Pattern {
+public class Pattern_1101 extends PatternAlpha2B {
 
 	public Pattern_1101() {
 		nbPixels = 4;
 		nbBytes = nbPixels/2;
-		isBackgroundBackupAndDrawDissociable = false;
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {
@@ -27,43 +26,30 @@ public class Pattern_1101 extends Pattern {
 		return (data[offset-2] != 0x00 && data[offset-1] != 0x00 && data[offset] == 0x00 && data[offset+1] != 0x00);
 	}
 
-	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
-		asmBCode = new ArrayList<String>();
-		backgroundBackupCycles = 0;
-		backgroundBackupSize = 0;
-
-		asmBCode.add("\tLDD "+offset+",S");
-		backgroundBackupCycles += Register.costIndexedLD[Register.D] + Register.getIndexedOffsetCost(offset);
-		backgroundBackupSize += Register.sizeIndexedLD[Register.D] + Register.getIndexedOffsetSize(offset);
-
-		asmBCode.add("\tSTD "+tag);
-		backgroundBackupCycles += Register.costExtendedST[Register.D];
-		backgroundBackupSize += Register.sizeExtendedST[Register.D];
-				
-		return asmBCode;
+	public List<String> getDrawCode (byte[] data, int position, int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+		List<String> asmCode = new ArrayList<String>();
+		asmCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
+		asmCode.add("\tANDB #$F0");
+		asmCode.add("\tORB "+"#$"+String.format("%02x", data[position+1]&0xff));
+		asmCode.add("\tSTD "+offset+",S");
+		return asmCode;
 	}
 	
-	public List<String> getDrawCode (byte[] data, int position, byte[][] registerValues, int offset) throws Exception {
-		asmDCode = new ArrayList<String>();
-		drawCycles = 0;
-		drawSize = 0;
-		
-		asmDCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
-		drawCycles += Register.costImmediateOR[Register.A];
-		drawSize += Register.sizeImmediateOR[Register.A];
-
-		asmDCode.add("\tANDB #$F0");
-		drawCycles += Register.costImmediateAND[Register.B];
-		drawSize += Register.sizeImmediateAND[Register.B]; 
-
-		asmDCode.add("\tORB "+"#$"+String.format("%02x", data[position+1]&0xff));
-		drawCycles += Register.costImmediateOR[Register.B];
-		drawSize += Register.sizeImmediateOR[Register.B];
-
-		asmDCode.add("\tSTD "+offset+",S");	
-		drawCycles += Register.costIndexedST[Register.D] + Register.getIndexedOffsetCost(offset);
-		drawSize += Register.sizeIndexedST[Register.D] + Register.getIndexedOffsetSize(offset);
-
-		return asmDCode;
+	public int getDrawCodeCycles (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+		int cycles = 0;
+		cycles += Register.costImmediateOR[Register.A];
+		cycles += Register.costImmediateAND[Register.B];
+		cycles += Register.costImmediateOR[Register.B];
+		cycles += Register.costIndexedST[Register.D] + Register.getIndexedOffsetCost(offset);
+		return cycles;
+	}
+	
+	public int getDrawCodeSize (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+		int size = 0;
+		size += Register.sizeImmediateOR[Register.A];
+		size += Register.sizeImmediateAND[Register.B]; 
+		size += Register.sizeImmediateOR[Register.B];
+		size += Register.sizeIndexedST[Register.D] + Register.getIndexedOffsetSize(offset);
+		return size;	
 	}
 }

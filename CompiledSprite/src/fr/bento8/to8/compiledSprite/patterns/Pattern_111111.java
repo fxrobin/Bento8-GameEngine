@@ -3,7 +3,7 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pattern_111111 extends Pattern_LD_PSHS {
+public class Pattern_111111 extends PatternStackBlast {
 
 	public Pattern_111111() {
 		nbPixels = 6;
@@ -25,7 +25,7 @@ public class Pattern_111111 extends Pattern_LD_PSHS {
 		return (data[offset-4] != 0x00 && data[offset-3] != 0x00 && data[offset-2] != 0x00 && data[offset-1] != 0x00 && data[offset] != 0x00 && data[offset+1] != 0x00);
 	}
 
-	public List<String> getBackgroundBackupCode (int offset, String tag) throws Exception {
+	public List<String> getBackgroundBackupCode (int[] registerIndexes, int offset, String tag) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		asmCode.add("\tPULS A,X");
 		asmCode.add("\tPSHU X,A");
