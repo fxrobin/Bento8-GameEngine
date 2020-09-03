@@ -19,9 +19,10 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import fr.bento8.to8.boot.Bootloader;
-import fr.bento8.to8.compiledSprite.Cluster;
+import fr.bento8.to8.compiledSprite.PatternCluster;
 import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16;
-import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16v2;
+import fr.bento8.to8.compiledSprite.PatternFinder;
+import fr.bento8.to8.compiledSprite.RegisterOptim;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.SpriteSheet;
@@ -68,6 +69,8 @@ public class BuildDisk
 	 * 
 	 * Remarque il est posible dans un fichier .fd ou .sd de concaténer deux disquettes
 	 * Cette fonctionnalité n'est pas implémentée ici.
+	 * 
+	 * 	Mode graphique utilisé: 160x200 (seize couleurs sans contraintes)
 	 * 
 	 * @param args nom du fichier properties contenant les données de configuration
 	 * @throws Exception 
@@ -116,18 +119,20 @@ public class BuildDisk
 			for (SpriteSheet spriteSheet : spriteSheets) {
 				for (index = 0; index < spriteSheet.getSubImageNb(); index++) {
 					System.out.println("RAM 0: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 0)));
-					CompiledSpriteModeB16v2 cs0 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 0));
+					PatternFinder cs0 = new PatternFinder(spriteSheet.getSubImagePixels(index, 0));
 					cs0.buildCode(isForward);
 					fr.bento8.to8.compiledSprite.Solution solution = cs0.getSolutions().get(0);
-					Cluster cluster = new Cluster(solution);
+					PatternCluster cluster = new PatternCluster(solution);
 					cluster.cluster(isForward);
 					cs0.displaySolutions();
+					RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImagePixels(index, 0));
+					regOpt.run(isForward);
 					
 					System.out.println("RAM 1: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 1)));
-					CompiledSpriteModeB16v2 cs1 = new CompiledSpriteModeB16v2(spriteSheet.getSubImagePixels(index, 1));
+					PatternFinder cs1 = new PatternFinder(spriteSheet.getSubImagePixels(index, 1));
 					cs1.buildCode(isForward);
 					solution = cs1.getSolutions().get(0);
-					cluster = new Cluster(solution);
+					cluster = new PatternCluster(solution);
 					cluster.cluster(isForward);
 					cs1.displaySolutions();
 				}

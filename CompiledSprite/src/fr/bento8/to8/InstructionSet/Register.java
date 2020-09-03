@@ -1,4 +1,4 @@
-package fr.bento8.to8.compiledSprite;
+package fr.bento8.to8.InstructionSet;
 
 public class Register {
 	public static final String[] name = new String[] {"A", "B", "D", "X", "Y", "U", "S"};

@@ -3,7 +3,7 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.bento8.to8.compiledSprite.Register;
+import fr.bento8.to8.InstructionSet.Register;
 
 public class Pattern_01 extends PatternAlpha {
 
@@ -13,6 +13,8 @@ public class Pattern_01 extends PatternAlpha {
 		useIndexedAddressing = true;
 		isBackgroundBackupAndDrawDissociable = false;
 		resetRegisters = null;
+		registerCombi.add(new boolean[] {true, false, false, false, false, false, false});
+		registerCombi.add(new boolean[] {false, true, false, false, false, false, false});
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {

@@ -11,6 +11,8 @@ public class Pattern_1111111111 extends PatternStackBlast {
 		useIndexedAddressing = false;
 		isBackgroundBackupAndDrawDissociable = true;
 		resetRegisters = null;
+		registerCombi.add(new boolean[] {true, false, false, true, true, false, false});
+		registerCombi.add(new boolean[] {false, true, false, true, true, false, false});
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {

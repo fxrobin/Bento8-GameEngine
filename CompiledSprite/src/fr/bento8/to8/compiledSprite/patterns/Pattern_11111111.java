@@ -9,8 +9,12 @@ public class Pattern_11111111 extends PatternStackBlast {
 		nbPixels = 8;
 		nbBytes = nbPixels/2;
 		useIndexedAddressing = false;
-		isBackgroundBackupAndDrawDissociable = true;
+		isBackgroundBackupAndDrawDissociable = false;
 		resetRegisters = null;
+		registerCombi.add(new boolean[] {true, true, false, true, false, false, false});
+		registerCombi.add(new boolean[] {false, false, true, true, false, false, false});
+		registerCombi.add(new boolean[] {true, true, false, false, true, false, false});
+		registerCombi.add(new boolean[] {false, false, true, false, true, false, false});
 	}
 
 	public boolean matchesForward (byte[] data, int offset) {

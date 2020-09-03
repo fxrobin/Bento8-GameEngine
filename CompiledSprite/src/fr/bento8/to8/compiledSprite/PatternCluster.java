@@ -6,11 +6,14 @@ import java.util.ListIterator;
 
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
-public class Cluster{
+public class PatternCluster{
+	// Regroupe les Patterns d'une solution en noeuds
+	// recalcul les offset dans la plage -128 +127 autour de l'adresse de chaque noeud
+	
 	public Solution solution;
 	private List<Integer> AssignedPatterns;
 
-	public Cluster(Solution solution) {
+	public PatternCluster(Solution solution) {
 		this.solution = solution;
 		AssignedPatterns = new ArrayList<Integer>();
 	}
@@ -32,12 +35,12 @@ public class Cluster{
 		// Initialisation avec la valeur d'offset pour les autres patterns
 
 		for (int i=0; i<solution.patterns.size(); i++) {
-			solution.computedNodes.add(solution.offsets.get(i));
+			solution.computedNodes.add(solution.positions.get(i));
 			if (solution.patterns.get(i).useIndexedAddressing()) {
 				AssignedPatterns.add(-1);
 				result=true;
 			} else {
-				AssignedPatterns.add(solution.offsets.get(i));
+				AssignedPatterns.add(solution.positions.get(i));
 			}
 		}
 
@@ -75,7 +78,7 @@ public class Cluster{
 								}
 							}
 							solution.computedNodes.set(j, nodeStart);
-							solution.computedOffsets.set(j, solution.offsets.get(j)-solution.offsets.get(i));
+							solution.computedOffsets.set(j, solution.positions.get(j)-solution.positions.get(i));
 						}
 					}
 				}
@@ -84,7 +87,7 @@ public class Cluster{
 				if (nodeStart == -1 || i < nodeStart) {
 					nodeStart = i;
 				}
-				solution.computedLeas.put(nodeStart, solution.offsets.get(i));
+				solution.computedLeas.put(nodeStart, solution.positions.get(i));
 				solution.computedNodes.set(i, nodeStart);
 				nodeStart = -1;
 			}
@@ -120,19 +123,19 @@ public class Cluster{
 
 			while (i <= end) {
 
-				while (i++ < end && Math.abs(solution.offsets.get(start) - solution.offsets.get(i)) < 256) {
+				while (i++ < end && Math.abs(solution.positions.get(start) - solution.positions.get(i)) < 256) {
 				}
 
 				if (isForward) {
-					node = ((Math.abs(solution.offsets.get(start) - solution.offsets.get(i-1))+1) / 2) + solution.offsets.get(start);
+					node = ((Math.abs(solution.positions.get(start) - solution.positions.get(i-1))+1) / 2) + solution.positions.get(start);
 				} else {
-					node = -((Math.abs(solution.offsets.get(start) - solution.offsets.get(i-1))+1) / 2) + solution.offsets.get(start);
+					node = -((Math.abs(solution.positions.get(start) - solution.positions.get(i-1))+1) / 2) + solution.positions.get(start);
 				}
 				solution.computedLeas.put(start, node);
 
 				for (j = start; j < i; j++) {
 					solution.computedNodes.set(j, start);
-					solution.computedOffsets.set(j, solution.offsets.get(j)-node);
+					solution.computedOffsets.set(j, solution.positions.get(j)-node);
 				}
 
 				start = i;
@@ -154,7 +157,7 @@ public class Cluster{
 	}
 
 	public void displayDebug() {
-		ListIterator<Integer> it1 = solution.offsets.listIterator();
+		ListIterator<Integer> it1 = solution.positions.listIterator();
 		ListIterator<Integer> it2 = solution.computedNodes.listIterator();
 		ListIterator<Integer> it3 = solution.computedOffsets.listIterator();
 		int i=0;

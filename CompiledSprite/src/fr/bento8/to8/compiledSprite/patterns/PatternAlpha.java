@@ -3,7 +3,7 @@ package fr.bento8.to8.compiledSprite.patterns;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.bento8.to8.compiledSprite.Register;
+import fr.bento8.to8.InstructionSet.Register;
 
 public abstract class PatternAlpha extends Pattern{
 	

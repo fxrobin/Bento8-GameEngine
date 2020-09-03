@@ -1,5 +1,6 @@
 package fr.bento8.to8.compiledSprite.patterns;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Pattern {
@@ -10,6 +11,7 @@ public abstract class Pattern {
 	protected boolean useIndexedAddressing;
 	protected boolean isBackgroundBackupAndDrawDissociable;
 	protected boolean[] resetRegisters;
+	protected List<boolean[]> registerCombi = new ArrayList<boolean[]>();;
 
 	public abstract boolean matchesForward (byte[] data, int offset);
 	public abstract boolean matchesRearward (byte[] data, int offset);
@@ -44,5 +46,9 @@ public abstract class Pattern {
 	
 	public boolean[] getResetRegisters() {
 		return resetRegisters;
+	}
+	
+	public List<boolean[]> getRegisterCombi() {
+		return registerCombi;
 	}
 }

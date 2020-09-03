@@ -8,18 +8,18 @@ import java.util.ListIterator;
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
 public class Solution {
-	public List<Pattern> patterns;
-	public List<Integer> offsets;
-	public List<Integer> computedNodes;
+	public List<Pattern> patterns;			// Liste des Patterns trouvés dans l'ordre
+	public List<Integer> positions;			// Liste des positions pour chaque pattern
+	public List<Integer> computedNodes;		// Liste des noeuds trouvés (= id du premier pattern du noeud)
+	public List<Integer> computedOffsets;  	// Liste des offsets applicables à chaque pattern pour l'adressage indexé
+	public HashMap<Integer, Integer> computedLeas; // Ensemble des LEAS (noeud, offset)
 	public List<Pattern> computedPatterns;
-	public List<Integer> computedOffsets;
-	public HashMap<Integer, Integer> computedLeas;
 	private int cycles;
 	private int size;
 
 	public Solution() {
 		patterns = new ArrayList<Pattern>();
-		offsets = new ArrayList<Integer>();
+		positions = new ArrayList<Integer>();
 		computedNodes = new ArrayList<Integer>();
 		computedPatterns = new ArrayList<Pattern>();
 		computedOffsets = new ArrayList<Integer>();
@@ -30,13 +30,13 @@ public class Solution {
 
 	public void add(Pattern pattern, int i) {
 		patterns.add(0, pattern);
-		offsets.add(0, i);
+		positions.add(0, i);
 		computedOffsets.add(0, 0);
 	}
 
 	public String toString() {
 		String display = "[Cycles: "+getCycles()+" Octets: "+getSize()+" ";
-		ListIterator<Integer> it = offsets.listIterator();
+		ListIterator<Integer> it = positions.listIterator();
 		for (Pattern snippet : patterns) {
 			display = display + "("+it.next()+":"+snippet.getClass().getSimpleName()+")";
 		}
