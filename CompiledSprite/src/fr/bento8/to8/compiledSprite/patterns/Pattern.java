@@ -16,13 +16,13 @@ public abstract class Pattern {
 	public abstract boolean matchesForward (byte[] data, int offset);
 	public abstract boolean matchesRearward (byte[] data, int offset);
 	
-	public abstract List<String> getBackgroundBackupCode (int[] registerIndexes, int offset, String tag) throws Exception;
-	public abstract int getBackgroundBackupCodeCycles (int[] registerIndexes, int offset) throws Exception;
-	public abstract int getBackgroundBackupCodeSize (int[] registerIndexes, int offset) throws Exception;
+	public abstract List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset) throws Exception;
+	public abstract int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset) throws Exception;
+	public abstract int getBackgroundBackupCodeSize (List<Integer> registerIndexes, int offset) throws Exception;
 	
-	public abstract List<String> getDrawCode (byte[] data, int position, int[] registerIndexes, boolean[] loadMask, int offset) throws Exception;
-	public abstract int getDrawCodeCycles (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception;	
-	public abstract int getDrawCodeSize (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception;
+	public abstract List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;
+	public abstract int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;	
+	public abstract int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;
 	
 	public int getNbPixels() {
 		return nbPixels;

@@ -31,28 +31,28 @@ public class Pattern_10 extends PatternAlpha {
 		return (data[offset] != 0x00 && data[offset+1] == 0x00);
 	}
 
-	public List<String> getDrawCode (byte[] data, int position, int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
-		List<String> asmCode = new ArrayList<String>();
-		asmCode.add("\tANDA #$0F");
-		asmCode.add("\tORA "+"#$"+String.format("%02x", data[position]&0xff));
-		asmCode.add("\tSTA "+offset+",S");	
+	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+		List<String> asmCode = new ArrayList<String>();		
+		asmCode.add("\tAND"+Register.name[registerIndexes.get(0)]+" #$0F");
+		asmCode.add("\tOR"+Register.name[registerIndexes.get(0)]+" "+"#$"+String.format("%02x", data[position]&0xff));
+		asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+offset+",S");
 		return asmCode;
 	}
 	
-	public int getDrawCodeCycles (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		int cycles = 0;
-		cycles += Register.costImmediateAND[Register.A];
-		cycles += Register.costImmediateOR[Register.A];
-		cycles += Register.costIndexedST[Register.A] + Register.getIndexedOffsetCost(offset);
+		cycles += Register.costImmediateAND[registerIndexes.get(0)];
+		cycles += Register.costImmediateOR[registerIndexes.get(0)];
+		cycles += Register.costIndexedST[registerIndexes.get(0)] + Register.getIndexedOffsetCost(offset);
 		return cycles;
 	}
 	
-	public int getDrawCodeSize (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		int size = 0;
-		size += Register.sizeImmediateAND[Register.A]; 
-		size += Register.sizeImmediateOR[Register.A];
-		size += Register.sizeIndexedST[Register.A] + Register.getIndexedOffsetSize(offset);
-		return size;	
+		size += Register.sizeImmediateAND[registerIndexes.get(0)]; 
+		size += Register.sizeImmediateOR[registerIndexes.get(0)];
+		size += Register.sizeIndexedST[registerIndexes.get(0)] + Register.getIndexedOffsetSize(offset);
+		return size;
 	}
 }
 

@@ -126,7 +126,7 @@ public class BuildDisk
 					cluster.cluster(isForward);
 					cs0.displaySolutions();
 					RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImagePixels(index, 0));
-					regOpt.run(isForward);
+					regOpt.build();
 					
 					System.out.println("RAM 1: "+convertByteTabToString(spriteSheet.getSubImagePixels(index, 1)));
 					PatternFinder cs1 = new PatternFinder(spriteSheet.getSubImagePixels(index, 1));

@@ -13,7 +13,6 @@ public class Pattern_1101 extends PatternAlpha {
 		useIndexedAddressing = true;
 		isBackgroundBackupAndDrawDissociable = false;
 		resetRegisters = new boolean[] {true, true, true, false, false, false, false};
-		registerCombi.add(new boolean[] {true, true, false, false, false, false, false});
 		registerCombi.add(new boolean[] {false, false, true, false, false, false, false});
 	}
 
@@ -31,7 +30,7 @@ public class Pattern_1101 extends PatternAlpha {
 		return (data[offset-2] != 0x00 && data[offset-1] != 0x00 && data[offset] == 0x00 && data[offset+1] != 0x00);
 	}
 
-	public List<String> getDrawCode (byte[] data, int position, int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		asmCode.add("\tLDA "+"#$"+String.format("%02x", data[position]&0xff));
 		asmCode.add("\tANDB #$F0");
@@ -40,7 +39,7 @@ public class Pattern_1101 extends PatternAlpha {
 		return asmCode;
 	}
 	
-	public int getDrawCodeCycles (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		int cycles = 0;
 		cycles += Register.costImmediateOR[Register.A];
 		cycles += Register.costImmediateAND[Register.B];
@@ -49,7 +48,7 @@ public class Pattern_1101 extends PatternAlpha {
 		return cycles;
 	}
 	
-	public int getDrawCodeSize (int[] registerIndexes, boolean[] loadMask, int offset) throws Exception {
+	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		int size = 0;
 		size += Register.sizeImmediateOR[Register.A];
 		size += Register.sizeImmediateAND[Register.B]; 

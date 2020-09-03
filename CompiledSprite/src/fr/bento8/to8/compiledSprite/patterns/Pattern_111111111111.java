@@ -1,8 +1,5 @@
 package fr.bento8.to8.compiledSprite.patterns;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Pattern_111111111111 extends PatternStackBlast {
 
 	public Pattern_111111111111() {
@@ -27,12 +24,5 @@ public class Pattern_111111111111 extends PatternStackBlast {
 			return false;
 		}
 		return (data[offset-10] != 0x00 && data[offset-9] != 0x00 && data[offset-8] != 0x00 && data[offset-7] != 0x00 && data[offset-6] != 0x00 && data[offset-5] != 0x00 && data[offset-4] != 0x00 && data[offset-3] != 0x00 && data[offset-2] != 0x00 && data[offset-1] != 0x00 && data[offset] != 0x00 && data[offset+1] != 0x00);
-	}
-
-	public List<String> getBackgroundBackupCode (int[] registerIndexes, int offset, String tag) throws Exception {
-		List<String> asmCode = new ArrayList<String>();
-		asmCode.add("\tPULS D,X,Y");
-		asmCode.add("\tPSHU Y,X,D");
-		return asmCode;
 	}
 }
