@@ -17,6 +17,7 @@ public class SpriteSheet {
 	// Mode 160x200 en seize couleurs sans contraintes
 
 	private BufferedImage image;
+	private String name;
 	ColorModel colorModel;
 	private int width; // largeur totale de l'image
 	private int height; // longueur totale de l'image
@@ -27,10 +28,11 @@ public class SpriteSheet {
 
 	private byte[][][] pixels;
 
-	public SpriteSheet(String file, int nbImages, String flip) {
+	public SpriteSheet(String tag, String file, int nbImages, String flip) {
 		try {
 			subImageNb = nbImages;
 			image = ImageIO.read(new File(file));
+			name = tag;
 			width = image.getWidth();
 			height = image.getHeight();
 			colorModel = image.getColorModel();
@@ -45,7 +47,7 @@ public class SpriteSheet {
 				if (subImageWidth <= 160 && height <= 200 && pixelSize == 8) { // Contrôle du format d'image
 
 					// On inverse l'image verticalement		
-					if (flip.equals("V")) {
+					if (flip.equals("Y")) {
 						AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 						tx.translate(0, -image.getHeight(null));
 						AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
@@ -53,7 +55,7 @@ public class SpriteSheet {
 					}
 
 					// On inverse l'image horizontalement		
-					else if (flip.equals("H")) {
+					else if (flip.equals("X")) {
 						hFlipped = true;
 						AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 						tx.translate(-image.getWidth(null), 0);
@@ -62,7 +64,7 @@ public class SpriteSheet {
 					}
 
 					// On inverse l'image horizontalement et verticalement		
-					else if (flip.equals("HV") || flip.equals("VH")) {
+					else if (flip.equals("XY") || flip.equals("YX")) {
 						hFlipped = true;
 						AffineTransform tx = AffineTransform.getScaleInstance(-1, -1);
 						tx.translate(-image.getWidth(null), -image.getHeight(null));
@@ -172,8 +174,12 @@ public class SpriteSheet {
 		return code;
 	}
 
-	public int getSubImageNb() {
+	public int getSize() {
 		return subImageNb;
+	}
+
+	public String getName() {
+		return name;
 	}	
 
 	// Gestion des images en 32bits

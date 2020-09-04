@@ -3,6 +3,9 @@ package fr.bento8.to8.compiledSprite;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import fr.bento8.to8.InstructionSet.Register;
 
 public class RegisterOptim{
@@ -36,6 +39,8 @@ public class RegisterOptim{
 	//	- si le nombre de cycles baisse, sauver la solution et le nombre de cycles total et poursuivre l'optim au noeud suivant
 	//	- s'arrêter lorsqu'il n'y a plus d'améliorations après un parcours complet de tous les noeuds (afficher le nombre de passes à l'écran)
 
+	private static final Logger logger = LogManager.getLogger("log");
+	
 	private Solution solution;
 	private byte[] data;
 
@@ -46,33 +51,39 @@ public class RegisterOptim{
 
 	public void run(boolean isForward) {
 		int i, j, c, r, k, totalCombi = 1;
-		System.out.println("Node;Pattern;Variation;A;B;D;X;Y");
+		String line;
+		
+		logger.debug("Node;Pattern;Variation;A;B;D;X;Y");
+		
 		for (i=0; i<solution.patterns.size(); i++) {
 			c = 0;
 			for (boolean[] combi : solution.patterns.get(i).getRegisterCombi()) {
 				k = solution.positions.get(i)*2;
-				System.out.print(solution.computedNodes.get(i)+";"+solution.patterns.get(i).getClass().getSimpleName()+";"+c+";");
+				line = solution.computedNodes.get(i)+";"+solution.patterns.get(i).getClass().getSimpleName()+";"+c+";";
 				c++;
 				for (r = 0; r <= 4; r++) {
 					if (combi[r]) {
 						for (j=0; j<Register.size[r]; j++) {
-							System.out.print(String.format("%02x%02x", data[k++]&0xff, data[k++]&0xff));
+							line += String.format("%02x%02x", data[k++]&0xff, data[k++]&0xff);
 						}
 					}
 					if (r!=4) {
-						System.out.print(";");
+						line += ";";
 					}
 				}
-				System.out.println("");
+				logger.debug(line);
 			}
 			totalCombi = totalCombi * (c+1);
 		}
-		System.out.println("Total Combi:"+totalCombi);
+		logger.debug("Total Combi:"+totalCombi);
 	}
 
 	public void build() {
 		int i, lastLeas = Integer.MAX_VALUE;
 		List<String> asmCode = new ArrayList<String>();
+		
+		logger.debug("Code ASM:");
+		
 		try {
 			for (i = 0; i < solution.patterns.size(); i++) {
 				if (lastLeas != solution.computedNodes.get(i) && solution.computedLeas.containsKey(solution.computedNodes.get(i)) && solution.computedLeas.get(solution.computedNodes.get(i)) != 0) {
@@ -84,11 +95,10 @@ public class RegisterOptim{
 				asmCode.add("");
 			}
 
-			for (String line : asmCode) System.out.println(line);
+			for (String line : asmCode) logger.debug(line);
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.fatal("", e);
 		}
 	}
 

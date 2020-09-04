@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
 public class PatternCluster{
 	// Regroupe les Patterns d'une solution en noeuds
 	// recalcul les offset dans la plage -128 +127 autour de l'adresse de chaque noeud
+	
+	private static final Logger logger = LogManager.getLogger("log");
 	
 	public Solution solution;
 	private List<Integer> AssignedPatterns;
@@ -160,12 +165,22 @@ public class PatternCluster{
 		ListIterator<Integer> it1 = solution.positions.listIterator();
 		ListIterator<Integer> it2 = solution.computedNodes.listIterator();
 		ListIterator<Integer> it3 = solution.computedOffsets.listIterator();
+		int currentNode, oldNode = -1;
 		int i=0;
 		for (Pattern snippet : solution.patterns) {
-			System.out.println("("+i+":"+it1.next()+":"+it2.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
+			currentNode = it2.next();
+			if (oldNode != currentNode) {
+				logger.debug("");
+				logger.debug("Noeud: "+currentNode);
+				logger.debug("(index:position:offset:pattern)");
+				oldNode = currentNode;
+			}
+				
+			logger.debug("("+i+":"+it1.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
 			i++;
 		}
-		System.out.println("LEAS contains: "+solution.computedLeas);
-		System.out.println("");
+		logger.debug("");
+		logger.debug("LEAS: (noeud=offset) "+solution.computedLeas);
+		logger.debug("");
 	}
 }
