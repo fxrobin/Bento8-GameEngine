@@ -76,18 +76,18 @@ public abstract class PatternStackBlast extends Pattern{
 		for (int i=0; i<registerIndexes.size(); i++) {
 			if (loadMask.get(i)) {
 				if (Register.size[registerIndexes.get(i)] == 1) {
-					pixelValues = String.format("%02x", data[position]&0xff);
-					position++;
-				} else {
-					pixelValues = String.format("%02x%02x", data[position]&0xff, data[position+1]&0xff);
+					pixelValues = String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff);
 					position += 2;
+				} else {
+					pixelValues = String.format("%01x%01x%01x%01x", data[position]&0xff, data[position+1]&0xff, data[position+2]&0xff, data[position+3]&0xff);
+					position += 4;
 				}
 				asmCode.add("\tLD"+Register.name[registerIndexes.get(i)]+" #$"+pixelValues);
 			} else {
 				if (Register.size[registerIndexes.get(i)] == 1) {
-					position++;
-				} else {
 					position += 2;
+				} else {
+					position += 4;
 				}
 			}
 		}

@@ -27,6 +27,7 @@ public class SpriteSheet {
 	private int subImageWidth; // Largeur des sous-images
 
 	private byte[][][] pixels;
+	private byte[][][] data;
 
 	public SpriteSheet(String tag, String file, int nbImages, String flip) {
 		try {
@@ -96,6 +97,7 @@ public class SpriteSheet {
 		// ajoute les pixels transparents pour constituer une image linéaire de largeur 2x80px
 		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de même taille
 		pixels = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
+		data = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		
@@ -105,8 +107,13 @@ public class SpriteSheet {
 			while (index<subImageWidth*(position+1) + width*(height-1)) { // Parcours de tous les pixels de l'image
 				// Ecriture des pixels 2 à 2
 				pixels[position][page][indexDest] = (byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(index));
+				if (pixels[position][page][indexDest] == 0) {
+					data[position][page][indexDest] = 0;
+				} else {
+					data[position][page][indexDest] = (byte) (pixels[position][page][indexDest]-1);
+				}
 				index++;
-				
+
 				if (index == subImageWidth*(position+1) + curLine*width) {
 					curLine++;
 					index = subImageWidth*position + curLine*width;
@@ -114,8 +121,13 @@ public class SpriteSheet {
 					page = 0;
 				} else {
 					pixels[position][page][indexDest+1] = (byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(index));
+					if (pixels[position][page][indexDest+1] == 0) {
+						data[position][page][indexDest+1] = 0;
+					} else {
+						data[position][page][indexDest+1] = (byte) (pixels[position][page][indexDest+1]-1);
+					}
 					index++;
-					
+
 					// Alternance des banques RAM A et RAM B
 					if (page == 0) {
 						page = 1;
@@ -123,7 +135,7 @@ public class SpriteSheet {
 						page = 0;
 						indexDest = indexDest+2;
 					}
-					
+
 					if (index == subImageWidth*(position+1) + curLine*width) {
 						curLine++;
 						index = subImageWidth*position + curLine*width;
@@ -146,6 +158,17 @@ public class SpriteSheet {
 		return pixels[position][ramPage];
 	}
 
+	public byte[] getSubImageData(int subImagePos, int ramPage) {
+		int position = subImagePos;
+
+		// si l'image est inversée horizontalement, on inverse également l'index des sous-images
+		if (hFlipped) {
+			position = (subImageNb-1) - position;
+		}
+
+		return data[position][ramPage];
+	}
+
 	public List<String> getCodePalette(double gamma) {
 		// std gamma: 3
 		// suggestion : 2 ou 2.2
@@ -166,11 +189,11 @@ public class SpriteSheet {
 					+ " B:" + String.format("%-3.3s", couleur.getBlue()));
 		}
 		code.add("FINTABPALETTE");
-		
-        for(String line : code) {
-            System.out.println(line);
-        }
-		
+
+		for(String line : code) {
+			System.out.println(line);
+		}
+
 		return code;
 	}
 

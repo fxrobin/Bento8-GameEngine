@@ -135,23 +135,23 @@ public class BuildDisk
 					for (index = 0; index < spriteSheet.getSize(); index++) {
 						logger.debug("Planche:"+spriteSheet.getName()+" image:"+index);
 						logger.debug("RAM 0 (val hex 00 à 10 par pixel, 00 Transparent):");
-						logger.debug(convertByteTabToStringNL(spriteSheet.getSubImagePixels(index, 0)));
+						logger.debug(convertByteTabToStringAL(spriteSheet.getSubImagePixels(index, 0)));
 						PatternFinder cs0 = new PatternFinder(spriteSheet.getSubImagePixels(index, 0));
 						cs0.buildCode(isForward);
 						fr.bento8.to8.compiledSprite.Solution solution = cs0.getSolutions().get(0);
 						PatternCluster cluster = new PatternCluster(solution);
 						cluster.cluster(isForward);
-						RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImagePixels(index, 0));
+						RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(index, 0));
 						regOpt.build();
 
 						logger.debug("RAM 1 (val hex 00 à 10 par pixel, 00 Transparent):");
-						logger.debug(convertByteTabToStringNL(spriteSheet.getSubImagePixels(index, 1)));
+						logger.debug(convertByteTabToStringAL(spriteSheet.getSubImagePixels(index, 1)));
 						PatternFinder cs1 = new PatternFinder(spriteSheet.getSubImagePixels(index, 1));
 						cs1.buildCode(isForward);
 						solution = cs1.getSolutions().get(0);
 						cluster = new PatternCluster(solution);
 						cluster.cluster(isForward);
-						regOpt = new RegisterOptim(solution, spriteSheet.getSubImagePixels(index, 1));
+						regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(index, 1));
 						regOpt.build();
 					}
 				}
@@ -448,6 +448,23 @@ public class BuildDisk
 		int i = 0;
 		for(byte val : b1) {
 			strBuilder.append(String.format("%02x", val&0xff));
+			if (++i == 80) {
+				strBuilder.append(System.lineSeparator());
+				i = 0;
+			}
+		}
+		return strBuilder.toString();
+	}
+	
+	public static String convertByteTabToStringAL(byte[] b1) {
+		StringBuilder strBuilder = new StringBuilder();
+		int i = 0;
+		for(byte val : b1) {
+			if (val == 0) {
+				strBuilder.append(".");
+			} else {
+				strBuilder.append(String.format("%01x", (val-1)&0xff));
+			}
 			if (++i == 80) {
 				strBuilder.append(System.lineSeparator());
 				i = 0;
