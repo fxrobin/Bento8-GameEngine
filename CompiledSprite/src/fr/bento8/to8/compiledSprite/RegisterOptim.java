@@ -9,6 +9,10 @@ import org.apache.logging.log4j.Logger;
 import fr.bento8.to8.InstructionSet.Register;
 
 public class RegisterOptim{
+	// 
+	// <Decrire fonctionnement actuel>
+	//
+	// TODO :
 	// Construit le code à partir des patterns et des noeuds trouvés
 	// Cherche toutes les combinaisons pour chaque noeud:
 	// - Ordre de patterns mobiles
@@ -40,9 +44,21 @@ public class RegisterOptim{
 	//	- s'arrêter lorsqu'il n'y a plus d'améliorations après un parcours complet de tous les noeuds (afficher le nombre de passes à l'écran)
 
 	private static final Logger logger = LogManager.getLogger("log");
-	
+
 	private Solution solution;
 	private byte[] data;
+
+	int i, j, k;
+	List<String> asmCode = new ArrayList<String>();
+	int lastLeas = Integer.MAX_VALUE;		
+	boolean[] regSet = new boolean[] {false, false, false, false, false, false, false};
+	byte[][] regVal = new byte[7][2];
+	int cost, selectedCombi, minCost;
+	List<Integer> selectedReg = new ArrayList<Integer>();
+	List<Boolean> selectedloadMask = new ArrayList<Boolean>();
+	List<Integer> patternGrp1 = new ArrayList<Integer>();
+	List<Integer> patternGrp2 = new ArrayList<Integer>();
+	List<Integer> patternGrp3 = new ArrayList<Integer>();
 
 	public RegisterOptim(Solution solution, byte[] data) {
 		this.solution = solution;
@@ -52,9 +68,9 @@ public class RegisterOptim{
 	public void run(boolean isForward) {
 		int i, j, c, r, k, totalCombi = 1;
 		String line;
-		
+
 		logger.debug("Node;Pattern;Variation;A;B;D;X;Y");
-		
+
 		for (i=0; i<solution.patterns.size(); i++) {
 			c = 0;
 			for (boolean[] combi : solution.patterns.get(i).getRegisterCombi()) {
@@ -79,48 +95,169 @@ public class RegisterOptim{
 	}
 
 	public void build() {
-		int i, lastLeas = Integer.MAX_VALUE;
-		List<String> asmCode = new ArrayList<String>();
-		
+		int currentNode = 0;
+
 		logger.debug("Code ASM:");
-		
 		try {
-			for (i = 0; i < solution.patterns.size(); i++) {
-				if (lastLeas != solution.computedNodes.get(i) && solution.computedLeas.containsKey(solution.computedNodes.get(i)) && solution.computedLeas.get(solution.computedNodes.get(i)) != 0) {
-					asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
-					lastLeas = solution.computedNodes.get(i);
+			// Parcours de tous les patterns
+			i = 0;
+			while (i < solution.patterns.size()) {
+				patternGrp1.clear();
+				patternGrp2.clear();
+				patternGrp3.clear();
+
+				currentNode = solution.computedNodes.get(i);
+				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
+
+					// Ecriture du LEAS				
+					if (currentNode != lastLeas // le noeud courant est différent de celui du dernier LEAS
+							&& solution.computedLeas.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAS
+							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
+						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
+						lastLeas = solution.computedNodes.get(i);
+					}
+
+					// Constitution des groupes
+					if (!solution.patterns.get(i).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(i).useIndexedAddressing()) {
+						patternGrp1.add(i);
+					} else if (!solution.patterns.get(i).useIndexedAddressing()) {
+						patternGrp2.add(i);
+					} else {
+						patternGrp3.add(i);
+					}
+
+					i++;
 				}
-				asmCode.addAll(solution.patterns.get(i).getBackgroundBackupCode(getRegisterIndexes(solution.patterns.get(i).getRegisterCombi().get(0)), solution.computedOffsets.get(i)));
-				asmCode.addAll(solution.patterns.get(i).getDrawCode(data, solution.positions.get(i)*2, getRegisterIndexes(solution.patterns.get(i).getRegisterCombi().get(0)), getLoadMask(solution.patterns.get(i).getRegisterCombi().get(0)), solution.computedOffsets.get(i)));
-				asmCode.add("");
+
+				logger.debug("patternGrp1: "+patternGrp1);
+				logger.debug("patternGrp2: "+patternGrp2);
+				logger.debug("patternGrp3: "+patternGrp3);
+
+				if (i < solution.patterns.size()) {
+					// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
+					for (int id : patternGrp1) {
+						processPatternBackgroundBackup(id);
+						processPatternDraw(id);
+						asmCode.add("");
+					}
+
+					for (int id : patternGrp2) {
+						processPatternBackgroundBackup(id);
+						processPatternDraw(id);
+						asmCode.add("");
+					}
+
+					for (int id : patternGrp3) {
+						processPatternBackgroundBackup(id);
+						asmCode.add("");
+					}
+
+					for (int id : patternGrp3) {
+						processPatternDraw(id);
+						asmCode.add("");
+					}
+				}
 			}
 
 			for (String line : asmCode) logger.debug(line);
-			
+
 		} catch (Exception e) {
 			logger.fatal("", e);
 		}
 	}
 
-	public List<Integer> getRegisterIndexes(boolean[] combi) {
-		List<Integer> registers = new ArrayList<Integer>();
+	public void processPatternBackgroundBackup(int id) throws Exception {
 
-		for (int i = 0; i < combi.length; i++) {
-			if (combi[i]) {
-				registers.add(i);
+		selectRegister(id);
+		asmCode.add("* n:"+id + " Sauvegarde Fond");
+		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id)));
+
+		// Réinitialisation des registres qui ne peuvent pas être conservés par certains patterns
+		if (solution.patterns.get(id).getResetRegisters() != null) {
+			for (j = 0; j < solution.patterns.get(id).getResetRegisters().length; j++) {
+				if (solution.patterns.get(id).getResetRegisters()[j]) {
+					regSet[j] = false;
+				}
 			}
 		}
-		return registers;
+		
+		// DEBUG : registres
+		String regDisp = "Registres: ";
+		for (j = 0; j < regSet.length; j++) {
+			if (regSet[j]) {
+				regDisp += " " + Register.name[j] + ":" + String.format("%02x", regVal[j][0]&0xff);
+				if (Register.size[j] == 2) {
+					regDisp += String.format("%02x", regVal[j][1]&0xff);
+				}
+			} else {
+				regDisp += " " + Register.name[j] + ":-";
+			}
+		}
+		logger.debug(regDisp);
 	}
-	
-	public List<Boolean> getLoadMask(boolean[] combi) {
-		List<Boolean> loadMask = new ArrayList<Boolean>();
 
-		for (int i = 0; i < combi.length; i++) {
-			if (combi[i]) {
-				loadMask.add(true);
+	public void processPatternDraw(int id) throws Exception {
+		selectRegister(id);
+		asmCode.add("* n:" + id + " x: " + ((solution.positions.get(id) - ((int) Math.floor(solution.positions.get(id)/40)*40))*2+1) + " y: " + ((int) Math.floor(solution.positions.get(id)/40)+1) + " Ecriture sprite");
+		asmCode.addAll(solution.patterns.get(id).getDrawCode(data, solution.positions.get(id)*2, selectedReg, selectedloadMask, solution.computedOffsets.get(id)));
+	}
+
+	public void selectRegister (int id) {
+
+		// Recherche pour chaque combinaison de registres d'un pattern,
+		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
+
+		selectedCombi = -1;
+		minCost = Integer.MAX_VALUE;
+
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().size(); j++) {
+			cost = 0;
+			for (k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
+				if (solution.patterns.get(id).getRegisterCombi().get(j)[k] && !(regSet[k] && regVal[k][0] == data[solution.positions.get(id)*2] && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][1] == data[(solution.positions.get(id)*2)+1])))) {
+					cost += solution.patterns.get(id).getCostRegDraw(k);
+				}
+			}
+			logger.debug("cout:"+cost);
+			if (cost < minCost) {
+				selectedCombi = j;
+				minCost = cost;
 			}
 		}
-		return loadMask;
+
+		if (selectedCombi == -1) {
+			logger.fatal("Aucune combinaison de registres pour le pattern en position: "+solution.positions.get(id));
+		}
+
+		// Pour la combinaison choisie, création de la liste des registres et du masque de chargement des registres
+		selectedReg.clear();
+		selectedloadMask.clear();
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
+			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j]) {
+				selectedReg.add(j);
+				if (regSet[j] && regVal[j][0] == data[solution.positions.get(id)*2] && (Register.size[j] == 1 || (Register.size[j] == 2 && regVal[j][1] == data[(solution.positions.get(id)*2)+1]))) {
+					selectedloadMask.add(false);
+				} else {
+					selectedloadMask.add(true);
+				}
+			} else {
+				selectedloadMask.add(false);
+			}
+		}
+
+		// DEBUG : combinaison
+		logger.debug("Combinaison: " + selectedCombi);
+		logger.debug("selectedReg: " + selectedReg);
+		logger.debug("selectedloadMask: " + selectedloadMask);
+
+		// Sauvegarde les valeurs en cache
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
+			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j]) {
+				regSet[j] = true;
+				regVal[j][0] = data[solution.positions.get(id)*2];
+				if (Register.size[j] == 2) {
+					regVal[j][1] = data[(solution.positions.get(id)*2)+1];
+				}
+			}
+		}
 	}
 }

@@ -6,6 +6,12 @@ import java.util.List;
 import fr.bento8.to8.InstructionSet.Register;
 
 public abstract class PatternStackBlast extends Pattern{
+	
+	private static int[] costRegDraw = new int[] {2, 2, 3, 3, 3, 0, 0};
+	
+	PatternStackBlast () {
+		super(costRegDraw);
+	}
 
 	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
