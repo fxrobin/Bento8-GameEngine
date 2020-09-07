@@ -52,7 +52,7 @@ public class RegisterOptim{
 	List<String> asmCode = new ArrayList<String>();
 	int lastLeas = Integer.MAX_VALUE;		
 	boolean[] regSet = new boolean[] {false, false, false, false, false, false, false};
-	byte[][] regVal = new byte[7][2];
+	byte[][] regVal = new byte[7][4];
 	int cost, selectedCombi, minCost;
 	List<Integer> selectedReg = new ArrayList<Integer>();
 	List<Boolean> selectedloadMask = new ArrayList<Boolean>();
@@ -129,9 +129,9 @@ public class RegisterOptim{
 					i++;
 				}
 
-				logger.debug("patternGrp1: "+patternGrp1);
-				logger.debug("patternGrp2: "+patternGrp2);
-				logger.debug("patternGrp3: "+patternGrp3);
+				//				logger.debug("patternGrp1: "+patternGrp1);
+				//				logger.debug("patternGrp2: "+patternGrp2);
+				//				logger.debug("patternGrp3: "+patternGrp3);
 
 				if (i < solution.patterns.size()) {
 					// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
@@ -168,11 +168,29 @@ public class RegisterOptim{
 
 	public void processPatternBackgroundBackup(int id) throws Exception {
 
-		selectRegister(id);
+		selectRegisterBackgroundBackup(id);
 		asmCode.add("* n:"+id + " Sauvegarde Fond");
 		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id)));
 
-		// Réinitialisation des registres qui ne peuvent pas être conservés par certains patterns
+		// Réinitialisation des registres utilisés par l'écriture du fond
+		for (int r : selectedReg) {
+			regSet[r] = false;
+			if (r == Register.A || r == Register.B) {
+				regSet[Register.D] = false;
+			}
+			if (r == Register.D) {
+				regSet[Register.A] = false;
+				regSet[Register.B] = false;
+			}
+		}
+	}
+
+	public void processPatternDraw(int id) throws Exception {
+		selectRegisterDraw(id);
+		asmCode.add("* n:" + id + " x: " + ((solution.positions.get(id) - ((int) Math.floor(solution.positions.get(id)/40)*40))*2+1) + " y: " + ((int) Math.floor(solution.positions.get(id)/40)+1) + " Ecriture sprite");
+		asmCode.addAll(solution.patterns.get(id).getDrawCode(data, solution.positions.get(id)*2, selectedReg, selectedloadMask, solution.computedOffsets.get(id)));
+
+		// Réinitialisation des registres pour certain patterns
 		if (solution.patterns.get(id).getResetRegisters() != null) {
 			for (j = 0; j < solution.patterns.get(id).getResetRegisters().length; j++) {
 				if (solution.patterns.get(id).getResetRegisters()[j]) {
@@ -180,29 +198,23 @@ public class RegisterOptim{
 				}
 			}
 		}
-		
+	}
+
+	public void selectRegisterBackgroundBackup(int id) {
+
 		// DEBUG : registres
 		String regDisp = "Registres: ";
 		for (j = 0; j < regSet.length; j++) {
 			if (regSet[j]) {
-				regDisp += " " + Register.name[j] + ":" + String.format("%02x", regVal[j][0]&0xff);
+				regDisp += " " + Register.name[j] + ":" + String.format("%01x%01x", regVal[j][0]&0xff, regVal[j][1]&0xff);
 				if (Register.size[j] == 2) {
-					regDisp += String.format("%02x", regVal[j][1]&0xff);
+					regDisp += String.format("%01x%01x", regVal[j][2]&0xff, regVal[j][3]&0xff);
 				}
 			} else {
 				regDisp += " " + Register.name[j] + ":-";
 			}
 		}
-		logger.debug(regDisp);
-	}
-
-	public void processPatternDraw(int id) throws Exception {
-		selectRegister(id);
-		asmCode.add("* n:" + id + " x: " + ((solution.positions.get(id) - ((int) Math.floor(solution.positions.get(id)/40)*40))*2+1) + " y: " + ((int) Math.floor(solution.positions.get(id)/40)+1) + " Ecriture sprite");
-		asmCode.addAll(solution.patterns.get(id).getDrawCode(data, solution.positions.get(id)*2, selectedReg, selectedloadMask, solution.computedOffsets.get(id)));
-	}
-
-	public void selectRegister (int id) {
+		asmCode.add(regDisp);
 
 		// Recherche pour chaque combinaison de registres d'un pattern,
 		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
@@ -213,12 +225,20 @@ public class RegisterOptim{
 		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().size(); j++) {
 			cost = 0;
 			for (k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
-				if (solution.patterns.get(id).getRegisterCombi().get(j)[k] && !(regSet[k] && regVal[k][0] == data[solution.positions.get(id)*2] && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][1] == data[(solution.positions.get(id)*2)+1])))) {
-					cost += solution.patterns.get(id).getCostRegDraw(k);
+				if (solution.patterns.get(id).getRegisterCombi().get(j)[k]) {
+					if (k == Register.Y) { // TODO rendre paramétrable
+						cost += 1;
+					}
+					if (!regSet[k]) { // TODO ajout condition il faudrait vérifier que la valeur en cache sur D ou X est utile pour justifier Y
+						cost -= 1;
+					}
 				}
 			}
-			logger.debug("cout:"+cost);
-			if (cost < minCost) {
+			//			logger.debug("cout:"+cost);
+			if (cost < minCost
+					&& !(solution.patterns.get(id).getNbBytes() == 2	// dans le cas de l'effacement on élimine les solutions A, B pour privilégier D
+							&& solution.patterns.get(id).getRegisterCombi().get(j)[0] == true
+							&& solution.patterns.get(id).getRegisterCombi().get(j)[1] == true)) {
 				selectedCombi = j;
 				minCost = cost;
 			}
@@ -234,7 +254,65 @@ public class RegisterOptim{
 		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
 			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j]) {
 				selectedReg.add(j);
-				if (regSet[j] && regVal[j][0] == data[solution.positions.get(id)*2] && (Register.size[j] == 1 || (Register.size[j] == 2 && regVal[j][1] == data[(solution.positions.get(id)*2)+1]))) {
+			}
+		}
+	}
+
+	public void selectRegisterDraw(int id) {
+
+		// DEBUG : registres
+		String regDisp = "Registres: ";
+		for (j = 0; j < regSet.length; j++) {
+			if (regSet[j]) {
+				regDisp += " " + Register.name[j] + ":" + String.format("%01x%01x", regVal[j][0]&0xff, regVal[j][1]&0xff);
+				if (Register.size[j] == 2) {
+					regDisp += String.format("%01x%01x", regVal[j][2]&0xff, regVal[j][3]&0xff);
+				}
+			} else {
+				regDisp += " " + Register.name[j] + ":-";
+			}
+		}
+		asmCode.add(regDisp);
+
+		// Recherche pour chaque combinaison de registres d'un pattern,
+		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
+
+		selectedCombi = -1;
+		minCost = Integer.MAX_VALUE;
+
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().size(); j++) {
+			cost = 0;
+			for (k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
+				// TODO ATTENTION VERIFIER le CAS de plusieurs REGISTRES, peut être faire avancer le curseur des datas !!!!!
+				// ******************************
+				if (solution.patterns.get(id).getRegisterCombi().get(j)[k]
+						&& !(regSet[k] && regVal[k][0] == data[solution.positions.get(id)*2] && regVal[k][1] == data[(solution.positions.get(id)*2)+1]
+								&& (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == data[(solution.positions.get(id)*2)+2] && regVal[k][3] == data[(solution.positions.get(id)*2)+3])))) {
+					cost += solution.patterns.get(id).getCostRegDraw(k);
+				}
+			}
+			asmCode.add("combi: "+j+" cout:"+cost);
+			if (cost < minCost) {
+				selectedCombi = j;
+				minCost = cost;
+			}
+		}
+
+		if (selectedCombi == -1) {
+			logger.fatal("Aucune combinaison de registres pour le pattern en position: "+solution.positions.get(id));
+		}
+		
+		asmCode.add("choix combi: "+selectedCombi);
+
+		// Pour la combinaison choisie, création de la liste des registres et du masque de chargement des registres
+		selectedReg.clear();
+		selectedloadMask.clear();
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
+			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j]) {
+				selectedReg.add(j);
+				// TODO ATTENTION VERIFIER le CAS de plusieurs REGISTRES, peut être faire avancer le curseur des datas !!!!!
+				// ******************************
+				if (regSet[j] && regVal[j][0] == data[solution.positions.get(id)*2] && regVal[j][1] == data[(solution.positions.get(id)*2)+1] && (Register.size[j] == 1 || (Register.size[j] == 2 && regVal[j][2] == data[(solution.positions.get(id)*2)+2] && regVal[j][3] == data[(solution.positions.get(id)*2)+3]))) {
 					selectedloadMask.add(false);
 				} else {
 					selectedloadMask.add(true);
@@ -245,17 +323,49 @@ public class RegisterOptim{
 		}
 
 		// DEBUG : combinaison
-		logger.debug("Combinaison: " + selectedCombi);
-		logger.debug("selectedReg: " + selectedReg);
-		logger.debug("selectedloadMask: " + selectedloadMask);
+		//		logger.debug("Combinaison: " + selectedCombi);
+		//		logger.debug("selectedReg: " + selectedReg);
+		//		logger.debug("selectedloadMask: " + selectedloadMask);
 
 		// Sauvegarde les valeurs en cache
+		int pos = solution.positions.get(id)*2;
 		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
 			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j]) {
 				regSet[j] = true;
-				regVal[j][0] = data[solution.positions.get(id)*2];
+				regVal[j][0] = data[pos++];
+				regVal[j][1] = data[pos++];
 				if (Register.size[j] == 2) {
-					regVal[j][1] = data[(solution.positions.get(id)*2)+1];
+					regVal[j][2] = data[pos++];
+					regVal[j][3] = data[pos++];
+				}
+
+				// Cas particulier de A, on valorise D
+				if (j == Register.A) {
+					if (regSet[Register.B] == true) {
+						regSet[Register.D] = true;
+					}
+					regVal[Register.D][0] = regVal[j][0];
+					regVal[Register.D][1] = regVal[j][1];
+				}
+
+				// Cas particulier de B, on valorise D
+				if (j == Register.B) {
+					if (regSet[Register.A] == true) {
+						regSet[Register.D] = true;
+					}
+					regVal[Register.D][2] = regVal[j][0];
+					regVal[Register.D][3] = regVal[j][1];
+				}
+
+				// Cas particulier de D, on valorise A et B
+				if (j == Register.D) {
+					regSet[Register.A] = true;
+					regVal[Register.A][0] = regVal[j][0];
+					regVal[Register.A][1] = regVal[j][1];
+
+					regSet[Register.B] = true;
+					regVal[Register.B][0] = regVal[j][2];
+					regVal[Register.B][1] = regVal[j][3];
 				}
 			}
 		}

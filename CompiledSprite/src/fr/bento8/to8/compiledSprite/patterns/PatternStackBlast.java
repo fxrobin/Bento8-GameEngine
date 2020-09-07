@@ -80,7 +80,7 @@ public abstract class PatternStackBlast extends Pattern{
 
 		// Création du LD
 		for (int i=0; i<registerIndexes.size(); i++) {
-			if (loadMask.get(i)) {
+			if (loadMask.get(registerIndexes.get(i))) {
 				if (Register.size[registerIndexes.get(i)] == 1) {
 					pixelValues = String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff);
 					position += 2;
@@ -121,7 +121,7 @@ public abstract class PatternStackBlast extends Pattern{
 		int cycles = 0;
 
 		for (int i=0; i<registerIndexes.size(); i++) {
-			if (loadMask.get(i)) {
+			if (loadMask.get(registerIndexes.get(i))) {
 				cycles += Register.costImmediateLD[registerIndexes.get(i)];
 			}
 		}
@@ -134,7 +134,7 @@ public abstract class PatternStackBlast extends Pattern{
 		int size = 0;
 
 		for (int i=0; i<registerIndexes.size(); i++ ) {
-			if (loadMask.get(i)) {
+			if (loadMask.get(registerIndexes.get(i))) {
 				size += Register.sizeImmediateLD[registerIndexes.get(i)];
 			}
 		}

@@ -36,6 +36,8 @@ public class Pattern_01 extends PatternAlpha {
 		asmCode.add("\tAND"+Register.name[registerIndexes.get(0)]+" #$F0");
 		asmCode.add("\tOR"+Register.name[registerIndexes.get(0)]+" "+"#$"+String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff));
 		asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+offset+",S");
+		resetRegisters = new boolean[] {false, false, true, false, false, false, false};
+		resetRegisters[registerIndexes.get(0)] = true;
 		return asmCode;
 	}
 	
@@ -44,6 +46,8 @@ public class Pattern_01 extends PatternAlpha {
 		cycles += Register.costImmediateAND[registerIndexes.get(0)];
 		cycles += Register.costImmediateOR[registerIndexes.get(0)];
 		cycles += Register.costIndexedST[registerIndexes.get(0)] + Register.getIndexedOffsetCost(offset);
+		resetRegisters = new boolean[] {false, false, true, false, false, false, false};
+		resetRegisters[registerIndexes.get(0)] = true;
 		return cycles;
 	}
 	
@@ -52,6 +56,8 @@ public class Pattern_01 extends PatternAlpha {
 		size += Register.sizeImmediateAND[registerIndexes.get(0)]; 
 		size += Register.sizeImmediateOR[registerIndexes.get(0)];
 		size += Register.sizeIndexedST[registerIndexes.get(0)] + Register.getIndexedOffsetSize(offset);
+		resetRegisters = new boolean[] {false, false, true, false, false, false, false};
+		resetRegisters[registerIndexes.get(0)] = true;
 		return size;
 	}
 }
