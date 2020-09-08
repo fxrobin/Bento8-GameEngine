@@ -10,9 +10,8 @@ public abstract class Pattern {
 	
 	protected boolean useIndexedAddressing;
 	protected boolean isBackgroundBackupAndDrawDissociable;
-	protected boolean[] resetRegisters;
+	protected List<boolean[]> resetRegisters = new ArrayList<boolean[]>();
 	protected List<boolean[]> registerCombi = new ArrayList<boolean[]>();
-	protected int[] costRegDraw;
 
 	public abstract boolean matchesForward (byte[] data, int offset);
 	public abstract boolean matchesRearward (byte[] data, int offset);
@@ -24,10 +23,6 @@ public abstract class Pattern {
 	public abstract List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;
 	public abstract int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;	
 	public abstract int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;
-	
-	Pattern (int[] costRegDraw) {
-		this.costRegDraw = costRegDraw;
-	}
 	
 	public int getNbPixels() {
 		return nbPixels;
@@ -45,23 +40,11 @@ public abstract class Pattern {
 		return isBackgroundBackupAndDrawDissociable;
 	}
 	
-	public boolean useVariableRegisters() {
-		return (resetRegisters == null ? true:false);
-	}
-	
-	public boolean[] getResetRegisters() {
+	public List<boolean[]> getResetRegisters() {
 		return resetRegisters;
 	}
 	
 	public List<boolean[]> getRegisterCombi() {
 		return registerCombi;
-	}
-	
-	public int[] getCostRegDraw() {
-		return costRegDraw;
-	}
-	
-	public int getCostRegDraw(int i) {
-		return costRegDraw[i];
 	}
 }

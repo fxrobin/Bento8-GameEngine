@@ -7,12 +7,6 @@ import fr.bento8.to8.InstructionSet.Register;
 
 public abstract class PatternAlpha extends Pattern{
 	
-	private static int[] costRegDraw = new int[] {2, 2, 3, 3, 4, 0, 0};
-	
-	PatternAlpha () {
-		super(costRegDraw);
-	}
-	
 	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+offset+",S");

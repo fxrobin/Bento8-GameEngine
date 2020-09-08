@@ -7,7 +7,6 @@ public class Pattern_11 extends PatternStackBlast {
 		nbBytes = nbPixels/2;
 		useIndexedAddressing = true;
 		isBackgroundBackupAndDrawDissociable = true;
-		resetRegisters = null;
 		registerCombi.add(new boolean[] {true, false, false, false, false, false, false});
 		registerCombi.add(new boolean[] {false, true, false, false, false, false, false});
 	}

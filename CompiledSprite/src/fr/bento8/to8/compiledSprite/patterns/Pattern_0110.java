@@ -12,7 +12,7 @@ public class Pattern_0110 extends PatternAlpha {
 		nbBytes = nbPixels/2;
 		useIndexedAddressing = true;
 		isBackgroundBackupAndDrawDissociable = false;
-		resetRegisters = new boolean[] {true, true, true, false, false, false, false};
+		resetRegisters.add(new boolean[] {true, true, true, false, false, false, false});
 		registerCombi.add(new boolean[] {false, false, true, false, false, false, false});
 	}
 

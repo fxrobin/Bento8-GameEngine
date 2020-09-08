@@ -1,6 +1,7 @@
 package fr.bento8.to8.InstructionSet;
 
 public class Register {
+	// Les registres sont ordonnés dans le sens du PUL
 	public static final String[] name = new String[] {"A", "B", "D", "X", "Y", "U", "S"};
 	public static final int[] size = new int[] {1, 1, 2, 2, 2, 2, 2};
 	
