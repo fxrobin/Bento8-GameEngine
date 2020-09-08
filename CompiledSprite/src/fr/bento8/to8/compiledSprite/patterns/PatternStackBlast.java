@@ -71,23 +71,33 @@ public abstract class PatternStackBlast extends Pattern{
 		String pixelValues;
 		String pshs = "\tPSHS ";
 		boolean firstPass;
+		
+		// loadMask :
+		//    true = Ecrire le LD et avancer la position de lecture des data
+		//    false = Ne pas ecrire le LD mais avancer la position de lecture des data
+		//    null = Ne pas ecrire le LD et ne pas avancer la position de lecture des data
+		
+		// registerIndexes :
+		//    Liste des index de registre pour l'écriture
 
 		// Création du LD
-		for (int i=0; i<registerIndexes.size(); i++) {
-			if (loadMask.get(registerIndexes.get(i))) {
-				if (Register.size[registerIndexes.get(i)] == 1) {
-					pixelValues = String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff);
-					position += 2;
+		for (int i=0; i<loadMask.size(); i++) {
+			if (loadMask.get(i) != null) {
+				if (loadMask.get(i)) {
+					if (Register.size[i] == 1) {
+						pixelValues = String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff);
+						position += 2;
+					} else {
+						pixelValues = String.format("%01x%01x%01x%01x", data[position]&0xff, data[position+1]&0xff, data[position+2]&0xff, data[position+3]&0xff);
+						position += 4;
+					}
+					asmCode.add("\tLD"+Register.name[i]+" #$"+pixelValues);
 				} else {
-					pixelValues = String.format("%01x%01x%01x%01x", data[position]&0xff, data[position+1]&0xff, data[position+2]&0xff, data[position+3]&0xff);
-					position += 4;
-				}
-				asmCode.add("\tLD"+Register.name[registerIndexes.get(i)]+" #$"+pixelValues);
-			} else {
-				if (Register.size[registerIndexes.get(i)] == 1) {
-					position += 2;
-				} else {
-					position += 4;
+					if (Register.size[i] == 1) {
+						position += 2;
+					} else {
+						position += 4;
+					}
 				}
 			}
 		}
@@ -114,9 +124,9 @@ public abstract class PatternStackBlast extends Pattern{
 	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		int cycles = 0;
 
-		for (int i=0; i<registerIndexes.size(); i++) {
-			if (loadMask.get(registerIndexes.get(i))) {
-				cycles += Register.costImmediateLD[registerIndexes.get(i)];
+		for (int i=0; i<loadMask.size(); i++) {
+			if (loadMask.get(i) != null && loadMask.get(i)) {
+				cycles += Register.costImmediateLD[i];
 			}
 		}
 
