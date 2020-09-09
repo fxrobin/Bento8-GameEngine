@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import fr.bento8.to8.InstructionSet.Register;
+import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
 public class RegisterOptim{
 	// 
@@ -408,5 +409,17 @@ public class RegisterOptim{
 			}
 		}
 		return regDisp;
+	}
+
+	public List<String> getAsmCode() {
+		return asmCode;
+	}
+	
+	public int getTotalPatternBytes() {
+		int size = 0;
+		for (Pattern pattern : solution.patterns) {
+			size += pattern.getNbBytes();
+		}
+		return size;
 	}
 }

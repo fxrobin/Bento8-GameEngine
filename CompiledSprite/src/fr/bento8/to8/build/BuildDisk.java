@@ -10,13 +10,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +28,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.PatternCluster;
+import fr.bento8.to8.compiledSprite.AssemblyGenerator;
 import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16;
 import fr.bento8.to8.compiledSprite.PatternFinder;
 import fr.bento8.to8.compiledSprite.RegisterOptim;
@@ -49,7 +53,6 @@ public class BuildDisk
 	private static String paletteTag;
 	private static String animationTag;
 	private static String drawDirection;
-	private static boolean isForward;
 	private static String memoryPages;
 	private static int[] pages;
 	private static HashMap<String, String[]> animationImages;
@@ -133,29 +136,13 @@ public class BuildDisk
 
 				for (SpriteSheet spriteSheet : spriteSheets) {
 					for (index = 0; index < spriteSheet.getSize(); index++) {
-						logger.debug("Planche:"+spriteSheet.getName()+" image:"+index);
-						logger.debug("RAM 0 (val hex 00 à 10 par pixel, 00 Transparent):");
-						logger.debug(convertByteTabToStringAL(spriteSheet.getSubImagePixels(index, 0)));
-						PatternFinder cs0 = new PatternFinder(spriteSheet.getSubImagePixels(index, 0));
-						cs0.buildCode(isForward);
-						fr.bento8.to8.compiledSprite.Solution solution = cs0.getSolutions().get(0);
-						PatternCluster cluster = new PatternCluster(solution);
-						cluster.cluster(isForward);
-						RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(index, 0));
-						regOpt.build();
-
-						logger.debug("RAM 1 (val hex 00 à 10 par pixel, 00 Transparent):");
-						logger.debug(convertByteTabToStringAL(spriteSheet.getSubImagePixels(index, 1)));
-						PatternFinder cs1 = new PatternFinder(spriteSheet.getSubImagePixels(index, 1));
-						cs1.buildCode(isForward);
-						solution = cs1.getSolutions().get(0);
-						cluster = new PatternCluster(solution);
-						cluster.cluster(isForward);
-						regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(index, 1));
-						regOpt.build();
+						AssemblyGenerator asm = new AssemblyGenerator (spriteSheet, index);
+						asm.getCompiledCode("A000");
 					}
 				}
 
+
+				
 
 				//			// Il est nécessaire de faire une première compilation de sprite pour connaitre leur taille
 				//			for (String[] i : animationImages.values()) { // Compile les sprites
@@ -358,16 +345,6 @@ public class BuildDisk
 			throw new Exception("Paramètre animation.tag manquant dans le fichier "+file);
 		}
 
-		drawDirection = prop.getProperty("drawdirection");
-		if (drawDirection == null) {
-			throw new Exception("Paramètre drawdirection manquant dans le fichier "+file);
-		}
-		if (drawDirection.equals("R")) {
-			isForward = false;
-		} else {
-			isForward = true;
-		}
-
 		memoryPages = prop.getProperty("memorypages");
 		if (memoryPages == null) {
 			throw new Exception("Paramètre memorypages manquant dans le fichier "+file);
@@ -433,44 +410,6 @@ public class BuildDisk
 			System.out.println(e); 
 			return -1;
 		}
-	}
-
-	public static String convertByteTabToString(byte[] b1) {
-		StringBuilder strBuilder = new StringBuilder();
-		for(byte val : b1) {
-			strBuilder.append(String.format("%02x", val&0xff));
-		}
-		return strBuilder.toString();
-	}
-	
-	public static String convertByteTabToStringNL(byte[] b1) {
-		StringBuilder strBuilder = new StringBuilder();
-		int i = 0;
-		for(byte val : b1) {
-			strBuilder.append(String.format("%02x", val&0xff));
-			if (++i == 80) {
-				strBuilder.append(System.lineSeparator());
-				i = 0;
-			}
-		}
-		return strBuilder.toString();
-	}
-	
-	public static String convertByteTabToStringAL(byte[] b1) {
-		StringBuilder strBuilder = new StringBuilder();
-		int i = 0;
-		for(byte val : b1) {
-			if (val == 0) {
-				strBuilder.append(".");
-			} else {
-				strBuilder.append(String.format("%01x", (val-1)&0xff));
-			}
-			if (++i == 80) {
-				strBuilder.append(System.lineSeparator());
-				i = 0;
-			}
-		}
-		return strBuilder.toString();
 	}
 
 	/**
