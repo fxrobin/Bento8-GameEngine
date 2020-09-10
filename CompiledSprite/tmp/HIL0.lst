@@ -1,10 +1,10 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : HIL0.ASM
- * Fichier destination : HIL0.BIN
+ * Fichier source      : tmp/HIL0.ASM
+ * Fichier destination : tmp/HIL0.BIN
  * Contenu :
- *     Main     0:HIL0.ASM     7928
+ *     Main     0:tmp/HIL0.ASM 7956
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -17,7 +17,7 @@ Pass2
       6
       7  7     A006 10FE 9F00            LDS $9F00
       8  7     A00A 10FF A4B7            STS ERASE_POS_HIL0_1+2
-      9  3     A00E CE   A524            LDU #ERASE_DATA_HIL0_1
+      9  3     A00E CE   A4C9            LDU #ERASE_DATA_HIL0_1
      10
      11  4+4   A011 32   E9 01BA         LEAS 442,S
      12  4+1   A015 A6   E8 B0           LDA -80,S
@@ -346,7 +346,7 @@ Pass2
     335
     336  7     A27C 10FE 9F02            LDS $9F00+2
     337  7     A280 10FF A4BE            STS ERASE_POS_HIL0_2+2
-    338  3     A284 CE   A4C9            LDU #ERASE_DATA_HIL0_2
+    338  3     A284 CE   A51C            LDU #ERASE_DATA_HIL0_2
     339
     340  4+4   A287 32   E9 01E2         LEAS 482,S
     341  5+1   A28B EC   E8 D7           LDD -41,S
@@ -650,19 +650,19 @@ Pass2
     639
     640        A4B5               ERASE_POS_HIL0_1
     641  4     A4B5 10CE 0000            LDS #$0000
-    642  3     A4B9 CE   A524            LDU #ERASE_DATA_HIL0_1
+    642  3     A4B9 CE   A51B            LDU #ERASE_DATA_HIL0_2-1
     643        A4BC               ERASE_CODE_HIL0_1
     644
     645        A4BC               ERASE_POS_HIL0_2
     646  4     A4BC 10CE 0000            LDS #$0000
-    647  3     A4C0 CE   A4C9            LDU #ERASE_DATA_HIL0_2
+    647  3     A4C0 CE   A576            LDU #ERASE_DATA_HIL0_END-1
     648        A4C3               ERASE_CODE_HIL0_2
     649
     650        A4C3               ERASE_SSAV_HIL0
     651  4     A4C3 10CE 0000            LDS #$0000
     652  5+5   A4C7 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
     653
-    654        A4C9               ERASE_DATA_HIL0_2
+    654        A4C9               ERASE_DATA_HIL0_1
     655        A4C9 0000                 FDB $0000
     656        A4CB 0000                 FDB $0000
     657        A4CD 0000                 FDB $0000
@@ -704,12 +704,12 @@ Pass2
     693        A515 0000                 FDB $0000
     694        A517 0000                 FDB $0000
     695        A519 0000                 FDB $0000
-    696        A51B 0000                 FDB $0000
-    697        A51D 0000                 FDB $0000
-    698        A51F 0000                 FDB $0000
-    699        A521 0000                 FDB $0000
-    700        A523 00                   FCB $00
-    701        A524               ERASE_DATA_HIL0_1
+    696        A51B 00                   FCB $00
+    697        A51C               ERASE_DATA_HIL0_2
+    698        A51C 0000                 FDB $0000
+    699        A51E 0000                 FDB $0000
+    700        A520 0000                 FDB $0000
+    701        A522 0000                 FDB $0000
     702        A524 0000                 FDB $0000
     703        A526 0000                 FDB $0000
     704        A528 0000                 FDB $0000
@@ -752,15 +752,17 @@ Pass2
     741        A572 0000                 FDB $0000
     742        A574 0000                 FDB $0000
     743        A576 00                   FCB $00
+    744        A577               ERASE_DATA_HIL0_END
 
 000000 Total Errors
 
-000010 Total Symbols
+000011 Total Symbols
      0x          Label A000 DRAW_HIL0
      0x          Label A4BC ERASE_CODE_HIL0_1
      0x          Label A4C3 ERASE_CODE_HIL0_2
-     2x          Label A524 ERASE_DATA_HIL0_1
-     2x          Label A4C9 ERASE_DATA_HIL0_2
+     1x          Label A4C9 ERASE_DATA_HIL0_1
+     2x          Label A51C ERASE_DATA_HIL0_2
+     1x          Label A577 ERASE_DATA_HIL0_END
      0x          Label A4AF ERASE_HIL0
      1x          Label A4B5 ERASE_POS_HIL0_1
      1x          Label A4BC ERASE_POS_HIL0_2

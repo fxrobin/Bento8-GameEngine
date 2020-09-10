@@ -8,6 +8,10 @@ import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import javax.imageio.ImageIO;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +19,8 @@ public class SpriteSheet {
 	// Convertion d'une planche de sprites en tableaux de données RAMA et RAMB pour chaque Sprite
 	// Thomson TO8/TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
+	
+	private static final Logger logger = LogManager.getLogger("log");
 
 	private BufferedImage image;
 	private String name;
@@ -169,16 +175,17 @@ public class SpriteSheet {
 		return data[position][ramPage];
 	}
 
-	public List<String> getCodePalette(double gamma) {
+	public String getCodePalette(double gamma) {
 		// std gamma: 3
 		// suggestion : 2 ou 2.2
-		List<String> code = new ArrayList<String>();
-		code.add("");
-		code.add("TABPALETTE");
+		
+		String code = "\n";
+		code += "\nTABPALETTE";
+		
 		// Construction de la palette de couleur
 		for (int j = 1; j < 17; j++) {
 			Color couleur = new Color(colorModel.getRGB(j));
-			code.add("\tFDB $0"
+			code += "\n\tFDB $0"
 					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getBlue() / 255.0), gamma)))
 					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getGreen() / 255.0), gamma)))
 					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getRed() / 255.0), gamma)))
@@ -186,13 +193,11 @@ public class SpriteSheet {
 					+ String.format("%-2.2s", j)
 					+ " R:" + String.format("%-3.3s", couleur.getRed())
 					+ " V:" + String.format("%-3.3s", couleur.getGreen())
-					+ " B:" + String.format("%-3.3s", couleur.getBlue()));
+					+ " B:" + String.format("%-3.3s", couleur.getBlue());
 		}
-		code.add("FINTABPALETTE");
+		code += "\nFINTABPALETTE";
 
-		for(String line : code) {
-			System.out.println(line);
-		}
+		logger.debug(code);
 
 		return code;
 	}

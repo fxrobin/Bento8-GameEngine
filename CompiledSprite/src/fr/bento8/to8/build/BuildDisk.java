@@ -10,16 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -27,11 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import fr.bento8.to8.boot.Bootloader;
-import fr.bento8.to8.compiledSprite.PatternCluster;
 import fr.bento8.to8.compiledSprite.AssemblyGenerator;
-import fr.bento8.to8.compiledSprite.CompiledSpriteModeB16;
-import fr.bento8.to8.compiledSprite.PatternFinder;
-import fr.bento8.to8.compiledSprite.RegisterOptim;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.SpriteSheet;
@@ -43,16 +36,16 @@ public class BuildDisk
 {
 	private static final Logger logger = LogManager.getLogger("log");
 
-	private static String tmpFile = "TMP.BIN";
+	private static String binTmpFile = "TMP.BIN";
 	private static String bootFile;
 	private static String mainFile;
 	private static String outputFileName;
 	private static String debugMode;
-	private static String tmpDirName;
+	public  static String tmpDirName;
 	private static String compiler;
-	private static String paletteTag;
+	private static String animationPalette;
+	private static String animationPaletteTag;
 	private static String animationTag;
-	private static String drawDirection;
 	private static String memoryPages;
 	private static int[] pages;
 	private static HashMap<String, String[]> animationImages;
@@ -89,205 +82,261 @@ public class BuildDisk
 	 */
 	public static void main(String[] args) throws Exception
 	{
-		byte[] binary;
-		int nbAllSubImages=0, nbSpriteSheets=0;
 		int face=0, track=0, sector=1;
-		HashMap<String, String[]> compiledImages = new HashMap<String, String[]>();
-		HashMap<String, String> imageAddress = new HashMap<String, String>();
+		byte[] binary;
 
 		try {
+			// Chargement du fichier de configuration
 			logger.info("Lecture du fichier de configuration: "+args[0]);
-			readProperties(args[0]); // Chargement du fichier de configuration
+			readProperties(args[0]);
 
 			if (debugMode.contentEquals("Y")) {
 				Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
 			}
 
-			FdUtil fd = new FdUtil(); // Initialisation de l'image de disquette en sortie
+			// Initialisation de l'image de disquette en sortie
+			FdUtil fd = new FdUtil();
 
-			if (compile(bootFile) == 0) { // Compilation du code d'initialisation (boot)
+			// Compilation du code d'initialisation (boot)
+			// *******************************************
+			
+			if (compile(bootFile) == 0) {
 
-				Bootloader bootLoader = new Bootloader(); // Traitement du binaire issu de la compilation et génération du secteur d'amorçage
-				byte[] bootLoaderBytes = bootLoader.encodeBootLoader(tmpFile);
+				// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
+				Bootloader bootLoader = new Bootloader();
+				byte[] bootLoaderBytes = bootLoader.encodeBootLoader(binTmpFile);
 
 				fd.setIndex(0, 0, 1);
 				fd.write(bootLoaderBytes);
+				
+				// Traitement de l'image pour l'écran de démarrage
+				// ***********************************************
 
-				PngToBottomUpBinB16 initVideo = new PngToBottomUpBinB16(initVideoFile); // Traitement de l'image pour l'écran de démarrage
+				PngToBottomUpBinB16 initVideo = new PngToBottomUpBinB16(initVideoFile);
 				byte[] initVideoBIN = initVideo.getBIN();
 
 				fd.setIndex(0, 4, 1);
 				fd.write(initVideoBIN);
 
 				// Génération des sprites compilés et organisation en pages de 16Ko par l'algorithme du sac à dos
-				for (String[] line : animationImages.values())
+				// **********************************************************************************************
+				
+				// Map contenant tous les planches de sprites
+				HashMap<String, SpriteSheet> spriteSheets = new HashMap<String, SpriteSheet>();
+				
+				// List contenant toutes les images distinctes utilisées dans les scripts d'animation
+				List<String> singleImages = new ArrayList<String>();
+				
+				String key;
+				String[] imageParam;
+				int nbAllSubImages=0;
+				
+				// Parcours de toutes les animations à la recherche des planches utilisées
+				for (String[] scriptLine : animationScripts.values())
 				{
-					nbAllSubImages += Integer.parseInt(line[5]); // Compte le nombre total d'images toutes planches confondues (.png)
-					nbSpriteSheets++; // Compte le nombre de planches
+					// Debut des références images en index 3 dans le script d'animation
+					for (int i = 3; !scriptLine[i].contentEquals("GO") && !scriptLine[i].contentEquals("RET"); i++) {
+						
+						// Charge toutes les planches utiles
+						key = scriptLine[i].split(":")[0];
+						if (!spriteSheets.containsKey(key)) {
+							imageParam = animationImages.get(key);
+							
+							// Paramètres : tag, fichier, nombre d'images, flip
+							spriteSheets.put(key, new SpriteSheet(imageParam[0], imageParam[1], Integer.parseInt(imageParam[2]), imageParam[3]));
+						}
+						
+						// Enregistre et compte le nombre total d'images distinctes utilisées
+						if (!singleImages.contains(scriptLine[i])) {
+							singleImages.add(scriptLine[i]);
+							nbAllSubImages++;
+						}
+					}
+				}
+				
+				// Map contenant l'ensemble du code ASM pour chaque image
+				HashMap<String, AssemblyGenerator> asmImages = new HashMap<String, AssemblyGenerator>();
+				AssemblyGenerator asm;
+				
+				// Initialise un item pour chaque image utile
+				Item[] items = new Item[nbAllSubImages];
+				int itemIdx = 0;
+
+				// première compilation de sprite pour connaitre leur taille
+				for (String currentImage : singleImages) {
+					
+					logger.debug("**************** Génération du code ASM de l'image " + currentImage + " ****************");
+					asm = new AssemblyGenerator (spriteSheets.get(currentImage.split(":")[0]), Integer.parseInt(currentImage.split(":")[1]));
+					
+					// Sauvegarde du code généré
+					asmImages.put(currentImage, asm);
+					
+					logger.debug("**************** Compilation de l'image " + currentImage + " ****************");
+					binary = asm.getCompiledCode("A000");
+					
+					// Création de l'item pour l'algo sac à dos
+					items[itemIdx++] = new Item(currentImage, 1, binary.length); // id, priority, bytes
+
+
+					logger.debug(currentImage+" compiler binary Cycles: "); // TODO
+					logger.debug(currentImage+" compiler binary length: "+binary.length);
+					
+					// Une image compilée doit tenir sur une page de 16Ko pour pouvoir être exécutée
+					if (binary.length>16384)
+						logger.fatal("Image "+currentImage+" trop grande, code compilé :"+binary.length+" octets (max 16384)");
 				}
 
-				Item[] items = new Item[nbAllSubImages]; // initialise un item pour chaque image
-				SpriteSheet[] spriteSheets = new SpriteSheet[nbSpriteSheets]; // tableau contenant tous les planches de sprites
+				// Ecriture des sprites en pages de 16Ko sur disquette
+				// ***************************************************
+				face = 0; // 0-1
+				track = 8; // 0-79
+				sector = 1; // 1-16
+				fd.setIndex(face, track, sector);
+				
+				int orgOffset, org = 40960; // org = A000
+				int currentPageIndex = 0;
+				
+				// Map constenant l'ensemble des adresses d'appel a chaque image
+				HashMap<String, String> imageAddress = new HashMap<String, String>();
 
-				int index=0;
-				for (String[] i : animationImages.values()) {
-					spriteSheets[index++] = new SpriteSheet(i[1], i[4], Integer.parseInt(i[5]), i[6]);
+				while (items.length>0) {
+
+					logger.debug("**************** Page : " + pages[currentPageIndex] + " ****************");
+					orgOffset = 0;
+
+					if (currentPageIndex >= pages.length)
+						logger.fatal("Plus de pages disponibles.");
+
+					// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
+					Knapsack knapsack = new Knapsack(items, 16384); //Sac à dos de poids max 16Ko
+					knapsack.display();
+					
+					Solution solution = knapsack.solve();
+					solution.display();
+
+					// Parcours de la solution
+					for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
+						Item currentItem = iter.next();
+
+						// Pour la solution obtenue, compilation des sprites avec l'adresse mémoire cible
+						System.out.println("**************** Compilation de l'image " + currentItem.name + " à l'adresse "+String.format("%1$04X",org+orgOffset)+"****************");
+						asm = asmImages.get(currentItem.name);
+						binary = asm.getCompiledCode(String.format("%1$04X",org+orgOffset));
+
+						// Sauvegarde de la référence des adresses pour la construction des scripts d'animation
+						imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",pages[currentPageIndex]) +
+														   "\n\tFDB $" + String.format("%1$04X",org+orgOffset) +
+														   "\n\tFDB $" + asm.getEraseAddress());
+						
+						// Avance de l'ORG
+						orgOffset += binary.length;
+
+						// Ecriture sur disquette du sprite compilé à l'adresse cible
+						fd.write(binary);
+
+						// construit la liste des éléments restants à organiser
+						for (int itemIndex=0; itemIndex<items.length; itemIndex++) {
+							if (items[itemIndex].name.contentEquals(currentItem.name)) {
+								Item[] newItems = new Item[items.length-1];
+								for (int l=0; l<itemIndex; l++) {
+									newItems[l]=items[l];
+								}
+								for (int j=itemIndex; j<items.length-1; j++) {
+									newItems[j]=items[j+1];
+								}
+								items = newItems;
+								break;
+							}
+						}
+					}
+					
+					// Avance des curseurs de page et pointeurs sur disquette
+					currentPageIndex++;
+					track += 4;
+					if (track > 79) {
+						face += 1;
+						track = 0;
+
+						if (face>1) {
+							logger.fatal("Plus d'espace dans l'image de disquette.");
+						}
+					}
+					fd.setIndex(face, track, sector);
 				}
 
-				for (SpriteSheet spriteSheet : spriteSheets) {
-					for (index = 0; index < spriteSheet.getSize(); index++) {
-						AssemblyGenerator asm = new AssemblyGenerator (spriteSheet, index);
-						asm.getCompiledCode("A000");
+
+				// Construction des scripts d'animation
+				// ************************************
+				
+				String sAnimationScript = new String();
+				for (String[] animationScript : animationScripts.values()) {
+					sAnimationScript += "\n\n\tFDB $"+(animationScript[2].contentEquals("GSP") ? "01" : "00")+String.format("%1$02X", Integer.parseInt(animationScript[1]));
+					sAnimationScript += "\n"+animationScript[0];
+
+					// Debut des références images en index 3 dans le script d'animation
+					for (int subImage = 3; subImage < animationScript.length; subImage++) {
+						String subImageAddress = imageAddress.get(animationScript[subImage]);
+						if (subImageAddress != null) {
+							sAnimationScript += subImageAddress;
+						} else if (animationScript[subImage].contentEquals("GO")) {
+							sAnimationScript += "\n\tFCB $FF";
+							subImage++;
+							sAnimationScript += "\n\tFDB "+animationScript[subImage++];
+							sAnimationScript += "\n\tFDB $"+String.format("%1$02X", Integer.parseInt(animationScript[subImage++]))+String.format("%1$02X", Integer.parseInt(animationScript[subImage]));
+						} else {
+							if (animationScript[subImage].contentEquals("RET")){
+								sAnimationScript += "\n\tFCB $FE";
+							} else {
+								throw new Exception("Unknown image: "+animationScript[subImage]+" in animation script: "+animationScript[0]+" position: "+subImage);
+							}
+						}
 					}
 				}
 
-
+				// Assemblage du fichier MAIN
+				// **************************
 				
+				Path pathMain = Paths.get(mainFile);
+				Path pathMainTmp = Paths.get("./"+tmpDirName+"/GEN-"+pathMain.getFileName().toString());
+				Files.deleteIfExists(pathMainTmp);
+				Charset charset = StandardCharsets.UTF_8;
 
-				//			// Il est nécessaire de faire une première compilation de sprite pour connaitre leur taille
-				//			for (String[] i : animationImages.values()) { // Compile les sprites
-				//				int nbImages = Integer.parseInt(i[5]);
-				//				for (int j=0; j<nbImages; j++ ) {
-				//					System.out.println("**************** Calcul de la taille pour l'image " + i[1]+":"+j + " ****************");
-				//					CompiledSpriteModeB16 sprite = new CompiledSpriteModeB16(i[4], i[1]+j, nbImages, j, Integer.parseInt(i[6]));
-				//					binary = sprite.getCompiledCode("A000");
-				//
-				//					if (binary.length>16384)
-				//					{
-				//						throw new Exception("Image "+i[1]+":"+j+" trop grande, code compilé :"+binary.length+" octets (max 16384)");
-				//					}
-				//
-				//					compiledImages.put(i[1]+":"+j, new String[] {i[4], i[1]+j, Integer.toString(nbImages), Integer.toString(j), i[6], i[0]});
-				//					items[nbAllSubImages++] = new Item(i[1]+":"+j, Integer.parseInt(i[2]+String.format("%03d", Integer.parseInt(i[3]))), binary.length); // id, priority, bytes
-				//					System.out.println(i[1]+":"+j+":"+binary.length+":");
-				//					for (int idx=0; idx<binary.length; idx++)
-				//						System.out.print(String.format("%x", Byte.toUnsignedInt(binary[idx])));
-				//				}
-				//			}
-				//
-				//			face = 0; // 0-1
-				//			track = 8; // 0-79
-				//			sector = 1; // 1-16
-				//			int orgOffset;
-				//			int org;
-				//
-				//			int currentPageIndex = 0;
-				//			fd.setIndex(face, track, sector);
-				//
-				//			while (items.length>0) {
-				//
-				//				System.out.println("**************** Oganise les données en pages de 16ko - Page courante : " + pages[currentPageIndex] + " ****************");
-				//				orgOffset = 40960; // offset A000
-				//				org = 0; // relative ORG
-				//
-				//				if (currentPageIndex >= pages.length) {
-				//					throw new Exception("Plus de pages disponibles.");
-				//				}
-				//
-				//				// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
-				//				Knapsack knapsack = new Knapsack(items, 16384); //16Ko
-				//				knapsack.display();
-				//				Solution solution = knapsack.solve();
-				//				solution.display();
-				//
-				//				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
-				//					Item currentItem = iter.next();
-				//
-				//					// Seconde passe de compilation avec positionnement des adresses cibles
-				//					System.out.println("**************** Compile le sprite " + currentItem.name + " ****************");
-				//					String[] params = compiledImages.get(currentItem.name);
-				//					CompiledSpriteModeB16 sprite = new CompiledSpriteModeB16(params[0], params[1], Integer.parseInt(params[2]), Integer.parseInt(params[3]), Integer.parseInt(params[4]));
-				//					binary = sprite.getCompiledCode(String.format("%1$04X",orgOffset+org));
-				//
-				//					// référence des adresses pour la construction des scripts d'animation
-				//					imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",pages[currentPageIndex]) + "\n\tFDB $" + String.format("%1$04X",orgOffset+org) + "\n\tFDB $" + sprite.eraseAddress);
-				//					org += binary.length;
-				//
-				//					fd.write(binary);
-				//
-				//					// construit la liste des éléments restants
-				//					for (int itemIndex=0; itemIndex<items.length; itemIndex++) {
-				//						if (items[itemIndex].name.contentEquals(currentItem.name)) {
-				//							Item[] newItems = new Item[items.length-1];
-				//							for (int l=0; l<itemIndex; l++) {
-				//								newItems[l]=items[l];
-				//							}
-				//							for (int j=itemIndex; j<items.length-1; j++) {
-				//								newItems[j]=items[j+1];
-				//							}
-				//							items = newItems;
-				//							break;
-				//						}
-				//					}
-				//				}
-				//				currentPageIndex++;
-				//				track += 4;
-				//				if (track > 79) {
-				//					face += 1;
-				//					track = 0;
-				//
-				//					if (face>1) {
-				//						throw new Exception("Plus d'espace dans l'image de disquette.");
-				//					}
-				//				}
-				//				fd.setIndex(face, track, sector);
-				//			}
-				//
-				//			// ********** scripts d'animation *******
-				//			String sAnimationScript = new String();
-				//			for (String[] animationScript : animationScripts.values()) {
-				//				sAnimationScript += "\n\n\tFDB $"+(animationScript[2].contentEquals("GSP") ? "01" : "00")+String.format("%1$02X", Integer.parseInt(animationScript[1]));
-				//				sAnimationScript += "\n"+animationScript[0];
-				//
-				//				for (int subImage = 3; subImage < animationScript.length; subImage++) {
-				//					String subImageAddress = imageAddress.get(animationScript[subImage]);
-				//					if (subImageAddress != null) {
-				//						sAnimationScript += subImageAddress;
-				//					} else if (animationScript[subImage].contentEquals("GO")) {
-				//						sAnimationScript += "\n\tFCB $FF";
-				//						subImage++;
-				//						sAnimationScript += "\n\tFDB "+animationScript[subImage++];
-				//						sAnimationScript += "\n\tFDB $"+String.format("%1$02X", Integer.parseInt(animationScript[subImage++]))+String.format("%1$02X", Integer.parseInt(animationScript[subImage]));
-				//					} else {
-				//						if (animationScript[subImage].contentEquals("RET")){
-				//							sAnimationScript += "\n\tFCB $FE";
-				//						} else {
-				//							throw new Exception("Unknown image: "+animationScript[subImage]+" in animation script: "+animationScript[0]+" position: "+subImage);
-				//						}
-				//					}
-				//				}
-				//			}
-				//
-				//			Path pathMain = Paths.get(mainFile);
-				//			Path pathMainTmp = Paths.get(mainFile+".TMP");
-				//			Files.deleteIfExists(pathMainTmp);
-				//			Charset charset = StandardCharsets.UTF_8;
-				//
-				//			// Positionnement des données de script d'animation
-				//			String content = new String(Files.readAllBytes(pathMain), charset);
-				//			content = content.replace(animationTag, sAnimationScript);
-				//			Files.write(pathMainTmp, content.getBytes(charset));
-				//
-				//			if (compile(mainFile+".TMP") == 0) { // Compilation du code principal
-				//				byte[] mainBytes = Files.readAllBytes(Paths.get(tmpFile)); // Ecriture du code principal
-				//
-				//				fd.setIndex(0, 0, 2);
-				//				fd.write(mainBytes);
-				//
-				//				fd.save(outputFileName);
-				//				fd.saveToSd(outputFileName);
-				//
-				//				// Affiche l'usage mémoire
-				//				System.out.print("\nUsed Pages :");
-				//				for (int usedPagesIndex=0; usedPagesIndex<currentPageIndex; usedPagesIndex++) {
-				//					System.out.print(pages[usedPagesIndex]+" ($"+String.format("%1$02X",pages[usedPagesIndex])+") ");
-				//				}
-				//				System.out.print("("+currentPageIndex*16+"ko)\nFree Pages :");
-				//				for (int freePagesIndex=currentPageIndex; freePagesIndex<pages.length; freePagesIndex++) {
-				//					System.out.print(pages[freePagesIndex]+" ($"+String.format("%1$02X",pages[freePagesIndex])+") ");
-				//				}
-				//				System.out.print("("+(pages.length-currentPageIndex)*16+" ko)\n");
-				//			}
+				// Remplacement du TAG animation par le code généré des scripts d'animations
+				String content = new String(Files.readAllBytes(pathMain), charset);
+				content = content.replace(animationTag, sAnimationScript);
+				
+				// Remplacement du TAG palette par le code généré
+				if (!spriteSheets.containsKey(animationPalette))
+					logger.fatal("L'image "+animationPalette+" n'est pas déclarée ou n'est pas utilisée dans une animation.");
+				
+				content = content.replace(animationPaletteTag, spriteSheets.get(animationPalette).getCodePalette(3));
+				Files.write(pathMainTmp, content.getBytes(charset));
+
+				// Compilation du code principal
+				if (compile(pathMainTmp.toString()) == 0) {
+					byte[] mainBytes = Files.readAllBytes(Paths.get(binTmpFile));
+
+					// Ecriture sur disquette
+					fd.setIndex(0, 0, 2);
+					fd.write(mainBytes);
+
+					// Génération des images disquette
+					fd.save(outputFileName);
+					fd.saveToSd(outputFileName);
+
+					// Affichage de l'usage mémoire
+					String line = "\nUsed Pages :";
+					for (int usedPagesIndex=0; usedPagesIndex<currentPageIndex; usedPagesIndex++) {
+						line += pages[usedPagesIndex]+" ($"+String.format("%1$02X",pages[usedPagesIndex])+") ";
+					}
+					line += "("+currentPageIndex*16+"ko)\nFree Pages :";
+					for (int freePagesIndex=currentPageIndex; freePagesIndex<pages.length; freePagesIndex++) {
+						line += pages[freePagesIndex]+" ($"+String.format("%1$02X",pages[freePagesIndex])+") ";
+					}
+					line += "("+(pages.length-currentPageIndex)*16+" ko)\n";
+					
+					logger.debug(line);
+				}
 			}
 		} catch (Exception e) {
 			logger.fatal("Erreur lors de la lecture du fichier de configuration.", e);
@@ -327,22 +376,13 @@ public class BuildDisk
 		if (tmpDirName == null) {
 			throw new Exception("Paramètre tmpdir manquant dans le fichier "+file);
 		}
+		tmpDirName = tmpDirName.replace("^./", ""); // Bug fix c6809
 
-		tmpFile = tmpDirName + "/" + tmpFile;
+		binTmpFile = tmpDirName + "/" + binTmpFile;
 
 		compiler = prop.getProperty("compiler");
 		if (compiler == null) {
 			throw new Exception("Paramètre compiler manquant dans le fichier "+file);
-		}
-
-		paletteTag  = prop.getProperty("palette.tag");
-		if (paletteTag == null) {
-			throw new Exception("Paramètre palette.tag manquant dans le fichier "+file);
-		}
-
-		animationTag  = prop.getProperty("animation.tag");
-		if (animationTag == null) {
-			throw new Exception("Paramètre animation.tag manquant dans le fichier "+file);
 		}
 
 		memoryPages = prop.getProperty("memorypages");
@@ -355,10 +395,25 @@ public class BuildDisk
 		for (int i=0;i<el.length;i++) {
 			pages[i]=Integer.parseInt(el[i]);
 		}
+		
+		animationTag  = prop.getProperty("animation.tag");
+		if (animationTag == null) {
+			throw new Exception("Paramètre animation.tag manquant dans le fichier "+file);
+		}
 
 		animationImages = getPropertyList(prop, "animation.image");
 		if (animationImages.isEmpty()) {
 			throw new Exception("Paramètre animation.image.x manquant dans le fichier "+file);
+		}
+		
+		animationPalette  = prop.getProperty("animation.palette");
+		if (animationPalette == null) {
+			throw new Exception("Paramètre animation.palette manquant dans le fichier "+file);
+		}
+		
+		animationPaletteTag  = prop.getProperty("animation.palette.tag");
+		if (animationPaletteTag == null) {
+			throw new Exception("Paramètre animation.palette.tag manquant dans le fichier "+file);
 		}
 
 		animationScripts = getPropertyList(prop, "animation.script");
@@ -381,13 +436,13 @@ public class BuildDisk
 	private static int compile(String asmFile) {
 		try {
 			// Purge des fichiers temporaires
-			Files.deleteIfExists(Paths.get(tmpFile));
+			Files.deleteIfExists(Paths.get(binTmpFile));
 			Files.deleteIfExists(Paths.get("codes.lst"));
 
 			// Lancement de la compilation du fichier contenant le code de boot
 			System.out.println("**************** COMPILE "+asmFile+" ****************");
 			// l'option -bd permet la génération d'un binaire brut (sans entête)
-			Process p = new ProcessBuilder(compiler, "-bd", Paths.get(asmFile).toString(), Paths.get(tmpFile).toString()).start();
+			Process p = new ProcessBuilder(compiler, "-bd", Paths.get(asmFile).toString(), Paths.get(binTmpFile).toString()).start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 
