@@ -418,8 +418,10 @@ public class RegisterOptim{
 	public int getTotalPatternBytes() {
 		int size = 0;
 		for (Pattern pattern : solution.patterns) {
+			logger.debug("pattern:"+pattern.getClass().toString()+" "+pattern.getNbBytes());
 			size += pattern.getNbBytes();
 		}
+		logger.debug(size);
 		return size;
 	}
 }

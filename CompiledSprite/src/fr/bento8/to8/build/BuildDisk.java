@@ -42,7 +42,7 @@ public class BuildDisk
 	private static String outputFileName;
 	private static String debugMode;
 	public  static String tmpDirName;
-	private static String compiler;
+	public  static String compiler;
 	private static String animationPalette;
 	private static String animationPaletteTag;
 	private static String animationTag;

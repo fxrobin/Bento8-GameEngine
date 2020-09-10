@@ -1107,9 +1107,9 @@ HERO_JOG_SPD_LIMIT EQU $0600        * 0600
 HERO_JOG_NEG_SPD_LIMIT EQU $FA00    * FA00
 
 HERO_X_POS
-	FCB $18			* Horizontal Position
+	FCB $00			* Horizontal Position
 HERO_Y_POS
-	FCB $A2			* Vertical Position
+	FCB $00			* Vertical Position
 HERO_G_SPEED
 	FDB $0000		* Ground Speed First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED

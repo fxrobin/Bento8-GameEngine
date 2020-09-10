@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import fr.bento8.to8.InstructionSet.Register;
 import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.image.SpriteSheet;
 
@@ -25,17 +26,11 @@ public class AssemblyGenerator{
 	private static final Logger logger = LogManager.getLogger("log");
 
 	boolean FORWARD = true;
-
-	String spriteName;
-
+	public String spriteName;
 	public String eraseAddress;
-
-	// Initialisation du code statique
-	String posAdress = "9F00";
-
-	// Etiquettes
-	String erasePrefix = "ERASE_";
-	String drawLabel, dataLabel, ssaveLabel, eraseLabel, erasePosLabel, eraseCodeLabel;
+	private int cyclesFrameCode;
+	private int sizeFrameCode;
+	private String heroPosition = "9F00"; // identique à HERO_POS dans MAIN.ASM TODO A modifier : stocker les positions avec les données d'effacement (multisprite)
 
 	// Code
 	List<String> spriteCode1 = new ArrayList<String>();
@@ -48,200 +43,76 @@ public class AssemblyGenerator{
 	public AssemblyGenerator(SpriteSheet spriteSheet, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName().toUpperCase().replaceAll("[^A-Za-z0-9]", "")+imageNum;
 
-		// Etiquettes Code d'éctiture et Code d'effacement
-		drawLabel   = "DRAW_" + spriteName;
-		dataLabel   = "DATA_" + spriteName;
-		ssaveLabel  = "SSAV_" + spriteName;
-
-		// Etiquettes spécifiques Code d'effacement
-		eraseLabel     = erasePrefix + spriteName;
-		erasePosLabel  = erasePrefix + "POS_"  + spriteName;
-		eraseCodeLabel = erasePrefix + "CODE_"  + spriteName;
-
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("RAM 0 (val hex 00 à 10 par pixel, 00 Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
-		PatternFinder cs0 = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
-		cs0.buildCode(FORWARD);
-		fr.bento8.to8.compiledSprite.Solution solution = cs0.getSolutions().get(0);
+		PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
+		cs.buildCode(FORWARD);
+		Solution solution = cs.getSolutions().get(0);
+		
 		PatternCluster cluster = new PatternCluster(solution);
 		cluster.cluster(FORWARD);
+		
 		RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(imageNum, 0));
 		regOpt.build();
+		
 		spriteCode1 = regOpt.getAsmCode();
 		generateDataFDB(regOpt.getTotalPatternBytes(), spriteEData1);
 
 		logger.debug("RAM 1 (val hex 00 à 10 par pixel, 00 Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
-		PatternFinder cs1 = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
-		cs1.buildCode(FORWARD);
-		solution = cs1.getSolutions().get(0);
+		cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
+		cs.buildCode(FORWARD);
+		solution = cs.getSolutions().get(0);
+		
 		cluster = new PatternCluster(solution);
 		cluster.cluster(FORWARD);
+		
 		regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(imageNum, 1));
 		regOpt.build();
+		
 		spriteCode2 = regOpt.getAsmCode();	
 		generateDataFDB(regOpt.getTotalPatternBytes(), spriteEData2);
 
 	}
 
-	public List<String> getCompiledEData(int i) {
-		return getCompiledEData("", i);
-	}	
-
-	public List<String> getCompiledEData(String prefix, int i) {
-		if (i == 1) {
-			spriteEData2.set(0, prefix + dataLabel + "_2");
-			spriteEData2.add(prefix + dataLabel + "_END");
-		} else {
-			spriteEData1.set(0, prefix + dataLabel + "_1");
-		}
-		return (i == 1) ? spriteEData2 : spriteEData1;
-	}
-
-	public List<String> getCodeHeader(String label, int pos) {
-		return getCodeHeader("", label, pos);
-	}	
-
-	public List<String> getCodeHeader(String prefix, String label, int pos) {
-		List<String> code = new ArrayList<String>();
-		code.add(label);
-		code.add("\tPSHS U,DP");
-		code.add("\tSTS " + prefix + ssaveLabel + "+2");
-		code.add("");
-		if (prefix.contentEquals(""))
-		{
-			code.add("\tLDS $" + posAdress);
-			code.add("\tSTS " + erasePosLabel + "_" + pos + "+2"); // auto-modification du code
-		}
-		else {
-			code.add(erasePosLabel + "_" + pos); // label pour auto-modification du code
-			code.add("\tLDS #$0000");
-		}
-
-		if (prefix.contentEquals(""))
-		{
-			code.add("\tLDU #" + erasePrefix + dataLabel + "_" + pos);
-		} else {
-			code.add("\tLDU #" + erasePrefix + dataLabel + "_2-1");
-		}
-
-		if (prefix.contentEquals(""))
-		{
-			code.add("");
-		}
-		else {
-			code.add(eraseCodeLabel + "_" + pos);
-		}
-
-		return code;
-	}
-
-	public List<String> getCodeSwitchData(int pos) {
-		return getCodeSwitchData("", pos);
-	}
-
-	public List<String> getCodeSwitchData(String prefix, int pos) {
-		List<String> code = new ArrayList<String>();
-		code.add("");
-		if (prefix.contentEquals(""))
-		{
-			code.add("\tLDS $" + posAdress + "+2");
-			code.add("\tSTS " + erasePosLabel + "_" + pos + "+2"); // auto-modification du code
-		}
-		else {
-			code.add(erasePosLabel + "_" + pos); // label pour auto-modification du code
-			code.add("\tLDS #$0000");
-		}
-
-		if (prefix.contentEquals(""))
-		{
-		code.add("\tLDU #" + erasePrefix + dataLabel + "_" + pos);
-		} else {
-			code.add("\tLDU #" + erasePrefix + dataLabel + "_END-1");
-		}
-
-		if (prefix.contentEquals(""))
-		{
-			code.add("");
-		}
-		else {
-			code.add(eraseCodeLabel + "_" + pos);
-		}
-		return code;
-	}
-
-	public List<String> getCodeFooter() {
-		return getCodeFooter("");
-	}
-
-	public List<String> getCodeFooter(String prefix) {
-		List<String> code = new ArrayList<String>();
-		code.add("");
-		code.add(prefix + ssaveLabel);
-		code.add("\tLDS #$0000");
-		code.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)");
-		code.add("");
-		return code;
-	}
-
-	public void generateDataFDB(int size, List<String> spriteData) {
-
-		// **************************************************************
-		// Construit un tableau de données en assembleur
-		// **************************************************************
-		spriteData.add(""); // utilisé plus tard pour le tag
-		int i = 0;
-
-		while (i < size) {
-			if (i < size - 2) {
-				spriteData.add("\tFDB $0000");
-				i += 2;
-			} else {
-				spriteData.add("\tFCB $00");
-				i += 1;
-			}
-		}
-	}
-
 	public byte[] getCompiledCode(String org) {
 		byte[]  content = {};
-		List<String> code = new ArrayList<String>();
 		String asmFileName = BuildDisk.tmpDirName+"/"+spriteName+".ASM";
 		String binFileName = BuildDisk.tmpDirName+"/"+spriteName+".BIN";
 		String lstFileName = BuildDisk.tmpDirName+"/"+spriteName+".lst";
+		
+		cyclesFrameCode=0;
+		sizeFrameCode=0;	
 
 		try
 		{
 			Path assemblyFile = Paths.get(asmFileName);
 			Files.deleteIfExists(assemblyFile);
 			Files.createFile(assemblyFile);
-
-			code.add("(main)"+asmFileName);
-			code.add("\tORG $"+org);
-			Files.write(assemblyFile, code, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCodeHeader(drawLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCodeSwitchData(2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			
+			Files.write(assemblyFile, getCodeFrame1(asmFileName, org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCodeFooter(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-
-			Files.write(assemblyFile, getCodeHeader(erasePrefix, eraseLabel, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCodeSwitchData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFrame2(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFrame3(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCodeFooter(erasePrefix), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCompiledEData(erasePrefix, 2), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-			Files.write(assemblyFile, getCompiledEData(erasePrefix, 1), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-
+			Files.write(assemblyFile, getCodeFrame4(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFrame5(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, spriteEData1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFrame6(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, spriteEData2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFrame7(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			
 			// Delete binary file
 			Path binaryFile = Paths.get(binFileName);
 			Files.deleteIfExists(binaryFile);
 
 			// Generate binary code from assembly code
-			Process p = new ProcessBuilder("c6809.exe", "-bd", asmFileName, binFileName).start();
+			Process p = new ProcessBuilder(BuildDisk.compiler, "-bd", asmFileName, binFileName).start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while((line=br.readLine())!=null){
@@ -296,4 +167,167 @@ public class AssemblyGenerator{
 	public String getEraseAddress() {
 		return eraseAddress;
 	}
+
+	public List<String> getCodeFrame1(String fileName, String org) {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("(main)" + fileName + "");
+
+		asm.add("\tORG $" + org + "");
+		asm.add("DRAW_" + spriteName + "");
+
+		asm.add("\tPSHS U,DP");
+		cyclesFrameCode += Register.getCostImmediatePULPSH(3);
+		sizeFrameCode += Register.sizeImmediatePULPSH;
+
+		asm.add("\tSTS SSAV_" + spriteName + "+2\n");
+		cyclesFrameCode += Register.costExtendedST[Register.S];
+		sizeFrameCode += Register.sizeExtendedST[Register.S];
+
+		asm.add("\tLDS $"+heroPosition+"");
+		cyclesFrameCode += Register.costExtendedLD[Register.S];
+		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+
+		asm.add("\tSTS ERASE_POS_" + spriteName + "_1+2");
+		cyclesFrameCode += Register.costExtendedST[Register.S];
+		sizeFrameCode += Register.sizeExtendedST[Register.S];
+
+		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2");
+		cyclesFrameCode += Register.costImmediateLD[Register.U];
+		sizeFrameCode += Register.sizeImmediateLD[Register.U];
+
+		return asm;
+	}
+
+	public List<String> getCodeFrame2() {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("\n\tLDS $"+heroPosition+"+2");
+		
+		asm.add("\tSTS ERASE_POS_" + spriteName + "_2+2");
+		cyclesFrameCode += Register.costExtendedST[Register.S];
+		sizeFrameCode += Register.sizeExtendedST[Register.S];
+		
+		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_END\n");
+		cyclesFrameCode += Register.costImmediateLD[Register.U];
+		sizeFrameCode += Register.sizeImmediateLD[Register.U];
+		
+		return asm;
+	}
+	
+	public List<String> getCodeFrame3() {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("SSAV_" + spriteName + "");
+		
+	    asm.add("\tLDS #$0000");
+		cyclesFrameCode += Register.costExtendedLD[Register.S];
+		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+	    
+	    asm.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
+		cyclesFrameCode += Register.getCostImmediatePULPSH(5);
+		sizeFrameCode += Register.sizeImmediatePULPSH;
+	    
+	    asm.add("ERASE_" + spriteName + "");
+	    
+	    asm.add("\tPSHS U,DP");
+		cyclesFrameCode += Register.getCostImmediatePULPSH(3);
+		sizeFrameCode += Register.sizeImmediatePULPSH;
+	    
+	    asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2\n");
+		cyclesFrameCode += Register.costExtendedST[Register.S];
+		sizeFrameCode += Register.sizeExtendedST[Register.S];
+	    
+	    asm.add("ERASE_POS_" + spriteName + "_1");
+	    
+	    asm.add("\tLDS #$0000");
+		cyclesFrameCode += Register.costExtendedLD[Register.S];
+		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+	    
+	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_1\n");
+		cyclesFrameCode += Register.costImmediateLD[Register.U];
+		sizeFrameCode += Register.sizeImmediateLD[Register.U];
+	    
+	    asm.add("ERASE_CODE_" + spriteName + "_1");
+	    
+		return asm;
+	}
+
+	public List<String> getCodeFrame4() {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("ERASE_POS_" + spriteName + "_2");
+		
+	    asm.add("\tLDS #$0000");
+		cyclesFrameCode += Register.costExtendedLD[Register.S];
+		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+	    
+	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2\n");
+		cyclesFrameCode += Register.costImmediateLD[Register.U];
+		sizeFrameCode += Register.sizeImmediateLD[Register.U];
+	    
+	    asm.add("ERASE_CODE_" + spriteName + "_2");
+	    
+		return asm;
+	}
+	
+	public List<String> getCodeFrame5() {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("ERASE_SSAV_" + spriteName + "");
+		
+		asm.add("\tLDS #$0000");
+		cyclesFrameCode += Register.costExtendedLD[Register.S];
+		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+		
+		asm.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
+		cyclesFrameCode += Register.getCostImmediatePULPSH(5);
+		sizeFrameCode += Register.sizeImmediatePULPSH;
+		
+		asm.add("ERASE_DATA_" + spriteName + "_1");
+		return asm;
+	}
+	
+	public List<String> getCodeFrame6() {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("ERASE_DATA_" + spriteName + "_2");
+		
+		return asm;
+	}
+	
+	public List<String> getCodeFrame7() {
+		
+		List<String> asm = new ArrayList<String>();
+		asm.add("ERASE_DATA_" + spriteName + "_END");
+		
+		return asm;
+	}
+	
+	public void generateDataFDB(int size, List<String> spriteData) {
+
+		// **************************************************************
+		// Construit un tableau de données vide en assembleur
+		// **************************************************************
+		int i = 0;
+
+		while (i < size) {
+			if (i < size - 2) {
+				spriteData.add("\tFDB $0000");
+				i += 2;
+			} else {
+				spriteData.add("\tFCB $00");
+				i += 1;
+			}
+		}
+	}
+
+	public int getCyclesFrameCode() {
+		return cyclesFrameCode;
+	}
+
+	public int getSizeFrameCode() {
+		return sizeFrameCode;
+	}
+
 }
