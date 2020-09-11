@@ -58,7 +58,8 @@ public class AssemblyGenerator{
 		regOpt.build();
 		
 		spriteCode1 = regOpt.getAsmCode();
-		generateDataFDB(regOpt.getTotalPatternBytes(), spriteEData1);
+		spriteECode1 = regOpt.getAsmECode();
+		generateDataFDB(regOpt.getDataSize(), spriteEData1);
 
 		logger.debug("RAM 1 (val hex 00 à 10 par pixel, 00 Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
@@ -74,7 +75,8 @@ public class AssemblyGenerator{
 		regOpt.build();
 		
 		spriteCode2 = regOpt.getAsmCode();	
-		generateDataFDB(regOpt.getTotalPatternBytes(), spriteEData2);
+		spriteECode2 = regOpt.getAsmECode();
+		generateDataFDB(regOpt.getDataSize(), spriteEData2);
 
 	}
 

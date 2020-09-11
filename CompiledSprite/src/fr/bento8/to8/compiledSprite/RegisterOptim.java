@@ -48,9 +48,11 @@ public class RegisterOptim{
 
 	private Solution solution;
 	private byte[] data;
-
+	int sizeSaveS;
+	
 	int i, j, k;
-	List<String> asmCode = new ArrayList<String>();
+	List<String> asmCode = new ArrayList<String>(); // Contient le code de sauvegarde du fond et du dessin de sprite
+	List<String> asmECode = new ArrayList<String>(); // Contient le code d'effacement du sprite (restauration du fond)
 	int lastLeas = Integer.MAX_VALUE;		
 	boolean[] regSet = new boolean[] {false, false, false, false, false, false, false};
 	byte[][] regVal = new byte[7][4];
@@ -94,6 +96,8 @@ public class RegisterOptim{
 
 	public void build() {
 		int currentNode = 0;
+		boolean saveS;
+		sizeSaveS = 0;
 
 		logger.debug("Code ASM:");
 		try {
@@ -103,6 +107,7 @@ public class RegisterOptim{
 				patternGrp1.clear();
 				patternGrp2.clear();
 				patternGrp3.clear();
+				saveS = false;
 
 				currentNode = solution.computedNodes.get(i);
 				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
@@ -113,6 +118,7 @@ public class RegisterOptim{
 							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
 						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
 						lastLeas = solution.computedNodes.get(i);
+						saveS = true; // Lors du rétablissement du fond, demande le chargement de S depuis la zone DATA
 					}
 
 					// Constitution des groupes
@@ -130,22 +136,29 @@ public class RegisterOptim{
 //				logger.debug("patternGrp1: "+patternGrp1);
 //				logger.debug("patternGrp2: "+patternGrp2);
 //				logger.debug("patternGrp3: "+patternGrp3);
+				
+				if (saveS) {
+					sizeSaveS += 2; // Agrandissement de la zone data pour sauvegarde du S
+				}
 
 				// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
 				for (int id : patternGrp1) {
-					processPatternBackgroundBackup(id);
+					processPatternBackgroundBackup(id, saveS);
+					saveS = false;
 					processPatternDraw(id);
 					asmCode.add("");
 				}
 
 				for (int id : patternGrp2) {
-					processPatternBackgroundBackup(id);
+					processPatternBackgroundBackup(id, saveS);
+					saveS = false;
 					processPatternDraw(id);
 					asmCode.add("");
 				}
 
 				for (int id : patternGrp3) {
-					processPatternBackgroundBackup(id);
+					processPatternBackgroundBackup(id, saveS);
+					saveS = false;
 					asmCode.add("");
 				}
 
@@ -162,7 +175,7 @@ public class RegisterOptim{
 		}
 	}
 
-	public void processPatternBackgroundBackup(int id) throws Exception {
+	public void processPatternBackgroundBackup(int id, boolean saveS) throws Exception {
 
 		// Recherche pour chaque combinaison de registres d'un pattern,
 		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
@@ -191,7 +204,7 @@ public class RegisterOptim{
 			}
 
 			// Calcul du nombre de cycles de la solution courante
-			cycles = solution.patterns.get(id).getBackgroundBackupCodeCycles(currentReg, solution.computedOffsets.get(id));
+			cycles = solution.patterns.get(id).getBackgroundBackupCodeCycles(currentReg, solution.computedOffsets.get(id), true);
 			//asmCode.add("combi: "+j+" cycles:"+cycles);
 
 			// Sauvegarde de la meilleure solution
@@ -209,7 +222,8 @@ public class RegisterOptim{
 
 		//asmCode.add("choix combi: "+selectedCombi);	
 		//asmCode.add("* n:"+id + " Sauvegarde Fond");
-		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id)));
+		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id), saveS));
+		asmECode.addAll(0, solution.patterns.get(id).getEraseCode(saveS, solution.computedOffsets.get(id)));
 
 		// Réinitialisation des registres utilisés par l'écriture du fond
 		for (int r : selectedReg) {
@@ -415,13 +429,21 @@ public class RegisterOptim{
 		return asmCode;
 	}
 	
-	public int getTotalPatternBytes() {
+	public List<String> getAsmECode() {
+		return asmECode;
+	}
+	
+	public int getDataSize() {
 		int size = 0;
 		for (Pattern pattern : solution.patterns) {
-			logger.debug("pattern:"+pattern.getClass().toString()+" "+pattern.getNbBytes());
 			size += pattern.getNbBytes();
 		}
-		logger.debug(size);
+		logger.debug("Taille de la zone data pour les pixels: "+size);
+		
+		size += sizeSaveS;
+		logger.debug("Taille de la zone data pour les positions: "+sizeSaveS);
+		logger.debug("Taille de la zone data: "+size);
+		
 		return size;
 	}
 }

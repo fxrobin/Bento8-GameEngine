@@ -6,18 +6,27 @@ import java.util.List;
 import fr.bento8.to8.InstructionSet.Register;
 
 public abstract class PatternAlpha extends Pattern{
-	
-	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset) throws Exception {
+
+	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+offset+",S");
-		asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]);
+		if (saveS) {
+			asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]+",S");
+		} else {
+			asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]);
+		}
+
 		return asmCode;
 	}
 
-	public int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset) throws Exception {
+	public int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception {
 		int cycles = 0;
 		cycles += Register.costIndexedLD[registerIndexes.get(0)] + Register.getIndexedOffsetCost(offset);
-		cycles += Register.getCostImmediatePULPSH(this.nbBytes);
+		if (saveS) {
+			cycles += Register.getCostImmediatePULPSH(this.nbBytes+2);
+		} else {
+			cycles += Register.getCostImmediatePULPSH(this.nbBytes);
+		}
 		return cycles;
 	}
 
