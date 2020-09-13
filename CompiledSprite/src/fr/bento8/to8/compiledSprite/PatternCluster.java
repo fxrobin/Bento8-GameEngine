@@ -12,9 +12,9 @@ import fr.bento8.to8.compiledSprite.patterns.Pattern;
 public class PatternCluster{
 	// Regroupe les Patterns d'une solution en noeuds
 	// recalcul les offset dans la plage -128 +127 autour de l'adresse de chaque noeud
-	
+
 	private static final Logger logger = LogManager.getLogger("log");
-	
+
 	public Solution solution;
 	private List<Integer> AssignedPatterns;
 
@@ -24,18 +24,16 @@ public class PatternCluster{
 	}
 
 	public void cluster(boolean isForward) {
-		if (initAssignmentStep()) {
-			clusterPatternsToExistingNodes(isForward);
-			createNewNodesAndClusterRemainingPatterns(isForward);
-			setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incrément du LEA impacte le calcul : A corriger
-			displayDebug();
-		}
+		initAssignmentStep();
+		clusterPatternsToExistingNodes(isForward);
+		createNewNodesAndClusterRemainingPatterns(isForward);
+		setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incrément du LEA impacte le calcul : A corriger
+		displayDebug();
 	}
 
 	private boolean initAssignmentStep() {
 		boolean result = false;
 
-		// S'il n'y a pas de pattern utilisant l'adressage indexé, on n'utilise pas le clustering
 		// Initialisation à -1 des patterns utilisant l'adressage indexé
 		// Initialisation avec la valeur d'offset pour les autres patterns
 
@@ -61,11 +59,11 @@ public class PatternCluster{
 			if (!solution.patterns.get(i).useIndexedAddressing()) {
 				// Noeud imposé on recherche les patterns pouvant y etre rattachés
 				for (int j = 0; j < solution.computedNodes.size(); j++) {
-					// Si le Noeud imposé actuel est suivi d'un autre noeud imposé on ne traite pas la suite
-					if (j == i+1 && !solution.patterns.get(j).useIndexedAddressing()) {
+					// On arrête la recherche lorsqu'un noeud imposé est rencontré
+					if (j >= i+1 && !solution.patterns.get(j).useIndexedAddressing()) {
 						break;
 					}
-					
+
 					// On cherche des patterns indexés non affectés
 					if (solution.patterns.get(j).useIndexedAddressing() && AssignedPatterns.get(j) == -1) {
 						if (isForward) {
@@ -87,7 +85,7 @@ public class PatternCluster{
 						}
 					}
 				}
-				
+
 				// s'il n'y a pas de pattern avant le noeud imposé, on utilisé le noeud imposé comme noeud de départ
 				if (nodeStart == -1 || i < nodeStart) {
 					nodeStart = i;
@@ -147,7 +145,7 @@ public class PatternCluster{
 			}
 		}
 	}
-	
+
 	public void setLEAOffsetRelativeToEachOthers() {
 		// Remplace les valeurs d'offset des LEA relatives au départ par des valeurs relatives entre les LEA
 		int curOffset = 0, newOffset = 0, lastOffset = 0;
@@ -175,7 +173,7 @@ public class PatternCluster{
 				logger.debug("(index:position:offset:pattern)");
 				oldNode = currentNode;
 			}
-				
+
 			logger.debug("("+i+":"+it1.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
 			i++;
 		}

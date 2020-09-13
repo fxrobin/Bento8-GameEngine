@@ -820,9 +820,9 @@ Hero_MoveUpdateYPos_00A
 Hero_MoveUpdateYPos_00C
 	ADDB #$00						* Mise a jour de la position
 Hero_MoveUpdateYPos_01
-	CMPB #$98						* Test de butee ecran en BAS
+	CMPB #$72						* Test de butee ecran en BAS
 	BLS Hero_MoveUpdateYPos_03		* Butee non atteinte
-	LDB #$98						* Butee atteinte on limite a la butee
+	LDB #$72						* Butee atteinte on limite a la butee
 	TST HERO_ISJUMPING
 	BEQ Hero_MoveUpdateYPos_03	* pas de saut en cours
 	STB HERO_Y_POS
@@ -1016,9 +1016,9 @@ HERO_JOG_SPD_LIMIT EQU $0600        * 0600
 HERO_JOG_NEG_SPD_LIMIT EQU $FA00    * FA00
 
 HERO_X_POS
-	FCB $00			* Horizontal Position
+	FCB $0f			* Horizontal Position
 HERO_Y_POS
-	FCB $98			* Vertical Position (TODO Bug si position Y=00)
+	FCB $72			* Vertical Position (TODO Bug si position Y=00)
 HERO_G_SPEED
 	FDB $0000		* Ground Speed First byte : Frame, Second byte : 1/256 Frame
 HERO_X_SPEED

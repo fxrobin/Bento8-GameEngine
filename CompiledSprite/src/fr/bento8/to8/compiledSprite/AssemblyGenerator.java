@@ -44,7 +44,7 @@ public class AssemblyGenerator{
 		spriteName = spriteSheet.getName().toUpperCase().replaceAll("[^A-Za-z0-9]", "")+imageNum;
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
-		logger.debug("RAM 0 (val hex 00 à 10 par pixel, 00 Transparent):");
+		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
 		PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
@@ -61,7 +61,7 @@ public class AssemblyGenerator{
 		spriteECode1 = regOpt.getAsmECode();
 		generateDataFDB(regOpt.getDataSize(), spriteEData1);
 
-		logger.debug("RAM 1 (val hex 00 à 10 par pixel, 00 Transparent):");
+		logger.debug("RAM 1 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 		cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
@@ -95,7 +95,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(assemblyFile);
 			Files.createFile(assemblyFile);
 			
-			Files.write(assemblyFile, getCodeFrame1(asmFileName, org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			Files.write(assemblyFile, getCodeFrame1("IMG.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, getCodeFrame2(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			Files.write(assemblyFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);

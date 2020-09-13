@@ -32,8 +32,8 @@ public class Pattern_1010 extends PatternAlpha {
 
 	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
-		asmCode.add("\tANDA #$F0");
-		asmCode.add("\tANDB #$F0");
+		asmCode.add("\tANDA #$0F");
+		asmCode.add("\tANDB #$0F");
 		asmCode.add("\tADDD "+"#$"+String.format("%01x%01x%01x%01x", data[position]&0xff, data[position+1]&0xff, data[position+2]&0xff, data[position+3]&0xff));
 		asmCode.add("\tSTD "+offset+",S");	
 		return asmCode;

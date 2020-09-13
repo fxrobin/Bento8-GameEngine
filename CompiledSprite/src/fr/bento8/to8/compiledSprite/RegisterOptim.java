@@ -96,7 +96,8 @@ public class RegisterOptim{
 
 	public void build() {
 		int currentNode = 0;
-		boolean saveS;
+		boolean leasAtThisNode, saveS; // Lors du rétablissement du fond, demande le chargement de S depuis la zone DATA
+		int nbPatternsInThisNode;
 		sizeSaveS = 0;
 
 		logger.debug("Code ASM:");
@@ -107,7 +108,10 @@ public class RegisterOptim{
 				patternGrp1.clear();
 				patternGrp2.clear();
 				patternGrp3.clear();
+				
 				saveS = false;
+				leasAtThisNode = false;
+				nbPatternsInThisNode = 0;
 
 				currentNode = solution.computedNodes.get(i);
 				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
@@ -118,7 +122,7 @@ public class RegisterOptim{
 							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
 						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
 						lastLeas = solution.computedNodes.get(i);
-						saveS = true; // Lors du rétablissement du fond, demande le chargement de S depuis la zone DATA
+						leasAtThisNode = true; // On enregistre le fait qu'un LEAS a été produit pour ce noeud
 					}
 
 					// Constitution des groupes
@@ -129,6 +133,7 @@ public class RegisterOptim{
 					} else {
 						patternGrp3.add(i);
 					}
+					nbPatternsInThisNode++;
 
 					i++;
 				}
@@ -136,35 +141,51 @@ public class RegisterOptim{
 //				logger.debug("patternGrp1: "+patternGrp1);
 //				logger.debug("patternGrp2: "+patternGrp2);
 //				logger.debug("patternGrp3: "+patternGrp3);
-				
-				if (saveS) {
-					sizeSaveS += 2; // Agrandissement de la zone data pour sauvegarde du S
-				}
 
 				// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
+				int iPattern = 0;
 				for (int id : patternGrp1) {
+					if ((currentNode == 0 && iPattern == nbPatternsInThisNode-1) || (currentNode != 0 && iPattern == nbPatternsInThisNode-1 && leasAtThisNode)) {
+						saveS = true;
+						sizeSaveS += 2; // Agrandissement de la zone data pour sauvegarde du S
+					}
 					processPatternBackgroundBackup(id, saveS);
+					processPatternDraw(id);
+					asmCode.add("");
 					saveS = false;
+					iPattern++;
+				}
+
+				for (int id : patternGrp3) {
+					if ((currentNode == 0 && iPattern == nbPatternsInThisNode-1) || (currentNode != 0 && iPattern == nbPatternsInThisNode-1 && leasAtThisNode)) {
+						saveS = true;
+						sizeSaveS += 2; // Agrandissement de la zone data pour sauvegarde du S
+					}
+					processPatternBackgroundBackup(id, saveS);
+					asmCode.add("");
+					saveS = false;
+					iPattern++;
+				}
+
+				for (int id : patternGrp3) {
 					processPatternDraw(id);
 					asmCode.add("");
 				}
-
+				
+				// Pour pouvoir positionner le Groupe 2 ailleurs qu'en fin de Noeud, il faut modifier
+				// la gestion des offsets. A la lecture des données d'effacement sur un groupe 2
+				// Un push est fait sur S ce qui décale la position de S et les offset ne sont plus bons
+				// 
 				for (int id : patternGrp2) {
+					if ((currentNode == 0 && iPattern == nbPatternsInThisNode-1) || (currentNode != 0 && iPattern == nbPatternsInThisNode-1 && leasAtThisNode)) {
+						saveS = true;
+						sizeSaveS += 2; // Agrandissement de la zone data pour sauvegarde du S
+					}
 					processPatternBackgroundBackup(id, saveS);
-					saveS = false;
 					processPatternDraw(id);
 					asmCode.add("");
-				}
-
-				for (int id : patternGrp3) {
-					processPatternBackgroundBackup(id, saveS);
 					saveS = false;
-					asmCode.add("");
-				}
-
-				for (int id : patternGrp3) {
-					processPatternDraw(id);
-					asmCode.add("");
+					iPattern++;
 				}
 			}
 

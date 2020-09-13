@@ -307,7 +307,7 @@ public class BuildDisk
 				
 				// Remplacement du TAG palette par le code généré
 				if (!spriteSheets.containsKey(animationPalette))
-					logger.fatal("L'image "+animationPalette+" n'est pas déclarée ou n'est pas utilisée dans une animation.");
+					logger.fatal("animationPalette: L'image "+animationPalette+" n'est pas déclarée ou n'est pas utilisée dans une animation.");
 				
 				content = content.replace(animationPaletteTag, spriteSheets.get(animationPalette).getCodePalette(3));
 				Files.write(pathMainTmp, content.getBytes(charset));

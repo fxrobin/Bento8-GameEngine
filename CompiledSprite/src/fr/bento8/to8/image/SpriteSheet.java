@@ -83,8 +83,8 @@ public class SpriteSheet {
 
 				} else {
 					System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
-					System.out.println("Resolution: " + subImageWidth + "x" + height + "px (doit Ãªtre inférieur ou égal Ã  160x200)");
-					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit Ãªtre 8)");
+					System.out.println("Resolution: " + subImageWidth + "x" + height + "px (doit être inférieur ou égal à 160x200)");
+					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
 					// System.out.println("Nombre de composants: "+numComponents+" (doit Ãªtre 3)");
 				}
 			}
@@ -209,73 +209,5 @@ public class SpriteSheet {
 	public String getName() {
 		return name;
 	}	
-
-	// Gestion des images en 32bits
-	//	if (pixelSize == 32) {
-	//	final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-	//	final int width = image.getWidth();
-	//	final int height = image.getHeight();
-	//	final boolean hasAlphaChannel = image.getAlphaRaster() != null;
-	//
-	//	int[][] result = new int[height][width];
-	//	int alpha, red, green, blue;
-	//	int[] palette = new int[256];
-	//	byte[][] paletteRGBA = new byte[4][256];
-	//	palette[0] = 0; // transparent
-	//	int paletteSize = 1; // le premier index est la couleur transparente
-	//	int i;
-	//	boolean found = false;
-	//	if (hasAlphaChannel) {
-	//		final int pixelLength = 4;
-	//		for (int pixel = 0, row = 0, col = 0; pixel + 3 < pixels.length; pixel += pixelLength) {
-	//			alpha = (((int) pixels[pixel] & 0xff) << 24); // alpha
-	//			blue = ((int) pixels[pixel + 1] & 0xff); // blue
-	//			green = (((int) pixels[pixel + 2] & 0xff) << 8); // green
-	//			red = (((int) pixels[pixel + 3] & 0xff) << 16); // red
-	//			
-	//			if (alpha==0) {
-	//				result[row][col] = 0;
-	//			} else {
-	//				found = false;
-	//				for (i = 1; i < palette.length-1; i++) {
-	//					if (palette[i] == alpha+blue+green+red) {
-	//						found = true;
-	//						break;
-	//					}
-	//				}
-	//				if (!found) {
-	//					palette[paletteSize] = alpha+blue+green+red;
-	//					paletteRGBA[0][paletteSize] = pixels[pixel + 3];
-	//					paletteRGBA[1][paletteSize] = pixels[pixel + 2];
-	//					paletteRGBA[2][paletteSize] = pixels[pixel + 1];
-	//					paletteRGBA[3][paletteSize] = pixels[pixel + 0];
-	//					result[row][col] = paletteSize;
-	//					paletteSize++;
-	//				} else {
-	//					result[row][col] = i;
-	//				}
-	//
-	//				col++;
-	//				if (col == width) {
-	//					col = 0;
-	//					row++;
-	//				}
-	//			}
-	//		}
-	//	}
-	//	
-	//	IndexColorModel newColorModel = new IndexColorModel(8,256,paletteRGBA[0],paletteRGBA[1],paletteRGBA[2],0);
-	//	BufferedImage indexedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, newColorModel);
-	//	
-	//    for (int x = 0; x < indexedImage.getWidth(); x++) {
-	//        for (int y = 0; y < indexedImage.getHeight(); y++) {
-	//        	indexedImage.setRGB(x, y, image.getRGB(x, y));
-	//        }
-	//    }
-	//
-	//	image=indexedImage;
-	//	colorModel = image.getColorModel();
-	//	pixelSize = colorModel.getPixelSize();
-	//}
 
 }
