@@ -53,9 +53,15 @@ public class RegisterOptim{
 	int i, j, k;
 	List<String> asmCode = new ArrayList<String>(); // Contient le code de sauvegarde du fond et du dessin de sprite
 	List<String> asmECode = new ArrayList<String>(); // Contient le code d'effacement du sprite (restauration du fond)
-	int lastLeas = Integer.MAX_VALUE;		
-	boolean[] regSet = new boolean[] {false, false, false, false, false, false, false};
-	byte[][] regVal = new byte[7][4];
+	
+	private int asmCodeCycles;
+	private int asmCodeSize;
+	private int asmECodeCycles;
+	private int asmECodeSize;
+	
+	int lastLeas;		
+	boolean[] regSet;
+	byte[][] regVal;
 	List<Integer> patternGrp1 = new ArrayList<Integer>();
 	List<Integer> patternGrp2 = new ArrayList<Integer>();
 	List<Integer> patternGrp3 = new ArrayList<Integer>();
@@ -65,36 +71,17 @@ public class RegisterOptim{
 		this.data = data;
 	}
 
-	public void run(boolean isForward) {
-		int i, j, c, r, k, totalCombi = 1;
-		String line;
-
-		logger.debug("Node;Pattern;Variation;A;B;D;X;Y");
-
-		for (i=0; i<solution.patterns.size(); i++) {
-			c = 0;
-			for (boolean[] combi : solution.patterns.get(i).getRegisterCombi()) {
-				k = solution.positions.get(i)*2;
-				line = solution.computedNodes.get(i)+";"+solution.patterns.get(i).getClass().getSimpleName()+";"+c+";";
-				c++;
-				for (r = 0; r <= 4; r++) {
-					if (combi[r]) {
-						for (j=0; j<Register.size[r]; j++) {
-							line += String.format("%02x%02x", data[k++]&0xff, data[k++]&0xff);
-						}
-					}
-					if (r!=4) {
-						line += ";";
-					}
-				}
-				logger.debug(line);
-			}
-			totalCombi = totalCombi * (c+1);
-		}
-		logger.debug("Total Combi:"+totalCombi);
-	}
-
 	public void build() {
+		asmCode.clear();
+		asmECode.clear();
+		asmCodeCycles = 0;
+		asmCodeSize = 0;
+		asmECodeCycles = 0;
+		asmECodeSize = 0;
+		regSet = new boolean[] {false, false, false, false, false, false, false};
+		regVal = new byte[7][4];
+		
+		lastLeas = Integer.MAX_VALUE;	
 		int currentNode = 0;
 		boolean leasAtThisNode, saveS; // Lors du rétablissement du fond, demande le chargement de S depuis la zone DATA
 		int nbPatternsInThisNode;
@@ -121,6 +108,8 @@ public class RegisterOptim{
 							&& solution.computedLeas.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAS
 							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
 						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
+						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeas.get(solution.computedNodes.get(i)));
+						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeas.get(solution.computedNodes.get(i)));
 						lastLeas = solution.computedNodes.get(i);
 						leasAtThisNode = true; // On enregistre le fait qu'un LEAS a été produit pour ce noeud
 					}
@@ -244,7 +233,12 @@ public class RegisterOptim{
 		//asmCode.add("choix combi: "+selectedCombi);	
 		//asmCode.add("* n:"+id + " Sauvegarde Fond");
 		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id), saveS));
+		asmCodeCycles += solution.patterns.get(id).getBackgroundBackupCodeCycles(selectedReg, solution.computedOffsets.get(id), saveS);
+		asmCodeSize += solution.patterns.get(id).getBackgroundBackupCodeSize(selectedReg, solution.computedOffsets.get(id));
+		
 		asmECode.addAll(0, solution.patterns.get(id).getEraseCode(saveS, solution.computedOffsets.get(id)));
+		asmECodeCycles += solution.patterns.get(id).getEraseCodeCycles(saveS, solution.computedOffsets.get(id));
+		asmECodeSize += solution.patterns.get(id).getEraseCodeSize(saveS, solution.computedOffsets.get(id));
 
 		// Réinitialisation des registres utilisés par l'écriture du fond
 		for (int r : selectedReg) {
@@ -354,7 +348,9 @@ public class RegisterOptim{
 		//asmCode.add("choix combi: "+selectedCombi);	
 		//asmCode.add("* n:" + id + " x: " + ((solution.positions.get(id) - ((int) Math.floor(solution.positions.get(id)/40)*40))*2+1) + " y: " + ((int) Math.floor(solution.positions.get(id)/40)+1) + " Ecriture sprite");
 		asmCode.addAll(solution.patterns.get(id).getDrawCode(data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id)));
-
+		asmCodeCycles += solution.patterns.get(id).getDrawCodeCycles(selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
+		asmCodeSize += solution.patterns.get(id).getDrawCodeSize(selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
+		
 		// Sauvegarde les valeurs chargées en cache
 		pos = solution.positions.get(id)*2;
 		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
@@ -466,5 +462,29 @@ public class RegisterOptim{
 		logger.debug("Taille de la zone data: "+size);
 		
 		return size;
+	}
+
+	public void setSolution(Solution solution) {
+		this.solution = solution;
+	}
+
+	public void setData(byte[] data) {
+		this.data = data;
+	}
+
+	public int getAsmCodeCycles() {
+		return asmCodeCycles;
+	}
+
+	public int getAsmCodeSize() {
+		return asmCodeSize;
+	}
+
+	public int getAsmECodeCycles() {
+		return asmECodeCycles;
+	}
+
+	public int getAsmECodeSize() {
+		return asmECodeSize;
 	}
 }

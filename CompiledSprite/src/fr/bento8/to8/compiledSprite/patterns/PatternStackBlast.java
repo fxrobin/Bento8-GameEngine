@@ -133,28 +133,50 @@ public abstract class PatternStackBlast extends Pattern{
 	}
 
 	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
-		int cycles = 0;
+		int cycles = 0, nbByte = 0;
 
 		for (int i=0; i<loadMask.size(); i++) {
-			if (loadMask.get(i) != null && loadMask.get(i)) {
-				cycles += Register.costImmediateLD[i];
+			if (loadMask.get(i) != null) {
+				if (loadMask.get(i)) {
+					cycles += Register.costImmediateLD[i];
+				}
 			}
 		}
 
-		cycles += Register.getCostImmediatePULPSH(nbBytes);
+		if (this.nbBytes <= 2) {
+			cycles += Register.costImmediateLD[registerIndexes.get(0)];
+			cycles += Register.getIndexedOffsetCost(offset);
+		} else {
+			for (int i=0; i<registerIndexes.size(); i++) {
+				nbByte += Register.size[registerIndexes.get(i)];
+			}
+			cycles += Register.getCostImmediatePULPSH(nbByte);
+		}
+		
 		return cycles;
 	}
 
 	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
 		int size = 0;
 
-		for (int i=0; i<registerIndexes.size(); i++ ) {
-			if (loadMask.get(registerIndexes.get(i))) {
-				size += Register.sizeImmediateLD[registerIndexes.get(i)];
+		for (int i=0; i<loadMask.size(); i++) {
+			if (loadMask.get(i) != null) {
+				if (loadMask.get(i)) {
+					size += Register.sizeImmediateLD[i];
+				}
 			}
 		}
 
-		size += Register.sizeImmediatePULPSH;
+		if (this.nbBytes <= 2) {
+			size += Register.sizeImmediateLD[registerIndexes.get(0)];
+			size += Register.getIndexedOffsetSize(offset);
+		} else {
+			size += Register.sizeImmediatePULPSH;
+			for (int i=0; i<registerIndexes.size(); i++) {
+				size += Register.size[registerIndexes.get(i)];
+			}
+		}
+		
 		return size;
 	}
 }

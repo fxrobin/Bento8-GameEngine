@@ -61,6 +61,9 @@ public class Register {
 	public static final int[] sizeIndexedOR = new int[] {2, 2};
 	public static final int[] sizeExtendedOR= new int[] {3, 3};
 	
+	public static final int costIndexedLEA = 4;
+	public static final int sizeIndexedLEA = 2;
+	
 	public static final int[] costIndexedOffset = new int[] {0, 1, 1, 4};
 	public static final int[] sizeIndexedOffset = new int[] {0, 1, 1, 2};
 	public static final int[] rangeMinIndexedOffset = new int[] {0, -16, -128, -32768};

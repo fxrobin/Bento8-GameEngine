@@ -28,6 +28,8 @@ import fr.bento8.to8.compiledSprite.AssemblyGenerator;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.SpriteSheet;
+import fr.bento8.to8.util.C6809Util;
+import fr.bento8.to8.util.FileUtil;
 import fr.bento8.to8.util.knapsack.Item;
 import fr.bento8.to8.util.knapsack.Knapsack;
 import fr.bento8.to8.util.knapsack.Solution;
@@ -177,9 +179,7 @@ public class BuildDisk
 					// Création de l'item pour l'algo sac à dos
 					items[itemIdx++] = new Item(currentImage, 1, binary.length); // id, priority, bytes
 
-
-					logger.debug(currentImage+" compiler binary Cycles: "); // TODO
-					logger.debug(currentImage+" compiler binary length: "+binary.length);
+					logger.debug(currentImage+" octets: "+binary.length);
 					
 					// Une image compilée doit tenir sur une page de 16Ko pour pouvoir être exécutée
 					if (binary.length>16384)
@@ -454,9 +454,14 @@ public class BuildDisk
 
 			// Purge et remplacement de l'ancien fichier lst
 			File f = new File("codes.lst"); 
-			Path lstFile = Paths.get(tmpDirName+"/"+asmFile+".lst");
+			String basename = FileUtil.removeExtension(Paths.get(asmFile).getFileName().toString());
+			String destFileName = "./"+tmpDirName+"/"+basename+".lst";
+			Path lstFile = Paths.get(destFileName);
 			Files.deleteIfExists(lstFile);
-			f.renameTo(new File(tmpDirName+"/"+asmFile+".lst"));
+
+			File newFile = new File(destFileName);
+			f.renameTo(newFile);
+			logger.debug(destFileName + " c6809.exe cycles: " + C6809Util.countCycle(newFile.getAbsoluteFile().toString()));
 
 			return result;
 

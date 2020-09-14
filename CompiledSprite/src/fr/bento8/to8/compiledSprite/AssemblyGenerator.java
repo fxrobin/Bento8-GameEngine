@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import fr.bento8.to8.InstructionSet.Register;
 import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.image.SpriteSheet;
+import fr.bento8.to8.util.C6809Util;
 
 public class AssemblyGenerator{
 
@@ -33,12 +34,22 @@ public class AssemblyGenerator{
 	private String heroPosition = "9F00"; // identique à HERO_POS dans MAIN.ASM TODO A modifier : stocker les positions avec les données d'effacement (multisprite)
 
 	// Code
-	List<String> spriteCode1 = new ArrayList<String>();
-	List<String> spriteCode2 = new ArrayList<String>();
-	List<String> spriteECode1 = new ArrayList<String>();
-	List<String> spriteECode2 = new ArrayList<String>();
-	List<String> spriteEData1 = new ArrayList<String>();
-	List<String> spriteEData2 = new ArrayList<String>();
+	private List<String> spriteCode1 = new ArrayList<String>();
+	private List<String> spriteCode2 = new ArrayList<String>();
+	private List<String> spriteECode1 = new ArrayList<String>();
+	private List<String> spriteECode2 = new ArrayList<String>();
+	private List<String> spriteEData1 = new ArrayList<String>();
+	private List<String> spriteEData2 = new ArrayList<String>();
+	private int cyclesSpriteCode1;
+	private int cyclesSpriteCode2;
+	private int cyclesSpriteECode1;
+	private int cyclesSpriteECode2;
+	private int sizeSpriteCode1;
+	private int sizeSpriteCode2;
+	private int sizeSpriteECode1;
+	private int sizeSpriteECode2;
+	private int sizeSpriteEData1;
+	private int sizeSpriteEData2;
 
 	public AssemblyGenerator(SpriteSheet spriteSheet, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName().toUpperCase().replaceAll("[^A-Za-z0-9]", "")+imageNum;
@@ -58,8 +69,15 @@ public class AssemblyGenerator{
 		regOpt.build();
 		
 		spriteCode1 = regOpt.getAsmCode();
+		cyclesSpriteCode1 = regOpt.getAsmCodeCycles();
+		sizeSpriteCode1 = regOpt.getAsmCodeSize();
+		
 		spriteECode1 = regOpt.getAsmECode();
+		cyclesSpriteECode1 = regOpt.getAsmECodeCycles();
+		sizeSpriteECode1 = regOpt.getAsmECodeSize();
+		
 		generateDataFDB(regOpt.getDataSize(), spriteEData1);
+		sizeSpriteEData1 += regOpt.getDataSize();
 
 		logger.debug("RAM 1 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
@@ -75,9 +93,15 @@ public class AssemblyGenerator{
 		regOpt.build();
 		
 		spriteCode2 = regOpt.getAsmCode();	
+		cyclesSpriteCode2 = regOpt.getAsmCodeCycles();
+		sizeSpriteCode2 = regOpt.getAsmCodeSize();
+		
 		spriteECode2 = regOpt.getAsmECode();
+		cyclesSpriteECode2 = regOpt.getAsmECodeCycles();
+		sizeSpriteECode2 = regOpt.getAsmECodeSize();
+		
 		generateDataFDB(regOpt.getDataSize(), spriteEData2);
-
+		sizeSpriteEData2 += regOpt.getDataSize();
 	}
 
 	public byte[] getCompiledCode(String org) {
@@ -131,7 +155,16 @@ public class AssemblyGenerator{
 			Path lstFile = Paths.get(lstFileName);
 			Files.deleteIfExists(lstFile);
 			f.renameTo(new File(lstFileName));
+			
+			// Compte le nombre de cycles du .lst
+			int compilerCycles = C6809Util.countCycle(lstFileName);
+			logger.debug(lstFileName + " c6809.exe cycles: " + compilerCycles + " computed cycles: " + getCycles());
+			logger.debug(lstFileName + " c6809.exe size: " + content.length + " computed size: " + getSize());
 
+			if (getCycles() != compilerCycles || content.length != getSize()) {
+				logger.fatal("Ecart de cycles ou de taille.");
+			}
+			
 			// Récupère l'adresse de la routine d'effacement
 			Pattern pattern = Pattern.compile(".*Label (.*) ERASE_"+spriteName);
 			try (Stream<String> lines = Files.lines(Paths.get(lstFileName), Charset.forName("ISO-8859-1"))) {
@@ -324,12 +357,19 @@ public class AssemblyGenerator{
 		}
 	}
 
-	public int getCyclesFrameCode() {
-		return cyclesFrameCode;
+	public int getCycles() {
+		return cyclesFrameCode + cyclesSpriteCode1 + cyclesSpriteCode2 + cyclesSpriteECode1 + cyclesSpriteECode2;
 	}
 
-	public int getSizeFrameCode() {
-		return sizeFrameCode;
+	public int getSize() {
+		return sizeFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeSpriteECode1 + sizeSpriteECode2;
 	}
-
+	
+	public int getSizeData1() {
+		return sizeSpriteEData1;
+	}
+	
+	public int getSizeData2() {
+		return sizeSpriteEData2;
+	}
 }
