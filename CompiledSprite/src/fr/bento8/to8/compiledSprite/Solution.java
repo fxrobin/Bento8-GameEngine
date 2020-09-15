@@ -10,10 +10,13 @@ import fr.bento8.to8.compiledSprite.patterns.Pattern;
 public class Solution {
 	public List<Pattern> patterns;			// Liste des Patterns trouvés dans l'ordre
 	public List<Integer> positions;			// Liste des positions pour chaque pattern
+	
 	public List<Integer> computedNodes;		// Liste des noeuds trouvés (= id du premier pattern du noeud)
 	public List<Integer> computedOffsets;  	// Liste des offsets applicables à chaque pattern pour l'adressage indexé
 	public HashMap<Integer, Integer> computedLeas; // Ensemble des LEAS (noeud, offset)
-	public List<Pattern> computedPatterns;
+	
+	public List<Snippet> optimizedSnippets;	// Liste des patterns ordonnés par l'optimiseur contient des éléments supplémentaires LEAS ...
+	
 	private int cycles;
 	private int size;
 
@@ -21,7 +24,7 @@ public class Solution {
 		patterns = new ArrayList<Pattern>();
 		positions = new ArrayList<Integer>();
 		computedNodes = new ArrayList<Integer>();
-		computedPatterns = new ArrayList<Pattern>();
+		optimizedSnippets = new ArrayList<Snippet>();
 		computedOffsets = new ArrayList<Integer>();
 		computedLeas = new HashMap<Integer, Integer>();
 		cycles = 0;

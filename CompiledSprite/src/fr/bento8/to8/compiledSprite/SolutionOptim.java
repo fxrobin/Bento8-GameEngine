@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import fr.bento8.to8.InstructionSet.Register;
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
-public class RegisterOptim{
+public class SolutionOptim{
 	// 
 	// <Decrire fonctionnement actuel>
 	//
@@ -66,9 +66,32 @@ public class RegisterOptim{
 	List<Integer> patternGrp2 = new ArrayList<Integer>();
 	List<Integer> patternGrp3 = new ArrayList<Integer>();
 
-	public RegisterOptim(Solution solution, byte[] data) {
+	public SolutionOptim(Solution solution, byte[] data) {
 		this.solution = solution;
 		this.data = data;
+	}
+	
+	public void Optimize() {
+		
+		// stocker dans la solution, un ordre des patterns, saveS, la combinaison choisie pour chaque pattern
+		
+		// Lancer un calcul pour chaque permutation :
+		//	1. GROUPE 1: parcourir les patterns et prendre les patterns non dissosicables (complets)
+		//	   si un des resetRegisters n'est pas null:
+		//	      - etablir toutes les combinaisons qui positionnent seulement 1 fois chaque pattern ou resetRegisters n'est pas null en fin de groupe (ex: 3 patterns ou resetRegisters n'est pas null = 3 combinaisons)
+		//	   si resetRegisters est null:
+		//	      - pour tous ces patterns on a deux solutions possibles : utilisation de A seulement ou utilisation de B seulement
+		
+		//	3. GROUPE 2: parcourir les patterns et prendre le pattern principal (complet)
+		//	4. GROUPE 3: créer des ensembles avec :
+		//	   les patterns dissociables (11, 1111) partie ecriture de sprite, tri et regroupement des patterns identiques (pattern+pixels) (Permet de limiter les combinaisons dans les cas extremes)
+		//	   patterns dissociables (11, 1111) partie backup background
+		//	   etablir tt combinaisons possibles
+		//	5. créer des combinatoire avec GROUPE 1, GROUPE 3 (*2) et GROUPE 2 en dernier
+		
+		// Cette méthode doit piloter la méthode build
+		
+		
 	}
 
 	public void build() {

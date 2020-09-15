@@ -65,7 +65,7 @@ public class AssemblyGenerator{
 		PatternCluster cluster = new PatternCluster(solution);
 		cluster.cluster(FORWARD);
 		
-		RegisterOptim regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(imageNum, 0));
+		SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0));
 		regOpt.build();
 		
 		spriteCode1 = regOpt.getAsmCode();
@@ -90,7 +90,7 @@ public class AssemblyGenerator{
 		cluster = new PatternCluster(solution);
 		cluster.cluster(FORWARD);
 		
-		regOpt = new RegisterOptim(solution, spriteSheet.getSubImageData(imageNum, 1));
+		regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1));
 		regOpt.build();
 		
 		spriteCode2 = regOpt.getAsmCode();	
