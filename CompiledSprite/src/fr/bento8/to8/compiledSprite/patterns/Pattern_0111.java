@@ -35,7 +35,7 @@ public class Pattern_0111 extends PatternAlpha {
 		asmCode.add("\tANDA #$F0");
 		asmCode.add("\tORA "+"#$"+String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff));
 		asmCode.add("\tLDB "+"#$"+String.format("%01x%01x", data[position+2]&0xff, data[position+3]&0xff));
-		asmCode.add("\tSTD "+offset+",S");	
+		asmCode.add("\tSTD "+(offset!= 0?offset:"")+",S");	
 		return asmCode;
 	}
 	

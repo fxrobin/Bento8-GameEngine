@@ -65,7 +65,7 @@ public class Register {
 	public static final int sizeIndexedLEA = 2;
 	
 	public static final int[] costIndexedOffset = new int[] {0, 1, 1, 4};
-	public static final int[] sizeIndexedOffset = new int[] {0, 1, 1, 2};
+	public static final int[] sizeIndexedOffset = new int[] {0, 0, 1, 2};
 	public static final int[] rangeMinIndexedOffset = new int[] {0, -16, -128, -32768};
 	public static final int[] rangeMaxIndexedOffset = new int[] {0, 15, 127, 32767};
 	

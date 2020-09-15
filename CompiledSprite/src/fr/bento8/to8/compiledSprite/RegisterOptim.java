@@ -87,7 +87,6 @@ public class RegisterOptim{
 		int nbPatternsInThisNode;
 		sizeSaveS = 0;
 
-		logger.debug("Code ASM:");
 		try {
 			// Parcours de tous les patterns
 			i = 0;
@@ -177,8 +176,6 @@ public class RegisterOptim{
 					iPattern++;
 				}
 			}
-
-			for (String line : asmCode) logger.debug(line);
 
 		} catch (Exception e) {
 			logger.fatal("", e);
@@ -455,12 +452,8 @@ public class RegisterOptim{
 		for (Pattern pattern : solution.patterns) {
 			size += pattern.getNbBytes();
 		}
-		logger.debug("Taille de la zone data pour les pixels: "+size);
-		
 		size += sizeSaveS;
-		logger.debug("Taille de la zone data pour les positions: "+sizeSaveS);
-		logger.debug("Taille de la zone data: "+size);
-		
+
 		return size;
 	}
 

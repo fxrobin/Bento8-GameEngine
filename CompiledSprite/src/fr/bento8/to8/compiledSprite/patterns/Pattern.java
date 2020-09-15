@@ -34,11 +34,11 @@ public abstract class Pattern {
 		switch (nbBytes) {
 		case 1: 
 			read += "A";
-			write += "STA "+offset+",S"; // ajout gestion 0,S en ,S
+			write += "STA "+(offset!= 0?offset:"")+",S";
 			break;
 		case 2:
 			read += "D";
-			write += "STD "+offset+",S";
+			write += "STD "+(offset!= 0?offset:"")+",S";
 			break;
 		case 3:
 			read += "A,X";
@@ -72,16 +72,17 @@ public abstract class Pattern {
 	public int getEraseCodeCycles (boolean loadS, int offset) throws Exception {
 		int cycles = 0;
 
+		if (loadS) {
+			cycles += Register.getCostImmediatePULPSH(nbBytes+2);
+		} else {
+			cycles += Register.getCostImmediatePULPSH(nbBytes);
+		}
+		
 		if (nbBytes == 1) {
 			cycles += Register.costIndexedST[Register.A] + Register.getIndexedOffsetCost(offset);
 		} else if (nbBytes == 2) {
 			cycles += Register.costIndexedST[Register.D] + Register.getIndexedOffsetCost(offset);
 		} else {
-			if (loadS) {
-				cycles += Register.getCostImmediatePULPSH(nbBytes+2);
-			} else {
-				cycles += Register.getCostImmediatePULPSH(nbBytes);
-			}
 			cycles += Register.getCostImmediatePULPSH(nbBytes);
 		}
 		return cycles;
@@ -90,12 +91,13 @@ public abstract class Pattern {
 	public int getEraseCodeSize (boolean loadS, int offset) throws Exception {
 		int size = 0;		
 		
+		size += Register.sizeImmediatePULPSH;
+		
 		if (nbBytes == 1) {
 			size += Register.sizeIndexedST[Register.A] + Register.getIndexedOffsetSize(offset);
 		} else if (nbBytes == 2) {
 			size += Register.sizeIndexedST[Register.D] + Register.getIndexedOffsetSize(offset);
 		} else {
-			size += Register.sizeImmediatePULPSH;
 			size += Register.sizeImmediatePULPSH;
 		}
 		return size;

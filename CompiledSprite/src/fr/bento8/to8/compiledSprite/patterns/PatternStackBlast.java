@@ -14,7 +14,7 @@ public abstract class PatternStackBlast extends Pattern{
 		boolean firstPass;
 
 		if (this.nbBytes <= 2) {
-			asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+offset+",S");
+			asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
 			if (saveS) {
 				asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]+",S");
 			} else {
@@ -54,7 +54,7 @@ public abstract class PatternStackBlast extends Pattern{
 	public int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception {
 		int cycles = 0;
 		if (this.nbBytes <= 2) {
-			cycles += Register.costIndexedLD[registerIndexes.get(0)];
+			cycles += Register.costIndexedLD[registerIndexes.get(0)] + Register.getIndexedOffsetCost(offset);
 		} else {
 			cycles += Register.getCostImmediatePULPSH(nbBytes);
 		}
@@ -69,7 +69,7 @@ public abstract class PatternStackBlast extends Pattern{
 	public int getBackgroundBackupCodeSize (List<Integer> registerIndexes, int offset) throws Exception {
 		int size = 0;
 		if (this.nbBytes <= 2) {
-			size += Register.sizeIndexedLD[registerIndexes.get(0)];
+			size += Register.sizeIndexedLD[registerIndexes.get(0)] + Register.getIndexedOffsetSize(offset);
 		} else {
 			size += Register.sizeImmediatePULPSH;
 		}
@@ -114,7 +114,7 @@ public abstract class PatternStackBlast extends Pattern{
 		}
 
 		if (this.nbBytes <= 2) {
-			asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+offset+",S");
+			asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
 		} else {
 			// Création du PSHS
 			firstPass = true;
@@ -144,7 +144,7 @@ public abstract class PatternStackBlast extends Pattern{
 		}
 
 		if (this.nbBytes <= 2) {
-			cycles += Register.costImmediateLD[registerIndexes.get(0)];
+			cycles += Register.costIndexedST[registerIndexes.get(0)];
 			cycles += Register.getIndexedOffsetCost(offset);
 		} else {
 			for (int i=0; i<registerIndexes.size(); i++) {
@@ -168,13 +168,10 @@ public abstract class PatternStackBlast extends Pattern{
 		}
 
 		if (this.nbBytes <= 2) {
-			size += Register.sizeImmediateLD[registerIndexes.get(0)];
+			size += Register.sizeIndexedST[registerIndexes.get(0)];
 			size += Register.getIndexedOffsetSize(offset);
 		} else {
 			size += Register.sizeImmediatePULPSH;
-			for (int i=0; i<registerIndexes.size(); i++) {
-				size += Register.size[registerIndexes.get(i)];
-			}
 		}
 		
 		return size;

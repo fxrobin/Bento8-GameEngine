@@ -1,0 +1,975 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : tmp/HIL0.ASM
+ * Fichier destination : tmp/HIL0.BIN
+ * Contenu :
+ *     Main     0:IMG.ASM      10364
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+      2        A000                      ORG $A000
+      3        A000               DRAW_HIL0
+      4  5+3   A000 34   48              PSHS U,DP
+      5  7     A002 10FF A4A2            STS SSAV_HIL0+2
+      6
+      7  7     A006 10FE 9F00            LDS $9F00
+      8  7     A00A 10FF A4AE            STS ERASE_POS_HIL0_1+2
+      9  3     A00E CE   A6FB            LDU #ERASE_DATA_HIL0_2
+     10  4+4   A011 32   E9 01BB         LEAS 443,S
+     11  4+1   A015 A6   E8 B0           LDA -80,S
+     12  5+1   A018 36   02              PSHU A
+     13  2     A01A 84   F0              ANDA #$F0
+     14  2     A01C 8A   0C              ORA #$0c
+     15  4+1   A01E A7   E8 B0           STA -80,S
+     16
+     17  5+1   A021 EC   7F              LDD -1,S
+     18  5+2   A023 36   06              PSHU D
+     19  2     A025 84   0F              ANDA #$0F
+     20  2     A027 8A   D0              ORA #$d0
+     21  2     A029 C6   AD              LDB #$ad
+     22  5+1   A02B ED   7F              STD -1,S
+     23
+     24  5+1   A02D EC   E8 27           LDD 39,S
+     25  5+2   A030 36   06              PSHU D
+     26  2     A032 84   0F              ANDA #$0F
+     27  2     A034 8A   D0              ORA #$d0
+     28  2     A036 C6   A3              LDB #$a3
+     29  5+1   A038 ED   E8 27           STD 39,S
+     30
+     31  5+1   A03B EC   E8 D8           LDD -40,S
+     32  5+2   A03E 36   06              PSHU D
+     33
+     34  4+1   A040 A6   61              LDA 1,S
+     35  5+1   A042 36   02              PSHU A
+     36
+     37  4+1   A044 A6   E8 29           LDA 41,S
+     38  5+1   A047 36   02              PSHU A
+     39
+     40  5+1   A049 EC   E8 4F           LDD 79,S
+     41  5+4   A04C 36   46              PSHU D,S
+     42
+     43  3     A04E CC   CACC            LDD #$cacc
+     44  5+1   A051 ED   E8 D8           STD -40,S
+     45
+     46  2     A054 86   DD              LDA #$dd
+     47  4+1   A056 A7   61              STA 1,S
+     48
+     49  4+1   A058 A7   E8 29           STA 41,S
+     50
+     51  3     A05B CC   DCD2            LDD #$dcd2
+     52  5+1   A05E ED   E8 4F           STD 79,S
+     53
+     54  4+4   A061 32   E9 00EF         LEAS 239,S
+     55  4+1   A065 A6   E8 DA           LDA -38,S
+     56  5+1   A068 36   02              PSHU A
+     57  2     A06A 84   0F              ANDA #$0F
+     58  2     A06C 8A   C0              ORA #$c0
+     59  4+1   A06E A7   E8 DA           STA -38,S
+     60
+     61  5+1   A071 EC   E8 88           LDD -120,S
+     62  5+2   A074 36   06              PSHU D
+     63
+     64  5+1   A076 EC   E8 B0           LDD -80,S
+     65  5+2   A079 36   06              PSHU D
+     66
+     67  5+1   A07B EC   E8 D8           LDD -40,S
+     68  5+2   A07E 36   06              PSHU D
+     69
+     70  3     A080 CC   DA12            LDD #$da12
+     71  5+1   A083 ED   E8 88           STD -120,S
+     72
+     73  3     A086 CC   CAA2            LDD #$caa2
+     74  5+1   A089 ED   E8 B0           STD -80,S
+     75
+     76  2     A08C C6   AA              LDB #$aa
+     77  5+1   A08E ED   E8 D8           STD -40,S
+     78
+     79  5+3   A091 35   12              PULS A,X
+     80  5+5   A093 36   52              PSHU A,X,S
+     81  3     A095 8E   AACC            LDX #$aacc
+     82  5+3   A098 34   14              PSHS B,X
+     83
+     84  4+1   A09A 32   E8 28           LEAS 40,S
+     85  5+3   A09D 35   12              PULS A,X
+     86  5+5   A09F 36   52              PSHU A,X,S
+     87  3     A0A1 8E   AADD            LDX #$aadd
+     88  5+3   A0A4 34   14              PSHS B,X
+     89
+     90  4+1   A0A6 32   E8 28           LEAS 40,S
+     91  5+3   A0A9 35   12              PULS A,X
+     92  5+5   A0AB 36   52              PSHU A,X,S
+     93  2     A0AD 86   CC              LDA #$cc
+     94  3     A0AF 8E   AADD            LDX #$aadd
+     95  5+3   A0B2 34   12              PSHS A,X
+     96
+     97  4+1   A0B4 32   E8 28           LEAS 40,S
+     98  4+1   A0B7 A6   E8 2A           LDA 42,S
+     99  5+1   A0BA 36   02              PSHU A
+    100  2     A0BC 84   0F              ANDA #$0F
+    101  2     A0BE 8A   D0              ORA #$d0
+    102  4+1   A0C0 A7   E8 2A           STA 42,S
+    103
+    104  4+1   A0C3 A6   E8 7A           LDA 122,S
+    105  5+1   A0C6 36   02              PSHU A
+    106  2     A0C8 84   0F              ANDA #$0F
+    107  2     A0CA 8A   C0              ORA #$c0
+    108  4+1   A0CC A7   E8 7A           STA 122,S
+    109
+    110  5+1   A0CF EC   E8 28           LDD 40,S
+    111  5+2   A0D2 36   06              PSHU D
+    112
+    113  5+1   A0D4 EC   E8 50           LDD 80,S
+    114  5+2   A0D7 36   06              PSHU D
+    115
+    116  5+1   A0D9 EC   E8 78           LDD 120,S
+    117  5+2   A0DC 36   06              PSHU D
+    118
+    119  3     A0DE CC   00AC            LDD #$00ac
+    120  5+1   A0E1 ED   E8 28           STD 40,S
+    121
+    122  2     A0E4 C6   CC              LDB #$cc
+    123  5+1   A0E6 ED   E8 50           STD 80,S
+    124
+    125  3     A0E9 CC   AB2C            LDD #$ab2c
+    126  5+1   A0EC ED   E8 78           STD 120,S
+    127
+    128  5+3   A0EF 35   12              PULS A,X
+    129  5+5   A0F1 36   52              PSHU A,X,S
+    130  2     A0F3 86   C0              LDA #$c0
+    131  3     A0F5 8E   AADD            LDX #$aadd
+    132  5+3   A0F8 34   12              PSHS A,X
+    133
+    134  4+4   A0FA 32   E9 00A0         LEAS 160,S
+    135  5+3   A0FE 35   12              PULS A,X
+    136  5+5   A100 36   52              PSHU A,X,S
+    137  2     A102 86   02              LDA #$02
+    138  3     A104 8E   23CC            LDX #$23cc
+    139  5+3   A107 34   12              PSHS A,X
+    140
+    141  4+1   A109 32   E8 28           LEAS 40,S
+    142  5+1   A10C EC   E8 28           LDD 40,S
+    143  5+2   A10F 36   06              PSHU D
+    144  2     A111 84   F0              ANDA #$F0
+    145  2     A113 8A   03              ORA #$03
+    146  2     A115 C6   2D              LDB #$2d
+    147  5+1   A117 ED   E8 28           STD 40,S
+    148
+    149  5+1   A11A EC   E8 50           LDD 80,S
+    150  5+2   A11D 36   06              PSHU D
+    151  2     A11F 84   F0              ANDA #$F0
+    152  2     A121 8A   01              ORA #$01
+    153  2     A123 C6   1D              LDB #$1d
+    154  5+1   A125 ED   E8 50           STD 80,S
+    155
+    156  4+1   A128 A6   E8 2A           LDA 42,S
+    157  5+1   A12B 36   02              PSHU A
+    158
+    159  4+1   A12D A6   E8 52           LDA 82,S
+    160  5+1   A130 36   02              PSHU A
+    161
+    162  4+1   A132 A6   E8 79           LDA 121,S
+    163  5+1   A135 36   02              PSHU A
+    164
+    165  2     A137 86   DD              LDA #$dd
+    166  4+1   A139 A7   E8 2A           STA 42,S
+    167
+    168  4+1   A13C A7   E8 52           STA 82,S
+    169
+    170  2     A13F 86   D0              LDA #$d0
+    171  4+1   A141 A7   E8 79           STA 121,S
+    172
+    173  5+3   A144 35   12              PULS A,X
+    174  5+5   A146 36   52              PSHU A,X,S
+    175  2     A148 86   12              LDA #$12
+    176  3     A14A 8E   23DC            LDX #$23dc
+    177  5+3   A14D 34   12              PSHS A,X
+    178
+    179  4+4   A14F 32   E9 0119         LEAS 281,S
+    180  5+1   A153 EC   E8 87           LDD -121,S
+    181  5+2   A156 36   06              PSHU D
+    182  2     A158 84   F0              ANDA #$F0
+    183  2     A15A 8A   01              ORA #$01
+    184  2     A15C C6   12              LDB #$12
+    185  5+1   A15E ED   E8 87           STD -121,S
+    186
+    187  5+1   A161 EC   E8 AF           LDD -81,S
+    188  5+2   A164 36   06              PSHU D
+    189  2     A166 84   F0              ANDA #$F0
+    190  2     A168 8A   03              ORA #$03
+    191  2     A16A C6   D1              LDB #$d1
+    192  5+1   A16C ED   E8 AF           STD -81,S
+    193
+    194  5+1   A16F EC   E8 D7           LDD -41,S
+    195  5+2   A172 36   06              PSHU D
+    196  2     A174 84   F0              ANDA #$F0
+    197  2     A176 8A   02              ORA #$02
+    198  2     A178 C6   D0              LDB #$d0
+    199  5+1   A17A ED   E8 D7           STD -41,S
+    200
+    201  5+1   A17D EC   7F              LDD -1,S
+    202  5+2   A17F 36   06              PSHU D
+    203  2     A181 84   F0              ANDA #$F0
+    204  2     A183 8A   03              ORA #$03
+    205  2     A185 C6   DA              LDB #$da
+    206  5+1   A187 ED   7F              STD -1,S
+    207
+    208  5+1   A189 EC   E8 27           LDD 39,S
+    209  5+2   A18C 36   06              PSHU D
+    210  2     A18E 84   F0              ANDA #$F0
+    211  2     A190 8A   00              ORA #$00
+    212  2     A192 C6   BB              LDB #$bb
+    213  5+1   A194 ED   E8 27           STD 39,S
+    214
+    215  4+1   A197 A6   E8 29           LDA 41,S
+    216  5+1   A19A 36   02              PSHU A
+    217  2     A19C 84   0F              ANDA #$0F
+    218  2     A19E 8A   C0              ORA #$c0
+    219  4+1   A1A0 A7   E8 29           STA 41,S
+    220
+    221  4+1   A1A3 A6   E8 51           LDA 81,S
+    222  5+1   A1A6 36   02              PSHU A
+    223  2     A1A8 84   0F              ANDA #$0F
+    224  2     A1AA 8A   D0              ORA #$d0
+    225  4+1   A1AC A7   E8 51           STA 81,S
+    226
+    227  4+1   A1AF A6   E8 79           LDA 121,S
+    228  5+1   A1B2 36   02              PSHU A
+    229  2     A1B4 84   0F              ANDA #$0F
+    230  2     A1B6 8A   D0              ORA #$d0
+    231  4+1   A1B8 A7   E8 79           STA 121,S
+    232
+    233  5+1   A1BB EC   E8 4F           LDD 79,S
+    234  5+2   A1BE 36   06              PSHU D
+    235
+    236  5+1   A1C0 EC   E8 77           LDD 119,S
+    237  5+4   A1C3 36   46              PSHU D,S
+    238
+    239  3     A1C5 CC   A9BB            LDD #$a9bb
+    240  5+1   A1C8 ED   E8 4F           STD 79,S
+    241
+    242  2     A1CB C6   AB              LDB #$ab
+    243  5+1   A1CD ED   E8 77           STD 119,S
+    244
+    245  4+4   A1D0 32   E9 0117         LEAS 279,S
+    246  4+1   A1D4 A6   E8 8A           LDA -118,S
+    247  5+1   A1D7 36   02              PSHU A
+    248  2     A1D9 84   0F              ANDA #$0F
+    249  2     A1DB 8A   D0              ORA #$d0
+    250  4+1   A1DD A7   E8 8A           STA -118,S
+    251
+    252  5+1   A1E0 EC   E8 B0           LDD -80,S
+    253  5+2   A1E3 36   06              PSHU D
+    254  2     A1E5 84   F0              ANDA #$F0
+    255  2     A1E7 8A   09              ORA #$09
+    256  2     A1E9 C6   DA              LDB #$da
+    257  5+1   A1EB ED   E8 B0           STD -80,S
+    258
+    259  5+1   A1EE EC   E8 D8           LDD -40,S
+    260  5+2   A1F1 36   06              PSHU D
+    261  2     A1F3 84   F0              ANDA #$F0
+    262  2     A1F5 8A   09              ORA #$09
+    263  2     A1F7 C6   D9              LDB #$d9
+    264  5+1   A1F9 ED   E8 D8           STD -40,S
+    265
+    266  4+1   A1FC A6   61              LDA 1,S
+    267  5+1   A1FE 36   02              PSHU A
+    268  2     A200 84   F0              ANDA #$F0
+    269  2     A202 8A   0D              ORA #$0d
+    270  4+1   A204 A7   61              STA 1,S
+    271
+    272  4+1   A206 A6   E8 29           LDA 41,S
+    273  5+1   A209 36   02              PSHU A
+    274  2     A20B 84   F0              ANDA #$F0
+    275  2     A20D 8A   0D              ORA #$0d
+    276  4+1   A20F A7   E8 29           STA 41,S
+    277
+    278  5+1   A212 EC   E8 50           LDD 80,S
+    279  5+2   A215 36   06              PSHU D
+    280  2     A217 84   F0              ANDA #$F0
+    281  2     A219 8A   0A              ORA #$0a
+    282  2     A21B C6   BB              LDB #$bb
+    283  5+1   A21D ED   E8 50           STD 80,S
+    284
+    285  5+1   A220 EC   E8 78           LDD 120,S
+    286  5+2   A223 36   06              PSHU D
+    287  2     A225 84   F0              ANDA #$F0
+    288  2     A227 8A   0A              ORA #$0a
+    289  2     A229 C6   AA              LDB #$aa
+    290  5+1   A22B ED   E8 78           STD 120,S
+    291
+    292  5+1   A22E EC   E8 88           LDD -120,S
+    293  5+4   A231 36   46              PSHU D,S
+    294
+    295  3     A233 CC   9AAA            LDD #$9aaa
+    296  5+1   A236 ED   E8 88           STD -120,S
+    297
+    298  4+4   A239 32   E9 00F0         LEAS 240,S
+    299  5+1   A23D EC   E8 B0           LDD -80,S
+    300  5+2   A240 36   06              PSHU D
+    301  2     A242 84   F0              ANDA #$F0
+    302  2     A244 8A   01              ORA #$01
+    303  2     A246 C6   1A              LDB #$1a
+    304  5+1   A248 ED   E8 B0           STD -80,S
+    305
+    306  5+1   A24B EC   E8 D8           LDD -40,S
+    307  5+2   A24E 36   06              PSHU D
+    308
+    309  5+0   A250 EC   E4              LDD ,S
+    310  5+2   A252 36   06              PSHU D
+    311
+    312  5+1   A254 EC   E8 28           LDD 40,S
+    313  5+2   A257 36   06              PSHU D
+    314
+    315  5+1   A259 EC   E8 50           LDD 80,S
+    316  5+4   A25C 36   46              PSHU D,S
+    317
+    318  3     A25E CC   A9A1            LDD #$a9a1
+    319  5+1   A261 ED   E8 D8           STD -40,S
+    320
+    321  3     A264 CC   E0AA            LDD #$e0aa
+    322  5+0   A267 ED   E4              STD ,S
+    323
+    324  3     A269 CC   1FFA            LDD #$1ffa
+    325  5+1   A26C ED   E8 28           STD 40,S
+    326
+    327  3     A26F CC   EEE0            LDD #$eee0
+    328  5+1   A272 ED   E8 50           STD 80,S
+    329
+    330
+    331  7     A275 10FE 9F02            LDS $9F00+2
+    332  7     A279 10FF A5A4            STS ERASE_POS_HIL0_2+2
+    333  3     A27D CE   A75E            LDU #ERASE_DATA_HIL0_END
+    334
+    335  4+4   A280 32   E9 01E3         LEAS 483,S
+    336  5+1   A284 EC   E8 D7           LDD -41,S
+    337  5+2   A287 36   06              PSHU D
+    338  2     A289 84   F0              ANDA #$F0
+    339  2     A28B 8A   0C              ORA #$0c
+    340  2     A28D C6   CC              LDB #$cc
+    341  5+1   A28F ED   E8 D7           STD -41,S
+    342
+    343  4+1   A292 A6   E8 D9           LDA -39,S
+    344  5+1   A295 36   02              PSHU A
+    345  2     A297 84   0F              ANDA #$0F
+    346  2     A299 8A   D0              ORA #$d0
+    347  4+1   A29B A7   E8 D9           STA -39,S
+    348
+    349  4+1   A29E A6   E8 88           LDA -120,S
+    350  5+1   A2A1 36   02              PSHU A
+    351
+    352  4+1   A2A3 A6   E8 B0           LDA -80,S
+    353  5+1   A2A6 36   02              PSHU A
+    354
+    355  5+1   A2A8 EC   7F              LDD -1,S
+    356  5+2   A2AA 36   06              PSHU D
+    357
+    358  5+1   A2AC EC   E8 27           LDD 39,S
+    359  5+2   A2AF 36   06              PSHU D
+    360
+    361  5+1   A2B1 EC   E8 4F           LDD 79,S
+    362  5+2   A2B4 36   06              PSHU D
+    363
+    364  5+1   A2B6 EC   E8 77           LDD 119,S
+    365  5+4   A2B9 36   46              PSHU D,S
+    366
+    367  2     A2BB 86   CC              LDA #$cc
+    368  4+1   A2BD A7   E8 88           STA -120,S
+    369
+    370  4+1   A2C0 A7   E8 B0           STA -80,S
+    371
+    372  3     A2C3 CC   CADD            LDD #$cadd
+    373  5+1   A2C6 ED   7F              STD -1,S
+    374
+    375  2     A2C8 86   AA              LDA #$aa
+    376  5+1   A2CA ED   E8 27           STD 39,S
+    377
+    378  5+1   A2CD ED   E8 4F           STD 79,S
+    379
+    380  2     A2D0 C6   DC              LDB #$dc
+    381  5+1   A2D2 ED   E8 77           STD 119,S
+    382
+    383  4+4   A2D5 32   E9 009F         LEAS 159,S
+    384  5+0   A2D9 EC   E4              LDD ,S
+    385  5+4   A2DB 36   46              PSHU D,S
+    386
+    387  3     A2DD CC   ACCD            LDD #$accd
+    388  5+0   A2E0 ED   E4              STD ,S
+    389
+    390  4+4   A2E2 32   E9 00A0         LEAS 160,S
+    391  4+1   A2E6 A6   E8 B2           LDA -78,S
+    392  5+1   A2E9 36   02              PSHU A
+    393  2     A2EB 84   0F              ANDA #$0F
+    394  2     A2ED 8A   C0              ORA #$c0
+    395  4+1   A2EF A7   E8 B2           STA -78,S
+    396
+    397  4+1   A2F2 A6   E8 DA           LDA -38,S
+    398  5+1   A2F5 36   02              PSHU A
+    399  2     A2F7 84   0F              ANDA #$0F
+    400  2     A2F9 8A   D0              ORA #$d0
+    401  4+1   A2FB A7   E8 DA           STA -38,S
+    402
+    403  5+1   A2FE EC   E8 77           LDD 119,S
+    404  5+2   A301 36   06              PSHU D
+    405  2     A303 84   F0              ANDA #$F0
+    406  2     A305 8A   00              ORA #$00
+    407  2     A307 C6   BA              LDB #$ba
+    408  5+1   A309 ED   E8 77           STD 119,S
+    409
+    410  5+1   A30C EC   E8 88           LDD -120,S
+    411  5+2   A30F 36   06              PSHU D
+    412
+    413  5+1   A311 EC   E8 B0           LDD -80,S
+    414  5+2   A314 36   06              PSHU D
+    415
+    416  5+1   A316 EC   E8 D8           LDD -40,S
+    417  5+2   A319 36   06              PSHU D
+    418
+    419  5+1   A31B EC   E8 28           LDD 40,S
+    420  5+2   A31E 36   06              PSHU D
+    421
+    422  5+1   A320 EC   E8 50           LDD 80,S
+    423  5+2   A323 36   06              PSHU D
+    424
+    425  4+1   A325 A6   E8 79           LDA 121,S
+    426  5+1   A328 36   02              PSHU A
+    427
+    428  3     A32A CC   CBCD            LDD #$cbcd
+    429  5+1   A32D ED   E8 88           STD -120,S
+    430
+    431  2     A330 86   AB              LDA #$ab
+    432  5+1   A332 ED   E8 B0           STD -80,S
+    433
+    434  2     A335 86   BB              LDA #$bb
+    435  5+1   A337 ED   E8 D8           STD -40,S
+    436
+    437  5+1   A33A ED   E8 28           STD 40,S
+    438
+    439  5+1   A33D ED   E8 50           STD 80,S
+    440
+    441  2     A340 86   DD              LDA #$dd
+    442  4+1   A342 A7   E8 79           STA 121,S
+    443
+    444  5+3   A345 35   12              PULS A,X
+    445  5+5   A347 36   52              PSHU A,X,S
+    446  2     A349 86   BB              LDA #$bb
+    447  3     A34B 8E   CDDD            LDX #$cddd
+    448  5+3   A34E 34   12              PSHS A,X
+    449
+    450  4+4   A350 32   E9 0118         LEAS 280,S
+    451  5+1   A354 EC   E8 87           LDD -121,S
+    452  5+2   A357 36   06              PSHU D
+    453  2     A359 84   F0              ANDA #$F0
+    454  2     A35B 8A   00              ORA #$00
+    455  2     A35D C6   B2              LDB #$b2
+    456  5+1   A35F ED   E8 87           STD -121,S
+    457
+    458  4+1   A362 A6   62              LDA 2,S
+    459  5+1   A364 36   02              PSHU A
+    460  2     A366 84   0F              ANDA #$0F
+    461  2     A368 8A   C0              ORA #$c0
+    462  4+1   A36A A7   62              STA 2,S
+    463
+    464  5+1   A36C EC   E8 50           LDD 80,S
+    465  5+2   A36F 36   06              PSHU D
+    466  2     A371 86   23              LDA #$23
+    467  2     A373 C4   0F              ANDB #$0F
+    468  2     A375 CA   D0              ORB #$d0
+    469  5+1   A377 ED   E8 50           STD 80,S
+    470
+    471  4+1   A37A A6   E8 89           LDA -119,S
+    472  5+1   A37D 36   02              PSHU A
+    473
+    474  5+1   A37F EC   E8 B0           LDD -80,S
+    475  5+2   A382 36   06              PSHU D
+    476
+    477  5+1   A384 EC   E8 D8           LDD -40,S
+    478  5+2   A387 36   06              PSHU D
+    479
+    480  5+0   A389 EC   E4              LDD ,S
+    481  5+2   A38B 36   06              PSHU D
+    482
+    483  5+1   A38D EC   E8 28           LDD 40,S
+    484  5+2   A390 36   06              PSHU D
+    485
+    486  5+1   A392 EC   E8 78           LDD 120,S
+    487  5+4   A395 36   46              PSHU D,S
+    488
+    489  2     A397 86   DD              LDA #$dd
+    490  4+1   A399 A7   E8 89           STA -119,S
+    491
+    492  3     A39C CC   22DD            LDD #$22dd
+    493  5+1   A39F ED   E8 B0           STD -80,S
+    494
+    495  2     A3A2 C6   0D              LDB #$0d
+    496  5+1   A3A4 ED   E8 D8           STD -40,S
+    497
+    498  3     A3A7 CC   33DD            LDD #$33dd
+    499  5+0   A3AA ED   E4              STD ,S
+    500
+    501  2     A3AC 86   E0              LDA #$e0
+    502  5+1   A3AE ED   E8 28           STD 40,S
+    503
+    504  3     A3B1 CC   222C            LDD #$222c
+    505  5+1   A3B4 ED   E8 78           STD 120,S
+    506
+    507  4+4   A3B7 32   E9 0118         LEAS 280,S
+    508  5+1   A3BB EC   E8 50           LDD 80,S
+    509  5+2   A3BE 36   06              PSHU D
+    510  2     A3C0 84   0F              ANDA #$0F
+    511  2     A3C2 C4   0F              ANDB #$0F
+    512  4     A3C4 C3   D0A0            ADDD #$d0a0
+    513  5+1   A3C7 ED   E8 50           STD 80,S
+    514
+    515  5+1   A3CA EC   E8 78           LDD 120,S
+    516  5+2   A3CD 36   06              PSHU D
+    517  2     A3CF 84   0F              ANDA #$0F
+    518  2     A3D1 C4   0F              ANDB #$0F
+    519  4     A3D3 C3   D090            ADDD #$d090
+    520  5+1   A3D6 ED   E8 78           STD 120,S
+    521
+    522  5+1   A3D9 EC   E8 88           LDD -120,S
+    523  5+2   A3DC 36   06              PSHU D
+    524
+    525  5+1   A3DE EC   E8 B0           LDD -80,S
+    526  5+2   A3E1 36   06              PSHU D
+    527
+    528  5+1   A3E3 EC   E8 D8           LDD -40,S
+    529  5+2   A3E6 36   06              PSHU D
+    530
+    531  5+0   A3E8 EC   E4              LDD ,S
+    532  5+2   A3EA 36   06              PSHU D
+    533
+    534  5+1   A3EC EC   E8 28           LDD 40,S
+    535  5+4   A3EF 36   46              PSHU D,S
+    536
+    537  3     A3F1 CC   2232            LDD #$2232
+    538  5+1   A3F4 ED   E8 88           STD -120,S
+    539
+    540  2     A3F7 C6   D2              LDB #$d2
+    541  5+1   A3F9 ED   E8 B0           STD -80,S
+    542
+    543  3     A3FC CC   31B3            LDD #$31b3
+    544  5+1   A3FF ED   E8 D8           STD -40,S
+    545
+    546  3     A402 CC   DDAE            LDD #$ddae
+    547  5+0   A405 ED   E4              STD ,S
+    548
+    549  3     A407 CC   0D9D            LDD #$0d9d
+    550  5+1   A40A ED   E8 28           STD 40,S
+    551
+    552  4+4   A40D 32   E9 00F0         LEAS 240,S
+    553  4+1   A411 A6   E8 B0           LDA -80,S
+    554  5+1   A414 36   02              PSHU A
+    555  2     A416 84   0F              ANDA #$0F
+    556  2     A418 8A   D0              ORA #$d0
+    557  4+1   A41A A7   E8 B0           STA -80,S
+    558
+    559  4+1   A41D A6   E8 D8           LDA -40,S
+    560  5+1   A420 36   02              PSHU A
+    561  2     A422 84   0F              ANDA #$0F
+    562  2     A424 8A   D0              ORA #$d0
+    563  4+1   A426 A7   E8 D8           STA -40,S
+    564
+    565  4+0   A429 A6   E4              LDA ,S
+    566  5+1   A42B 36   02              PSHU A
+    567  2     A42D 84   0F              ANDA #$0F
+    568  2     A42F 8A   D0              ORA #$d0
+    569  4+0   A431 A7   E4              STA ,S
+    570
+    571  5+1   A433 EC   E8 28           LDD 40,S
+    572  5+2   A436 36   06              PSHU D
+    573  2     A438 86   A9              LDA #$a9
+    574  2     A43A C4   0F              ANDB #$0F
+    575  2     A43C CA   A0              ORB #$a0
+    576  5+1   A43E ED   E8 28           STD 40,S
+    577
+    578  5+1   A441 EC   E8 50           LDD 80,S
+    579  5+4   A444 36   46              PSHU D,S
+    580  2     A446 86   90              LDA #$90
+    581  2     A448 C4   0F              ANDB #$0F
+    582  2     A44A CA   90              ORB #$90
+    583  5+1   A44C ED   E8 50           STD 80,S
+    584
+    585  4+4   A44F 32   E9 00EF         LEAS 239,S
+    586  5+1   A453 EC   E8 89           LDD -119,S
+    587  5+2   A456 36   06              PSHU D
+    588  2     A458 86   AA              LDA #$aa
+    589  2     A45A C4   0F              ANDB #$0F
+    590  2     A45C CA   00              ORB #$00
+    591  5+1   A45E ED   E8 89           STD -119,S
+    592
+    593  5+1   A461 EC   E8 B1           LDD -79,S
+    594  5+2   A464 36   06              PSHU D
+    595  2     A466 86   0B              LDA #$0b
+    596  2     A468 C4   0F              ANDB #$0F
+    597  2     A46A CA   10              ORB #$10
+    598  5+1   A46C ED   E8 B1           STD -79,S
+    599
+    600  5+1   A46F EC   E8 D8           LDD -40,S
+    601  5+2   A472 36   06              PSHU D
+    602  2     A474 84   F0              ANDA #$F0
+    603  2     A476 8A   01              ORA #$01
+    604  2     A478 C6   2F              LDB #$2f
+    605  5+1   A47A ED   E8 D8           STD -40,S
+    606
+    607  4+1   A47D A6   E8 DA           LDA -38,S
+    608  5+1   A480 36   02              PSHU A
+    609
+    610  2     A482 86   1E              LDA #$1e
+    611  4+1   A484 A7   E8 DA           STA -38,S
+    612
+    613  5+3   A487 35   12              PULS A,X
+    614  5+5   A489 36   52              PSHU A,X,S
+    615  2     A48B 86   1E              LDA #$1e
+    616  3     A48D 8E   FF1E            LDX #$ff1e
+    617  5+3   A490 34   12              PSHS A,X
+    618
+    619  4+1   A492 32   E8 28           LEAS 40,S
+    620  5+3   A495 35   12              PULS A,X
+    621  5+5   A497 36   52              PSHU A,X,S
+    622  2     A499 86   00              LDA #$00
+    623  3     A49B 8E   EE0E            LDX #$ee0e
+    624  5+3   A49E 34   12              PSHS A,X
+    625
+    626        A4A0               SSAV_HIL0
+    627  4     A4A0 10CE 0000            LDS #$0000
+    628  5+5   A4A4 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
+    629
+    630        A4A6               ERASE_HIL0
+    631  5+3   A4A6 34   48              PSHS U,DP
+    632  7     A4A8 10FF A688            STS ERASE_SSAV_HIL0+2
+    633
+    634        A4AC               ERASE_POS_HIL0_1
+    635  4     A4AC 10CE 0000            LDS #$0000
+    636  3     A4B0 CE   A68C            LDU #ERASE_DATA_HIL0_1
+    637
+    638        A4B3               ERASE_CODE_HIL0_1
+    639  5+4   A4B3 37   46              PULU D,S
+    640  5+1   A4B5 ED   E8 50           STD 80,S
+    641  5+2   A4B8 37   06              PULU D
+    642  5+1   A4BA ED   E8 28           STD 40,S
+    643  5+2   A4BD 37   06              PULU D
+    644  5+0   A4BF ED   E4              STD ,S
+    645  5+2   A4C1 37   06              PULU D
+    646  5+1   A4C3 ED   E8 D8           STD -40,S
+    647  5+2   A4C6 37   06              PULU D
+    648  5+1   A4C8 ED   E8 B0           STD -80,S
+    649  5+4   A4CB 37   46              PULU D,S
+    650  5+1   A4CD ED   E8 88           STD -120,S
+    651  5+2   A4D0 37   06              PULU D
+    652  5+1   A4D2 ED   E8 78           STD 120,S
+    653  5+2   A4D5 37   06              PULU D
+    654  5+1   A4D7 ED   E8 50           STD 80,S
+    655  5+1   A4DA 37   02              PULU A
+    656  4+1   A4DC A7   E8 29           STA 41,S
+    657  5+1   A4DF 37   02              PULU A
+    658  4+1   A4E1 A7   61              STA 1,S
+    659  5+2   A4E3 37   06              PULU D
+    660  5+1   A4E5 ED   E8 D8           STD -40,S
+    661  5+2   A4E8 37   06              PULU D
+    662  5+1   A4EA ED   E8 B0           STD -80,S
+    663  5+1   A4ED 37   02              PULU A
+    664  4+1   A4EF A7   E8 8A           STA -118,S
+    665  5+4   A4F2 37   46              PULU D,S
+    666  5+1   A4F4 ED   E8 77           STD 119,S
+    667  5+2   A4F7 37   06              PULU D
+    668  5+1   A4F9 ED   E8 4F           STD 79,S
+    669  5+1   A4FC 37   02              PULU A
+    670  4+1   A4FE A7   E8 79           STA 121,S
+    671  5+1   A501 37   02              PULU A
+    672  4+1   A503 A7   E8 51           STA 81,S
+    673  5+1   A506 37   02              PULU A
+    674  4+1   A508 A7   E8 29           STA 41,S
+    675  5+2   A50B 37   06              PULU D
+    676  5+1   A50D ED   E8 27           STD 39,S
+    677  5+2   A510 37   06              PULU D
+    678  5+1   A512 ED   7F              STD -1,S
+    679  5+2   A514 37   06              PULU D
+    680  5+1   A516 ED   E8 D7           STD -41,S
+    681  5+2   A519 37   06              PULU D
+    682  5+1   A51B ED   E8 AF           STD -81,S
+    683  5+2   A51E 37   06              PULU D
+    684  5+1   A520 ED   E8 87           STD -121,S
+    685  5+5   A523 37   52              PULU A,X,S
+    686  5+3   A525 34   12              PSHS A,X
+    687  5+1   A527 37   02              PULU A
+    688  4+1   A529 A7   E8 79           STA 121,S
+    689  5+1   A52C 37   02              PULU A
+    690  4+1   A52E A7   E8 52           STA 82,S
+    691  5+1   A531 37   02              PULU A
+    692  4+1   A533 A7   E8 2A           STA 42,S
+    693  5+2   A536 37   06              PULU D
+    694  5+1   A538 ED   E8 50           STD 80,S
+    695  5+2   A53B 37   06              PULU D
+    696  5+1   A53D ED   E8 28           STD 40,S
+    697  5+5   A540 37   52              PULU A,X,S
+    698  5+3   A542 34   12              PSHS A,X
+    699  5+5   A544 37   52              PULU A,X,S
+    700  5+3   A546 34   12              PSHS A,X
+    701  5+2   A548 37   06              PULU D
+    702  5+1   A54A ED   E8 78           STD 120,S
+    703  5+2   A54D 37   06              PULU D
+    704  5+1   A54F ED   E8 50           STD 80,S
+    705  5+2   A552 37   06              PULU D
+    706  5+1   A554 ED   E8 28           STD 40,S
+    707  5+1   A557 37   02              PULU A
+    708  4+1   A559 A7   E8 7A           STA 122,S
+    709  5+1   A55C 37   02              PULU A
+    710  4+1   A55E A7   E8 2A           STA 42,S
+    711  5+5   A561 37   52              PULU A,X,S
+    712  5+3   A563 34   12              PSHS A,X
+    713  5+5   A565 37   52              PULU A,X,S
+    714  5+3   A567 34   12              PSHS A,X
+    715  5+5   A569 37   52              PULU A,X,S
+    716  5+3   A56B 34   12              PSHS A,X
+    717  5+2   A56D 37   06              PULU D
+    718  5+1   A56F ED   E8 D8           STD -40,S
+    719  5+2   A572 37   06              PULU D
+    720  5+1   A574 ED   E8 B0           STD -80,S
+    721  5+2   A577 37   06              PULU D
+    722  5+1   A579 ED   E8 88           STD -120,S
+    723  5+1   A57C 37   02              PULU A
+    724  4+1   A57E A7   E8 DA           STA -38,S
+    725  5+4   A581 37   46              PULU D,S
+    726  5+1   A583 ED   E8 4F           STD 79,S
+    727  5+1   A586 37   02              PULU A
+    728  4+1   A588 A7   E8 29           STA 41,S
+    729  5+1   A58B 37   02              PULU A
+    730  4+1   A58D A7   61              STA 1,S
+    731  5+2   A58F 37   06              PULU D
+    732  5+1   A591 ED   E8 D8           STD -40,S
+    733  5+2   A594 37   06              PULU D
+    734  5+1   A596 ED   E8 27           STD 39,S
+    735  5+2   A599 37   06              PULU D
+    736  5+1   A59B ED   7F              STD -1,S
+    737  5+1   A59D 37   02              PULU A
+    738  4+1   A59F A7   E8 B0           STA -80,S
+    739        A5A2               ERASE_POS_HIL0_2
+    740  4     A5A2 10CE 0000            LDS #$0000
+    741  3     A5A6 CE   A6FB            LDU #ERASE_DATA_HIL0_2
+    742
+    743        A5A9               ERASE_CODE_HIL0_2
+    744  5+5   A5A9 37   52              PULU A,X,S
+    745  5+3   A5AB 34   12              PSHS A,X
+    746  5+5   A5AD 37   52              PULU A,X,S
+    747  5+3   A5AF 34   12              PSHS A,X
+    748  5+1   A5B1 37   02              PULU A
+    749  4+1   A5B3 A7   E8 DA           STA -38,S
+    750  5+2   A5B6 37   06              PULU D
+    751  5+1   A5B8 ED   E8 D8           STD -40,S
+    752  5+2   A5BB 37   06              PULU D
+    753  5+1   A5BD ED   E8 B1           STD -79,S
+    754  5+2   A5C0 37   06              PULU D
+    755  5+1   A5C2 ED   E8 89           STD -119,S
+    756  5+4   A5C5 37   46              PULU D,S
+    757  5+1   A5C7 ED   E8 50           STD 80,S
+    758  5+2   A5CA 37   06              PULU D
+    759  5+1   A5CC ED   E8 28           STD 40,S
+    760  5+1   A5CF 37   02              PULU A
+    761  4+0   A5D1 A7   E4              STA ,S
+    762  5+1   A5D3 37   02              PULU A
+    763  4+1   A5D5 A7   E8 D8           STA -40,S
+    764  5+1   A5D8 37   02              PULU A
+    765  4+1   A5DA A7   E8 B0           STA -80,S
+    766  5+4   A5DD 37   46              PULU D,S
+    767  5+1   A5DF ED   E8 28           STD 40,S
+    768  5+2   A5E2 37   06              PULU D
+    769  5+0   A5E4 ED   E4              STD ,S
+    770  5+2   A5E6 37   06              PULU D
+    771  5+1   A5E8 ED   E8 D8           STD -40,S
+    772  5+2   A5EB 37   06              PULU D
+    773  5+1   A5ED ED   E8 B0           STD -80,S
+    774  5+2   A5F0 37   06              PULU D
+    775  5+1   A5F2 ED   E8 88           STD -120,S
+    776  5+2   A5F5 37   06              PULU D
+    777  5+1   A5F7 ED   E8 78           STD 120,S
+    778  5+2   A5FA 37   06              PULU D
+    779  5+1   A5FC ED   E8 50           STD 80,S
+    780  5+4   A5FF 37   46              PULU D,S
+    781  5+1   A601 ED   E8 78           STD 120,S
+    782  5+2   A604 37   06              PULU D
+    783  5+1   A606 ED   E8 28           STD 40,S
+    784  5+2   A609 37   06              PULU D
+    785  5+0   A60B ED   E4              STD ,S
+    786  5+2   A60D 37   06              PULU D
+    787  5+1   A60F ED   E8 D8           STD -40,S
+    788  5+2   A612 37   06              PULU D
+    789  5+1   A614 ED   E8 B0           STD -80,S
+    790  5+1   A617 37   02              PULU A
+    791  4+1   A619 A7   E8 89           STA -119,S
+    792  5+2   A61C 37   06              PULU D
+    793  5+1   A61E ED   E8 50           STD 80,S
+    794  5+1   A621 37   02              PULU A
+    795  4+1   A623 A7   62              STA 2,S
+    796  5+2   A625 37   06              PULU D
+    797  5+1   A627 ED   E8 87           STD -121,S
+    798  5+5   A62A 37   52              PULU A,X,S
+    799  5+3   A62C 34   12              PSHS A,X
+    800  5+1   A62E 37   02              PULU A
+    801  4+1   A630 A7   E8 79           STA 121,S
+    802  5+2   A633 37   06              PULU D
+    803  5+1   A635 ED   E8 50           STD 80,S
+    804  5+2   A638 37   06              PULU D
+    805  5+1   A63A ED   E8 28           STD 40,S
+    806  5+2   A63D 37   06              PULU D
+    807  5+1   A63F ED   E8 D8           STD -40,S
+    808  5+2   A642 37   06              PULU D
+    809  5+1   A644 ED   E8 B0           STD -80,S
+    810  5+2   A647 37   06              PULU D
+    811  5+1   A649 ED   E8 88           STD -120,S
+    812  5+2   A64C 37   06              PULU D
+    813  5+1   A64E ED   E8 77           STD 119,S
+    814  5+1   A651 37   02              PULU A
+    815  4+1   A653 A7   E8 DA           STA -38,S
+    816  5+1   A656 37   02              PULU A
+    817  4+1   A658 A7   E8 B2           STA -78,S
+    818  5+4   A65B 37   46              PULU D,S
+    819  5+0   A65D ED   E4              STD ,S
+    820  5+4   A65F 37   46              PULU D,S
+    821  5+1   A661 ED   E8 77           STD 119,S
+    822  5+2   A664 37   06              PULU D
+    823  5+1   A666 ED   E8 4F           STD 79,S
+    824  5+2   A669 37   06              PULU D
+    825  5+1   A66B ED   E8 27           STD 39,S
+    826  5+2   A66E 37   06              PULU D
+    827  5+1   A670 ED   7F              STD -1,S
+    828  5+1   A672 37   02              PULU A
+    829  4+1   A674 A7   E8 B0           STA -80,S
+    830  5+1   A677 37   02              PULU A
+    831  4+1   A679 A7   E8 88           STA -120,S
+    832  5+1   A67C 37   02              PULU A
+    833  4+1   A67E A7   E8 D9           STA -39,S
+    834  5+2   A681 37   06              PULU D
+    835  5+1   A683 ED   E8 D7           STD -41,S
+    836        A686               ERASE_SSAV_HIL0
+    837  4     A686 10CE 0000            LDS #$0000
+    838  5+5   A68A 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
+    839
+    840        A68C               ERASE_DATA_HIL0_1
+    841        A68C 0000                 FDB $0000
+    842        A68E 0000                 FDB $0000
+    843        A690 0000                 FDB $0000
+    844        A692 0000                 FDB $0000
+    845        A694 0000                 FDB $0000
+    846        A696 0000                 FDB $0000
+    847        A698 0000                 FDB $0000
+    848        A69A 0000                 FDB $0000
+    849        A69C 0000                 FDB $0000
+    850        A69E 0000                 FDB $0000
+    851        A6A0 0000                 FDB $0000
+    852        A6A2 0000                 FDB $0000
+    853        A6A4 0000                 FDB $0000
+    854        A6A6 0000                 FDB $0000
+    855        A6A8 0000                 FDB $0000
+    856        A6AA 0000                 FDB $0000
+    857        A6AC 0000                 FDB $0000
+    858        A6AE 0000                 FDB $0000
+    859        A6B0 0000                 FDB $0000
+    860        A6B2 0000                 FDB $0000
+    861        A6B4 0000                 FDB $0000
+    862        A6B6 0000                 FDB $0000
+    863        A6B8 0000                 FDB $0000
+    864        A6BA 0000                 FDB $0000
+    865        A6BC 0000                 FDB $0000
+    866        A6BE 0000                 FDB $0000
+    867        A6C0 0000                 FDB $0000
+    868        A6C2 0000                 FDB $0000
+    869        A6C4 0000                 FDB $0000
+    870        A6C6 0000                 FDB $0000
+    871        A6C8 0000                 FDB $0000
+    872        A6CA 0000                 FDB $0000
+    873        A6CC 0000                 FDB $0000
+    874        A6CE 0000                 FDB $0000
+    875        A6D0 0000                 FDB $0000
+    876        A6D2 0000                 FDB $0000
+    877        A6D4 0000                 FDB $0000
+    878        A6D6 0000                 FDB $0000
+    879        A6D8 0000                 FDB $0000
+    880        A6DA 0000                 FDB $0000
+    881        A6DC 0000                 FDB $0000
+    882        A6DE 0000                 FDB $0000
+    883        A6E0 0000                 FDB $0000
+    884        A6E2 0000                 FDB $0000
+    885        A6E4 0000                 FDB $0000
+    886        A6E6 0000                 FDB $0000
+    887        A6E8 0000                 FDB $0000
+    888        A6EA 0000                 FDB $0000
+    889        A6EC 0000                 FDB $0000
+    890        A6EE 0000                 FDB $0000
+    891        A6F0 0000                 FDB $0000
+    892        A6F2 0000                 FDB $0000
+    893        A6F4 0000                 FDB $0000
+    894        A6F6 0000                 FDB $0000
+    895        A6F8 0000                 FDB $0000
+    896        A6FA 00                   FCB $00
+    897        A6FB               ERASE_DATA_HIL0_2
+    898        A6FB 0000                 FDB $0000
+    899        A6FD 0000                 FDB $0000
+    900        A6FF 0000                 FDB $0000
+    901        A701 0000                 FDB $0000
+    902        A703 0000                 FDB $0000
+    903        A705 0000                 FDB $0000
+    904        A707 0000                 FDB $0000
+    905        A709 0000                 FDB $0000
+    906        A70B 0000                 FDB $0000
+    907        A70D 0000                 FDB $0000
+    908        A70F 0000                 FDB $0000
+    909        A711 0000                 FDB $0000
+    910        A713 0000                 FDB $0000
+    911        A715 0000                 FDB $0000
+    912        A717 0000                 FDB $0000
+    913        A719 0000                 FDB $0000
+    914        A71B 0000                 FDB $0000
+    915        A71D 0000                 FDB $0000
+    916        A71F 0000                 FDB $0000
+    917        A721 0000                 FDB $0000
+    918        A723 0000                 FDB $0000
+    919        A725 0000                 FDB $0000
+    920        A727 0000                 FDB $0000
+    921        A729 0000                 FDB $0000
+    922        A72B 0000                 FDB $0000
+    923        A72D 0000                 FDB $0000
+    924        A72F 0000                 FDB $0000
+    925        A731 0000                 FDB $0000
+    926        A733 0000                 FDB $0000
+    927        A735 0000                 FDB $0000
+    928        A737 0000                 FDB $0000
+    929        A739 0000                 FDB $0000
+    930        A73B 0000                 FDB $0000
+    931        A73D 0000                 FDB $0000
+    932        A73F 0000                 FDB $0000
+    933        A741 0000                 FDB $0000
+    934        A743 0000                 FDB $0000
+    935        A745 0000                 FDB $0000
+    936        A747 0000                 FDB $0000
+    937        A749 0000                 FDB $0000
+    938        A74B 0000                 FDB $0000
+    939        A74D 0000                 FDB $0000
+    940        A74F 0000                 FDB $0000
+    941        A751 0000                 FDB $0000
+    942        A753 0000                 FDB $0000
+    943        A755 0000                 FDB $0000
+    944        A757 0000                 FDB $0000
+    945        A759 0000                 FDB $0000
+    946        A75B 0000                 FDB $0000
+    947        A75D 00                   FCB $00
+    948        A75E               ERASE_DATA_HIL0_END
+
+000000 Total Errors
+
+000011 Total Symbols
+     0x          Label A000 DRAW_HIL0
+     0x          Label A4B3 ERASE_CODE_HIL0_1
+     0x          Label A5A9 ERASE_CODE_HIL0_2
+     1x          Label A68C ERASE_DATA_HIL0_1
+     2x          Label A6FB ERASE_DATA_HIL0_2
+     1x          Label A75E ERASE_DATA_HIL0_END
+     0x          Label A4A6 ERASE_HIL0
+     1x          Label A4AC ERASE_POS_HIL0_1
+     1x          Label A5A2 ERASE_POS_HIL0_2
+     1x          Label A686 ERASE_SSAV_HIL0
+     1x          Label A4A0 SSAV_HIL0
+

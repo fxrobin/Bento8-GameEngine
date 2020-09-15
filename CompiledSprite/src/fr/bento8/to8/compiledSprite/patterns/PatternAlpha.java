@@ -9,7 +9,7 @@ public abstract class PatternAlpha extends Pattern{
 
 	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
-		asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+offset+",S");
+		asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
 		if (saveS) {
 			asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]+",S");
 		} else {

@@ -76,9 +76,11 @@ public class AssemblyGenerator{
 		cyclesSpriteECode1 = regOpt.getAsmECodeCycles();
 		sizeSpriteECode1 = regOpt.getAsmECodeSize();
 		
-		generateDataFDB(regOpt.getDataSize(), spriteEData1);
-		sizeSpriteEData1 += regOpt.getDataSize();
+		int dataSize = regOpt.getDataSize();
+		generateDataFDB(dataSize, spriteEData1);
+		sizeSpriteEData1 += dataSize;
 
+		logger.debug("Taille de la zone data: "+dataSize);
 		logger.debug("RAM 1 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
@@ -100,8 +102,11 @@ public class AssemblyGenerator{
 		cyclesSpriteECode2 = regOpt.getAsmECodeCycles();
 		sizeSpriteECode2 = regOpt.getAsmECodeSize();
 		
-		generateDataFDB(regOpt.getDataSize(), spriteEData2);
-		sizeSpriteEData2 += regOpt.getDataSize();
+		dataSize = regOpt.getDataSize();
+		generateDataFDB(dataSize, spriteEData2);
+		sizeSpriteEData2 += dataSize;
+		
+		logger.debug("Taille de la zone data: "+dataSize);
 	}
 
 	public byte[] getCompiledCode(String org) {
@@ -158,11 +163,13 @@ public class AssemblyGenerator{
 			
 			// Compte le nombre de cycles du .lst
 			int compilerCycles = C6809Util.countCycle(lstFileName);
-			logger.debug(lstFileName + " c6809.exe cycles: " + compilerCycles + " computed cycles: " + getCycles());
-			logger.debug(lstFileName + " c6809.exe size: " + content.length + " computed size: " + getSize());
+			int computedCycles = getCycles();
+			int computedSize = getSize();
+			logger.debug(lstFileName + " c6809.exe cycles: " + compilerCycles + " computed cycles: " + computedCycles);
+			logger.debug(lstFileName + " c6809.exe size: " + content.length + " computed size: " + computedSize);
 
-			if (getCycles() != compilerCycles || content.length != getSize()) {
-				logger.fatal("Ecart de cycles ou de taille.");
+			if (computedCycles != compilerCycles || content.length != computedSize) {
+				logger.fatal(lstFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			// Récupère l'adresse de la routine d'effacement
@@ -206,27 +213,27 @@ public class AssemblyGenerator{
 	public List<String> getCodeFrame1(String fileName, String org) {
 		
 		List<String> asm = new ArrayList<String>();
+		
 		asm.add("(main)" + fileName + "");
-
 		asm.add("\tORG $" + org + "");
 		asm.add("DRAW_" + spriteName + "");
-
+		
 		asm.add("\tPSHS U,DP");
 		cyclesFrameCode += Register.getCostImmediatePULPSH(3);
 		sizeFrameCode += Register.sizeImmediatePULPSH;
-
+		
 		asm.add("\tSTS SSAV_" + spriteName + "+2\n");
 		cyclesFrameCode += Register.costExtendedST[Register.S];
 		sizeFrameCode += Register.sizeExtendedST[Register.S];
-
+		
 		asm.add("\tLDS $"+heroPosition+"");
 		cyclesFrameCode += Register.costExtendedLD[Register.S];
 		sizeFrameCode += Register.sizeExtendedLD[Register.S];
-
+		
 		asm.add("\tSTS ERASE_POS_" + spriteName + "_1+2");
 		cyclesFrameCode += Register.costExtendedST[Register.S];
 		sizeFrameCode += Register.sizeExtendedST[Register.S];
-
+		
 		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2");
 		cyclesFrameCode += Register.costImmediateLD[Register.U];
 		sizeFrameCode += Register.sizeImmediateLD[Register.U];
@@ -237,7 +244,10 @@ public class AssemblyGenerator{
 	public List<String> getCodeFrame2() {
 		
 		List<String> asm = new ArrayList<String>();
+		
 		asm.add("\n\tLDS $"+heroPosition+"+2");
+		cyclesFrameCode += Register.costExtendedLD[Register.S];
+		sizeFrameCode += Register.sizeExtendedLD[Register.S];
 		
 		asm.add("\tSTS ERASE_POS_" + spriteName + "_2+2");
 		cyclesFrameCode += Register.costExtendedST[Register.S];
@@ -253,11 +263,12 @@ public class AssemblyGenerator{
 	public List<String> getCodeFrame3() {
 		
 		List<String> asm = new ArrayList<String>();
+		
 		asm.add("SSAV_" + spriteName + "");
 		
 	    asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costExtendedLD[Register.S];
-		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+		cyclesFrameCode += Register.costImmediateLD[Register.S];
+		sizeFrameCode += Register.sizeImmediateLD[Register.S];
 	    
 	    asm.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
 		cyclesFrameCode += Register.getCostImmediatePULPSH(5);
@@ -276,8 +287,8 @@ public class AssemblyGenerator{
 	    asm.add("ERASE_POS_" + spriteName + "_1");
 	    
 	    asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costExtendedLD[Register.S];
-		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+		cyclesFrameCode += Register.costImmediateLD[Register.S];
+		sizeFrameCode += Register.sizeImmediateLD[Register.S];
 	    
 	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_1\n");
 		cyclesFrameCode += Register.costImmediateLD[Register.U];
@@ -294,8 +305,8 @@ public class AssemblyGenerator{
 		asm.add("ERASE_POS_" + spriteName + "_2");
 		
 	    asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costExtendedLD[Register.S];
-		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+		cyclesFrameCode += Register.costImmediateLD[Register.S];
+		sizeFrameCode += Register.sizeImmediateLD[Register.S];
 	    
 	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2\n");
 		cyclesFrameCode += Register.costImmediateLD[Register.U];
@@ -312,8 +323,8 @@ public class AssemblyGenerator{
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		
 		asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costExtendedLD[Register.S];
-		sizeFrameCode += Register.sizeExtendedLD[Register.S];
+		cyclesFrameCode += Register.costImmediateLD[Register.S];
+		sizeFrameCode += Register.sizeImmediateLD[Register.S];
 		
 		asm.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
 		cyclesFrameCode += Register.getCostImmediatePULPSH(5);
@@ -362,7 +373,7 @@ public class AssemblyGenerator{
 	}
 
 	public int getSize() {
-		return sizeFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeSpriteECode1 + sizeSpriteECode2;
+		return sizeFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeSpriteECode1 + sizeSpriteECode2 + sizeSpriteEData1 + sizeSpriteEData2;
 	}
 	
 	public int getSizeData1() {
