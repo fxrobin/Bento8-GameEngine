@@ -342,8 +342,6 @@ public class RegisterOptim{
 			logger.fatal("Aucune combinaison de registres pour le pattern en position: "+solution.positions.get(id));
 		}
 
-		//asmCode.add("choix combi: "+selectedCombi);	
-		//asmCode.add("* n:" + id + " x: " + ((solution.positions.get(id) - ((int) Math.floor(solution.positions.get(id)/40)*40))*2+1) + " y: " + ((int) Math.floor(solution.positions.get(id)/40)+1) + " Ecriture sprite");
 		asmCode.addAll(solution.patterns.get(id).getDrawCode(data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id)));
 		asmCodeCycles += solution.patterns.get(id).getDrawCodeCycles(selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
 		asmCodeSize += solution.patterns.get(id).getDrawCodeSize(selectedReg, selectedLoadMask, solution.computedOffsets.get(id));

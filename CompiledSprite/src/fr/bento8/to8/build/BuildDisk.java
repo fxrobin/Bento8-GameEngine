@@ -163,6 +163,7 @@ public class BuildDisk
 				// Initialise un item pour chaque image utile
 				Item[] items = new Item[nbAllSubImages];
 				int itemIdx = 0;
+				int binaryLength = 0;
 
 				// première compilation de sprite pour connaitre leur taille
 				for (String currentImage : singleImages) {
@@ -173,17 +174,17 @@ public class BuildDisk
 					// Sauvegarde du code généré
 					asmImages.put(currentImage, asm);
 					
-					logger.debug("**************** Compilation de l'image " + currentImage + " ****************");
-					binary = asm.getCompiledCode("A000");
+					// Calcul de la taille du binaire a partir du code ASM
+					binaryLength = asm.getSize();
 					
 					// Création de l'item pour l'algo sac à dos
-					items[itemIdx++] = new Item(currentImage, 1, binary.length); // id, priority, bytes
+					items[itemIdx++] = new Item(currentImage, 1, binaryLength); // id, priority, bytes
 
-					logger.debug(currentImage+" octets: "+binary.length);
+					logger.debug(currentImage+" octets: "+binaryLength);
 					
 					// Une image compilée doit tenir sur une page de 16Ko pour pouvoir être exécutée
-					if (binary.length>16384)
-						logger.fatal("Image "+currentImage+" trop grande, code compilé :"+binary.length+" octets (max 16384)");
+					if (binaryLength>16384)
+						logger.fatal("Image "+currentImage+" trop grande, code compilé :"+binaryLength+" octets (max 16384)");
 				}
 
 				// Ecriture des sprites en pages de 16Ko sur disquette

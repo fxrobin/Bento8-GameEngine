@@ -76,11 +76,10 @@ public class AssemblyGenerator{
 		cyclesSpriteECode1 = regOpt.getAsmECodeCycles();
 		sizeSpriteECode1 = regOpt.getAsmECodeSize();
 		
-		int dataSize = regOpt.getDataSize();
-		generateDataFDB(dataSize, spriteEData1);
-		sizeSpriteEData1 += dataSize;
+		sizeSpriteEData1 = regOpt.getDataSize();
+		generateDataFDB(sizeSpriteEData1, spriteEData1);
 
-		logger.debug("Taille de la zone data: "+dataSize);
+		logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
 		logger.debug("RAM 1 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
@@ -102,21 +101,32 @@ public class AssemblyGenerator{
 		cyclesSpriteECode2 = regOpt.getAsmECodeCycles();
 		sizeSpriteECode2 = regOpt.getAsmECodeSize();
 		
-		dataSize = regOpt.getDataSize();
-		generateDataFDB(dataSize, spriteEData2);
-		sizeSpriteEData2 += dataSize;
+		sizeSpriteEData2 = regOpt.getDataSize();
+		generateDataFDB(sizeSpriteEData2, spriteEData2);
 		
-		logger.debug("Taille de la zone data: "+dataSize);
+		logger.debug("Taille de la zone data 2: "+sizeSpriteEData2);
+		
+		// Calcul des cycles et taille du code de cadre
+		sizeFrameCode = 0;
+		sizeFrameCode += getCodeFrame1Size();
+		sizeFrameCode += getCodeFrame2Size();
+		sizeFrameCode += getCodeFrame3Size();
+		sizeFrameCode += getCodeFrame4Size();
+		sizeFrameCode += getCodeFrame5Size();
+		
+		cyclesFrameCode = 0;
+		cyclesFrameCode += getCodeFrame1Cycles();
+		cyclesFrameCode += getCodeFrame2Cycles();
+		cyclesFrameCode += getCodeFrame3Cycles();
+		cyclesFrameCode += getCodeFrame4Cycles();
+		cyclesFrameCode += getCodeFrame5Cycles();
 	}
-
+	
 	public byte[] getCompiledCode(String org) {
 		byte[]  content = {};
 		String asmFileName = BuildDisk.tmpDirName+"/"+spriteName+".ASM";
 		String binFileName = BuildDisk.tmpDirName+"/"+spriteName+".BIN";
 		String lstFileName = BuildDisk.tmpDirName+"/"+spriteName+".lst";
-		
-		cyclesFrameCode=0;
-		sizeFrameCode=0;	
 
 		try
 		{
@@ -211,142 +221,154 @@ public class AssemblyGenerator{
 	}
 
 	public List<String> getCodeFrame1(String fileName, String org) {
-		
 		List<String> asm = new ArrayList<String>();
-		
 		asm.add("(main)" + fileName + "");
 		asm.add("\tORG $" + org + "");
 		asm.add("DRAW_" + spriteName + "");
-		
 		asm.add("\tPSHS U,DP");
-		cyclesFrameCode += Register.getCostImmediatePULPSH(3);
-		sizeFrameCode += Register.sizeImmediatePULPSH;
-		
 		asm.add("\tSTS SSAV_" + spriteName + "+2\n");
-		cyclesFrameCode += Register.costExtendedST[Register.S];
-		sizeFrameCode += Register.sizeExtendedST[Register.S];
-		
 		asm.add("\tLDS $"+heroPosition+"");
-		cyclesFrameCode += Register.costExtendedLD[Register.S];
-		sizeFrameCode += Register.sizeExtendedLD[Register.S];
-		
 		asm.add("\tSTS ERASE_POS_" + spriteName + "_1+2");
-		cyclesFrameCode += Register.costExtendedST[Register.S];
-		sizeFrameCode += Register.sizeExtendedST[Register.S];
-		
 		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2");
-		cyclesFrameCode += Register.costImmediateLD[Register.U];
-		sizeFrameCode += Register.sizeImmediateLD[Register.U];
-
 		return asm;
+	}
+	
+	public int getCodeFrame1Cycles() {
+		int cycles = 0;
+		cycles += Register.getCostImmediatePULPSH(3);
+		cycles += Register.costExtendedST[Register.S];
+		cycles += Register.costExtendedLD[Register.S];
+		cycles += Register.costExtendedST[Register.S];
+		cycles += Register.costImmediateLD[Register.U];
+		return cycles;
+	}
+	
+	public int getCodeFrame1Size() {
+		int size = 0;
+		size += Register.sizeImmediatePULPSH;
+		size += Register.sizeExtendedST[Register.S];
+		size += Register.sizeExtendedLD[Register.S];
+		size += Register.sizeExtendedST[Register.S];
+		size += Register.sizeImmediateLD[Register.U];
+		return size;
 	}
 
 	public List<String> getCodeFrame2() {
-		
 		List<String> asm = new ArrayList<String>();
-		
-		asm.add("\n\tLDS $"+heroPosition+"+2");
-		cyclesFrameCode += Register.costExtendedLD[Register.S];
-		sizeFrameCode += Register.sizeExtendedLD[Register.S];
-		
-		asm.add("\tSTS ERASE_POS_" + spriteName + "_2+2");
-		cyclesFrameCode += Register.costExtendedST[Register.S];
-		sizeFrameCode += Register.sizeExtendedST[Register.S];
-		
+		asm.add("\n\tLDS $"+heroPosition+"+2");		
+		asm.add("\tSTS ERASE_POS_" + spriteName + "_2+2");		
 		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_END\n");
-		cyclesFrameCode += Register.costImmediateLD[Register.U];
-		sizeFrameCode += Register.sizeImmediateLD[Register.U];
-		
 		return asm;
+	}
+	
+	public int getCodeFrame2Cycles() {
+		int cycles = 0;
+		cycles += Register.costExtendedLD[Register.S];
+		cycles += Register.costExtendedST[Register.S];
+		cycles += Register.costImmediateLD[Register.U];
+		return cycles;
+	}
+	
+	public int getCodeFrame2Size() {
+		int size = 0;
+		size += Register.sizeExtendedLD[Register.S];
+		size += Register.sizeExtendedST[Register.S];
+		size += Register.sizeImmediateLD[Register.U];
+		return size;
 	}
 	
 	public List<String> getCodeFrame3() {
-		
 		List<String> asm = new ArrayList<String>();
-		
 		asm.add("SSAV_" + spriteName + "");
-		
 	    asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costImmediateLD[Register.S];
-		sizeFrameCode += Register.sizeImmediateLD[Register.S];
-	    
 	    asm.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
-		cyclesFrameCode += Register.getCostImmediatePULPSH(5);
-		sizeFrameCode += Register.sizeImmediatePULPSH;
-	    
 	    asm.add("ERASE_" + spriteName + "");
-	    
-	    asm.add("\tPSHS U,DP");
-		cyclesFrameCode += Register.getCostImmediatePULPSH(3);
-		sizeFrameCode += Register.sizeImmediatePULPSH;
-	    
+	    asm.add("\tPSHS U,DP");	    
 	    asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2\n");
-		cyclesFrameCode += Register.costExtendedST[Register.S];
-		sizeFrameCode += Register.sizeExtendedST[Register.S];
-	    
 	    asm.add("ERASE_POS_" + spriteName + "_1");
-	    
 	    asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costImmediateLD[Register.S];
-		sizeFrameCode += Register.sizeImmediateLD[Register.S];
-	    
 	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_1\n");
-		cyclesFrameCode += Register.costImmediateLD[Register.U];
-		sizeFrameCode += Register.sizeImmediateLD[Register.U];
-	    
 	    asm.add("ERASE_CODE_" + spriteName + "_1");
-	    
-		return asm;
-	}
-
-	public List<String> getCodeFrame4() {
-		
-		List<String> asm = new ArrayList<String>();
-		asm.add("ERASE_POS_" + spriteName + "_2");
-		
-	    asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costImmediateLD[Register.S];
-		sizeFrameCode += Register.sizeImmediateLD[Register.S];
-	    
-	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2\n");
-		cyclesFrameCode += Register.costImmediateLD[Register.U];
-		sizeFrameCode += Register.sizeImmediateLD[Register.U];
-	    
-	    asm.add("ERASE_CODE_" + spriteName + "_2");
-	    
 		return asm;
 	}
 	
+	public int getCodeFrame3Cycles() {
+		int cycles = 0;
+		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.getCostImmediatePULPSH(5);
+		cycles += Register.getCostImmediatePULPSH(3);
+		cycles += Register.costExtendedST[Register.S];
+		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.costImmediateLD[Register.U];
+		return cycles;
+	}
+	
+	public int getCodeFrame3Size() {
+		int size = 0;
+		size += Register.sizeImmediateLD[Register.S];
+		size += Register.sizeImmediatePULPSH;
+		size += Register.sizeImmediatePULPSH;
+		size += Register.sizeExtendedST[Register.S];
+		size += Register.sizeImmediateLD[Register.S];
+		size += Register.sizeImmediateLD[Register.U];
+		return size;
+	}
+
+	public List<String> getCodeFrame4() {
+		List<String> asm = new ArrayList<String>();
+		asm.add("ERASE_POS_" + spriteName + "_2");
+	    asm.add("\tLDS #$0000");	    
+	    asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2\n");
+	    asm.add("ERASE_CODE_" + spriteName + "_2");
+		return asm;
+	}
+	
+	public int getCodeFrame4Cycles() {
+		int cycles = 0;
+		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.costImmediateLD[Register.U];
+		return cycles;
+	}
+	
+	public int getCodeFrame4Size() {
+		int size = 0;
+		size += Register.sizeImmediateLD[Register.S];
+		size += Register.sizeImmediateLD[Register.U];
+		return size;
+	}
+	
 	public List<String> getCodeFrame5() {
-		
 		List<String> asm = new ArrayList<String>();
 		asm.add("ERASE_SSAV_" + spriteName + "");
-		
 		asm.add("\tLDS #$0000");
-		cyclesFrameCode += Register.costImmediateLD[Register.S];
-		sizeFrameCode += Register.sizeImmediateLD[Register.S];
-		
 		asm.add("\tPULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
-		cyclesFrameCode += Register.getCostImmediatePULPSH(5);
-		sizeFrameCode += Register.sizeImmediatePULPSH;
-		
 		asm.add("ERASE_DATA_" + spriteName + "_1");
 		return asm;
 	}
 	
+	public int getCodeFrame5Cycles() {
+		int cycles = 0;
+		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.getCostImmediatePULPSH(5);
+		return cycles;
+	}
+	
+	public int getCodeFrame5Size() {
+		int size = 0;
+		size += Register.sizeImmediateLD[Register.S];
+		size += Register.sizeImmediatePULPSH;
+		return size;
+	}
+	
 	public List<String> getCodeFrame6() {
-		
 		List<String> asm = new ArrayList<String>();
 		asm.add("ERASE_DATA_" + spriteName + "_2");
-		
 		return asm;
 	}
 	
 	public List<String> getCodeFrame7() {
-		
 		List<String> asm = new ArrayList<String>();
 		asm.add("ERASE_DATA_" + spriteName + "_END");
-		
 		return asm;
 	}
 	
