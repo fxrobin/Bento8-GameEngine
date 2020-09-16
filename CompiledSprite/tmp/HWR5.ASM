@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $CF7B
+	ORG $CF7F
 DRAW_HWR5
 	PSHS U,DP
 	STS SSAV_HWR5+2
@@ -36,14 +36,14 @@ DRAW_HWR5
 	LDD 19,S
 	PSHU D,S
 
+	LDD #$ddda
+	STD 19,S
+
 	LDD #$cccc
 	STD -61,S
 
 	LDD #$dcaa
 	STD -21,S
-
-	LDD #$ddda
-	STD 19,S
 
 	LEAS 219,S
 	LDD -119,S
@@ -153,14 +153,14 @@ DRAW_HWR5
 	LDD 120,S
 	PSHU D
 
+	LDD #$b3d3
+	STD 120,S
+
 	LDD #$dd22
 	STD 40,S
 
 	LDB #$32
 	STD 80,S
-
-	LDD #$b3d3
-	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -203,11 +203,11 @@ DRAW_HWR5
 	LDA -38,S
 	PSHU A
 
-	LDA #$2a
-	STA -78,S
-
 	LDA #$29
 	STA -38,S
+
+	LDA #$2a
+	STA -78,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -314,17 +314,17 @@ DRAW_HWR5
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$1b
-	STA 1,S
+	LDA #$ee
+	STA 121,S
 
 	LDA #$a9
 	STA 41,S
 
+	LDA #$1b
+	STA 1,S
+
 	LDA #$ae
 	STA 81,S
-
-	LDA #$ee
-	STA 121,S
 
 	LEAS 161,S
 	LDA ,S
@@ -370,21 +370,21 @@ DRAW_HWR5
 	LDD 120,S
 	PSHU D,S
 
-	LDA #$cc
-	STA -120,S
+	LDA #$d2
+	STD 40,S
 
-	STA -80,S
+	LDA #$c2
+	STD 120,S
+
+	STD 80,S
 
 	LDD #$cdac
 	STD ,S
 
-	LDD #$d2aa
-	STD 40,S
+	LDA #$cc
+	STA -120,S
 
-	LDA #$c2
-	STD 80,S
-
-	STD 120,S
+	STA -80,S
 
 	LEAS 279,S
 	LDD -80,S
@@ -410,14 +410,14 @@ DRAW_HWR5
 	LDA -38,S
 	PSHU A
 
-	LDD #$cdda
+	LDA #$bc
+	STA -38,S
+
+	LDA #$cd
 	STD -119,S
 
 	LDA #$ba
 	STA -78,S
-
-	LDA #$bc
-	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -435,13 +435,13 @@ DRAW_HWR5
 	LDD 121,S
 	PSHU D
 
-	LDD #$dcb9
+	LDB #$bb
+	STD 121,S
+
+	LDB #$b9
 	STD 41,S
 
 	STD 81,S
-
-	LDB #$bb
-	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -495,21 +495,21 @@ DRAW_HWR5
 	LDD 120,S
 	PSHU D
 
-	LDA #$b2
-	STA -118,S
+	LDA #$bb
+	STD 80,S
 
-	LDA #$22
-	STA -78,S
-
-	STA -38,S
+	STD 120,S
 
 	LDD #$abd1
 	STD 40,S
 
-	LDD #$bb32
-	STD 80,S
+	LDA #$b2
+	STA -118,S
 
-	STD 120,S
+	LDA #$22
+	STA -38,S
+
+	STA -78,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -588,11 +588,8 @@ DRAW_HWR5
 	LDA 120,S
 	PSHU A,S
 
-	LDD #$aa32
-	STD -121,S
-
-	LDB #$c2
-	STD -81,S
+	LDA #$da
+	STA 120,S
 
 	LDD #$99c3
 	STD -41,S
@@ -600,8 +597,11 @@ DRAW_HWR5
 	LDD #$adad
 	STD -1,S
 
-	LDA #$da
-	STA 120,S
+	LDD #$aa32
+	STD -121,S
+
+	LDB #$c2
+	STD -81,S
 
 	LEAS 279,S
 	LDA -121,S

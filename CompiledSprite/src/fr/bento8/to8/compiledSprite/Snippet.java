@@ -17,9 +17,9 @@ public class Snippet {
 	private int position;
 	private List<Boolean> loadMask;
 
-	static int BACKGROUND_BACKUP = 0;
-	static int DRAW = 1;
-	static int LEAS = 2;
+	static final int BACKGROUND_BACKUP = 0;
+	static final int DRAW = 1;
+	static final int LEAS = 2;
 
 	public Snippet(Pattern pattern, List<Integer> registerIndexes, int offset, boolean saveS) {
 		method = BACKGROUND_BACKUP;
@@ -48,9 +48,9 @@ public class Snippet {
 	public List<String> call() throws Exception {
 		List<String> code = null;
 		switch (method) {
-		case 0: code=pattern.getBackgroundBackupCode(registerIndexes, offset, saveS); break;
-		case 1: code=pattern.getDrawCode(data, position, registerIndexes, loadMask, offset); break;
-		case 2: code=asmCode.getCode(offset); break;
+		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexes, offset, saveS); break;
+		case DRAW: code=pattern.getDrawCode(data, position, registerIndexes, loadMask, offset); break;
+		case LEAS: code=asmCode.getCode(offset); break;
 		}
 		return code;
 	}
@@ -58,9 +58,9 @@ public class Snippet {
 	public int getCycles() throws Exception {
 		int cycles = 0;
 		switch (method) {
-		case 0: cycles=pattern.getBackgroundBackupCodeCycles(registerIndexes, offset, saveS); break;
-		case 1: cycles=pattern.getDrawCodeCycles(registerIndexes, loadMask, offset); break;
-		case 2: cycles=asmCode.getCycles(offset); break;
+		case BACKGROUND_BACKUP: cycles=pattern.getBackgroundBackupCodeCycles(registerIndexes, offset, saveS); break;
+		case DRAW: cycles=pattern.getDrawCodeCycles(registerIndexes, loadMask, offset); break;
+		case LEAS: cycles=asmCode.getCycles(offset); break;
 		}
 		return cycles;
 	}
@@ -68,10 +68,14 @@ public class Snippet {
 	public int getSize() throws Exception {
 		int size = 0;
 		switch (method) {
-		case 0: size=pattern.getBackgroundBackupCodeSize(registerIndexes, offset); break;
-		case 1: size=pattern.getDrawCodeSize(registerIndexes, loadMask, offset); break;
-		case 2: size=asmCode.getSize(offset); break;
+		case BACKGROUND_BACKUP: size=pattern.getBackgroundBackupCodeSize(registerIndexes, offset); break;
+		case DRAW: size=pattern.getDrawCodeSize(registerIndexes, loadMask, offset); break;
+		case LEAS: size=asmCode.getSize(offset); break;
 		}
 		return size;
+	}
+
+	public int getMethod() {
+		return method;
 	}
 }

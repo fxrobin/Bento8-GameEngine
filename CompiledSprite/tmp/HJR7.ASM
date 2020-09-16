@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A000
+	ORG $D196
 DRAW_HJR7
 	PSHS U,DP
 	STS SSAV_HJR7+2
@@ -30,14 +30,14 @@ DRAW_HJR7
 	LDD 58,S
 	PSHU D,S
 
+	LDD #$e0ea
+	STD 58,S
+
 	LDA #$ff
 	STA -61,S
 
 	LDD #$111a
 	STD 18,S
-
-	LDD #$e0ea
-	STD 58,S
 
 	LEAS 218,S
 	LDD -119,S
@@ -124,19 +124,20 @@ DRAW_HJR7
 	LDD 121,S
 	PSHU D
 
-	LDD #$accc
-	STD 40,S
-
 	LDD #$dcaa
 	STD 81,S
 
 	LDA #$cc
 	STD 121,S
 
+	LDD #$accc
+	STD 40,S
+
 	PULS A,X
 	PSHU A,X,S
+	LDA #$aa
 	LDX #$cdac
-	PSHS B,X
+	PSHS A,X
 
 	LEAS 180,S
 	LDD -21,S
@@ -159,11 +160,11 @@ DRAW_HJR7
 	LDD 21,S
 	PSHU D,S
 
-	LDD #$ccac
-	STD -19,S
-
 	LDB #$cc
 	STD 21,S
+
+	LDB #$ac
+	STD -19,S
 
 	LEAS 180,S
 	LDD -121,S
@@ -200,11 +201,11 @@ DRAW_HJR7
 	LDD -39,S
 	PSHU D
 
-	LDD #$acaa
-	STD -79,S
-
 	LDD #$adac
 	STD -39,S
+
+	LDD #$acaa
+	STD -79,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -225,11 +226,11 @@ DRAW_HJR7
 	LDD 80,S
 	PSHU D
 
-	LDD #$0dcc
-	STD 40,S
-
 	LDD #$dddc
 	STD 80,S
+
+	LDD #$0dcc
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -263,11 +264,11 @@ DRAW_HJR7
 	LDD 80,S
 	PSHU D
 
-	LDD #$dcdd
-	STD 40,S
-
 	LDA #$dd
 	STD 80,S
+
+	LDA #$dc
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -339,24 +340,24 @@ DRAW_HJR7
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$ff
-	STA -121,S
-
-	LDA #$11
-	STA -81,S
+	LDA #$aa
+	STD 79,S
 
 	LDD #$00af
 	STD -41,S
 
 	STB ,S
 
-	STB 40,S
-
-	LDD #$aa91
-	STD 79,S
-
 	LDA #$ae
 	STA 120,S
+
+	LDA #$11
+	STA -81,S
+
+	STB 40,S
+
+	LDA #$ff
+	STA -121,S
 
 	LEAS 278,S
 	LDD -120,S
@@ -382,14 +383,12 @@ DRAW_HJR7
 	LDA -38,S
 	PSHU A
 
-	LDA #$ca
+	STA -38,S
+
 	STA -118,S
 
-	LDD #$aaaa
+	LDA #$aa
 	STD -79,S
-
-	LDA #$ca
-	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -516,22 +515,24 @@ DRAW_HJR7
 	LDD 80,S
 	PSHU D
 
-	LDD #$00dc
-	STD 40,S
-
 	LDD #$dddd
 	STD 80,S
 
+	LDD #$00dc
+	STD 40,S
+
 	PULS A,X
 	PSHU A,X,S
+	LDA #$dd
 	LDX #$dddd
-	PSHS B,X
+	PSHS A,X
 
 	LEAS 120,S
 	PULS A,X
 	PSHU A,X,S
+	LDA #$dd
 	LDX #$ddca
-	PSHS B,X
+	PSHS A,X
 
 	LEAS 40,S
 	LDD 40,S
@@ -560,10 +561,9 @@ DRAW_HJR7
 	LDA 82,S
 	PSHU A
 
-	LDA #$dd
-	STA 42,S
-
 	STA 82,S
+
+	STA 42,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -578,10 +578,9 @@ DRAW_HJR7
 	LDA 20,S
 	PSHU A,S
 
-	LDA #$dd
-	STA -20,S
-
 	STA 20,S
+
+	STA -20,S
 
 SSAV_HJR7
 	LDS #$0000

@@ -40,17 +40,17 @@ DRAW_HRL9
 	LDD 119,S
 	PSHU D,S
 
-	LDD #$cacc
-	STD -41,S
+	LDA #$aa
+	STD 119,S
 
 	LDD #$acdd
 	STD -1,S
 
-	LDA #$a3
-	STD 39,S
+	LDD #$cacc
+	STD -41,S
 
-	LDD #$aacc
-	STD 119,S
+	LDD #$a3dd
+	STD 39,S
 
 	LEAS 280,S
 	LDD -82,S
@@ -124,13 +124,12 @@ DRAW_HRL9
 	LDA 120,S
 	PSHU A,S
 
-	LDD #$dacc
 	STD -121,S
 
 	LDA #$cd
-	STA -80,S
-
 	STA -40,S
+
+	STA -80,S
 
 	STA 80,S
 
@@ -167,14 +166,14 @@ DRAW_HRL9
 	LDD -40,S
 	PSHU D
 
+	LDA #$22
+	STD -40,S
+
 	LDA #$dc
 	STA -119,S
 
 	LDA #$dd
 	STA -79,S
-
-	LDD #$220d
-	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -297,8 +296,10 @@ DRAW_HRL9
 	LDA 120,S
 	PSHU A
 
-	LDA #$9e
-	STA -38,S
+	LDA #$af
+	STA 80,S
+
+	STA 120,S
 
 	LDA #$b1
 	STA 40,S
@@ -306,10 +307,8 @@ DRAW_HRL9
 	LDA #$09
 	STA 42,S
 
-	LDA #$af
-	STA 80,S
-
-	STA 120,S
+	LDA #$9e
+	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -357,13 +356,13 @@ DRAW_HRL9
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$91
-	STA -121,S
-
 	LDA #$e0
 	STA -81,S
 
 	STA 121,S
+
+	LDA #$91
+	STA -121,S
 
 
 	LDS $9F00+2
@@ -406,14 +405,14 @@ DRAW_HRL9
 	LDD 79,S
 	PSHU D,S
 
+	LDA #$da
+	STD 79,S
+
 	LDA #$dd
 	STA 1,S
 
-	LDD #$dc2d
+	LDA #$dc
 	STD 39,S
-
-	LDA #$da
-	STD 79,S
 
 	LEAS 239,S
 	LDA -38,S
@@ -431,13 +430,13 @@ DRAW_HRL9
 	LDD -40,S
 	PSHU D
 
-	LDD #$aa2d
-	STD -120,S
-
 	LDB #$ad
 	STD -80,S
 
 	STD -40,S
+
+	LDB #$2d
+	STD -120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -481,14 +480,14 @@ DRAW_HRL9
 	LDD 120,S
 	PSHU D
 
+	LDD #$9b2c
+	STD 120,S
+
 	LDD #$0bac
 	STD 40,S
 
 	LDB #$cc
 	STD 80,S
-
-	LDD #$9b2c
-	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -541,14 +540,14 @@ DRAW_HRL9
 	LDD 120,S
 	PSHU D
 
-	LDD #$ddbb
-	STD 42,S
-
 	LDD #$a901
 	STD 80,S
 
 	LDB #$12
 	STD 120,S
+
+	LDD #$ddbb
+	STD 42,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -618,13 +617,12 @@ DRAW_HRL9
 	LDA 123,S
 	PSHU A
 
-	LDD #$e1ea
 	STD 40,S
 
 	LDA #$a9
-	STA 43,S
-
 	STA 83,S
+
+	STA 43,S
 
 	LDA #$a1
 	STA 123,S
@@ -672,16 +670,15 @@ DRAW_HRL9
 	LDA 21,S
 	PSHU A,S
 
+	LDA #$0e
+	STA -61,S
+
 	LDA #$e0
 	STA -101,S
 
 	LDA #$11
 	STA -99,S
 
-	LDA #$0e
-	STA -61,S
-
-	LDA #$11
 	STA -59,S
 
 	LDA #$1e

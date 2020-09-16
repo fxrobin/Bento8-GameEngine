@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A82E
+	ORG $A000
 DRAW_HRR4
 	PSHS U,DP
 	STS SSAV_HRR4+2
@@ -43,14 +43,14 @@ DRAW_HRR4
 	LDD 80,S
 	PSHU D,S
 
+	LDD #$d2ad
+	STD 80,S
+
 	LDD #$ddc1
 	STD -1,S
 
 	LDA #$cd
 	STA 41,S
-
-	LDD #$d2ad
-	STD 80,S
 
 	LEAS 239,S
 	LDD -40,S
@@ -69,13 +69,12 @@ DRAW_HRR4
 	LDA -38,S
 	PSHU A
 
-	LDD #$d2aa
+	STB -38,S
+
 	STD -119,S
 
 	LDA #$da
 	STD -79,S
-
-	STB -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -121,14 +120,13 @@ DRAW_HRR4
 	LDA 122,S
 	PSHU A
 
-	LDA #$b0
-	STA 42,S
-
-	LDD #$ccb0
-	STD 81,S
-
 	LDA #$b9
 	STA 122,S
+
+	STB 42,S
+
+	LDA #$cc
+	STD 81,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -172,14 +170,14 @@ DRAW_HRR4
 	LDD 120,S
 	PSHU D
 
+	LDD #$9d3e
+	STD 120,S
+
 	LDD #$dd0d
 	STD 40,S
 
 	LDD #$9e10
 	STD 80,S
-
-	LDD #$9d3e
-	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -258,13 +256,13 @@ DRAW_HRR4
 	LDA 120,S
 	PSHU A
 
-	LDD #$aadd
-	STD 40,S
-
 	LDA #$ab
 	STA 80,S
 
 	STA 120,S
+
+	LDA #$aa
+	STD 40,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -324,13 +322,12 @@ DRAW_HRR4
 	LDA 80,S
 	PSHU A,S
 
-	LDA #$fb
 	STA -120,S
 
 	LDA #$ff
-	STA -80,S
-
 	STA -40,S
+
+	STA -80,S
 
 	LDA #$1f
 	STA ,S
@@ -378,17 +375,17 @@ DRAW_HRR4
 	LDD 120,S
 	PSHU D,S
 
-	LDD #$ccac
-	STD -40,S
+	LDB #$aa
+	STD 120,S
 
 	LDD #$ddca
 	STD ,S
 
-	LDB #$3a
-	STD 40,S
+	LDD #$ccac
+	STD -40,S
 
-	LDD #$ccaa
-	STD 120,S
+	LDD #$dd3a
+	STD 40,S
 
 	LEAS 281,S
 	LDA -79,S
@@ -458,8 +455,11 @@ DRAW_HRR4
 	LDD 119,S
 	PSHU D,S
 
-	LDD #$ccad
-	STD -121,S
+	LDD #$dcab
+	STD 79,S
+
+	LDA #$dd
+	STD 119,S
 
 	LDD #$dcca
 	STD -81,S
@@ -467,11 +467,8 @@ DRAW_HRR4
 	LDB #$cb
 	STD -41,S
 
-	LDB #$ab
-	STD 79,S
-
-	LDA #$dd
-	STD 119,S
+	LDD #$ccad
+	STD -121,S
 
 	LEAS 278,S
 	LDA -117,S
@@ -495,14 +492,14 @@ DRAW_HRR4
 	LDD -39,S
 	PSHU D
 
+	LDD #$d022
+	STD -39,S
+
 	LDD #$cdba
 	STD -119,S
 
 	LDD #$dd2b
 	STD -79,S
-
-	LDD #$d022
-	STD -39,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -673,25 +670,24 @@ DRAW_HRR4
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$e1
-	STA -118,S
-
-	STA -78,S
-
-	LDA #$e0
-	STA -38,S
-
 	LDA #$0e
 	STA 2,S
-
-	LDA #$1e
-	STA 42,S
 
 	LDA #$2f
 	STA 80,S
 
+	LDA #$1e
+	STA 42,S
+
 	LDA #$e1
+	STA -78,S
+
+	STA -118,S
+
 	STA 120,S
+
+	LDA #$e0
+	STA -38,S
 
 SSAV_HRR4
 	LDS #$0000

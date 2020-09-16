@@ -1,6 +1,7 @@
 package fr.bento8.to8.compiledSprite;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -60,8 +61,9 @@ public class SolutionOptim{
 	private int asmECodeSize;
 	
 	int lastLeas;		
-	boolean[] regSet;
-	byte[][] regVal;
+	boolean[] regSet, regSetSave;
+	byte[][] regVal, regValSave;
+	
 	List<Integer> patternGrp1 = new ArrayList<Integer>();
 	List<Integer> patternGrp2 = new ArrayList<Integer>();
 	List<Integer> patternGrp3 = new ArrayList<Integer>();
@@ -71,26 +73,89 @@ public class SolutionOptim{
 		this.data = data;
 	}
 	
-	public void Optimize() {
+	public void Optimize(List<Integer> patterns) throws Exception {
+		logger.debug("****** Nb patterns: "+patterns.size());
 		
-		// stocker dans la solution, un ordre des patterns, saveS, la combinaison choisie pour chaque pattern
+		// TODO diminuer les combinaisons en groupant les patterns de même valeur data
+		// et en retirant les patterns dont la data ne se répete pas
 		
-		// Lancer un calcul pour chaque permutation :
-		//	1. GROUPE 1: parcourir les patterns et prendre les patterns non dissosicables (complets)
-		//	   si un des resetRegisters n'est pas null:
-		//	      - etablir toutes les combinaisons qui positionnent seulement 1 fois chaque pattern ou resetRegisters n'est pas null en fin de groupe (ex: 3 patterns ou resetRegisters n'est pas null = 3 combinaisons)
-		//	   si resetRegisters est null:
-		//	      - pour tous ces patterns on a deux solutions possibles : utilisation de A seulement ou utilisation de B seulement
+		// S'il y a 0 ou 1 pattern, pas d'optimisation a effectuer
+		// Si >10 trop de combinaisons a tester
+		// TODO implémenter une autre solution basée sur le TRI
+		if (patterns.size() <= 1 || patterns.size() > 10) {
+			return;
+		}
 		
-		//	3. GROUPE 2: parcourir les patterns et prendre le pattern principal (complet)
-		//	4. GROUPE 3: créer des ensembles avec :
-		//	   les patterns dissociables (11, 1111) partie ecriture de sprite, tri et regroupement des patterns identiques (pattern+pixels) (Permet de limiter les combinaisons dans les cas extremes)
-		//	   patterns dissociables (11, 1111) partie backup background
-		//	   etablir tt combinaisons possibles
-		//	5. créer des combinatoire avec GROUPE 1, GROUPE 3 (*2) et GROUPE 2 en dernier
+		// Sauvegarde de l'état des registres
+		for (int i = 0; i < regSet.length; i++) {
+			regSetSave[i] = regSet[i];
+		}
 		
-		// Cette méthode doit piloter la méthode build
+		for (int i = 0; i < regVal.length; i++) {
+			for (int j = 0; j < regVal[0].length; j++) {
+				regValSave[i][j] = regVal[i][j];	
+			}
+		}
 		
+		// Initialisation de la solution
+		List<Snippet> testSolution = new ArrayList<Snippet>();
+		List<Snippet> bestSolution = new ArrayList<Snippet>();
+		List<Integer> bestPatterns = new ArrayList<Integer>();
+		
+		// Test des combinaisons		
+		int[] indexes = new int[patterns.size()];
+		for (int i = 0; i < patterns.size(); i++) {
+		    indexes[i] = 0;
+		}
+		 
+		int idx = 0;
+		int score = 0, bestScore = Integer.MAX_VALUE;
+		while (idx < patterns.size()) {
+		    if (indexes[idx] < idx) {
+		    	Collections.swap(patterns, idx % 2 == 0 ?  0: indexes[idx], idx);
+		    	
+		    	// Compute proposition
+		    	score = 0;
+				for (int id : patterns) {
+					testSolution.add(simulatePatternDraw(id));
+					score += testSolution.get(testSolution.size()-1).getCycles();
+				}
+				
+				if (score < bestScore) {
+					bestScore = score;
+					logger.debug("score: "+score);
+					bestSolution.clear();
+					bestSolution.addAll(testSolution);
+					bestPatterns.clear();
+					bestPatterns.addAll(patterns);
+				}
+				
+				testSolution.clear();
+				
+				// Restauration de l'état des registres
+				for (int i = 0; i < regSet.length; i++) {
+					regSetSave[i] = regSet[i];
+				}
+				
+		        indexes[idx]++;
+		        idx = 0;
+		    }
+		    else {
+		        indexes[idx] = 0;
+		        idx++;
+		    }
+		}
+		
+		for (int i = 0; i < regVal.length; i++) {
+			for (int j = 0; j < regVal[0].length; j++) {
+				regValSave[i][j] = regVal[i][j];	
+			}
+		}
+		
+		// Positionne la solution
+		// *****************************
+		patterns.clear();
+		patterns.addAll(bestPatterns);
 		
 	}
 
@@ -103,6 +168,8 @@ public class SolutionOptim{
 		asmECodeSize = 0;
 		regSet = new boolean[] {false, false, false, false, false, false, false};
 		regVal = new byte[7][4];
+		regSetSave = new boolean[] {false, false, false, false, false, false, false};
+		regValSave = new byte[7][4];
 		
 		lastLeas = Integer.MAX_VALUE;	
 		int currentNode = 0;
@@ -152,7 +219,7 @@ public class SolutionOptim{
 //				logger.debug("patternGrp1: "+patternGrp1);
 //				logger.debug("patternGrp2: "+patternGrp2);
 //				logger.debug("patternGrp3: "+patternGrp3);
-
+				
 				// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
 				int iPattern = 0;
 				for (int id : patternGrp1) {
@@ -177,7 +244,11 @@ public class SolutionOptim{
 					saveS = false;
 					iPattern++;
 				}
+				
+				// Tri du groupe 3 pour optimiser les réutilisations de registre
 
+				Optimize(patternGrp3);
+				
 				for (int id : patternGrp3) {
 					processPatternDraw(id);
 					asmCode.add("");
@@ -277,8 +348,6 @@ public class SolutionOptim{
 
 		// Recherche pour chaque combinaison de registres d'un pattern,
 		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
-
-		//asmCode.add(getRegState(regSet, regVal));
 
 		int cycles, selectedCombi, minCycles, pos;
 		byte b1, b2, b3 = 0x00, b4 = 0x00;
@@ -443,6 +512,175 @@ public class SolutionOptim{
 				}
 			}
 		}		
+	}
+	
+	public Snippet simulatePatternDraw(int id) throws Exception {
+
+		// Recherche pour chaque combinaison de registres d'un pattern,
+		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
+
+		int cycles, selectedCombi, minCycles, pos;
+		byte b1, b2, b3 = 0x00, b4 = 0x00;
+		List<Integer> currentReg = new ArrayList<Integer>();
+		List<Boolean> currentLoadMask = new ArrayList<Boolean>();
+		List<Integer> selectedReg = new ArrayList<Integer>();
+		List<Boolean> selectedLoadMask = new ArrayList<Boolean>();
+
+		selectedCombi = -1;
+		minCycles = Integer.MAX_VALUE;
+
+		// Parcours des combinaisons possibles de registres pour le pattern
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().size(); j++) {
+			cycles = 0;
+			pos = solution.positions.get(id)*2;
+			currentReg.clear();
+			currentLoadMask.clear();
+
+			// Parcours des registres de la combinaison
+			for (k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
+
+				if (solution.patterns.get(id).getRegisterCombi().get(j)[k]) {
+					// Le registre est utilisé dans la combinaison
+
+					currentReg.add(k);
+
+					if (regSet[k] && (solution.patterns.get(id).getResetRegisters().size() <= j || (solution.patterns.get(id).getResetRegisters().size() > j && solution.patterns.get(id).getResetRegisters().get(j)[k] == false))) {
+						// Le registre contient une valeur et n'est pas concerné par un reset dans le pattern
+
+						// Chargement des données du sprite
+						b1 = data[pos++];
+						b2 = data[pos++];
+						if (Register.size[k] == 2) {
+							b3 = data[pos++];
+							b4 = data[pos++];
+						}
+
+						if (k == Register.D && (regVal[k][0] != b1 || regVal[k][1] != b2) && regVal[k][2] == b3 && regVal[k][3] == b4) {
+							// Correspondance partielle sur D avec B mais pas A, on charge A
+							currentLoadMask.set(Register.A, true);
+							currentLoadMask.set(Register.B, false);
+							currentLoadMask.add(null);
+
+						} else if (k == Register.D && regVal[k][0] == b1 && regVal[k][1] == b2 && (regVal[k][2] != b3 || regVal[k][3] != b4)) {
+							// Correspondance partielle sur D avec A mais pas B, on charge B
+							currentLoadMask.set(Register.A, false);
+							currentLoadMask.set(Register.B, true);
+							currentLoadMask.add(null);
+
+						} else if (regVal[k][0] == b1 && regVal[k][1] == b2 && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == b3 && regVal[k][3] == b4))){
+							// Le registre contient déjà la valeur, on ne charge rien
+							currentLoadMask.add(false);
+
+						} else {
+							// Le registre contient une valeur différente, on le charge
+							currentLoadMask.add(true);
+						}
+					} else {
+						// Le registre ne contient pas de valeur, on le charge
+						currentLoadMask.add(true);
+					}
+				} else {
+					// Le registre n'est pas utilisé dans la combinaison
+					currentLoadMask.add(null);
+				}
+			}
+
+			// Calcul du nombre de cycles de la solution courante
+			cycles = solution.patterns.get(id).getDrawCodeCycles(currentReg, currentLoadMask, solution.computedOffsets.get(id));
+			//asmCode.add("combi: "+j+" cycles:"+cycles);
+
+			// Sauvegarde de la meilleure solution
+			if (cycles < minCycles) {
+				selectedCombi = j;
+				minCycles = cycles;
+				selectedReg.clear();
+				selectedReg.addAll(currentReg);
+				selectedLoadMask.clear();
+				selectedLoadMask.addAll(currentLoadMask);
+			}
+		}
+
+		if (selectedCombi == -1) {
+			logger.fatal("Aucune combinaison de registres pour le pattern en position: "+solution.positions.get(id));
+		}
+
+		Snippet snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
+		
+		// Sauvegarde les valeurs chargées en cache
+		pos = solution.positions.get(id)*2;
+		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
+
+			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j] &&
+					(solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
+					(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
+							!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[j]))) {
+
+				// On ne charge qui si le registre est dans la combinaison
+				// et qu'il n'a pas été réinitialisé dans le pattern
+
+				regSet[j] = true;
+				regVal[j][0] = data[pos++];
+				regVal[j][1] = data[pos++];
+				if (Register.size[j] == 2) {
+					regVal[j][2] = data[pos++];
+					regVal[j][3] = data[pos++];
+				}
+
+				// Cas particulier de A, on valorise D
+				if (j == Register.A && (regSet[Register.B] == true &&
+						((solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
+						(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
+								!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[Register.B]))))) {
+					regSet[Register.D] = true;
+					regVal[Register.D][0] = regVal[j][0];
+					regVal[Register.D][1] = regVal[j][1];
+				}
+
+				// Cas particulier de B, on valorise D
+				if (j == Register.B && (regSet[Register.A] == true && 
+						((solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
+						(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
+								!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[Register.A]))))) {
+					regSet[Register.D] = true;
+					regVal[Register.D][2] = regVal[j][0];
+					regVal[Register.D][3] = regVal[j][1];
+				}
+
+				// Cas particulier de D, on valorise A et B
+				if (j == Register.D) {
+					if ((solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
+							(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
+									!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[Register.A]))) {
+						regSet[Register.A] = true;
+						regVal[Register.A][0] = regVal[j][0];
+						regVal[Register.A][1] = regVal[j][1];
+					}
+
+					if ((solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
+							(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
+									!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[Register.B]))) {				
+						regSet[Register.B] = true;
+						regVal[Register.B][0] = regVal[j][2];
+						regVal[Register.B][1] = regVal[j][3];
+					}
+
+					if (regSet[Register.A] != true || regSet[Register.B] != true ) {
+						regSet[Register.D] = false;
+					}
+				}
+			}
+		}
+
+		// Réinitialisation des registres écrasés par le pattern
+		// Nécessaire si le dernier pattern a bénéficié du cache mais écrase les registres
+		if (solution.patterns.get(id).getResetRegisters().size() > selectedCombi) {
+			for (j = 0; j < solution.patterns.get(id).getResetRegisters().get(selectedCombi).length; j++) {
+				if (solution.patterns.get(id).getResetRegisters().get(selectedCombi)[j]) {
+					regSet[j] = false;
+				}
+			}
+		}
+		return snippet;		
 	}
 
 	public String getRegState(boolean[] regSet, byte[][] regVal) {

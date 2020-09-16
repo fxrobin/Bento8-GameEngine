@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $BC66
+	ORG $ADF9
 DRAW_HRL3
 	PSHS U,DP
 	STS SSAV_HRL3+2
@@ -40,17 +40,17 @@ DRAW_HRL3
 	LDD 119,S
 	PSHU D,S
 
+	LDA #$aa
+	STD 119,S
+
+	LDB #$cd
+	STD -1,S
+
 	LDD #$cacc
 	STD -41,S
 
-	LDD #$aacd
-	STD -1,S
-
-	LDB #$dd
+	LDD #$aadd
 	STD 39,S
-
-	LDB #$cc
-	STD 119,S
 
 	LEAS 280,S
 	LDD -82,S
@@ -124,19 +124,19 @@ DRAW_HRL3
 	LDA 120,S
 	PSHU A,S
 
-	LDD #$dacc
-	STD -121,S
+	LDA #$d0
+	STA 80,S
+
+	LDA #$dd
+	STA 120,S
 
 	LDA #$cd
 	STA -80,S
 
 	STA -40,S
 
-	LDA #$d0
-	STA 80,S
-
-	LDA #$dd
-	STA 120,S
+	LDA #$da
+	STD -121,S
 
 	LEAS 279,S
 	LDD -121,S
@@ -186,11 +186,8 @@ DRAW_HRL3
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$dc
-	STA -119,S
-
-	LDA #$dd
-	STA -79,S
+	LDA #$11
+	STD 80,S
 
 	LDD #$220d
 	STD -40,S
@@ -198,14 +195,16 @@ DRAW_HRL3
 	LDB #$dd
 	STD ,S
 
+	LDA #$23
+	STA 121,S
+
+	STB -79,S
+
 	LDD #$33d1
 	STD 40,S
 
-	LDD #$1110
-	STD 80,S
-
-	LDA #$23
-	STA 121,S
+	LDA #$dc
+	STA -119,S
 
 	LEAS 161,S
 	LDA ,S
@@ -322,12 +321,11 @@ DRAW_HRL3
 	LDA 40,S
 	PSHU A,S
 
-	LDA #$ff
+	STA 40,S
+
 	STA -40,S
 
 	STA ,S
-
-	STA 40,S
 
 
 	LDS $9F00+2
@@ -363,14 +361,14 @@ DRAW_HRL3
 	LDD 79,S
 	PSHU D,S
 
+	LDD #$da32
+	STD 79,S
+
 	LDD #$addd
 	STD ,S
 
 	LDA #$dc
 	STD 39,S
-
-	LDD #$da32
-	STD 79,S
 
 	LEAS 239,S
 	LDA -38,S
@@ -388,14 +386,14 @@ DRAW_HRL3
 	LDD -40,S
 	PSHU D
 
-	LDD #$ca22
-	STD -120,S
-
 	LDD #$aaa2
 	STD -80,S
 
 	LDB #$ad
 	STD -40,S
+
+	LDD #$ca22
+	STD -120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -439,14 +437,14 @@ DRAW_HRL3
 	LDD 120,S
 	PSHU D
 
+	LDD #$ab2c
+	STD 120,S
+
 	LDD #$a9cc
 	STD 40,S
 
 	LDA #$b9
 	STD 80,S
-
-	LDD #$ab2c
-	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -509,11 +507,11 @@ DRAW_HRL3
 	LDD -39,S
 	PSHU D
 
-	LDD #$d22d
-	STD -79,S
-
 	LDA #$da
 	STD -39,S
+
+	LDA #$d2
+	STD -79,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -577,13 +575,13 @@ DRAW_HRL3
 	LDA 123,S
 	PSHU A
 
+	LDA #$11
+	STA 123,S
+
 	LDA #$ea
 	STA 81,S
 
 	STB 83,S
-
-	LDA #$11
-	STA 123,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -614,11 +612,8 @@ DRAW_HRL3
 	LDA 99,S
 	PSHU A,S
 
-	LDA #$11
-	STA -100,S
-
-	LDA #$a0
-	STA -60,S
+	LDA #$ee
+	STA 99,S
 
 	LDA #$a9
 	STA -20,S
@@ -626,8 +621,11 @@ DRAW_HRL3
 	LDA #$19
 	STA 20,S
 
-	LDA #$ee
-	STA 99,S
+	LDA #$11
+	STA -100,S
+
+	LDA #$a0
+	STA -60,S
 
 SSAV_HRL3
 	LDS #$0000

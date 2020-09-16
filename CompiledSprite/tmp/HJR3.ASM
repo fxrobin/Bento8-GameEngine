@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $B535
+	ORG $AE26
 DRAW_HJR3
 	PSHS U,DP
 	STS SSAV_HJR3+2
@@ -14,11 +14,11 @@ DRAW_HJR3
 	LDA 20,S
 	PSHU A,S
 
-	LDA #$aa
-	STA -20,S
-
 	LDA #$dc
 	STA 20,S
+
+	LDA #$aa
+	STA -20,S
 
 	LEAS 179,S
 	LDA -119,S
@@ -83,12 +83,11 @@ DRAW_HJR3
 	LDA 122,S
 	PSHU A
 
-	LDA #$aa
+	STA 122,S
+
 	STA 42,S
 
 	STA 82,S
-
-	STA 122,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -127,13 +126,13 @@ DRAW_HJR3
 	LDD 121,S
 	PSHU D
 
-	LDD #$cca3
-	STD 41,S
-
 	LDB #$aa
 	STD 81,S
 
 	STD 121,S
+
+	LDB #$a3
+	STD 41,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -224,14 +223,14 @@ DRAW_HJR3
 	LDD 120,S
 	PSHU D
 
-	LDD #$acab
-	STD 40,S
-
 	LDD #$9abb
 	STD 80,S
 
 	LDB #$aa
 	STD 120,S
+
+	LDD #$acab
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -271,20 +270,19 @@ DRAW_HJR3
 	LDA 120,S
 	PSHU A,S
 
-	LDD #$0aaa
-	STD -121,S
-
 	LDA #$e9
 	STD -81,S
 
-	LDD #$ea99
-	STD -41,S
-
-	LDA #$e9
 	STA -1,S
+
+	LDA #$0a
+	STD -121,S
 
 	LDD #$09f2
 	STD 39,S
+
+	LDD #$ea99
+	STD -41,S
 
 	LDA #$ee
 	STA 120,S
@@ -337,13 +335,13 @@ DRAW_HJR3
 	LDA 100,S
 	PSHU A,S
 
+	LDA #$dc
+	STA 100,S
+
 	LDA #$ca
 	STA -20,S
 
 	STB 60,S
-
-	LDA #$dc
-	STA 100,S
 
 	LEAS 258,S
 	LDD -40,S
@@ -362,13 +360,13 @@ DRAW_HJR3
 	LDA -38,S
 	PSHU A
 
-	LDD #$dcdc
+	LDA #$cc
+	STA -38,S
+
+	LDA #$dc
 	STD -119,S
 
 	STD -79,S
-
-	LDA #$cc
-	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -423,14 +421,14 @@ DRAW_HJR3
 	LDD 121,S
 	PSHU D
 
+	LDD #$cccc
+	STD 121,S
+
 	LDD #$dcab
 	STD 41,S
 
 	LDD #$ddca
 	STD 81,S
-
-	LDD #$cccc
-	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -585,11 +583,11 @@ DRAW_HJR3
 	LDD 20,S
 	PSHU D,S
 
-	LDD #$af2f
-	STD -20,S
-
 	LDD #$a1f1
 	STD 20,S
+
+	LDD #$af2f
+	STD -20,S
 
 SSAV_HJR3
 	LDS #$0000
