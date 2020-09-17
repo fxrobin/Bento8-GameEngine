@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $AE67
+	ORG $B541
 DRAW_HJL5
 	PSHS U,DP
 	STS SSAV_HJL5+2
@@ -41,6 +41,7 @@ DRAW_HJL5
 	LDD -40,S
 	PSHU D
 
+	LDD #$aaca
 	STD -40,S
 
 	STD -80,S
@@ -85,11 +86,11 @@ DRAW_HJL5
 	LDD #$ddaa
 	STD 121,S
 
-	LDD #$ac11
-	STD 41,S
-
-	LDA #$dd
+	LDB #$11
 	STD 81,S
+
+	LDA #$ac
+	STD 41,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -151,9 +152,6 @@ DRAW_HJL5
 	LDD 40,S
 	PSHU D
 
-	LDD #$ca22
-	STD 40,S
-
 	LDD #$dd91
 	STD -79,S
 
@@ -162,6 +160,9 @@ DRAW_HJL5
 
 	LDB #$a1
 	STD -39,S
+
+	LDD #$ca22
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -283,9 +284,6 @@ DRAW_HJL5
 	LDD 20,S
 	PSHU D,S
 
-	LDD #$3ddd
-	STD 20,S
-
 	LDD #$cd9a
 	STD -60,S
 
@@ -294,6 +292,9 @@ DRAW_HJL5
 
 	LDD #$dcdd
 	STD -20,S
+
+	LDA #$3d
+	STD 20,S
 
 
 	LDS $9F00+2
@@ -330,14 +331,14 @@ DRAW_HJL5
 	LDA 60,S
 	PSHU A,S
 
-	LDA #$df
-	STA 60,S
+	LDA #$dd
+	STA 20,S
 
 	LDA #$cd
 	STA -20,S
 
-	LDA #$dd
-	STA 20,S
+	LDA #$df
+	STA 60,S
 
 	LEAS 218,S
 	LDD -120,S
@@ -568,7 +569,7 @@ DRAW_HJL5
 	LDD 80,S
 	PSHU D
 
-	LDB #$dd
+	LDD #$dddd
 	STD 80,S
 
 	LDB #$cd
@@ -587,6 +588,7 @@ DRAW_HJL5
 	LDA 20,S
 	PSHU A,S
 
+	LDA #$dd
 	STA 20,S
 
 	STA -20,S

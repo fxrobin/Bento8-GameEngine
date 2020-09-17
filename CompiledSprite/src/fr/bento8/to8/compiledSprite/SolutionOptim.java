@@ -2,7 +2,9 @@ package fr.bento8.to8.compiledSprite;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,20 +52,20 @@ public class SolutionOptim{
 	private Solution solution;
 	private byte[] data;
 	int sizeSaveS;
-	
+
 	int i, j, k;
 	List<String> asmCode = new ArrayList<String>(); // Contient le code de sauvegarde du fond et du dessin de sprite
 	List<String> asmECode = new ArrayList<String>(); // Contient le code d'effacement du sprite (restauration du fond)
-	
+
 	private int asmCodeCycles;
 	private int asmCodeSize;
 	private int asmECodeCycles;
 	private int asmECodeSize;
-	
+
 	int lastLeas;		
 	boolean[] regSet, regSetSave;
 	byte[][] regVal, regValSave;
-	
+
 	List<Integer> patternGrp1 = new ArrayList<Integer>();
 	List<Integer> patternGrp2 = new ArrayList<Integer>();
 	List<Integer> patternGrp3 = new ArrayList<Integer>();
@@ -72,55 +74,129 @@ public class SolutionOptim{
 		this.solution = solution;
 		this.data = data;
 	}
-	
+
 	public void Optimize(List<Integer> patterns) throws Exception {
 		logger.debug("****** Nb patterns: "+patterns.size());
-		
-		// TODO diminuer les combinaisons en groupant les patterns de même valeur data
-		// et en retirant les patterns dont la data ne se répete pas
-		
-		// S'il y a 0 ou 1 pattern, pas d'optimisation a effectuer
-		// Si >10 trop de combinaisons a tester
-		// TODO implémenter une autre solution basée sur le TRI
-		if (patterns.size() <= 1 || patterns.size() > 10) {
-			return;
+
+		// Lance l'optimisation
+		if (patterns.size() > 1) {
+			// TODO diminuer les combinaisons en groupant les patterns de même valeur data
+
+			// Diminution du nombre de combinaisons à tester
+			// Cherche les valeurs uniques, qui ne peuvent donc pas bénéficier d'un cache registre
+			int pos;
+			long value;
+
+			// Contient pour un pattern une liste des toutes les combinaisons de données rangées par registre
+			HashMap<Integer, List<Long>> patternData = new HashMap<Integer, List<Long>>();
+
+			// Séparation en deux groupes
+			List<ArrayList<Integer>> patternOptim = new ArrayList<ArrayList<Integer>>();
+			List<Integer> patternNonOptim = new ArrayList<Integer>();
+
+			for (int id : patterns) {
+
+				// Parcours des combinaisons possibles de registres pour le pattern
+				for (j = 0; j < solution.patterns.get(id).getRegisterCombi().size(); j++) {
+					pos = solution.positions.get(id)*2;
+					value = 0;
+
+					// Parcours des registres de la combinaison
+					for (k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
+
+						if (solution.patterns.get(id).getRegisterCombi().get(j)[k]) {
+							// Le registre est utilisé dans la combinaison
+							switch(k) {
+							case Register.A: value += ((data[pos++] & 0xFFL) << 44) | ((data[pos++] & 0xFFL) << 40); break;
+							case Register.B: value += ((data[pos++] & 0xFFL) << 36) | ((data[pos++] & 0xFFL) << 32); break;
+							case Register.D: value += ((data[pos++] & 0xFFL) << 44) | ((data[pos++] & 0xFFL) << 40) | ((data[pos++] & 0xFFL) << 36) | ((data[pos++] & 0xFFL) << 32); break;
+							case Register.X: value += ((data[pos++] & 0xFFL) << 28) | ((data[pos++] & 0xFFL) << 24) | ((data[pos++] & 0xFFL) << 20) | ((data[pos++] & 0xFFL) << 16); break;
+							case Register.Y: value += ((data[pos++] & 0xFFL) << 12) | ((data[pos++] & 0xFFL) << 8)  | ((data[pos++] & 0xFFL) << 4)  | ((data[pos++] & 0xFFL) << 0); break;
+							}
+						}
+					}
+
+					logger.debug("Pattern: "+id+" Valeur " + String.format("%016x", value));
+
+					// Ajout de la combinaison de pixels pour le pattern
+					if (!patternData.containsKey(id)) {
+						patternData.put(id, new ArrayList<Long>());
+					} else {
+						patternData.get(id).add(value);
+					}
+				}
+			}
+
+			// Construction des groupes de pattern pour l'optimisation
+			// Chaque groupe est composé de patterns ayant un motif strictement identique
+			// Un groupe qui ne contient qu'un pattern doit avoir un motif commun sur un des 4 registres A, B, X, Y avec un autre groupe
+			for (int id : patterns) {
+				for (long val : patternData.get(id)) {
+					for (int idSub : patterns) {
+					}
+				}
+
+			}
 		}
-		
+
+		//			for (int id : patterns) {
+		//				patternOptim.add(id);
+		//			}
+
+		//			if (patternOptim.size() > 1) {
+		//				if (patternOptim.size() > 9) {
+		//					OptimizeRandom(patternOptim);
+		//				} else {
+		//					OptimizeFactorial(patternOptim);
+		//				}	
+		//			}
+
+		// TODO le calcul du cout de l'optim doit se faire sur le noeud en entier et pas juste sur le groupe 3
+		// permet un gain si couplage avec stackblast ou groupe 1, a voir comment inserer les background au bon endroit
+		// ex si pas de groupe 1 et pas de stack blant comment on enchaine ?
+
+		//			patterns.clear();
+		//			patterns.addAll(patternNonOptim);
+		//			patterns.addAll(patternOptim);
+	}
+
+	public void OptimizeFactorial(List<Integer> patterns) throws Exception {
+
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
 			regSetSave[i] = regSet[i];
 		}
-		
+
 		for (int i = 0; i < regVal.length; i++) {
 			for (int j = 0; j < regVal[0].length; j++) {
 				regValSave[i][j] = regVal[i][j];	
 			}
 		}
-		
+
 		// Initialisation de la solution
 		List<Snippet> testSolution = new ArrayList<Snippet>();
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
 		List<Integer> bestPatterns = new ArrayList<Integer>();
-		
+
 		// Test des combinaisons		
 		int[] indexes = new int[patterns.size()];
 		for (int i = 0; i < patterns.size(); i++) {
-		    indexes[i] = 0;
+			indexes[i] = 0;
 		}
-		 
+
 		int idx = 0;
 		int score = 0, bestScore = Integer.MAX_VALUE;
 		while (idx < patterns.size()) {
-		    if (indexes[idx] < idx) {
-		    	Collections.swap(patterns, idx % 2 == 0 ?  0: indexes[idx], idx);
-		    	
-		    	// Compute proposition
-		    	score = 0;
+			if (indexes[idx] < idx) {
+				Collections.swap(patterns, idx % 2 == 0 ?  0: indexes[idx], idx);
+
+				// Compute proposition
+				score = 0;
 				for (int id : patterns) {
 					testSolution.add(simulatePatternDraw(id));
 					score += testSolution.get(testSolution.size()-1).getCycles();
 				}
-				
+
 				if (score < bestScore) {
 					bestScore = score;
 					logger.debug("score: "+score);
@@ -129,34 +205,105 @@ public class SolutionOptim{
 					bestPatterns.clear();
 					bestPatterns.addAll(patterns);
 				}
-				
+
 				testSolution.clear();
-				
+
 				// Restauration de l'état des registres
 				for (int i = 0; i < regSet.length; i++) {
-					regSetSave[i] = regSet[i];
+					regSet[i] = regSetSave[i];
 				}
-				
-		        indexes[idx]++;
-		        idx = 0;
-		    }
-		    else {
-		        indexes[idx] = 0;
-		        idx++;
-		    }
+
+				for (int i = 0; i < regVal.length; i++) {
+					for (int j = 0; j < regVal[0].length; j++) {
+						regVal[i][j] = regValSave[i][j];	
+					}
+				}
+
+				indexes[idx]++;
+				idx = 0;
+			}
+			else {
+				indexes[idx] = 0;
+				idx++;
+			}
 		}
-		
+
+		// Positionne la solution
+		patterns.clear();
+		patterns.addAll(bestPatterns);
+
+	}
+
+	public static int fact (int n) {
+		if (n==0) return(1);
+		else return(n*fact(n-1));
+	}
+
+	public void OptimizeRandom(List<Integer> patterns) throws Exception {
+
+		// Sauvegarde de l'état des registres
+		for (int i = 0; i < regSet.length; i++) {
+			regSetSave[i] = regSet[i];
+		}
+
 		for (int i = 0; i < regVal.length; i++) {
 			for (int j = 0; j < regVal[0].length; j++) {
 				regValSave[i][j] = regVal[i][j];	
 			}
 		}
-		
+
+		// Initialisation de la solution
+		List<Snippet> testSolution = new ArrayList<Snippet>();
+		List<Snippet> bestSolution = new ArrayList<Snippet>();
+		List<Integer> bestPatterns = new ArrayList<Integer>();
+
+		// Test des combinaisons		
+		int essais = (patterns.size()>9?fact(9):fact(patterns.size()));
+
+		int score = 0, bestScore = Integer.MAX_VALUE;
+		int a, b;
+		Random rand = new Random();
+		while (essais-- > 0) {
+			a = rand.nextInt(patterns.size());
+			b = rand.nextInt(patterns.size());
+			Collections.swap(patterns, a, b);
+
+			// Compute proposition
+			score = 0;
+			for (int id : patterns) {
+				testSolution.add(simulatePatternDraw(id));
+				score += testSolution.get(testSolution.size()-1).getCycles();
+			}
+
+			if (score < bestScore) {
+				bestScore = score;
+				logger.debug("score: "+score);
+				bestSolution.clear();
+				bestSolution.addAll(testSolution);
+				bestPatterns.clear();
+				bestPatterns.addAll(patterns);
+			} else {
+				Collections.swap(patterns, a, b);
+			}
+
+			testSolution.clear();
+
+			// Restauration de l'état des registres
+			for (int i = 0; i < regSet.length; i++) {
+				regSet[i] = regSetSave[i];
+			}
+
+			for (int i = 0; i < regVal.length; i++) {
+				for (int j = 0; j < regVal[0].length; j++) {
+					regVal[i][j] = regValSave[i][j];	
+				}
+			}
+		}
+
 		// Positionne la solution
-		// *****************************
 		patterns.clear();
 		patterns.addAll(bestPatterns);
-		
+
 	}
 
 	public void build() {
@@ -170,7 +317,7 @@ public class SolutionOptim{
 		regVal = new byte[7][4];
 		regSetSave = new boolean[] {false, false, false, false, false, false, false};
 		regValSave = new byte[7][4];
-		
+
 		lastLeas = Integer.MAX_VALUE;	
 		int currentNode = 0;
 		boolean leasAtThisNode, saveS; // Lors du rétablissement du fond, demande le chargement de S depuis la zone DATA
@@ -184,7 +331,7 @@ public class SolutionOptim{
 				patternGrp1.clear();
 				patternGrp2.clear();
 				patternGrp3.clear();
-				
+
 				saveS = false;
 				leasAtThisNode = false;
 				nbPatternsInThisNode = 0;
@@ -216,10 +363,10 @@ public class SolutionOptim{
 					i++;
 				}
 
-//				logger.debug("patternGrp1: "+patternGrp1);
-//				logger.debug("patternGrp2: "+patternGrp2);
-//				logger.debug("patternGrp3: "+patternGrp3);
-				
+				//				logger.debug("patternGrp1: "+patternGrp1);
+				//				logger.debug("patternGrp2: "+patternGrp2);
+				//				logger.debug("patternGrp3: "+patternGrp3);
+
 				// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
 				int iPattern = 0;
 				for (int id : patternGrp1) {
@@ -244,16 +391,16 @@ public class SolutionOptim{
 					saveS = false;
 					iPattern++;
 				}
-				
+
 				// Tri du groupe 3 pour optimiser les réutilisations de registre
 
 				Optimize(patternGrp3);
-				
+
 				for (int id : patternGrp3) {
 					processPatternDraw(id);
 					asmCode.add("");
 				}
-				
+
 				// Pour pouvoir positionner le Groupe 2 ailleurs qu'en fin de Noeud, il faut modifier
 				// la gestion des offsets. A la lecture des données d'effacement sur un groupe 2
 				// Un push est fait sur S ce qui décale la position de S et les offset ne sont plus bons
@@ -326,7 +473,7 @@ public class SolutionOptim{
 		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id), saveS));
 		asmCodeCycles += solution.patterns.get(id).getBackgroundBackupCodeCycles(selectedReg, solution.computedOffsets.get(id), saveS);
 		asmCodeSize += solution.patterns.get(id).getBackgroundBackupCodeSize(selectedReg, solution.computedOffsets.get(id));
-		
+
 		asmECode.addAll(0, solution.patterns.get(id).getEraseCode(saveS, solution.computedOffsets.get(id)));
 		asmECodeCycles += solution.patterns.get(id).getEraseCodeCycles(saveS, solution.computedOffsets.get(id));
 		asmECodeSize += solution.patterns.get(id).getEraseCodeSize(saveS, solution.computedOffsets.get(id));
@@ -437,7 +584,7 @@ public class SolutionOptim{
 		asmCode.addAll(solution.patterns.get(id).getDrawCode(data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id)));
 		asmCodeCycles += solution.patterns.get(id).getDrawCodeCycles(selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
 		asmCodeSize += solution.patterns.get(id).getDrawCodeSize(selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
-		
+
 		// Sauvegarde les valeurs chargées en cache
 		pos = solution.positions.get(id)*2;
 		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
@@ -513,7 +660,7 @@ public class SolutionOptim{
 			}
 		}		
 	}
-	
+
 	public Snippet simulatePatternDraw(int id) throws Exception {
 
 		// Recherche pour chaque combinaison de registres d'un pattern,
@@ -605,7 +752,7 @@ public class SolutionOptim{
 		}
 
 		Snippet snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
-		
+
 		// Sauvegarde les valeurs chargées en cache
 		pos = solution.positions.get(id)*2;
 		for (j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
@@ -701,11 +848,11 @@ public class SolutionOptim{
 	public List<String> getAsmCode() {
 		return asmCode;
 	}
-	
+
 	public List<String> getAsmECode() {
 		return asmECode;
 	}
-	
+
 	public int getDataSize() {
 		int size = 0;
 		for (Pattern pattern : solution.patterns) {

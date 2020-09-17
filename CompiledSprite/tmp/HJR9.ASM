@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C447
+	ORG $C3D2
 DRAW_HJR9
 	PSHS U,DP
 	STS SSAV_HJR9+2
@@ -66,7 +66,7 @@ DRAW_HJR9
 	LDA #$cc
 	STA 121,S
 
-	LDA #$ac
+	LDD #$ac0e
 	STD 41,S
 
 	STA 81,S
@@ -145,7 +145,7 @@ DRAW_HJR9
 	LDD 82,S
 	PSHU D
 
-	LDA #$c3
+	LDD #$c3ca
 	STD 82,S
 
 	LDA #$12
@@ -275,6 +275,7 @@ DRAW_HJR9
 	LDA 20,S
 	PSHU A,S
 
+	LDA #$aa
 	STA 20,S
 
 	STA -20,S
@@ -396,7 +397,7 @@ DRAW_HJR9
 	LDD 82,S
 	PSHU D
 
-	LDA #$ac
+	LDD #$ac1f
 	STD 82,S
 
 	LDA #$ca
@@ -535,13 +536,13 @@ DRAW_HJR9
 	LDA ,S
 	PSHU A,S
 
-	LDA #$dd
-	STA -40,S
-
-	STA ,S
-
 	LDA #$dc
 	STA -80,S
+
+	LDA #$dd
+	STA ,S
+
+	STA -40,S
 
 SSAV_HJR9
 	LDS #$0000

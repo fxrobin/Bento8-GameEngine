@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A821
+	ORG $ADF3
 DRAW_HRL5
 	PSHS U,DP
 	STS SSAV_HRL5+2
@@ -43,8 +43,8 @@ DRAW_HRL5
 	LDD 119,S
 	PSHU D,S
 
-	LDD #$a2cc
-	STD 119,S
+	LDA #$aa
+	STA -120,S
 
 	LDD #$d2dd
 	STD -1,S
@@ -52,11 +52,11 @@ DRAW_HRL5
 	LDA #$32
 	STD 39,S
 
-	LDA #$aa
-	STA -120,S
-
 	LDD #$ddcc
 	STD -41,S
+
+	LDA #$a2
+	STD 119,S
 
 	LEAS 180,S
 	LDD 18,S
@@ -72,8 +72,10 @@ DRAW_HRL5
 	LDA 20,S
 	PSHU A,S
 
-	STB 20,S
+	LDA #$cc
+	STA 20,S
 
+	LDD #$aacc
 	STD -21,S
 
 	LEAS 179,S
@@ -145,9 +147,6 @@ DRAW_HRL5
 	LDA 121,S
 	PSHU A
 
-	LDA #$dc
-	STA 121,S
-
 	LDA #$cd
 	STA 41,S
 
@@ -155,6 +154,9 @@ DRAW_HRL5
 	STA -119,S
 
 	STA 81,S
+
+	LDA #$dc
+	STA 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -232,26 +234,26 @@ DRAW_HRL5
 	LDD 120,S
 	PSHU D,S
 
-	LDD #$3cae
-	STD 120,S
-
-	LDD #$edde
-	STD 40,S
-
 	LDD #$0d90
 	STD -80,S
-
-	LDD #$dd99
-	STD -40,S
-
-	LDD #$3c11
-	STD 80,S
 
 	LDD #$22dd
 	STD -121,S
 
+	LDD #$dd99
+	STD -40,S
+
 	LDD #$30d0
 	STD ,S
+
+	LDD #$edde
+	STD 40,S
+
+	LDD #$3c11
+	STD 80,S
+
+	LDB #$ae
+	STD 120,S
 
 	LEAS 280,S
 	LDD -122,S
@@ -344,14 +346,14 @@ DRAW_HRL5
 	LDD -40,S
 	PSHU D,S
 
-	LDD #$cdda
-	STD -80,S
-
-	LDA #$dc
-	STD -40,S
-
 	LDD #$3d0a
 	STD -120,S
+
+	LDD #$dcda
+	STD -40,S
+
+	LDA #$cd
+	STD -80,S
 
 	LEAS 279,S
 	LDD -121,S
@@ -395,13 +397,13 @@ DRAW_HRL5
 	LDA 40,S
 	PSHU A,S
 
-	LDA #$e0
-	STA ,S
-
-	STA 40,S
-
 	LDA #$19
 	STA -40,S
+
+	LDA #$e0
+	STA 40,S
+
+	STA ,S
 
 
 	LDS $9F00+2
@@ -442,6 +444,7 @@ DRAW_HRL5
 	LDD 79,S
 	PSHU D,S
 
+	LDD #$aadc
 	STD 79,S
 
 	STB 1,S
@@ -467,13 +470,13 @@ DRAW_HRL5
 	LDD -40,S
 	PSHU D
 
-	LDA #$ad
-	STD -40,S
+	LDD #$aadc
+	STD -80,S
 
-	LDA #$aa
 	STD -120,S
 
-	STD -80,S
+	LDA #$ad
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -524,14 +527,14 @@ DRAW_HRL5
 	LDD 120,S
 	PSHU D
 
-	LDD #$223c
-	STD 120,S
+	LDD #$2bcc
+	STD 80,S
 
-	LDD #$9bcc
+	LDA #$9b
 	STD 40,S
 
-	LDA #$2b
-	STD 80,S
+	LDD #$223c
+	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -631,14 +634,14 @@ DRAW_HRL5
 	LDD 122,S
 	PSHU D
 
-	LDD #$ddbf
-	STD 122,S
+	LDD #$cdb1
+	STD 82,S
 
 	LDD #$09ba
 	STD 42,S
 
-	LDD #$cdb1
-	STD 82,S
+	LDD #$ddbf
+	STD 122,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -715,6 +718,7 @@ DRAW_HRL5
 	LDA 118,S
 	PSHU A,S
 
+	LDA #$ff
 	STA -79,S
 
 	STA -119,S

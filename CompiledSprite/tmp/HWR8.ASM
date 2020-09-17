@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $BFEA
+	ORG $BFB3
 DRAW_HWR8
 	PSHS U,DP
 	STS SSAV_HWR8+2
@@ -37,14 +37,14 @@ DRAW_HWR8
 	LDD 39,S
 	PSHU D,S
 
-	LDD #$ddc2
-	STD 39,S
+	LDD #$dcad
+	STD -1,S
 
 	LDD #$ccaa
 	STD -41,S
 
-	LDD #$dcad
-	STD -1,S
+	LDD #$ddc2
+	STD 39,S
 
 	LEAS 239,S
 	LDD -119,S
@@ -122,14 +122,14 @@ DRAW_HWR8
 	LDA 122,S
 	PSHU A
 
-	LDA #$9a
-	STA 122,S
-
-	LDA #$aa
-	STD 41,S
-
 	LDD #$ddaa
 	STD 80,S
+
+	LDD #$aaac
+	STD 41,S
+
+	LDA #$9a
+	STA 122,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -166,14 +166,14 @@ DRAW_HWR8
 	LDD 120,S
 	PSHU D
 
-	LDD #$d00a
-	STD 120,S
+	LDD #$ddd2
+	STD 80,S
 
-	LDD #$dd32
+	LDB #$32
 	STD 40,S
 
-	LDB #$d2
-	STD 80,S
+	LDD #$d00a
+	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -231,11 +231,11 @@ DRAW_HWR8
 	LDD 120,S
 	PSHU D,S
 
-	LDD #$d0af
-	STD 120,S
-
 	LDD #$9dea
 	STD -81,S
+
+	LDD #$ad1a
+	STD -121,S
 
 	LDD #$cd2a
 	STD -41,S
@@ -243,11 +243,11 @@ DRAW_HWR8
 	LDD #$dd3a
 	STD -1,S
 
-	LDD #$ad1a
-	STD -121,S
-
-	LDD #$dde3
+	LDB #$e3
 	STD 39,S
+
+	LDD #$d0af
+	STD 120,S
 
 	LEAS 278,S
 	LDD -120,S
@@ -314,8 +314,11 @@ DRAW_HWR8
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$1f
-	STA 120,S
+	LDA #$9a
+	STA 40,S
+
+	LDA #$0e
+	STA 3,S
 
 	LDA #$e1
 	STA 43,S
@@ -323,11 +326,8 @@ DRAW_HWR8
 	LDA #$eb
 	STA 80,S
 
-	LDA #$0e
-	STA 3,S
-
-	LDA #$9a
-	STA 40,S
+	LDA #$1f
+	STA 120,S
 
 	LEAS 220,S
 	LDA -60,S
@@ -342,9 +342,6 @@ DRAW_HWR8
 	LDA 60,S
 	PSHU A,S
 
-	LDA #$0e
-	STA 60,S
-
 	LDA #$11
 	STA -20,S
 
@@ -352,6 +349,9 @@ DRAW_HWR8
 	STA -60,S
 
 	STA 20,S
+
+	LDA #$0e
+	STA 60,S
 
 
 	LDS $9F00+2
@@ -378,15 +378,16 @@ DRAW_HWR8
 	LDD 121,S
 	PSHU D
 
+	LDA #$aa
 	STA -79,S
 
-	LDA #$dc
-	STD 81,S
+	LDD #$dcda
+	STD 41,S
 
+	LDB #$3a
 	STD 121,S
 
-	LDB #$da
-	STD 41,S
+	STD 81,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -411,14 +412,14 @@ DRAW_HWR8
 	LDA -38,S
 	PSHU A
 
-	LDA #$cb
-	STA -38,S
+	LDD #$ccad
+	STD -79,S
 
-	LDA #$cc
+	LDB #$aa
 	STD -119,S
 
-	LDB #$ad
-	STD -79,S
+	LDA #$cb
+	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -443,11 +444,12 @@ DRAW_HWR8
 	LDD 121,S
 	PSHU D
 
-	STD 121,S
+	STX 81,S
 
 	STX 41,S
 
-	STX 81,S
+	LDD #$dccb
+	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -502,11 +504,11 @@ DRAW_HWR8
 	LDD 121,S
 	PSHU D
 
-	LDA #$2d
-	STD 121,S
-
 	LDA #$22
 	STA -78,S
+
+	LDA #$b2
+	STA -118,S
 
 	LDA #$aa
 	STA -38,S
@@ -514,11 +516,11 @@ DRAW_HWR8
 	LDA #$ab
 	STA 42,S
 
-	LDA #$b2
-	STA -118,S
-
-	LDA #$ce
+	LDD #$cebb
 	STD 81,S
+
+	LDA #$2d
+	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -571,29 +573,29 @@ DRAW_HWR8
 	LDD 122,S
 	PSHU D
 
-	LDD #$e90e
-	STD 122,S
-
-	LDD #$d3aa
-	STD -79,S
-
 	LDA #$0a
 	STA -38,S
-
-	LDD #$ea1f
-	STD 42,S
-
-	LDA #$e0
-	STA 80,S
-
-	LDD #$ea10
-	STD 82,S
 
 	LDD #$32ab
 	STD -119,S
 
+	LDA #$e0
+	STA 80,S
+
+	LDD #$d3aa
+	STD -79,S
+
+	LDD #$ea1f
+	STD 42,S
+
+	LDB #$10
+	STD 82,S
+
 	LDA #$1a
 	STA 120,S
+
+	LDD #$e90e
+	STD 122,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -648,8 +650,11 @@ DRAW_HWR8
 	LDA -38,S
 	PSHU A,S
 
-	LDA #$01
-	STA -38,S
+	LDA #$bf
+	STA -80,S
+
+	LDA #$fa
+	STA -120,S
 
 	LDA #$ee
 	STA -78,S
@@ -657,11 +662,8 @@ DRAW_HWR8
 	LDA #$b1
 	STA -40,S
 
-	LDA #$fa
-	STA -120,S
-
-	LDA #$bf
-	STA -80,S
+	LDA #$01
+	STA -38,S
 
 	LEAS 160,S
 	LDA ,S

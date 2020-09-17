@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A75C
+	ORG $A75E
 DRAW_HJL9
 	PSHS U,DP
 	STS SSAV_HJL9+2
@@ -57,8 +57,10 @@ DRAW_HJL9
 	LDD 100,S
 	PSHU D,S
 
-	LDA #$cd
-	STD 100,S
+	LDA #$aa
+	STA -60,S
+
+	STA -100,S
 
 	LDA #$ca
 	STA 21,S
@@ -66,10 +68,8 @@ DRAW_HJL9
 	LDA #$cc
 	STA 61,S
 
-	LDA #$aa
-	STA -100,S
-
-	STA -60,S
+	LDD #$cddc
+	STD 100,S
 
 	LEAS 258,S
 	LDD -120,S
@@ -102,13 +102,13 @@ DRAW_HJL9
 	LDD -38,S
 	PSHU D
 
-	LDB #$dd
-	STD -78,S
+	LDD #$ccdc
+	STD -118,S
 
+	LDB #$dd
 	STD -38,S
 
-	LDB #$dc
-	STD -118,S
+	STD -78,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -201,11 +201,12 @@ DRAW_HJL9
 	LDD 122,S
 	PSHU D
 
-	STD 122,S
+	LDD #$dddd
+	STD 82,S
 
 	STD 42,S
 
-	STD 82,S
+	STD 122,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -346,6 +347,7 @@ DRAW_HJL9
 	LDD 81,S
 	PSHU D
 
+	LDD #$ccdc
 	STD 81,S
 
 	STX 41,S

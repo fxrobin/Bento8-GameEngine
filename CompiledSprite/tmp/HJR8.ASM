@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $CADC
+	ORG $CA6C
 DRAW_HJR8
 	PSHS U,DP
 	STS SSAV_HJR8+2
@@ -114,13 +114,13 @@ DRAW_HJR8
 	LDD 121,S
 	PSHU D
 
-	LDD #$32ac
-	STD 81,S
-
-	STD 121,S
-
 	LDD #$3aaa
 	STD 41,S
+
+	LDD #$32ac
+	STD 121,S
+
+	STD 81,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -189,9 +189,6 @@ DRAW_HJR8
 	LDD 101,S
 	PSHU D,S
 
-	LDD #$dd9a
-	STD -19,S
-
 	LDD #$1caa
 	STD -99,S
 
@@ -203,6 +200,9 @@ DRAW_HJR8
 
 	LDA #$dd
 	STD 61,S
+
+	LDB #$9a
+	STD -19,S
 
 	LDB #$dd
 	STD 101,S
@@ -263,7 +263,7 @@ DRAW_HJR8
 	LDD 40,S
 	PSHU D
 
-	LDA #$dd
+	LDD #$dddd
 	STD 40,S
 
 	LDA #$d0
@@ -500,6 +500,7 @@ DRAW_HJR8
 	LDD 80,S
 	PSHU D
 
+	LDD #$dddd
 	STD 80,S
 
 	STD 40,S
@@ -549,8 +550,10 @@ DRAW_HJR8
 	LDA 60,S
 	PSHU A,S
 
+	LDA #$dd
 	STA 60,S
 
+	LDD #$dddd
 	STD 20,S
 
 SSAV_HJR8

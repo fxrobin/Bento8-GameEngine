@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $D746
+	ORG $CB38
 DRAW_HWR3
 	PSHS U,DP
 	STS SSAV_HWR3+2
@@ -36,14 +36,14 @@ DRAW_HWR3
 	LDD 19,S
 	PSHU D,S
 
-	LDD #$ddda
-	STD 19,S
+	LDD #$dcaa
+	STD -21,S
 
 	LDD #$cccc
 	STD -61,S
 
-	LDD #$dcaa
-	STD -21,S
+	LDD #$ddda
+	STD 19,S
 
 	LEAS 219,S
 	LDD -119,S
@@ -238,7 +238,7 @@ DRAW_HWR3
 	LDD 81,S
 	PSHU D
 
-	LDA #$ea
+	LDD #$eadc
 	STD 81,S
 
 	LDA #$aa
@@ -306,8 +306,8 @@ DRAW_HWR3
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$1e
-	STA 121,S
+	LDA #$ea
+	STA -121,S
 
 	LDA #$bb
 	STA -119,S
@@ -318,23 +318,23 @@ DRAW_HWR3
 	LDA #$bf
 	STA -79,S
 
-	LDA #$e0
-	STA -41,S
+	LDA #$ef
+	STA 1,S
 
 	LDA #$af
 	STA -39,S
 
-	LDA #$ef
-	STA 1,S
+	LDA #$e0
+	STA -41,S
 
 	LDA #$1f
 	STA 41,S
 
-	LDA #$ea
-	STA -121,S
-
 	LDA #$11
 	STA 81,S
+
+	LDA #$1e
+	STA 121,S
 
 	LEAS 198,S
 	LDA -40,S
@@ -405,15 +405,15 @@ DRAW_HWR3
 	LDD 120,S
 	PSHU D,S
 
+	LDA #$cc
+	STA -80,S
+
+	STA -120,S
+
 	LDA #$ac
 	STA 1,S
 
-	LDA #$cc
-	STA -120,S
-
-	STA -80,S
-
-	LDA #$d2
+	LDD #$d2aa
 	STD 40,S
 
 	LDA #$c2
@@ -452,14 +452,14 @@ DRAW_HWR3
 	LDA -38,S
 	PSHU A
 
-	LDA #$b0
-	STA -38,S
-
-	LDA #$cc
-	STD -119,S
-
 	LDA #$bc
 	STA -78,S
+
+	LDD #$ccba
+	STD -119,S
+
+	LDA #$b0
+	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -477,14 +477,14 @@ DRAW_HWR3
 	LDD 121,S
 	PSHU D
 
-	LDD #$ddb2
-	STD 121,S
+	LDD #$dcbb
+	STD 81,S
 
-	LDD #$dcb9
+	LDB #$b9
 	STD 41,S
 
-	LDB #$bb
-	STD 81,S
+	LDD #$ddb2
+	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -566,8 +566,10 @@ DRAW_HWR3
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$d2
-	STD 80,S
+	LDA #$22
+	STA -79,S
+
+	STA -119,S
 
 	LDA #$31
 	STA -39,S
@@ -575,10 +577,8 @@ DRAW_HWR3
 	LDD #$0239
 	STD 40,S
 
-	LDA #$22
-	STA -119,S
-
-	STA -79,S
+	LDD #$d21e
+	STD 80,S
 
 	LDA #$c2
 	STA 120,S
@@ -669,22 +669,22 @@ DRAW_HWR3
 	LDA 119,S
 	PSHU A,S
 
-	LDA #$e1
-	STA 119,S
-
 	LDA #$dc
 	STA -80,S
-
-	LDA #$10
-	STD -41,S
 
 	LDD #$ccff
 	STD 1,S
 
 	STA -120,S
 
+	LDD #$100d
+	STD -41,S
+
 	LDD #$e0d0
 	STD 39,S
+
+	LDA #$e1
+	STA 119,S
 
 	LEAS 259,S
 	LDD -98,S
@@ -731,6 +731,7 @@ DRAW_HWR3
 	LDA 20,S
 	PSHU A,S
 
+	LDA #$e1
 	STA -100,S
 
 	LDA #$0a

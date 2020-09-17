@@ -39,21 +39,21 @@ DRAW_HWL6
 	LDD 119,S
 	PSHU D,S
 
-	LDA #$aa
-	STD 119,S
-
-	STD 79,S
-
-	STA -80,S
-
-	LDB #$dd
-	STD 39,S
+	LDD #$cadd
+	STD -1,S
 
 	LDA #$cc
 	STA -120,S
 
-	LDA #$ca
-	STD -1,S
+	LDA #$aa
+	STA -80,S
+
+	STD 39,S
+
+	LDB #$dc
+	STD 79,S
+
+	STD 119,S
 
 	LEAS 279,S
 	LDA -78,S
@@ -77,14 +77,14 @@ DRAW_HWL6
 	LDD -40,S
 	PSHU D
 
-	LDD #$cbcc
-	STD -80,S
-
-	LDA #$ab
-	STD -40,S
-
 	LDD #$addc
 	STD -120,S
+
+	LDD #$abcc
+	STD -40,S
+
+	LDA #$cb
+	STD -80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -105,11 +105,11 @@ DRAW_HWL6
 	LDD #$bacd
 	STD 120,S
 
-	LDD #$bbcc
-	STD 40,S
-
-	LDB #$cd
+	LDA #$bb
 	STD 80,S
+
+	LDB #$cc
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -172,14 +172,14 @@ DRAW_HWL6
 	LDD -40,S
 	PSHU D
 
-	LDD #$22d0
-	STD -80,S
+	LDD #$2bdd
+	STD -120,S
 
-	LDB #$dd
+	LDA #$22
 	STD -40,S
 
-	LDA #$2b
-	STD -120,S
+	LDB #$d0
+	STD -80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -209,26 +209,26 @@ DRAW_HWL6
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$1a
-	STA 120,S
-
-	LDA #$aa
-	STA 40,S
-
 	LDA #$99
 	STA -80,S
-
-	LDA #$3a
-	STA -40,S
-
-	LDA #$a9
-	STA 80,S
 
 	LDA #$ab
 	STA -120,S
 
+	LDA #$3a
+	STA -40,S
+
 	LDA #$0d
 	STA ,S
+
+	LDA #$aa
+	STA 40,S
+
+	LDA #$a9
+	STA 80,S
+
+	LDA #$1a
+	STA 120,S
 
 	LEAS 280,S
 	LDD -40,S
@@ -267,14 +267,14 @@ DRAW_HWL6
 	LDD 120,S
 	PSHU D,S
 
-	LDA #$f2
-	STD 120,S
+	LDA #$10
+	STA -80,S
 
 	LDA #$1e
 	STA -120,S
 
-	LDA #$10
-	STA -80,S
+	LDD #$f211
+	STD 120,S
 
 	LEAS 180,S
 	LDD -20,S
@@ -334,7 +334,7 @@ DRAW_HWL6
 	LDA #$dd
 	STA 20,S
 
-	LDA #$cd
+	LDD #$cdcc
 	STD -61,S
 
 	STA -20,S
@@ -450,13 +450,13 @@ DRAW_HWL6
 	LDD 121,S
 	PSHU D
 
-	LDA #$2d
-	STD 121,S
-
 	LDA #$dd
+	STA 82,S
+
 	STA 42,S
 
-	STA 82,S
+	LDD #$2dad
+	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S

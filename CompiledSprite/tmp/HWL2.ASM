@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C63E
+	ORG $A8AF
 DRAW_HWL2
 	PSHS U,DP
 	STS SSAV_HWL2+2
@@ -39,21 +39,21 @@ DRAW_HWL2
 	LDD 119,S
 	PSHU D,S
 
-	LDD #$aa2d
-	STD 39,S
+	LDA #$cc
+	STA -80,S
 
-	LDB #$2c
-	STD 119,S
-
-	STD 79,S
+	STA -120,S
 
 	LDD #$cadc
 	STD -1,S
 
-	LDA #$cc
-	STA -120,S
+	LDD #$aa2d
+	STD 39,S
 
-	STA -80,S
+	LDB #$2c
+	STD 79,S
+
+	STD 119,S
 
 	LEAS 279,S
 	LDA -78,S
@@ -77,14 +77,14 @@ DRAW_HWL2
 	LDD -40,S
 	PSHU D
 
-	LDD #$cbac
-	STD -40,S
+	LDD #$abcc
+	STD -80,S
 
 	LDD #$addc
 	STD -120,S
 
-	LDD #$abcc
-	STD -80,S
+	LDD #$cbac
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -102,13 +102,13 @@ DRAW_HWL2
 	LDD 120,S
 	PSHU D
 
-	LDA #$bb
-	STD 120,S
+	LDD #$9bcd
+	STD 80,S
 
-	LDA #$9b
 	STD 40,S
 
-	STD 80,S
+	LDA #$bb
+	STD 120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -153,17 +153,17 @@ DRAW_HWL2
 	LDD 40,S
 	PSHU D
 
-	LDD #$9933
-	STD 40,S
-
-	LDD #$22d0
-	STD -80,S
-
 	LDD #$2bdd
 	STD -120,S
 
 	LDA #$22
 	STD -40,S
+
+	LDB #$d0
+	STD -80,S
+
+	LDD #$9933
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -217,7 +217,7 @@ DRAW_HWL2
 	LDD 121,S
 	PSHU D
 
-	LDA #$dd
+	LDD #$ddca
 	STD 121,S
 
 	LDA #$f2
@@ -279,7 +279,7 @@ DRAW_HWL2
 	LDA #$fe
 	STA 121,S
 
-	LDA #$ff
+	LDD #$ffbc
 	STD -40,S
 
 	LDD #$0dee
@@ -327,6 +327,7 @@ DRAW_HWL2
 	LDA 81,S
 	PSHU A,S
 
+	LDA #$11
 	STA -81,S
 
 	STA -121,S
@@ -385,14 +386,14 @@ DRAW_HWL2
 	LDA 20,S
 	PSHU A,S
 
-	LDA #$dd
-	STA 20,S
-
-	LDA #$cc
-	STD -61,S
-
 	LDD #$aacd
 	STD -21,S
+
+	LDD #$cccc
+	STD -61,S
+
+	LDA #$dd
+	STA 20,S
 
 	LEAS 218,S
 	LDD -120,S
@@ -512,11 +513,12 @@ DRAW_HWL2
 	LDA 122,S
 	PSHU A
 
-	STA 122,S
+	LDA #$dd
+	STA 82,S
 
 	STA 42,S
 
-	STA 82,S
+	STA 122,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -565,7 +567,7 @@ DRAW_HWL2
 	LDD -39,S
 	PSHU D
 
-	LDA #$dc
+	LDD #$dcaa
 	STD -39,S
 
 	LDA #$22
@@ -621,14 +623,14 @@ DRAW_HWL2
 	LDD 121,S
 	PSHU D
 
-	LDD #$09a9
-	STD 121,S
+	LDD #$d0aa
+	STD 81,S
 
 	LDD #$a0bb
 	STD 41,S
 
-	LDD #$d0aa
-	STD 81,S
+	LDD #$09a9
+	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -699,13 +701,13 @@ DRAW_HWL2
 	LDA -41,S
 	PSHU A,S
 
-	LDA #$91
-	STA -41,S
-
 	LDA #$af
+	STA -81,S
+
 	STA -121,S
 
-	STA -81,S
+	LDA #$91
+	STA -41,S
 
 	LEAS 181,S
 	LDA -20,S

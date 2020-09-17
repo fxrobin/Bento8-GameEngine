@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $CEDC
+	ORG $C2B0
 DRAW_HWR10
 	PSHS U,DP
 	STS SSAV_HWR10+2
@@ -37,14 +37,14 @@ DRAW_HWR10
 	LDD 39,S
 	PSHU D,S
 
-	LDD #$ddc2
-	STD 39,S
+	LDD #$dcad
+	STD -1,S
 
 	LDD #$ccaa
 	STD -41,S
 
-	LDD #$dcad
-	STD -1,S
+	LDD #$ddc2
+	STD 39,S
 
 	LEAS 239,S
 	LDD -119,S
@@ -122,14 +122,14 @@ DRAW_HWR10
 	LDA 122,S
 	PSHU A
 
-	LDA #$9a
-	STA 122,S
-
-	LDA #$aa
-	STD 41,S
-
 	LDD #$ddaa
 	STD 80,S
+
+	LDD #$aaac
+	STD 41,S
+
+	LDA #$9a
+	STA 122,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -163,7 +163,7 @@ DRAW_HWR10
 	LDD 80,S
 	PSHU D
 
-	LDB #$d2
+	LDD #$ddd2
 	STD 80,S
 
 	LDB #$32
@@ -233,14 +233,14 @@ DRAW_HWR10
 	LDA 123,S
 	PSHU A
 
-	LDA #$f0
-	STA 123,S
-
-	LDA #$ed
-	STD 40,S
-
 	LDA #$1d
 	STA 121,S
+
+	LDD #$ed23
+	STD 40,S
+
+	LDA #$f0
+	STA 123,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -335,9 +335,6 @@ DRAW_HWR10
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$91
-	STA 121,S
-
 	LDA #$10
 	STA -118,S
 
@@ -346,6 +343,9 @@ DRAW_HWR10
 
 	LDA #$1e
 	STA -78,S
+
+	LDA #$91
+	STA 121,S
 
 	LEAS 240,S
 	LDA -82,S
@@ -378,6 +378,7 @@ DRAW_HWR10
 	LDA 41,S
 	PSHU A,S
 
+	LDA #$01
 	STA -79,S
 
 	LDA #$ee
@@ -413,15 +414,16 @@ DRAW_HWR10
 	LDD 121,S
 	PSHU D
 
+	LDA #$aa
 	STA -79,S
 
-	LDA #$dc
-	STD 81,S
+	LDD #$dcda
+	STD 41,S
 
+	LDB #$3a
 	STD 121,S
 
-	LDB #$da
-	STD 41,S
+	STD 81,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -446,14 +448,14 @@ DRAW_HWR10
 	LDA -38,S
 	PSHU A
 
-	LDA #$cb
-	STA -38,S
+	LDD #$ccad
+	STD -79,S
 
-	LDA #$cc
+	LDB #$aa
 	STD -119,S
 
-	LDB #$ad
-	STD -79,S
+	LDA #$cb
+	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -478,11 +480,12 @@ DRAW_HWR10
 	LDD 121,S
 	PSHU D
 
-	STD 121,S
+	STX 81,S
 
 	STX 41,S
 
-	STX 81,S
+	LDD #$cccb
+	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -521,14 +524,14 @@ DRAW_HWR10
 	LDA -38,S
 	PSHU A
 
-	LDA #$2a
-	STA -38,S
+	LDA #$22
+	STA -78,S
 
 	LDA #$b2
 	STA -118,S
 
-	LDA #$22
-	STA -78,S
+	LDA #$2a
+	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -636,6 +639,7 @@ DRAW_HWR10
 	LDA 120,S
 	PSHU A
 
+	LDA #$bb
 	STA 120,S
 
 	STA 80,S
@@ -704,20 +708,20 @@ DRAW_HWR10
 	LDA 80,S
 	PSHU A,S
 
-	LDA #$e1
-	STA 80,S
-
 	LDA #$ff
 	STA -80,S
+
+	STA -120,S
 
 	STA -40,S
 
 	STA ,S
 
-	STA -120,S
-
 	LDA #$11
 	STA 40,S
+
+	LDA #$e1
+	STA 80,S
 
 SSAV_HWR10
 	LDS #$0000

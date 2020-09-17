@@ -90,11 +90,11 @@ DRAW_HJL8
 	LDD #$cacc
 	STD 121,S
 
-	LDD #$ccca
-	STD 41,S
-
-	LDB #$cc
+	LDA #$cc
 	STD 81,S
+
+	LDB #$ca
+	STD 41,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -168,14 +168,14 @@ DRAW_HJL8
 	LDD 122,S
 	PSHU D
 
-	LDD #$dddd
-	STD 82,S
-
-	LDA #$dc
-	STD 122,S
-
 	LDD #$cccd
 	STD 42,S
+
+	LDD #$dcdd
+	STD 122,S
+
+	LDA #$dd
+	STD 82,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -248,9 +248,10 @@ DRAW_HJL8
 	LDA -38,S
 	PSHU A,S
 
-	STA -38,S
-
+	LDD #$dddd
 	STD -119,S
+
+	STA -38,S
 
 	STA -78,S
 
@@ -267,8 +268,10 @@ DRAW_HJL8
 	LDA ,S
 	PSHU A,S
 
+	LDA #$dd
 	STA ,S
 
+	LDD #$dddd
 	STD -41,S
 
 
