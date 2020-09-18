@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $CA0A
+	ORG $CA0E
 DRAW_HJR0
 	PSHS U,DP
 	STS SSAV_HJR0+2
@@ -35,9 +35,9 @@ DRAW_HJR0
 	PSHU D
 
 	LDD #$ddcc
-	STD -40,S
-
 	STD -80,S
+
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -89,10 +89,10 @@ DRAW_HJR0
 	LDD 121,S
 	PSHU D
 
+	STX 41,S
+
 	LDD #$ccac
 	STD 81,S
-
-	STX 41,S
 
 	LDD #$caaa
 	STD 121,S
@@ -174,10 +174,10 @@ DRAW_HJR0
 	LDD 121,S
 	PSHU D,S
 
-	STX -79,S
-
 	LDD #$ccac
 	STD -119,S
+
+	STX -79,S
 
 	STX -39,S
 
@@ -233,9 +233,9 @@ DRAW_HJR0
 	LDD -39,S
 	PSHU D
 
-	STX -79,S
-
 	STX -119,S
+
+	STX -79,S
 
 	STX -39,S
 
@@ -280,9 +280,9 @@ DRAW_HJR0
 	PSHU D
 
 	LDD #$dddd
-	STD 80,S
-
 	STD 40,S
+
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -336,12 +336,13 @@ DRAW_HJR0
 	LDA -38,S
 	PSHU A
 
-	LDD #$cccc
-	STD -119,S
+	LDA #$cc
+	STA -78,S
 
 	STA -38,S
 
-	STA -78,S
+	LDD #$cccc
+	STD -119,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -553,13 +554,13 @@ DRAW_HJR0
 	LDD 121,S
 	PSHU D
 
-	LDD #$dddd
-	STD 121,S
-
 	LDA #$cd
 	STA 42,S
 
-	STB 82,S
+	LDD #$dddd
+	STD 121,S
+
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S

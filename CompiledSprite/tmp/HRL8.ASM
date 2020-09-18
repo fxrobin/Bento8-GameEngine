@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $D137
+	ORG $D10D
 DRAW_HRL8
 	PSHS U,DP
 	STS SSAV_HRL8+2
@@ -126,15 +126,15 @@ DRAW_HRL8
 	LDD #$cddd
 	STD 40,S
 
-	LDD #$aacc
-	STD -121,S
-
-	STB -80,S
-
-	LDB #$cd
+	LDD #$aacd
 	STD 79,S
 
 	STB 120,S
+
+	LDB #$cc
+	STD -121,S
+
+	STB -80,S
 
 	LEAS 159,S
 	LDD -1,S
@@ -196,16 +196,16 @@ DRAW_HRL8
 	LDA 122,S
 	PSHU A
 
-	LDD #$22dd
-	STD -80,S
-
-	STB -119,S
-
-	LDB #$02
+	LDD #$2202
 	STD -40,S
 
 	LDD #$0dbb
 	STD 81,S
+
+	LDD #$22dd
+	STD -80,S
+
+	STB -119,S
 
 	LDA #$ba
 	STA 42,S
@@ -234,11 +234,11 @@ DRAW_HRL8
 	LDD 120,S
 	PSHU D
 
-	LDD #$1aed
-	STD 80,S
-
 	LDD #$fb90
 	STD 40,S
+
+	LDD #$1aed
+	STD 80,S
 
 	LDD #$0a0d
 	STD 120,S
@@ -284,17 +284,17 @@ DRAW_HRL8
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$a1
-	STA -79,S
+	LDA #$f1
+	STA 121,S
 
+	LDA #$a1
 	STA -119,S
+
+	STA -79,S
 
 	STA -39,S
 
 	STA 1,S
-
-	LDA #$f1
-	STA 121,S
 
 	LEAS 201,S
 	LDD 39,S
@@ -311,9 +311,9 @@ DRAW_HRL8
 	PSHU A,S
 
 	LDA #$11
-	STA ,S
-
 	STA -40,S
+
+	STA ,S
 
 
 	LDS $9F00+2
@@ -353,15 +353,16 @@ DRAW_HRL8
 	LDD 79,S
 	PSHU D,S
 
-	LDA #$dd
-	STA 1,S
+	LDA #$aa
+	STA -80,S
 
 	LDD #$aacc
 	STD -40,S
 
-	STA -80,S
+	LDA #$dd
+	STA 1,S
 
-	LDB #$dc
+	LDD #$aadc
 	STD 79,S
 
 	LEAS 239,S
@@ -380,13 +381,13 @@ DRAW_HRL8
 	LDD -40,S
 	PSHU D
 
-	LDD #$aadc
-	STD -80,S
+	LDD #$addc
+	STD -40,S
 
+	LDA #$aa
 	STD -120,S
 
-	LDA #$ad
-	STD -40,S
+	STD -80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -430,14 +431,14 @@ DRAW_HRL8
 	LDD 120,S
 	PSHU D
 
+	LDD #$9bac
+	STD 40,S
+
 	LDD #$2bcc
 	STD 120,S
 
 	LDA #$9b
 	STD 80,S
-
-	LDB #$ac
-	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -550,11 +551,11 @@ DRAW_HRL8
 	LDA 123,S
 	PSHU A
 
-	LDA #$dd
-	STA 82,S
-
 	LDA #$dc
 	STA 42,S
+
+	LDA #$dd
+	STA 82,S
 
 	LDA #$00
 	STA 123,S
@@ -588,13 +589,13 @@ DRAW_HRL8
 	LDA 122,S
 	PSHU A
 
-	LDA #$ee
-	STA 82,S
-
-	STA 42,S
-
 	LDA #$1e
 	STA 122,S
+
+	LDA #$ee
+	STA 42,S
+
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -631,13 +632,13 @@ DRAW_HRL8
 	LDA #$1e
 	STA -100,S
 
-	LDA #$a0
-	STA -20,S
-
-	STA -60,S
-
 	LDA #$e0
 	STA 99,S
+
+	LDA #$a0
+	STA -60,S
+
+	STA -20,S
 
 SSAV_HRL8
 	LDS #$0000

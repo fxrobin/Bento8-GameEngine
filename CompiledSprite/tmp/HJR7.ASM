@@ -30,11 +30,11 @@ DRAW_HJR7
 	LDD 58,S
 	PSHU D,S
 
-	LDD #$111a
-	STD 18,S
-
 	LDA #$ff
 	STA -61,S
+
+	LDD #$111a
+	STD 18,S
 
 	LDD #$e0ea
 	STD 58,S
@@ -159,11 +159,11 @@ DRAW_HJR7
 	LDD 21,S
 	PSHU D,S
 
-	LDD #$cccc
-	STD 21,S
-
-	LDB #$ac
+	LDD #$ccac
 	STD -19,S
+
+	LDB #$cc
+	STD 21,S
 
 	LEAS 180,S
 	LDD -121,S
@@ -200,11 +200,11 @@ DRAW_HJR7
 	LDD -39,S
 	PSHU D
 
-	LDD #$adac
-	STD -39,S
-
 	LDD #$acaa
 	STD -79,S
+
+	LDD #$adac
+	STD -39,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -225,11 +225,11 @@ DRAW_HJR7
 	LDD 80,S
 	PSHU D
 
-	LDD #$dddc
-	STD 80,S
-
 	LDD #$0dcc
 	STD 40,S
+
+	LDD #$dddc
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -339,24 +339,25 @@ DRAW_HJR7
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$11
-	STA -81,S
-
 	LDA #$ff
 	STA -121,S
 
-	LDD #$00af
-	STD -41,S
-
-	STB ,S
-
-	STB 40,S
+	LDA #$11
+	STA -81,S
 
 	LDD #$aa91
 	STD 79,S
 
 	LDA #$ae
 	STA 120,S
+
+	LDA #$af
+	STA ,S
+
+	STA 40,S
+
+	LDD #$00af
+	STD -41,S
 
 	LEAS 278,S
 	LDD -120,S
@@ -515,24 +516,22 @@ DRAW_HJR7
 	LDD 80,S
 	PSHU D
 
-	LDD #$dddd
-	STD 80,S
-
 	LDD #$00dc
 	STD 40,S
 
+	LDD #$dddd
+	STD 80,S
+
 	PULS A,X
 	PSHU A,X,S
-	LDA #$dd
 	LDX #$dddd
-	PSHS A,X
+	PSHS B,X
 
 	LEAS 120,S
 	PULS A,X
 	PSHU A,X,S
-	LDA #$dd
 	LDX #$ddca
-	PSHS A,X
+	PSHS B,X
 
 	LEAS 40,S
 	LDD 40,S
@@ -562,9 +561,9 @@ DRAW_HJR7
 	PSHU A
 
 	LDA #$dd
-	STA 82,S
-
 	STA 42,S
+
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -580,9 +579,9 @@ DRAW_HJR7
 	PSHU A,S
 
 	LDA #$dd
-	STA 20,S
-
 	STA -20,S
+
+	STA 20,S
 
 SSAV_HJR7
 	LDS #$0000

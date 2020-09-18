@@ -43,13 +43,13 @@ DRAW_HIL0
 	LDD #$cacc
 	STD -40,S
 
-	LDA #$dd
-	STA 41,S
-
-	STA 1,S
-
 	LDD #$dcd2
 	STD 79,S
+
+	LDA #$dd
+	STA 1,S
+
+	STA 41,S
 
 	LEAS 239,S
 	LDA -38,S
@@ -70,24 +70,22 @@ DRAW_HIL0
 	LDD #$da12
 	STD -120,S
 
-	LDD #$caaa
-	STD -40,S
-
-	LDB #$a2
+	LDD #$caa2
 	STD -80,S
+
+	LDB #$aa
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
-	LDA #$aa
 	LDX #$aacc
-	PSHS A,X
+	PSHS B,X
 
 	LEAS 40,S
 	PULS A,X
 	PSHU A,X,S
-	LDA #$aa
 	LDX #$aadd
-	PSHS A,X
+	PSHS B,X
 
 	LEAS 40,S
 	PULS A,X
@@ -118,11 +116,11 @@ DRAW_HIL0
 	LDD 120,S
 	PSHU D
 
-	LDD #$00cc
-	STD 80,S
-
-	LDB #$ac
+	LDD #$00ac
 	STD 40,S
+
+	LDB #$cc
+	STD 80,S
 
 	LDD #$ab2c
 	STD 120,S
@@ -164,13 +162,13 @@ DRAW_HIL0
 	LDA 121,S
 	PSHU A
 
-	LDA #$dd
-	STA 82,S
-
-	STA 42,S
-
 	LDA #$d0
 	STA 121,S
+
+	LDA #$dd
+	STA 42,S
+
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -238,11 +236,11 @@ DRAW_HIL0
 	LDD 119,S
 	PSHU D,S
 
-	LDD #$a9ab
-	STD 119,S
-
-	LDB #$bb
+	LDD #$a9bb
 	STD 79,S
+
+	LDB #$ab
+	STD 119,S
 
 	LEAS 279,S
 	LDA -118,S
@@ -317,11 +315,11 @@ DRAW_HIL0
 	LDD 80,S
 	PSHU D,S
 
-	LDD #$e0aa
-	STD ,S
-
 	LDD #$a9a1
 	STD -40,S
+
+	LDD #$e0aa
+	STD ,S
 
 	LDD #$1ffa
 	STD 40,S
@@ -366,21 +364,21 @@ DRAW_HIL0
 	LDD 119,S
 	PSHU D,S
 
-	LDA #$cc
-	STA -80,S
-
-	STA -120,S
+	LDD #$aadc
+	STD 119,S
 
 	LDD #$cadd
 	STD -1,S
+
+	LDA #$cc
+	STA -120,S
+
+	STA -80,S
 
 	LDA #$aa
 	STD 39,S
 
 	STD 79,S
-
-	LDB #$dc
-	STD 119,S
 
 	LEAS 159,S
 	LDD ,S
@@ -427,6 +425,9 @@ DRAW_HIL0
 	LDA 121,S
 	PSHU A
 
+	LDA #$dd
+	STA 121,S
+
 	LDD #$abcd
 	STD -80,S
 
@@ -439,9 +440,6 @@ DRAW_HIL0
 	STD 40,S
 
 	STD 80,S
-
-	LDA #$dd
-	STA 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -488,22 +486,22 @@ DRAW_HIL0
 	LDD 120,S
 	PSHU D,S
 
-	LDD #$e0dd
-	STD 40,S
-
-	LDA #$33
-	STD ,S
-
-	LDA #$22
-	STD -80,S
-
-	STB -119,S
-
-	LDB #$0d
+	LDD #$220d
 	STD -40,S
 
 	LDB #$2c
 	STD 120,S
+
+	LDB #$dd
+	STD -80,S
+
+	STB -119,S
+
+	LDA #$33
+	STD ,S
+
+	LDA #$e0
+	STD 40,S
 
 	LEAS 280,S
 	LDD 80,S
@@ -535,11 +533,11 @@ DRAW_HIL0
 	LDD 40,S
 	PSHU D,S
 
-	LDD #$22d2
-	STD -80,S
-
-	LDB #$32
+	LDD #$2232
 	STD -120,S
+
+	LDB #$d2
+	STD -80,S
 
 	LDD #$31b3
 	STD -40,S

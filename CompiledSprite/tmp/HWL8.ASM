@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $B780
+	ORG $BFB9
 DRAW_HWL8
 	PSHS U,DP
 	STS SSAV_HWL8+2
@@ -27,16 +27,16 @@ DRAW_HWL8
 	LDD 120,S
 	PSHU D
 
-	LDD #$adcd
-	STD 40,S
-
 	LDA #$aa
 	STA -79,S
 
-	LDA #$a3
+	LDD #$a3cd
 	STD 80,S
 
 	STD 120,S
+
+	LDA #$ad
+	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -92,13 +92,13 @@ DRAW_HWL8
 	LDD 120,S
 	PSHU D
 
-	LDD #$bacc
-	STD 80,S
-
-	STD 40,S
-
 	LDD #$bccd
 	STD 120,S
+
+	LDD #$bacc
+	STD 40,S
+
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -149,12 +149,6 @@ DRAW_HWL8
 	LDD 120,S
 	PSHU D
 
-	LDD #$22dd
-	STD -80,S
-
-	LDA #$2b
-	STD -120,S
-
 	LDD #$aad0
 	STD -40,S
 
@@ -166,6 +160,12 @@ DRAW_HWL8
 
 	LDB #$d2
 	STD 120,S
+
+	LDD #$22dd
+	STD -80,S
+
+	LDA #$2b
+	STD -120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -221,23 +221,17 @@ DRAW_HWL8
 	LDA 121,S
 	PSHU A,S
 
-	LDD #$aa3d
-	STD -81,S
-
 	LDD #$ba23
 	STD -121,S
+
+	LDD #$aa3d
+	STD -81,S
 
 	LDD #$a0dd
 	STD -41,S
 
 	LDD #$dcaf
 	STD ,S
-
-	LDD #$f1ae
-	STD 38,S
-
-	LDA #$01
-	STD 78,S
 
 	LDA #$0e
 	STA 81,S
@@ -247,6 +241,12 @@ DRAW_HWL8
 
 	LDA #$a1
 	STA 121,S
+
+	LDD #$01ae
+	STD 78,S
+
+	LDA #$f1
+	STD 38,S
 
 	LEAS 280,S
 	LDD -122,S
@@ -295,11 +295,11 @@ DRAW_HWL8
 	LDA -39,S
 	PSHU A,S
 
-	LDA #$ee
-	STA -81,S
-
 	LDA #$af
 	STA -119,S
+
+	LDA #$ee
+	STA -81,S
 
 	LDA #$fb
 	STA -79,S
@@ -352,11 +352,11 @@ DRAW_HWL8
 	LDD 39,S
 	PSHU D,S
 
-	LDD #$dacd
-	STD -1,S
-
 	LDD #$aacc
 	STD -41,S
+
+	LDD #$dacd
+	STD -1,S
 
 	LDD #$2cdd
 	STD 39,S
@@ -441,11 +441,11 @@ DRAW_HWL8
 	LDD 80,S
 	PSHU D
 
-	LDD #$a9cc
-	STD 80,S
-
 	LDA #$dd
 	STA 42,S
+
+	LDD #$a9cc
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -484,13 +484,13 @@ DRAW_HWL8
 	LDD 121,S
 	PSHU D
 
-	LDA #$dd
-	STA 82,S
-
-	STA 42,S
-
 	LDD #$a00d
 	STD 121,S
+
+	LDA #$dd
+	STA 42,S
+
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -552,22 +552,22 @@ DRAW_HWL8
 	LDD 120,S
 	PSHU D,S
 
-	LDD #$3edd
-	STD 41,S
-
-	LDA #$dc
-	STA -38,S
-
-	STB 2,S
-
 	LDA #$da
 	STA -118,S
 
 	LDA #$d9
 	STA -78,S
 
+	LDA #$dc
+	STA -38,S
+
 	LDD #$fa0d
 	STD 120,S
+
+	LDD #$3edd
+	STD 41,S
+
+	STB 2,S
 
 	LEAS 281,S
 	LDD -122,S
@@ -634,11 +634,11 @@ DRAW_HWL8
 	LDA 122,S
 	PSHU A,S
 
-	LDA #$1e
-	STA 39,S
-
 	LDA #$e0
 	STA -1,S
+
+	LDA #$1e
+	STA 39,S
 
 	STB 42,S
 
@@ -664,13 +664,13 @@ DRAW_HWL8
 	LDA #$11
 	STA -20,S
 
+	LDA #$e0
+	STA 60,S
+
 	LDA #$f1
 	STA -60,S
 
 	STA 20,S
-
-	LDA #$e0
-	STA 60,S
 
 SSAV_HWL8
 	LDS #$0000

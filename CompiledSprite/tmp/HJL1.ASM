@@ -14,10 +14,11 @@ DRAW_HJL1
 	LDD 19,S
 	PSHU D,S
 
+	LDA #$cc
+	STA -20,S
+
 	LDD #$cccd
 	STD 19,S
-
-	STA -20,S
 
 	LEAS 179,S
 	LDA -78,S
@@ -45,9 +46,9 @@ DRAW_HJL1
 	STD -120,S
 
 	LDB #$cc
-	STD -40,S
-
 	STD -80,S
+
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -85,9 +86,9 @@ DRAW_HJL1
 	LDD 121,S
 	PSHU D
 
-	STX 81,S
-
 	STX 41,S
+
+	STX 81,S
 
 	STX 121,S
 
@@ -189,9 +190,9 @@ DRAW_HJL1
 	LDD 122,S
 	PSHU D
 
-	STX 82,S
-
 	STX 42,S
+
+	STX 82,S
 
 	STX 122,S
 
@@ -243,17 +244,17 @@ DRAW_HJL1
 	LDD 120,S
 	PSHU D
 
-	LDD #$cddd
-	STD -79,S
-
-	LDA #$dd
-	STD 40,S
-
+	LDD #$dddd
 	STD -39,S
+
+	STD 40,S
 
 	STD 80,S
 
 	STD 120,S
+
+	LDA #$cd
+	STD -79,S
 
 	PULS A,X
 	PSHU A,X,S

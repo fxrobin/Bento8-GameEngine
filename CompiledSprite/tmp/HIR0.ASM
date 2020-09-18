@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C373
+	ORG $C363
 DRAW_HIR0
 	PSHS U,DP
 	STS SSAV_HIR0+2
@@ -39,11 +39,6 @@ DRAW_HIR0
 	LDD 120,S
 	PSHU D,S
 
-	LDA #$cc
-	STA -80,S
-
-	STA -120,S
-
 	LDD #$ddac
 	STD ,S
 
@@ -51,6 +46,11 @@ DRAW_HIR0
 	STD 40,S
 
 	STD 80,S
+
+	LDA #$cc
+	STA -120,S
+
+	STA -80,S
 
 	LDA #$cd
 	STD 120,S
@@ -101,21 +101,21 @@ DRAW_HIR0
 	LDD 121,S
 	PSHU D
 
-	LDA #$ba
-	STA -78,S
-
 	LDD #$dcbc
 	STD -119,S
 
-	LDB #$bb
-	STD 41,S
-
-	STB -38,S
-
-	STD 81,S
+	LDA #$ba
+	STA -78,S
 
 	LDD #$ddab
 	STD 121,S
+
+	LDD #$dcbb
+	STD 41,S
+
+	STD 81,S
+
+	STB -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -165,17 +165,17 @@ DRAW_HIR0
 	LDD #$dd2b
 	STD -120,S
 
-	LDB #$0e
-	STD 40,S
-
-	LDB #$22
-	STD -80,S
-
 	LDA #$33
 	STA 1,S
 
-	LDA #$d0
+	LDD #$dd0e
+	STD 40,S
+
+	LDD #$d022
 	STD -40,S
+
+	LDA #$dd
+	STD -80,S
 
 	LDA #$c2
 	STD 120,S
@@ -210,12 +210,6 @@ DRAW_HIR0
 	LDD 40,S
 	PSHU D,S
 
-	LDD #$2d22
-	STD -80,S
-
-	LDA #$23
-	STD -120,S
-
 	LDD #$3b13
 	STD -40,S
 
@@ -224,6 +218,12 @@ DRAW_HIR0
 
 	LDD #$d9d0
 	STD 40,S
+
+	LDD #$2d22
+	STD -80,S
+
+	LDA #$23
+	STD -120,S
 
 	LEAS 241,S
 	LDA -80,S
@@ -337,11 +337,11 @@ DRAW_HIR0
 	LDD #$ccac
 	STD -41,S
 
-	LDD #$dd3a
-	STD 39,S
-
-	LDB #$da
+	LDD #$ddda
 	STD -1,S
+
+	LDB #$3a
+	STD 39,S
 
 	LDD #$2dcd
 	STD 80,S
@@ -363,13 +363,14 @@ DRAW_HIR0
 	LDA -38,S
 	PSHU A
 
-	LDD #$2aac
-	STD -79,S
-
-	STB -38,S
-
 	LDD #$21ad
 	STD -119,S
+
+	LDA #$ac
+	STA -38,S
+
+	LDD #$2aac
+	STD -79,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -415,13 +416,13 @@ DRAW_HIR0
 	LDA 122,S
 	PSHU A
 
+	LDA #$ba
+	STA 122,S
+
 	LDD #$cc00
 	STD 81,S
 
 	STB 42,S
-
-	LDA #$ba
-	STA 122,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -458,11 +459,11 @@ DRAW_HIR0
 	LDA 121,S
 	PSHU A
 
-	LDD #$ddd1
-	STD 80,S
-
-	LDB #$d2
+	LDD #$ddd2
 	STD 40,S
+
+	LDB #$d1
+	STD 80,S
 
 	LDA #$0d
 	STA 121,S
@@ -536,9 +537,9 @@ DRAW_HIR0
 	PSHU A,S
 
 	LDA #$9a
-	STA 120,S
-
 	STA 80,S
+
+	STA 120,S
 
 	LEAS 279,S
 	LDD -121,S
@@ -614,11 +615,11 @@ DRAW_HIR0
 	LDD 80,S
 	PSHU D,S
 
-	LDD #$aa0e
-	STD ,S
-
 	LDD #$1a9a
 	STD -40,S
+
+	LDD #$aa0e
+	STD ,S
 
 	LDD #$aff1
 	STD 40,S

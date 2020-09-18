@@ -76,7 +76,6 @@ public class SolutionOptim{
 	}
 
 	public void Optimize(List<Integer> patterns) throws Exception {
-		logger.debug("****** Nb patterns: "+patterns.size());
 
 		// Lance l'optimisation
 		if (patterns.size() > 1) {
@@ -91,7 +90,8 @@ public class SolutionOptim{
 			HashMap<Integer, List<Long>> patternData = new HashMap<Integer, List<Long>>();
 
 			// Séparation en deux groupes
-			List<ArrayList<Integer>> patternOptim = new ArrayList<ArrayList<Integer>>();
+			List<List<Integer>> patternOptim = new ArrayList<List<Integer>>();
+			List<Long> patternOptimL = new ArrayList<Long>();
 			List<Integer> patternNonOptim = new ArrayList<Integer>();
 
 			for (int id : patterns) {
@@ -107,60 +107,107 @@ public class SolutionOptim{
 						if (solution.patterns.get(id).getRegisterCombi().get(j)[k]) {
 							// Le registre est utilisé dans la combinaison
 							switch(k) {
-							case Register.A: value += ((data[pos++] & 0xFFL) << 44) | ((data[pos++] & 0xFFL) << 40); break;
-							case Register.B: value += ((data[pos++] & 0xFFL) << 36) | ((data[pos++] & 0xFFL) << 32); break;
-							case Register.D: value += ((data[pos++] & 0xFFL) << 44) | ((data[pos++] & 0xFFL) << 40) | ((data[pos++] & 0xFFL) << 36) | ((data[pos++] & 0xFFL) << 32); break;
-							case Register.X: value += ((data[pos++] & 0xFFL) << 28) | ((data[pos++] & 0xFFL) << 24) | ((data[pos++] & 0xFFL) << 20) | ((data[pos++] & 0xFFL) << 16); break;
-							case Register.Y: value += ((data[pos++] & 0xFFL) << 12) | ((data[pos++] & 0xFFL) << 8)  | ((data[pos++] & 0xFFL) << 4)  | ((data[pos++] & 0xFFL) << 0); break;
+							case Register.A: value += (((0xFL) << 60)   |(data[pos++] & 0xFFL) << 44) | ((data[pos++] & 0xFFL) << 40); break;
+							case Register.B: value += (((0xFL) << 56)   |(data[pos++] & 0xFFL) << 36) | ((data[pos++] & 0xFFL) << 32); break;
+							case Register.D: value += (((0xFFL) << 56) |(data[pos++] & 0xFFL) << 44) | ((data[pos++] & 0xFFL) << 40) | ((data[pos++] & 0xFFL) << 36) | ((data[pos++] & 0xFFL) << 32); break;
+							case Register.X: value += (((0xFL) << 52)   |(data[pos++] & 0xFFL) << 28) | ((data[pos++] & 0xFFL) << 24) | ((data[pos++] & 0xFFL) << 20) | ((data[pos++] & 0xFFL) << 16); break;
+							case Register.Y: value += (((0xFL) << 48)   |(data[pos++] & 0xFFL) << 12) | ((data[pos++] & 0xFFL) << 8)  | ((data[pos++] & 0xFFL) << 4)  | ((data[pos++] & 0xFFL) << 0); break;
 							}
 						}
 					}
 
-					logger.debug("Pattern: "+id+" Valeur " + String.format("%016x", value));
+					logger.debug("\tPattern: "+id+" Combi: "+j+" Valeur " + String.format("%016x", value));
 
 					// Ajout de la combinaison de pixels pour le pattern
+					List<Long> l = new ArrayList<Long>();
 					if (!patternData.containsKey(id)) {
-						patternData.put(id, new ArrayList<Long>());
+						l = new ArrayList<Long>();
+						patternData.put(id, l);
 					} else {
-						patternData.get(id).add(value);
+						l = patternData.get(id);
 					}
+					l.add(value);
 				}
 			}
 
 			// Construction des groupes de pattern pour l'optimisation
 			// Chaque groupe est composé de patterns ayant un motif strictement identique
 			// Un groupe qui ne contient qu'un pattern doit avoir un motif commun sur un des 4 registres A, B, X, Y avec un autre groupe
+			boolean match, matchExact;
+			Long matchVal = 0L;
+			List<Integer> p;
 			for (int id : patterns) {
-				for (long val : patternData.get(id)) {
-					for (int idSub : patterns) {
+				match = false;
+				matchExact = false;
+				outerloop:
+					for (long val : patternData.get(id)) {
+						for (int idSub : patterns) {
+							if (id != idSub) {
+								for (long idVal : patternData.get(idSub)) {
+									if (val == idVal) {
+										if (!patternOptimL.contains(val)) {
+											p = new ArrayList<Integer>();
+											p.add(id);
+											patternOptim.add(p);
+											patternOptimL.add(val);
+										} else {
+											patternOptim.get(patternOptimL.indexOf(val)).add(id);
+										}
+										logger.debug("\t\tMatch Exact ("+id+", "+idSub+")");
+										matchExact = true;
+										match = false;
+										break outerloop;
+									} else if (((val & 0xF000000000000000L) >> 60 == 0xFL   && (idVal & 0xF000000000000000L) >> 60 == 0xFL   && (val & 0x0000FF0000000000L) >> 40 == (idVal & 0x0000FF0000000000L) >> 40) ||
+											((val & 0x0F00000000000000L) >> 56 == 0xFL   && (idVal & 0x0F00000000000000L) >> 56 == 0xFL   && (val & 0x000000FF00000000L) >> 32 == (idVal & 0x000000FF00000000L) >> 32) ||
+											((val & 0xFF00000000000000L) >> 56 == 0xFFL  && (idVal & 0xFF00000000000000L) >> 56 == 0xFFL  && (val & 0x0000FFFF00000000L) >> 32 == (idVal & 0x0000FFFF00000000L) >> 32) ||
+											((val & 0x00F0000000000000L) >> 52 == 0xFL   && (idVal & 0x00F0000000000000L) >> 52 == 0xFL   && (val & 0x00000000FFFF0000L) >> 16 == (idVal & 0x00000000FFFF0000L) >> 16) ||
+											((val & 0x000F000000000000L) >> 48 == 0xFL   && (idVal & 0x000F000000000000L) >> 48 == 0xFL   && (val & 0x000000000000FFFFL) >> 0  == (idVal & 0x000000000000FFFFL) >> 0)){
+										logger.debug("\t\tMatch ("+id+", "+idSub+"): "+ String.format("%016x", val) + " "+ String.format("%016x", idVal));
+										match = true;
+										matchVal = val;
+									}
+								}
+							}
+						}
+					}
+				if (!matchExact) {
+					if (match) {
+						p = new ArrayList<Integer>();
+						p.add(id);
+						patternOptim.add(p);
+						patternOptimL.add(matchVal);
+					} else {
+						patternNonOptim.add(id);
 					}
 				}
-
 			}
+			
+			logger.debug("\tOptim: "+patternOptim+" NonOptim: "+patternNonOptim);
+
+			if (patternOptim.size() > 1) {
+				if (patternOptim.size() > 9) {
+					OptimizeRandom(patternOptim);
+				} else {
+					OptimizeFactorial(patternOptim);
+				}	
+			}
+
+			// TODO le calcul du cout de l'optim doit se faire sur le noeud en entier et pas juste sur le groupe 3
+			// permet un gain si couplage avec stackblast ou groupe 1, a voir comment inserer les background au bon endroit
+			// ex si pas de groupe 1 et pas de stack blant comment on enchaine ?
+
+			patterns.clear();
+			patterns.addAll(patternNonOptim);
+
+			for(List<Integer> patternGroup : patternOptim) {
+				patterns.addAll(patternGroup);
+			}
+			
+			logger.debug("\tSortie Optim: "+patterns);
 		}
-
-		//			for (int id : patterns) {
-		//				patternOptim.add(id);
-		//			}
-
-		//			if (patternOptim.size() > 1) {
-		//				if (patternOptim.size() > 9) {
-		//					OptimizeRandom(patternOptim);
-		//				} else {
-		//					OptimizeFactorial(patternOptim);
-		//				}	
-		//			}
-
-		// TODO le calcul du cout de l'optim doit se faire sur le noeud en entier et pas juste sur le groupe 3
-		// permet un gain si couplage avec stackblast ou groupe 1, a voir comment inserer les background au bon endroit
-		// ex si pas de groupe 1 et pas de stack blant comment on enchaine ?
-
-		//			patterns.clear();
-		//			patterns.addAll(patternNonOptim);
-		//			patterns.addAll(patternOptim);
 	}
 
-	public void OptimizeFactorial(List<Integer> patterns) throws Exception {
+	public void OptimizeFactorial(List<List<Integer>> pattern) throws Exception {
 
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
@@ -176,25 +223,28 @@ public class SolutionOptim{
 		// Initialisation de la solution
 		List<Snippet> testSolution = new ArrayList<Snippet>();
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
-		List<Integer> bestPatterns = new ArrayList<Integer>();
+		List<List<Integer>> bestPatterns = new ArrayList<List<Integer>>();
 
 		// Test des combinaisons		
-		int[] indexes = new int[patterns.size()];
-		for (int i = 0; i < patterns.size(); i++) {
+		int[] indexes = new int[pattern.size()];
+		for (int i = 0; i < pattern.size(); i++) {
 			indexes[i] = 0;
 		}
 
 		int idx = 0;
 		int score = 0, bestScore = Integer.MAX_VALUE;
-		while (idx < patterns.size()) {
+
+		while (idx < pattern.size()) {
 			if (indexes[idx] < idx) {
-				Collections.swap(patterns, idx % 2 == 0 ?  0: indexes[idx], idx);
+				Collections.swap(pattern, idx % 2 == 0 ?  0: indexes[idx], idx);
 
 				// Compute proposition
 				score = 0;
-				for (int id : patterns) {
-					testSolution.add(simulatePatternDraw(id));
-					score += testSolution.get(testSolution.size()-1).getCycles();
+				for (List<Integer> p : pattern) {
+					for (int id : p) {
+						testSolution.add(simulatePatternDraw(id));
+						score += testSolution.get(testSolution.size()-1).getCycles();
+					}
 				}
 
 				if (score < bestScore) {
@@ -203,7 +253,7 @@ public class SolutionOptim{
 					bestSolution.clear();
 					bestSolution.addAll(testSolution);
 					bestPatterns.clear();
-					bestPatterns.addAll(patterns);
+					bestPatterns.addAll(pattern);
 				}
 
 				testSolution.clear();
@@ -229,9 +279,10 @@ public class SolutionOptim{
 		}
 
 		// Positionne la solution
-		patterns.clear();
-		patterns.addAll(bestPatterns);
-
+		pattern.clear();
+		for(List<Integer> p : bestPatterns) {
+			pattern.add(p);
+		}
 	}
 
 	public static int fact (int n) {
@@ -239,7 +290,7 @@ public class SolutionOptim{
 		else return(n*fact(n-1));
 	}
 
-	public void OptimizeRandom(List<Integer> patterns) throws Exception {
+	public void OptimizeRandom(List<List<Integer>> pattern) throws Exception {
 
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
@@ -255,24 +306,26 @@ public class SolutionOptim{
 		// Initialisation de la solution
 		List<Snippet> testSolution = new ArrayList<Snippet>();
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
-		List<Integer> bestPatterns = new ArrayList<Integer>();
+		List<List<Integer>> bestPatterns = new ArrayList<List<Integer>>();
 
 		// Test des combinaisons		
-		int essais = (patterns.size()>9?fact(9):fact(patterns.size()));
+		int essais = (pattern.size()>9?fact(9):fact(pattern.size()));
 
 		int score = 0, bestScore = Integer.MAX_VALUE;
 		int a, b;
 		Random rand = new Random();
 		while (essais-- > 0) {
-			a = rand.nextInt(patterns.size());
-			b = rand.nextInt(patterns.size());
-			Collections.swap(patterns, a, b);
+			a = rand.nextInt(pattern.size());
+			b = rand.nextInt(pattern.size());
+			Collections.swap(pattern, a, b);
 
 			// Compute proposition
 			score = 0;
-			for (int id : patterns) {
-				testSolution.add(simulatePatternDraw(id));
-				score += testSolution.get(testSolution.size()-1).getCycles();
+			for (List<Integer> p : pattern) {
+				for (int id : p) {
+					testSolution.add(simulatePatternDraw(id));
+					score += testSolution.get(testSolution.size()-1).getCycles();
+				}
 			}
 
 			if (score < bestScore) {
@@ -281,9 +334,9 @@ public class SolutionOptim{
 				bestSolution.clear();
 				bestSolution.addAll(testSolution);
 				bestPatterns.clear();
-				bestPatterns.addAll(patterns);
+				bestPatterns.addAll(pattern);
 			} else {
-				Collections.swap(patterns, a, b);
+				Collections.swap(pattern, a, b);
 			}
 
 			testSolution.clear();
@@ -301,9 +354,10 @@ public class SolutionOptim{
 		}
 
 		// Positionne la solution
-		patterns.clear();
-		patterns.addAll(bestPatterns);
-
+		pattern.clear();
+		for(List<Integer> p : bestPatterns) {
+			pattern.add(p);
+		}
 	}
 
 	public void build() {
@@ -363,9 +417,7 @@ public class SolutionOptim{
 					i++;
 				}
 
-				//				logger.debug("patternGrp1: "+patternGrp1);
-				//				logger.debug("patternGrp2: "+patternGrp2);
-				//				logger.debug("patternGrp3: "+patternGrp3);
+				logger.debug("Noeud: "+currentNode+" Grp1: "+patternGrp1+" Grp2: "+patternGrp2+" Grp3: "+patternGrp3);
 
 				// Parcours des patterns dans l'ordre des groupes 1, 2 puis 3
 				int iPattern = 0;
@@ -391,16 +443,14 @@ public class SolutionOptim{
 					saveS = false;
 					iPattern++;
 				}
-
-				// Tri du groupe 3 pour optimiser les réutilisations de registre
-
+				
 				Optimize(patternGrp3);
 
 				for (int id : patternGrp3) {
 					processPatternDraw(id);
 					asmCode.add("");
 				}
-
+				
 				// Pour pouvoir positionner le Groupe 2 ailleurs qu'en fin de Noeud, il faut modifier
 				// la gestion des offsets. A la lecture des données d'effacement sur un groupe 2
 				// Un push est fait sur S ce qui décale la position de S et les offset ne sont plus bons

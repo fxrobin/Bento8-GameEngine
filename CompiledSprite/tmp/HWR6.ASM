@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $CAD6
+	ORG $CACB
 DRAW_HWR6
 	PSHS U,DP
 	STS SSAV_HWR6+2
@@ -42,11 +42,11 @@ DRAW_HWR6
 	LDD 19,S
 	PSHU D,S
 
-	LDD #$dc1a
-	STD -21,S
-
 	LDD #$ccdc
 	STD -61,S
+
+	LDD #$dc1a
+	STD -21,S
 
 	LDD #$dd2c
 	STD 19,S
@@ -160,11 +160,11 @@ DRAW_HWR6
 	LDD 120,S
 	PSHU D
 
-	LDD #$dd32
-	STD 80,S
-
-	LDB #$22
+	LDD #$dd22
 	STD 40,S
+
+	LDB #$32
+	STD 80,S
 
 	LDD #$dad2
 	STD 120,S
@@ -266,11 +266,11 @@ DRAW_HWR6
 	LDA -80,S
 	PSHU A,S
 
-	LDA #$0c
-	STA -80,S
-
 	LDA #$ed
 	STA -120,S
+
+	LDA #$0c
+	STA -80,S
 
 	LEAS 240,S
 	LDD -80,S
@@ -300,11 +300,11 @@ DRAW_HWR6
 	LDA ,S
 	PSHU A,S
 
-	LDA #$af
-	STA ,S
-
 	LDA #$ab
 	STA -40,S
+
+	LDA #$af
+	STA ,S
 
 
 	LDS $9F00+2
@@ -383,11 +383,11 @@ DRAW_HWR6
 	LDA -38,S
 	PSHU A
 
-	LDA #$bc
-	STA -78,S
-
 	LDD #$cdda
 	STD -119,S
+
+	LDA #$bc
+	STA -78,S
 
 	LDA #$ba
 	STA -38,S
@@ -408,13 +408,13 @@ DRAW_HWR6
 	LDD 121,S
 	PSHU D
 
-	LDD #$dcbb
+	LDD #$dcab
+	STD 121,S
+
+	LDB #$bb
 	STD 81,S
 
 	STX 41,S
-
-	LDB #$ab
-	STD 121,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -484,9 +484,9 @@ DRAW_HWR6
 	STA -118,S
 
 	LDA #$22
-	STA -38,S
-
 	STA -78,S
+
+	STA -38,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -516,11 +516,11 @@ DRAW_HWR6
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$99
-	STA -80,S
-
 	LDA #$ba
 	STA -120,S
+
+	LDA #$99
+	STA -80,S
 
 	LDA #$a3
 	STA -40,S
@@ -574,11 +574,11 @@ DRAW_HWR6
 	LDD 119,S
 	PSHU D,S
 
-	LDA #$01
-	STA -80,S
-
 	LDA #$e1
 	STA -120,S
+
+	LDA #$01
+	STA -80,S
 
 	LDD #$112f
 	STD 119,S
@@ -590,11 +590,11 @@ DRAW_HWR6
 	LDD 20,S
 	PSHU D,S
 
-	LDD #$00ee
-	STD 20,S
-
 	LDD #$11ff
 	STD -20,S
+
+	LDD #$00ee
+	STD 20,S
 
 SSAV_HWR6
 	LDS #$0000

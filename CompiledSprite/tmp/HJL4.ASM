@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $BC4C
+	ORG $BC1E
 DRAW_HJL4
 	PSHS U,DP
 	STS SSAV_HJL4+2
@@ -61,11 +61,11 @@ DRAW_HJL4
 	LDD 80,S
 	PSHU D,S
 
-	LDD #$accc
-	STD -1,S
-
-	LDB #$ac
+	LDD #$acac
 	STD -41,S
+
+	LDB #$cc
+	STD -1,S
 
 	LDD #$cdcd
 	STD 80,S
@@ -150,18 +150,18 @@ DRAW_HJL4
 	LDD #$ad90
 	STD 81,S
 
+	LDD #$cd9e
+	STD 121,S
+
 	LDD #$dddd
+	STD -39,S
+
 	STD 1,S
 
 	STA -119,S
 
-	STD -39,S
-
 	LDA #$cd
 	STD 41,S
-
-	LDB #$9e
-	STD 121,S
 
 	LEAS 180,S
 	LDD -21,S
@@ -231,11 +231,11 @@ DRAW_HJL4
 	LDD 41,S
 	PSHU D
 
-	LDD #$c1aa
-	STD -79,S
-
 	LDD #$23ae
 	STD -119,S
+
+	LDD #$c1aa
+	STD -79,S
 
 	LDD #$a99a
 	STD -39,S
@@ -372,11 +372,11 @@ DRAW_HJL4
 	LDD -40,S
 	PSHU D
 
-	LDD #$cadc
-	STD -40,S
-
 	LDA #$da
 	STA -119,S
+
+	LDD #$cadc
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S

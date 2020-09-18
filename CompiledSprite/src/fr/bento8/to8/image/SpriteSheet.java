@@ -45,8 +45,6 @@ public class SpriteSheet {
 			colorModel = image.getColorModel();
 			int pixelSize = colorModel.getPixelSize();
 
-			getCodePalette(2.2);
-
 			if (width % nbImages == 0) { // Est-ce que la division de la largeur par le nombre d'images donne un entier ?
 
 				subImageWidth = width/nbImages; // Largeur de la sous-image

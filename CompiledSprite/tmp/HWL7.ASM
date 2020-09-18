@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $BF56
+	ORG $C78F
 DRAW_HWL7
 	PSHS U,DP
 	STS SSAV_HWL7+2
@@ -29,13 +29,14 @@ DRAW_HWL7
 	LDD 79,S
 	PSHU D,S
 
-	LDD #$aacc
-	STD -40,S
-
+	LDA #$aa
 	STA -80,S
 
-	LDA #$dd
+	LDD #$ddcc
 	STD -1,S
+
+	LDA #$aa
+	STD -40,S
 
 	LDD #$adcd
 	STD 39,S
@@ -98,9 +99,9 @@ DRAW_HWL7
 	PSHU D
 
 	LDD #$bacc
-	STD 80,S
-
 	STD 40,S
+
+	STD 80,S
 
 	STD 120,S
 
@@ -123,11 +124,11 @@ DRAW_HWL7
 	LDD -40,S
 	PSHU D
 
-	LDD #$2bdd
-	STD -40,S
-
 	LDD #$bccd
 	STD -80,S
+
+	LDD #$2bdd
+	STD -40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -155,11 +156,11 @@ DRAW_HWL7
 	LDA 81,S
 	PSHU A
 
-	LDA #$bb
-	STA 81,S
-
 	LDD #$33ba
 	STD 40,S
+
+	LDA #$bb
+	STA 81,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -227,11 +228,11 @@ DRAW_HWL7
 	LDD -41,S
 	PSHU D,S
 
-	LDD #$d09d
-	STD -41,S
-
 	LDD #$cda9
 	STD -81,S
+
+	LDD #$d09d
+	STD -41,S
 
 	LEAS 280,S
 	LDD -121,S
@@ -291,17 +292,20 @@ DRAW_HWL7
 	LDA #$e1
 	STA -119,S
 
-	LDA #$91
-	STA 1,S
+	LDA #$aa
+	STA -41,S
 
 	LDA #$1a
 	STA -1,S
 
-	LDA #$aa
-	STA -41,S
+	LDA #$91
+	STA 1,S
 
 	LDA #$19
 	STA 39,S
+
+	LDA #$ba
+	STA 81,S
 
 	LDA #$a1
 	STA -79,S
@@ -310,9 +314,6 @@ DRAW_HWL7
 
 	STA 41,S
 
-	LDA #$ba
-	STA 81,S
-
 	LEAS 180,S
 	LDD -20,S
 	PSHU D
@@ -320,11 +321,11 @@ DRAW_HWL7
 	LDD 20,S
 	PSHU D,S
 
-	LDD #$1100
-	STD 20,S
-
 	LDD #$fffa
 	STD -20,S
+
+	LDD #$1100
+	STD 20,S
 
 
 	LDS $9F00+2
@@ -361,11 +362,11 @@ DRAW_HWL7
 	LDD 39,S
 	PSHU D,S
 
-	LDD #$dacd
-	STD -1,S
-
 	LDD #$aacc
 	STD -41,S
+
+	LDD #$dacd
+	STD -1,S
 
 	LDD #$2cdd
 	STD 39,S
@@ -450,11 +451,11 @@ DRAW_HWL7
 	LDD 80,S
 	PSHU D
 
-	LDD #$a9cc
-	STD 80,S
-
 	LDA #$dd
 	STA 42,S
+
+	LDD #$a9cc
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -531,11 +532,11 @@ DRAW_HWL7
 	LDD #$ebda
 	STD -120,S
 
-	LDD #$3bb2
-	STD -40,S
-
-	LDB #$a9
+	LDD #$3ba9
 	STD -80,S
+
+	LDB #$b2
+	STD -40,S
 
 	LDD #$3aa1
 	STD ,S
@@ -617,11 +618,11 @@ DRAW_HWL7
 	LDD -1,S
 	PSHU D,S
 
-	LDD #$eedb
-	STD -1,S
-
 	LDD #$0e0a
 	STD -41,S
+
+	LDD #$eedb
+	STD -1,S
 
 	LEAS 219,S
 	LDD -59,S
@@ -650,11 +651,11 @@ DRAW_HWL7
 	LDA 61,S
 	PSHU A,S
 
-	LDA #$ff
-	STA 21,S
-
 	LDA #$11
 	STA -61,S
+
+	LDA #$ff
+	STA 21,S
 
 	LDA #$ee
 	STA -21,S

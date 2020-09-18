@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $B13F
+	ORG $B144
 DRAW_HRR5
 	PSHS U,DP
 	STS SSAV_HRR5+2
@@ -42,13 +42,13 @@ DRAW_HRR5
 	LDD #$cdca
 	STD -1,S
 
-	LDB #$aa
+	LDD #$ddcc
+	STD 39,S
+
+	LDD #$cdaa
 	STD 80,S
 
 	STB -80,S
-
-	LDD #$ddcc
-	STD 39,S
 
 	LEAS 239,S
 	LDD -40,S
@@ -67,13 +67,13 @@ DRAW_HRR5
 	LDA -38,S
 	PSHU A
 
-	LDD #$cdaa
-	STD -79,S
-
-	STD -119,S
-
 	LDA #$da
 	STA -38,S
+
+	LDD #$cdaa
+	STD -119,S
+
+	STD -79,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -126,11 +126,11 @@ DRAW_HRR5
 	LDA 122,S
 	PSHU A
 
-	LDA #$b2
-	STA 82,S
-
 	LDD #$ccb9
 	STD 41,S
+
+	LDA #$b2
+	STA 82,S
 
 	LDA #$22
 	STA 122,S
@@ -233,11 +233,11 @@ DRAW_HRR5
 	LDD 120,S
 	PSHU D
 
-	LDD #$1bdc
-	STD 80,S
-
 	LDD #$ab90
 	STD 40,S
+
+	LDD #$1bdc
+	STD 80,S
 
 	LDD #$fbdd
 	STD 120,S
@@ -317,15 +317,6 @@ DRAW_HRR5
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$ff
-	STA -82,S
-
-	STA -122,S
-
-	STA -42,S
-
-	STA -2,S
-
 	LDA #$1f
 	STA 38,S
 
@@ -334,6 +325,15 @@ DRAW_HRR5
 
 	LDA #$9e
 	STA 121,S
+
+	LDA #$ff
+	STA -122,S
+
+	STA -82,S
+
+	STA -42,S
+
+	STA -2,S
 
 	LEAS 201,S
 	LDA ,S
@@ -399,16 +399,16 @@ DRAW_HRR5
 	LDA #$aa
 	STA -120,S
 
+	LDD #$ccdd
+	STD -40,S
+
 	LDA #$2d
 	STA 1,S
 
 	LDD #$dd23
 	STD 40,S
 
-	LDD #$ccdd
-	STD -40,S
-
-	LDB #$2a
+	LDD #$cc2a
 	STD 120,S
 
 	LEAS 181,S
@@ -424,11 +424,11 @@ DRAW_HRR5
 	LDD 19,S
 	PSHU D,S
 
-	LDD #$ccac
-	STD 19,S
-
-	LDB #$aa
+	LDD #$ccaa
 	STD -21,S
+
+	LDB #$ac
+	STD 19,S
 
 	LEAS 178,S
 	LDA -117,S
@@ -495,13 +495,13 @@ DRAW_HRR5
 	LDD 121,S
 	PSHU D
 
-	LDD #$dcca
-	STD 41,S
-
 	LDD #$ccac
 	STD -119,S
 
-	LDB #$2c
+	LDD #$dcca
+	STD 41,S
+
+	LDD #$cc2c
 	STD 81,S
 
 	LDD #$cd2b
@@ -579,11 +579,11 @@ DRAW_HRR5
 	LDD 80,S
 	PSHU D
 
-	LDD #$11c3
-	STD 80,S
-
 	LDD #$edde
 	STD 40,S
+
+	LDD #$11c3
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -655,11 +655,11 @@ DRAW_HRR5
 	LDA 81,S
 	PSHU A
 
-	LDA #$cd
-	STA 81,S
-
 	LDD #$addc
 	STD 40,S
+
+	LDA #$cd
+	STA 81,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -731,11 +731,11 @@ DRAW_HRR5
 	LDA 121,S
 	PSHU A,S
 
-	LDA #$0e
-	STA 121,S
-
 	LDA #$91
 	STA 81,S
+
+	LDA #$0e
+	STA 121,S
 
 	LEAS 201,S
 	LDA ,S

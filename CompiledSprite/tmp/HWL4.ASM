@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $CF3E
+	ORG $D08E
 DRAW_HWL4
 	PSHS U,DP
 	STS SSAV_HWL4+2
@@ -39,11 +39,6 @@ DRAW_HWL4
 	LDD 119,S
 	PSHU D,S
 
-	LDA #$cc
-	STA -80,S
-
-	STA -120,S
-
 	LDD #$cadc
 	STD -1,S
 
@@ -54,6 +49,11 @@ DRAW_HWL4
 	STD 79,S
 
 	STD 119,S
+
+	LDA #$cc
+	STA -120,S
+
+	STA -80,S
 
 	LEAS 279,S
 	LDA -78,S
@@ -77,11 +77,11 @@ DRAW_HWL4
 	LDD -40,S
 	PSHU D
 
-	LDD #$abcc
-	STD -80,S
-
 	LDD #$addc
 	STD -120,S
+
+	LDD #$abcc
+	STD -80,S
 
 	LDD #$cbac
 	STD -40,S
@@ -102,13 +102,13 @@ DRAW_HWL4
 	LDD 120,S
 	PSHU D
 
-	LDD #$9bcd
-	STD 80,S
+	LDD #$bbcd
+	STD 120,S
 
+	LDA #$9b
 	STD 40,S
 
-	LDA #$bb
-	STD 120,S
+	STD 80,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -164,13 +164,7 @@ DRAW_HWL4
 	LDA 82,S
 	PSHU A
 
-	LDD #$2bdd
-	STD -120,S
-
-	LDA #$22
-	STD -40,S
-
-	LDB #$d0
+	LDD #$22d0
 	STD -80,S
 
 	LDA #$3b
@@ -178,6 +172,12 @@ DRAW_HWL4
 
 	LDA #$1a
 	STA 82,S
+
+	LDD #$22dd
+	STD -40,S
+
+	LDA #$2b
+	STD -120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -237,11 +237,11 @@ DRAW_HWL4
 	LDA 119,S
 	PSHU A
 
-	LDA #$12
-	STA 79,S
-
 	LDD #$cdda
 	STD 41,S
+
+	LDA #$12
+	STA 79,S
 
 	LDA #$1f
 	STA 119,S
@@ -320,13 +320,13 @@ DRAW_HWL4
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$a1
-	STA 80,S
-
-	STA 40,S
-
 	LDA #$9e
 	STA 120,S
+
+	LDA #$a1
+	STA 40,S
+
+	STA 80,S
 
 	LEAS 180,S
 	LDA 20,S
@@ -376,11 +376,11 @@ DRAW_HWL4
 	LDA 20,S
 	PSHU A,S
 
-	LDD #$aacd
-	STD -21,S
-
 	LDD #$cccc
 	STD -61,S
+
+	LDD #$aacd
+	STD -21,S
 
 	LDA #$dd
 	STA 20,S
@@ -502,13 +502,13 @@ DRAW_HWL4
 	LDD 121,S
 	PSHU D
 
-	LDA #$dd
-	STA 82,S
-
-	STA 42,S
-
 	LDD #$3d22
 	STD 121,S
+
+	LDA #$dd
+	STA 42,S
+
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -574,20 +574,20 @@ DRAW_HWL4
 	LDD 122,S
 	PSHU D
 
-	LDD #$13ba
-	STD -118,S
-
-	LDA #$dd
-	STD -38,S
+	LDD #$ddb9
+	STD 42,S
 
 	LDB #$aa
 	STD 82,S
 
-	LDB #$b9
-	STD 42,S
-
 	LDD #$d09e
 	STD 122,S
+
+	LDD #$ddba
+	STD -38,S
+
+	LDA #$13
+	STD -118,S
 
 	PULS D,X
 	PSHU D,X,S
@@ -665,11 +665,6 @@ DRAW_HWL4
 	LDA 2,S
 	PSHU A,S
 
-	LDD #$dd10
-	STD -79,S
-
-	STB -118,S
-
 	LDD #$fbcd
 	STD -41,S
 
@@ -678,6 +673,11 @@ DRAW_HWL4
 
 	LDA #$f1
 	STA 2,S
+
+	LDD #$dd10
+	STD -79,S
+
+	STB -118,S
 
 	LEAS 200,S
 	LDD -41,S

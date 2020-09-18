@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A000
+	ORG $A75B
 DRAW_HJL8
 	PSHS U,DP
 	STS SSAV_HJL8+2
@@ -87,14 +87,14 @@ DRAW_HJL8
 	LDD 121,S
 	PSHU D
 
+	LDD #$ccca
+	STD 41,S
+
 	LDD #$cacc
 	STD 121,S
 
 	LDA #$cc
 	STD 81,S
-
-	LDB #$ca
-	STD 41,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -248,12 +248,13 @@ DRAW_HJL8
 	LDA -38,S
 	PSHU A,S
 
-	LDD #$dddd
-	STD -119,S
+	LDA #$dd
+	STA -78,S
 
 	STA -38,S
 
-	STA -78,S
+	LDD #$dddd
+	STD -119,S
 
 	LEAS 201,S
 	LDA 40,S
@@ -338,11 +339,11 @@ DRAW_HJL8
 	LDA 82,S
 	PSHU A
 
-	LDA #$cc
-	STA 82,S
-
 	LDA #$ac
 	STA 42,S
+
+	LDA #$cc
+	STA 82,S
 
 	PULS A,X
 	PSHU A,X,S

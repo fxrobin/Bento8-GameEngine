@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A708
+	ORG $AE41
 DRAW_HWL0
 	PSHS U,DP
 	STS SSAV_HWL0+2
@@ -39,21 +39,22 @@ DRAW_HWL0
 	LDD 119,S
 	PSHU D,S
 
-	LDD #$cadd
-	STD -1,S
-
 	LDA #$cc
 	STA -120,S
 
 	LDA #$aa
 	STA -80,S
 
-	STD 39,S
-
-	LDB #$dc
+	LDD #$aadc
 	STD 79,S
 
 	STD 119,S
+
+	LDB #$dd
+	STD 39,S
+
+	LDA #$ca
+	STD -1,S
 
 	LEAS 279,S
 	LDA -78,S
@@ -102,14 +103,14 @@ DRAW_HWL0
 	LDD 120,S
 	PSHU D
 
+	LDD #$bbcc
+	STD 40,S
+
 	LDD #$bacd
 	STD 120,S
 
 	LDA #$bb
 	STD 80,S
-
-	LDB #$cc
-	STD 40,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -164,13 +165,7 @@ DRAW_HWL0
 	LDA 121,S
 	PSHU A
 
-	LDD #$2bdd
-	STD -120,S
-
-	LDA #$22
-	STD -40,S
-
-	LDB #$d0
+	LDD #$22d0
 	STD -80,S
 
 	LDA #$11
@@ -178,6 +173,12 @@ DRAW_HWL0
 
 	LDA #$02
 	STA 121,S
+
+	LDD #$22dd
+	STD -40,S
+
+	LDA #$2b
+	STD -120,S
 
 	PULS A,X
 	PSHU A,X,S
@@ -207,16 +208,16 @@ DRAW_HWL0
 	LDA 120,S
 	PSHU A,S
 
-	LDA #$9b
-	STA -40,S
-
 	LDA #$d2
 	STA -120,S
 
-	LDA #$bb
-	STA 40,S
+	LDA #$9b
+	STA -40,S
 
+	LDA #$bb
 	STA ,S
+
+	STA 40,S
 
 	STA 80,S
 
@@ -257,11 +258,11 @@ DRAW_HWL0
 	LDD 119,S
 	PSHU D,S
 
-	LDA #$10
-	STA -80,S
-
 	LDA #$a9
 	STA -120,S
+
+	LDA #$10
+	STA -80,S
 
 	LDA #$a0
 	STA 40,S
@@ -276,11 +277,11 @@ DRAW_HWL0
 	LDD 20,S
 	PSHU D,S
 
-	LDD #$ee00
-	STD 20,S
-
 	LDD #$11ee
 	STD -20,S
+
+	LDD #$ee00
+	STD 20,S
 
 
 	LDS $9F00+2
@@ -324,13 +325,13 @@ DRAW_HWL0
 	LDA 20,S
 	PSHU A,S
 
-	LDA #$dd
-	STA 20,S
-
 	LDD #$cdcc
 	STD -61,S
 
 	STA -20,S
+
+	LDA #$dd
+	STA 20,S
 
 	LEAS 218,S
 	LDD -120,S
@@ -490,10 +491,10 @@ DRAW_HWL0
 	LDD 80,S
 	PSHU D,S
 
+	STX -40,S
+
 	LDD #$22ed
 	STD ,S
-
-	STX -40,S
 
 	LDD #$2a2d
 	STD 40,S
@@ -571,11 +572,11 @@ DRAW_HWL0
 	LDA ,S
 	PSHU A,S
 
-	LDA #$ea
-	STA -40,S
-
 	LDA #$fe
 	STA -80,S
+
+	LDA #$ea
+	STA -40,S
 
 	LDA #$1a
 	STA ,S
