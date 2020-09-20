@@ -13,39 +13,6 @@ import fr.bento8.to8.InstructionSet.Register;
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
 
 public class SolutionOptim{
-	// 
-	// <Decrire fonctionnement actuel>
-	//
-	// TODO :
-	// Construit le code à partir des patterns et des noeuds trouvés
-	// Cherche toutes les combinaisons pour chaque noeud:
-	// - Ordre de patterns mobiles
-	// - Différents registres
-	// L'objectif est de limiter les rechargements de registres avec les données de l'image source
-
-	//	- Parcourir la solution dans l'ordre et compter le nombre de cycles, sauvegarder la solution dans computed Pattern
-	//
-	//	*** Ci dessous : permet de trouver des solutions qui offrent un gain en enchainant les noeuds
-	//	- parcourir tous les noeuds
-	//	- pour chaque noeud établir les combinaisons possibles :
-	//
-	//	0. ecrire le LEAS
-	//	1. GROUPE 1: parcourir les patterns et prendre les patterns non dissosicables (complets)
-	//	   si un des resetRegisters n'est pas null:
-	//	      - etablir toutes les combinaisons qui positionnent seulement 1 fois chaque pattern ou resetRegisters n'est pas null en fin de groupe (ex: 3 patterns ou resetRegisters n'est pas null = 3 combinaisons)
-	//	   si resetRegisters est null:
-	//	      - pour tous ces patterns on a deux solutions possibles : utilisation de A seulement ou utilisation de B seulement
-	//	3. GROUPE 2: parcourir les patterns et prendre le pattern principal (complet)
-	//	4. GROUPE 3: créer des ensembles avec :
-	//	   les patterns dissociables (11, 1111) partie ecriture de sprite, tri et regroupement des patterns identiques (pattern+pixels) (Permet de limiter les combinaisons dans les cas extremes)
-	//	   patterns dissociables (11, 1111) partie backup background
-	//	   etablir tt combinaisons possibles
-	//	5. créer des combinatoire avec GROUPE 1, GROUPE 2 et GROUPE 3 (*6)
-	//
-	//	Première passe: Calcul de la meilleure combinaison (juste pour le noeud) et sauvegarde de la solution pour le noeud dans la solution globale
-	//	Passes suivantes: pour chaque combinaison de noeud, refaire un calcul global du nb de cycles de la solution
-	//	- si le nombre de cycles baisse, sauver la solution et le nombre de cycles total et poursuivre l'optim au noeud suivant
-	//	- s'arrêter lorsqu'il n'y a plus d'améliorations après un parcours complet de tous les noeuds (afficher le nombre de passes à l'écran)
 
 	private static final Logger logger = LogManager.getLogger("log");
 
@@ -65,6 +32,10 @@ public class SolutionOptim{
 	int lastLeas;		
 	boolean[] regSet, regSetSave;
 	byte[][] regVal, regValSave;
+	
+	// Variables pour le code de retablissement du fond
+	List<Integer> nbBytesE = new ArrayList<Integer>();
+	List<Integer> offsetE = new ArrayList<Integer>();
 
 	List<Integer> patternGrp1 = new ArrayList<Integer>();
 	List<Integer> patternGrp2 = new ArrayList<Integer>();
@@ -77,12 +48,11 @@ public class SolutionOptim{
 
 	public void Optimize(List<Integer> patterns) throws Exception {
 
-		// Lance l'optimisation
 		if (patterns.size() > 1) {
-			// TODO diminuer les combinaisons en groupant les patterns de même valeur data
 
-			// Diminution du nombre de combinaisons à tester
-			// Cherche les valeurs uniques, qui ne peuvent donc pas bénéficier d'un cache registre
+			// Diminution du nombre de combinaisons à tester :
+			// - en regroupant le valeurs égales pour un pattern
+			// - en isolant de la recherche combinatoire les valeurs uniques, qui ne peuvent donc pas bénéficier d'un cache registre sur le noeud
 			int pos;
 			long value;
 
@@ -157,11 +127,11 @@ public class SolutionOptim{
 										matchExact = true;
 										match = false;
 										break outerloop;
-									} else if (((val & 0xF000000000000000L) >> 60 == 0xFL   && (idVal & 0xF000000000000000L) >> 60 == 0xFL   && (val & 0x0000FF0000000000L) >> 40 == (idVal & 0x0000FF0000000000L) >> 40) ||
-											((val & 0x0F00000000000000L) >> 56 == 0xFL   && (idVal & 0x0F00000000000000L) >> 56 == 0xFL   && (val & 0x000000FF00000000L) >> 32 == (idVal & 0x000000FF00000000L) >> 32) ||
-											((val & 0xFF00000000000000L) >> 56 == 0xFFL  && (idVal & 0xFF00000000000000L) >> 56 == 0xFFL  && (val & 0x0000FFFF00000000L) >> 32 == (idVal & 0x0000FFFF00000000L) >> 32) ||
-											((val & 0x00F0000000000000L) >> 52 == 0xFL   && (idVal & 0x00F0000000000000L) >> 52 == 0xFL   && (val & 0x00000000FFFF0000L) >> 16 == (idVal & 0x00000000FFFF0000L) >> 16) ||
-											((val & 0x000F000000000000L) >> 48 == 0xFL   && (idVal & 0x000F000000000000L) >> 48 == 0xFL   && (val & 0x000000000000FFFFL) >> 0  == (idVal & 0x000000000000FFFFL) >> 0)){
+									} else if (((val & 0xF000000000000000L) >>> 60 == 0xFL   && (idVal & 0xF000000000000000L) >>> 60 == 0xFL   && (val & 0x0000FF0000000000L) >>> 40 == (idVal & 0x0000FF0000000000L) >>> 40) ||
+											((val & 0x0F00000000000000L) >>> 56 == 0xFL   && (idVal & 0x0F00000000000000L) >>> 56 == 0xFL   && (val & 0x000000FF00000000L) >>> 32 == (idVal & 0x000000FF00000000L) >>> 32) ||
+											((val & 0xFF00000000000000L) >>> 56 == 0xFFL  && (idVal & 0xFF00000000000000L) >>> 56 == 0xFFL  && (val & 0x0000FFFF00000000L) >>> 32 == (idVal & 0x0000FFFF00000000L) >>> 32) ||
+											((val & 0x00F0000000000000L) >>> 52 == 0xFL   && (idVal & 0x00F0000000000000L) >>> 52 == 0xFL   && (val & 0x00000000FFFF0000L) >>> 16 == (idVal & 0x00000000FFFF0000L) >>> 16) ||
+											((val & 0x000F000000000000L) >>> 48 == 0xFL   && (idVal & 0x000F000000000000L) >>> 48 == 0xFL   && (val & 0x000000000000FFFFL) >>> 0  == (idVal & 0x000000000000FFFFL) >>> 0)){
 										logger.debug("\t\tMatch ("+id+", "+idSub+"): "+ String.format("%016x", val) + " "+ String.format("%016x", idVal));
 										match = true;
 										matchVal = val;
@@ -195,6 +165,10 @@ public class SolutionOptim{
 			// TODO le calcul du cout de l'optim doit se faire sur le noeud en entier et pas juste sur le groupe 3
 			// permet un gain si couplage avec stackblast ou groupe 1, a voir comment inserer les background au bon endroit
 			// ex si pas de groupe 1 et pas de stack blant comment on enchaine ?
+			// Tester les combinaisons en regardant l'impact sur les noeud suivants donc calcul de toute l'image a chaque choix d'une optim !!!!
+			// d'abord recherche gain local, puis sur combinaisons de même cout en local les tester pour voir sur la fin de l(image
+			// ne pas recalculer toute l'image mais juste ce qui suit
+			// => Algorithme récursif
 
 			patterns.clear();
 			patterns.addAll(patternNonOptim);
@@ -466,6 +440,14 @@ public class SolutionOptim{
 					saveS = false;
 					iPattern++;
 				}
+				
+				// Ecriture du code de rétablissement du fond
+				asmECode.addAll(0, Pattern.getEraseCodeBuf(nbBytesE, offsetE));
+				asmECodeCycles += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE);
+				asmECodeSize += Pattern.getEraseCodeBufSize(nbBytesE, offsetE);
+				
+				nbBytesE.clear();
+				offsetE.clear();
 			}
 
 		} catch (Exception e) {
@@ -524,10 +506,8 @@ public class SolutionOptim{
 		asmCodeCycles += solution.patterns.get(id).getBackgroundBackupCodeCycles(selectedReg, solution.computedOffsets.get(id), saveS);
 		asmCodeSize += solution.patterns.get(id).getBackgroundBackupCodeSize(selectedReg, solution.computedOffsets.get(id));
 
-		asmECode.addAll(0, solution.patterns.get(id).getEraseCode(saveS, solution.computedOffsets.get(id)));
-		asmECodeCycles += solution.patterns.get(id).getEraseCodeCycles(saveS, solution.computedOffsets.get(id));
-		asmECodeSize += solution.patterns.get(id).getEraseCodeSize(saveS, solution.computedOffsets.get(id));
-
+		solution.patterns.get(id).addToEraseBuf(selectedReg, solution.computedOffsets.get(id), nbBytesE, offsetE);
+		
 		// Réinitialisation des registres utilisés par l'écriture du fond
 		for (int r : selectedReg) {
 			regSet[r] = false;
