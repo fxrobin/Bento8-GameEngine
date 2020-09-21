@@ -17,6 +17,8 @@ public class SolutionOptim{
 
 	private static final Logger logger = LogManager.getLogger("log");
 
+	private int[] fact = new int[]{1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800};
+
 	private Solution solution;
 	private byte[] data;
 	int sizeSaveS;
@@ -30,18 +32,15 @@ public class SolutionOptim{
 	private int asmECodeCycles;
 	private int asmECodeSize;
 
-	int lastLeas;		
+	int lastLeas;
+	// les variables Save sont pour les essais de solutions
 	boolean[] regSet, regSetSave;
 	byte[][] regVal, regValSave;
 
-	// Variables pour le code de retablissement du fond
-	List<Integer> nbBytesE = new ArrayList<Integer>();
-	List<Integer> offsetE = new ArrayList<Integer>();
-	List<Integer> asmCodeSIdx = new ArrayList<Integer>();
-
-	List<Integer> patternGrp1 = new ArrayList<Integer>();
-	List<Integer> patternGrp2 = new ArrayList<Integer>();
-	List<Integer> patternGrp3 = new ArrayList<Integer>();
+	// Variables pour le code de retablissement du fond, les variables Save sont pour les essais de solutions
+	List<Integer> nbBytesE = new ArrayList<Integer>(), nbBytesESave = new ArrayList<Integer>();
+	List<Integer> offsetE = new ArrayList<Integer>(), offsetESave = new ArrayList<Integer>();
+	List<Integer> asmCodeSIdx = new ArrayList<Integer>(), asmCodeSIdxSave = new ArrayList<Integer>();
 
 	public SolutionOptim(Solution solution, byte[] data) {
 		this.solution = solution;
@@ -49,6 +48,7 @@ public class SolutionOptim{
 	}
 
 	public void Optimize(List<Integer> patterns) throws Exception {
+		// Methode obsolete, permet de regrouper ou d'isoler des patterns en fonction des valeurs de pixel
 
 		if (patterns.size() > 1) {
 
@@ -158,9 +158,9 @@ public class SolutionOptim{
 
 			if (patternOptim.size() > 1) {
 				if (patternOptim.size() > 9) {
-					OptimizeRandom(patternOptim);
+					//OptimizeRandom(patternOptim);
 				} else {
-					OptimizeFactorial(patternOptim);
+					//OptimizeFactorial(patternOptim);
 				}	
 			}
 
@@ -175,7 +175,7 @@ public class SolutionOptim{
 		}
 	}
 
-	public void OptimizeFactorial(List<List<Integer>> pattern) throws Exception {
+	public void OptimizeFactorial(List<Integer[]> pattern, Integer lastPattern, boolean saveS) throws Exception {
 
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
@@ -191,7 +191,7 @@ public class SolutionOptim{
 		// Initialisation de la solution
 		List<Snippet> testSolution = new ArrayList<Snippet>();
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
-		List<List<Integer>> bestPatterns = new ArrayList<List<Integer>>();
+		List<Integer[]> bestPatterns = new ArrayList<Integer[]>();
 
 		// Test des combinaisons		
 		int[] indexes = new int[pattern.size()];
@@ -208,12 +208,33 @@ public class SolutionOptim{
 
 				// Compute proposition
 				score = 0;
-				for (List<Integer> p : pattern) {
-					for (int id : p) {
-						testSolution.add(processPatternDraw(id, false));
+				for (Integer[] p : pattern) {
+					if (p[0] != null) {
+						testSolution.add(processPatternBackgroundBackup(p[0], saveS, false));
+						score += testSolution.get(testSolution.size()-1).getCycles();
+					}
+					if (p[1] != null) {
+						testSolution.add(processPatternDraw(p[1], false));
 						score += testSolution.get(testSolution.size()-1).getCycles();
 					}
 				}
+
+				if (lastPattern != null) {
+					testSolution.add(processPatternBackgroundBackup(lastPattern, saveS, false));
+					score += testSolution.get(testSolution.size()-1).getCycles();
+					testSolution.add(processPatternDraw(lastPattern, false));
+					score += testSolution.get(testSolution.size()-1).getCycles();
+				}
+
+				if (saveS) {
+					score += 2; // Ajout pour la sauvegarde du S
+				}
+
+				score += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
+
+				nbBytesE.clear();
+				offsetE.clear();
+				asmCodeSIdx.clear();
 
 				if (score < bestScore) {
 					bestScore = score;
@@ -248,17 +269,13 @@ public class SolutionOptim{
 
 		// Positionne la solution
 		pattern.clear();
-		for(List<Integer> p : bestPatterns) {
+		for(Integer[] p : bestPatterns) {
 			pattern.add(p);
+			logger.debug("Ordre Pattern: "+(p[0]!=null?p[0]:"null")+" "+(p[1]!=null?p[1]:"null"));
 		}
 	}
 
-	public static int fact (int n) {
-		if (n==0) return(1);
-		else return(n*fact(n-1));
-	}
-
-	public void OptimizeRandom(List<List<Integer>> pattern) throws Exception {
+	public void OptimizeRandom(List<Integer[]> pattern, Integer lastPattern, boolean saveS) throws Exception {
 
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
@@ -274,10 +291,10 @@ public class SolutionOptim{
 		// Initialisation de la solution
 		List<Snippet> testSolution = new ArrayList<Snippet>();
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
-		List<List<Integer>> bestPatterns = new ArrayList<List<Integer>>();
+		List<Integer[]> bestPatterns = new ArrayList<Integer[]>();
 
 		// Test des combinaisons		
-		int essais = (pattern.size()>9?fact(9):fact(pattern.size()));
+		int essais = (pattern.size()>9?fact[9]:fact[pattern.size()]);
 
 		int score = 0, bestScore = Integer.MAX_VALUE;
 		int a, b;
@@ -289,12 +306,33 @@ public class SolutionOptim{
 
 			// Compute proposition
 			score = 0;
-			for (List<Integer> p : pattern) {
-				for (int id : p) {
-					testSolution.add(processPatternDraw(id, false));
+			for (Integer[] p : pattern) {
+				if (p[0] != null) {
+					testSolution.add(processPatternBackgroundBackup(p[0], saveS, false));
+					score += testSolution.get(testSolution.size()-1).getCycles();
+				}
+				if (p[1] != null) {
+					testSolution.add(processPatternDraw(p[1], false));
 					score += testSolution.get(testSolution.size()-1).getCycles();
 				}
 			}
+
+			if (lastPattern != null) {
+				testSolution.add(processPatternBackgroundBackup(lastPattern, saveS, false));
+				score += testSolution.get(testSolution.size()-1).getCycles();
+				testSolution.add(processPatternDraw(lastPattern, false));
+				score += testSolution.get(testSolution.size()-1).getCycles();
+			}
+
+			if (saveS) {
+				score += 2; // Ajout pour la sauvegarde du S
+			}
+
+			score += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
+
+			nbBytesE.clear();
+			offsetE.clear();
+			asmCodeSIdx.clear();
 
 			if (score < bestScore) {
 				bestScore = score;
@@ -323,8 +361,9 @@ public class SolutionOptim{
 
 		// Positionne la solution
 		pattern.clear();
-		for(List<Integer> p : bestPatterns) {
+		for(Integer[] p : bestPatterns) {
 			pattern.add(p);
+			logger.debug("Ordre Pattern: "+(p[0]!=null?p[0]:"null")+" "+(p[1]!=null?p[1]:"null"));
 		}
 	}
 
@@ -335,10 +374,14 @@ public class SolutionOptim{
 		asmCodeSize = 0;
 		asmECodeCycles = 0;
 		asmECodeSize = 0;
+
 		regSet = new boolean[] {false, false, false, false, false, false, false};
 		regVal = new byte[7][4];
 		regSetSave = new boolean[] {false, false, false, false, false, false, false};
 		regValSave = new byte[7][4];
+
+		List<Integer[]> patterns = new ArrayList<Integer[]>();
+		Integer lastPattern;
 
 		lastLeas = Integer.MAX_VALUE;	
 		int currentNode = 0;
@@ -348,14 +391,13 @@ public class SolutionOptim{
 		try {
 			// Parcours de tous les patterns
 			i = 0;
-			
+
 			// Au début de l'image on sauvegarde S même s'il n'y a pas de LEAS
 			saveS = true;
-			
+
 			while (i < solution.patterns.size()) {
-				patternGrp1.clear();
-				patternGrp2.clear();
-				patternGrp3.clear();
+				patterns.clear();
+				lastPattern = null;
 
 				currentNode = solution.computedNodes.get(i);
 				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
@@ -370,48 +412,41 @@ public class SolutionOptim{
 						lastLeas = solution.computedNodes.get(i);
 						saveS = true; // On enregistre le fait qu'un LEAS a été produit pour ce noeud
 					}
-
+	
 					// Constitution des groupes
 					if (!solution.patterns.get(i).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(i).useIndexedAddressing()) {
-						patternGrp1.add(i);
+						patterns.add(new Integer[] {i, i});
 					} else if (!solution.patterns.get(i).useIndexedAddressing()) {
-						patternGrp2.add(i);
+						// Le stack blast doit être positionné en fin de noeud pour être exécuté en début de rétablissement de fond
+						// en particulier il doit être joué juste après le premier PULU ...,S car le PSHS va décaler le pointeur S
+						// et le poisitonner correctement pour les accès mémoire indexées.
+						// Si on veut le positionner ailleurs il faut recalculer les offsets : c'est réalisable ... mais risque d'être long à coder
+						lastPattern = i;
 					} else {
-						patternGrp3.add(i);
+						patterns.add(new Integer[] {i, null});
+						patterns.add(new Integer[] {null, i});
 					}
 
 					i++;
 				}
 
-				logger.debug("Noeud: "+currentNode+" Grp1: "+patternGrp1+" Grp2: "+patternGrp2+" Grp3: "+patternGrp3);
-				
-				// Parcours des patterns dans l'ordre des groupes 1, 3 puis 2
-				for (int id : patternGrp1) {
-					processPatternBackgroundBackup(id, saveS, true);
-					processPatternDraw(id, true);
-					asmCode.add("");
+				logger.debug("Noeud: "+currentNode+" nb. patterns: "+patterns.size());
+
+				if (patterns.size() > 1) {
+					if (patterns.size() > 9) {
+						OptimizeRandom(patterns, lastPattern, saveS);
+					} else {
+						OptimizeFactorial(patterns, lastPattern, saveS);
+					}	
 				}
 
-				for (int id : patternGrp3) {
-					processPatternBackgroundBackup(id, saveS, true);
-					asmCode.add("");
-				}
-
-				Optimize(patternGrp3);
-
-				for (int id : patternGrp3) {
-					processPatternDraw(id, true);
-					asmCode.add("");
-				}
-
-				// Le groupe 2 doit être positionné en fin de noeud pour être exécuté en début de rétablissement de fond
-				// en particulier il doit être joué juste après le premier PULU ...,S car le PSHS va décaler le pointeur S
-				// et le poisitonner correctement pour les accès mémoire indexées.
-				// Si on veut le positionner ailleurs il faut recalculer les offsets : c'est réalisable.
-				for (int id : patternGrp2) {
-					processPatternBackgroundBackup(id, saveS, true);
-					processPatternDraw(id, true);
-					asmCode.add("");
+				for (Integer[] p : patterns) {
+					if (p[0] != null) {
+						processPatternBackgroundBackup(p[0], saveS, true);
+					}
+					if (p[1] != null) {
+						processPatternDraw(p[1], true);
+					}
 				}
 
 				// Ecriture du code de rétablissement du fond
@@ -419,18 +454,16 @@ public class SolutionOptim{
 					asmCodeCycles += 2; // Ajout pour la sauvegarde du S
 					sizeSaveS += 2; // Agrandissement de la zone data pour la sauvegarde du S
 				}
-				
+
 				asmECode.addAll(0, Pattern.getEraseCodeBuf(nbBytesE, offsetE, asmCode, asmCodeSIdx));
 				asmECodeCycles += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
 				asmECodeSize += Pattern.getEraseCodeBufSize(nbBytesE, offsetE, asmCodeSIdx);
 
-				logger.debug("Size Code E:"+asmECodeSize);
-				
 				nbBytesE.clear();
 				offsetE.clear();
 				asmCodeSIdx.clear();
 			}
-			
+
 			saveS = false;
 
 		} catch (Exception e) {
@@ -438,7 +471,7 @@ public class SolutionOptim{
 		}
 	}
 
-	public void processPatternBackgroundBackup(int id, boolean saveS, boolean process) throws Exception {
+	public Snippet processPatternBackgroundBackup(int id, boolean saveS, boolean process) throws Exception {
 
 		// Recherche pour chaque combinaison de registres d'un pattern,
 		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
@@ -447,6 +480,7 @@ public class SolutionOptim{
 		List<Integer> currentReg = new ArrayList<Integer>();
 		List<Integer> selectedReg = new ArrayList<Integer>();
 		AtomicInteger lineNumS = new AtomicInteger(0);
+		Snippet snippet = null;
 
 		selectedCombi = -1;
 		minCycles = Integer.MAX_VALUE;
@@ -482,9 +516,14 @@ public class SolutionOptim{
 		}
 
 		lineNumS.set(asmCode.size());
-		asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id), lineNumS));
-		asmCodeCycles += solution.patterns.get(id).getBackgroundBackupCodeCycles(selectedReg, solution.computedOffsets.get(id));
-		asmCodeSize += solution.patterns.get(id).getBackgroundBackupCodeSize(selectedReg, solution.computedOffsets.get(id));
+
+		if (process) {
+			asmCode.addAll(solution.patterns.get(id).getBackgroundBackupCode(selectedReg, solution.computedOffsets.get(id), lineNumS));
+			asmCodeCycles += solution.patterns.get(id).getBackgroundBackupCodeCycles(selectedReg, solution.computedOffsets.get(id));
+			asmCodeSize += solution.patterns.get(id).getBackgroundBackupCodeSize(selectedReg, solution.computedOffsets.get(id));
+		} else {
+			snippet = new Snippet(solution.patterns.get(id), selectedReg, solution.computedOffsets.get(id), lineNumS);
+		}
 
 		// Si on a besoin de stocker S
 		if (saveS) {
@@ -504,6 +543,8 @@ public class SolutionOptim{
 				regSet[Register.B] = false;
 			}
 		}
+
+		return snippet;
 	}
 
 	public Snippet processPatternDraw(int id, boolean process) throws Exception {
