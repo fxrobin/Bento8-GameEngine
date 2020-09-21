@@ -198,15 +198,258 @@ public abstract class Pattern {
 		return asmECode;
 	}
 
-	public static int getEraseCodeBufCycles (List<Integer> nbByteE, List<Integer> offsetE) throws Exception {
+	public static int getEraseCodeBufCycles (List<Integer> nbByteE, List<Integer> offsetE, List<Integer> asmCodeSIdx) throws Exception {
 		int cycles = 0;
+		boolean[] regECache = new boolean[]{false, false, false, false, false, false, false};
+		Integer[] offsetECache = new Integer[]{null, null, null, null, null, null, null};
+		List<Integer> currentRegisters = new ArrayList<Integer>();
+		int offsetSB = 0;
+		boolean forceFlush = false;
+		
+		// Si on a besoin de charger S
+		if (asmCodeSIdx.size() > 0) {
+			// S est a charger sur le premier PULU pour le positionnement de la destination
+			regECache[Register.S] = true;
+		}
+		
+		int posR = nbByteE.size() - 1;
+		// Parcours de toutes les données sauvegardées et construction du code de retablissement du fond
+		while (posR >= 0) {
+			currentRegisters.clear();
 
+			if (nbByteE.get(posR) == 1) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.A);
+					offsetECache[Register.A] = offsetE.get(posR);
+				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.B);
+					offsetECache[Register.B] = offsetE.get(posR);
+				}
+			} else if (nbByteE.get(posR) == 2) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.D);
+					offsetECache[Register.D] = offsetE.get(posR);
+				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = offsetE.get(posR);
+				} else if (!regECache[Register.Y]) {
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = offsetE.get(posR);
+				}
+			} else if (nbByteE.get(posR) == 3) {
+				forceFlush = true;
+				if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.B);
+					offsetECache[Register.B] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+				}
+			} else if (nbByteE.get(posR) == 4) {
+				forceFlush = true;
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.D);
+					offsetECache[Register.D] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = null;
+				}
+			} else if (nbByteE.get(posR) == 5) {
+				forceFlush = true;
+				if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.B);
+					offsetECache[Register.B] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = null;
+				}
+			} else if (nbByteE.get(posR) == 6) {
+				forceFlush = true;
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.D);
+					offsetECache[Register.D] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = null;
+				}
+			}
+			
+			if (currentRegisters.size() > 0) {
+				for (int i = 0; i < currentRegisters.size(); i++ ) {
+					regECache[currentRegisters.get(i)] = true;
+				}
+				posR--;
+			}
+			
+			if (currentRegisters.size() == 0 || posR < 0 || forceFlush) {
+				
+				forceFlush = false;
+						
+				// on ecrit les instructions du cache, on purge le cache et on reboucle sans décrémenter posR
+				offsetSB = 0;
+				int nbBytesPulu = 0, nbBytesPshs = 0;
+				for (int i = 0; i < regECache.length; i++ ) {
+					if (regECache[i]) {
+
+						// Construction du pulu (lecture des données sauvegardées)
+						nbBytesPulu += Register.size[i];
+						
+						// Construction du pshs (ecriture des données sauvegardées)
+						// Le pshs est utilisé uniquement si le S a été sauvegardé avec le pulu correspondant, sinon on utilise les ST
+						if (offsetECache[i] == null && i != Register.S && (regECache[Register.S] && posR+1 == nbByteE.size()-1)) { // On ne traite pas S
+							nbBytesPshs += Register.size[i];
+						}
+
+						// Construction des st (ecriture des données sauvegardées)
+						if (offsetECache[i] == null && (regECache[Register.S] && posR+1 != nbByteE.size()-1) && i != Register.S) {
+							offsetSB += Register.size[i];
+							cycles += Register.costIndexedST[i] + Register.getIndexedOffsetCost(offsetSB);
+						} else if (offsetECache[i] != null) {
+							cycles += Register.costIndexedST[i] + Register.getIndexedOffsetCost(offsetECache[i]);
+						}
+					}
+					regECache[i] = false;
+					offsetECache[i] = null;
+				}
+
+				if (nbBytesPshs > 0) {
+					cycles += Register.getCostImmediatePULPSH(nbBytesPshs);
+				}
+				cycles += Register.getCostImmediatePULPSH(nbBytesPulu);
+			}
+		}
+		
 		return cycles;
 	}
 
-	public static int getEraseCodeBufSize (List<Integer> nbByteE, List<Integer> offsetE) throws Exception {
+	public static int getEraseCodeBufSize (List<Integer> nbByteE, List<Integer> offsetE, List<Integer> asmCodeSIdx) throws Exception {
 		int size = 0;
+		boolean[] regECache = new boolean[]{false, false, false, false, false, false, false};
+		Integer[] offsetECache = new Integer[]{null, null, null, null, null, null, null};
+		List<Integer> currentRegisters = new ArrayList<Integer>();
+		int offsetSB = 0;
+		boolean forceFlush = false;
+		
+		// Si on a besoin de charger S
+		if (asmCodeSIdx.size() > 0) {
+			// S est a charger sur le premier PULU pour le positionnement de la destination
+			regECache[Register.S] = true;
+		}
+		
+		int posR = nbByteE.size() - 1;
+		// Parcours de toutes les données sauvegardées et construction du code de retablissement du fond
+		while (posR >= 0) {
+			currentRegisters.clear();
 
+			if (nbByteE.get(posR) == 1) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.A);
+					offsetECache[Register.A] = offsetE.get(posR);
+				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.B);
+					offsetECache[Register.B] = offsetE.get(posR);
+				}
+			} else if (nbByteE.get(posR) == 2) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.D);
+					offsetECache[Register.D] = offsetE.get(posR);
+				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = offsetE.get(posR);
+				} else if (!regECache[Register.Y]) {
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = offsetE.get(posR);
+				}
+			} else if (nbByteE.get(posR) == 3) {
+				forceFlush = true;
+				if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.B);
+					offsetECache[Register.B] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+				}
+			} else if (nbByteE.get(posR) == 4) {
+				forceFlush = true;
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.D);
+					offsetECache[Register.D] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = null;
+				}
+			} else if (nbByteE.get(posR) == 5) {
+				forceFlush = true;
+				if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.B);
+					offsetECache[Register.B] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = null;
+				}
+			} else if (nbByteE.get(posR) == 6) {
+				forceFlush = true;
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+					currentRegisters.add(Register.D);
+					offsetECache[Register.D] = null;
+					currentRegisters.add(Register.X);
+					offsetECache[Register.X] = null;
+					currentRegisters.add(Register.Y);
+					offsetECache[Register.Y] = null;
+				}
+			}
+			
+			if (currentRegisters.size() > 0) {
+				for (int i = 0; i < currentRegisters.size(); i++ ) {
+					regECache[currentRegisters.get(i)] = true;
+				}
+				posR--;
+			}
+			
+			if (currentRegisters.size() == 0 || posR < 0 || forceFlush) {
+				
+				forceFlush = false;
+						
+				// on ecrit les instructions du cache, on purge le cache et on reboucle sans décrémenter posR
+				offsetSB = 0;
+				int nbBytesPshs = 0;
+				for (int i = 0; i < regECache.length; i++ ) {
+					if (regECache[i]) {
+						
+						// Construction du pshs (ecriture des données sauvegardées)
+						// Le pshs est utilisé uniquement si le S a été sauvegardé avec le pulu correspondant, sinon on utilise les ST
+						if (offsetECache[i] == null && i != Register.S && (regECache[Register.S] && posR+1 == nbByteE.size()-1)) { // On ne traite pas S
+							nbBytesPshs += Register.size[i];
+						}
+
+						// Construction des st (ecriture des données sauvegardées)
+						if (offsetECache[i] == null && (regECache[Register.S] && posR+1 != nbByteE.size()-1) && i != Register.S) {
+							offsetSB += Register.size[i];
+							size += Register.sizeIndexedST[i] + Register.getIndexedOffsetSize(offsetSB);
+						} else if (offsetECache[i] != null) {
+							size += Register.sizeIndexedST[i] + Register.getIndexedOffsetSize(offsetECache[i]);
+						}
+					}
+					regECache[i] = false;
+					offsetECache[i] = null;
+				}
+
+				if (nbBytesPshs>0) {
+					size += Register.sizeImmediatePULPSH;
+				}
+				size += Register.sizeImmediatePULPSH;
+			}
+		}
+	
 		return size;
 	}
 

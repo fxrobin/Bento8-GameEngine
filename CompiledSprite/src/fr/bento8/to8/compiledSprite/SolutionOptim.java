@@ -421,9 +421,11 @@ public class SolutionOptim{
 				}
 				
 				asmECode.addAll(0, Pattern.getEraseCodeBuf(nbBytesE, offsetE, asmCode, asmCodeSIdx));
-				asmECodeCycles += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE);
-				asmECodeSize += Pattern.getEraseCodeBufSize(nbBytesE, offsetE);
+				asmECodeCycles += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
+				asmECodeSize += Pattern.getEraseCodeBufSize(nbBytesE, offsetE, asmCodeSIdx);
 
+				logger.debug("Size Code E:"+asmECodeSize);
+				
 				nbBytesE.clear();
 				offsetE.clear();
 				asmCodeSIdx.clear();
