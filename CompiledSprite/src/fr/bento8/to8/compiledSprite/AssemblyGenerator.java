@@ -380,7 +380,7 @@ public class AssemblyGenerator{
 		int i = 0;
 
 		while (i < size) {
-			if (i < size - 2) {
+			if (i < size - 1) {
 				spriteData.add("\tFDB $0000");
 				i += 2;
 			} else {

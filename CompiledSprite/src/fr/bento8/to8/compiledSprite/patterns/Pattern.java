@@ -2,6 +2,7 @@ package fr.bento8.to8.compiledSprite.patterns;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.bento8.to8.InstructionSet.Register;
 
@@ -18,8 +19,8 @@ public abstract class Pattern {
 	public abstract boolean matchesForward (byte[] data, int offset);
 	public abstract boolean matchesRearward (byte[] data, int offset);
 
-	public abstract List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception;
-	public abstract int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception;
+	public abstract List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset, AtomicInteger lineNumS) throws Exception;
+	public abstract int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset) throws Exception;
 	public abstract int getBackgroundBackupCodeSize (List<Integer> registerIndexes, int offset) throws Exception;
 
 	public abstract List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception;
@@ -42,17 +43,24 @@ public abstract class Pattern {
 		}
 	}
 
-	public static List<String> getEraseCodeBuf (List<Integer> nbByteE, List<Integer> offsetE) throws Exception {
-
-		boolean[] regECache = new boolean[]{false, false, false, false, false, false, true}; // S est a charger sur le premier PULU pour le positionnement de la destination
+	public static List<String> getEraseCodeBuf (List<Integer> nbByteE, List<Integer> offsetE, List<String> asmCode, List<Integer> asmCodeSIdx) throws Exception {
+		boolean[] regECache = new boolean[]{false, false, false, false, false, false, false};
 		Integer[] offsetECache = new Integer[]{null, null, null, null, null, null, null};
-		List<String> asmCode = new ArrayList<String>();
+		List<String> asmECode = new ArrayList<String>();
 		String read = "", writeSB = "";
 		String readInit = "\tPULU ";
 		String writeSBInit = "\tPSHS ";
 		String writeSTInit = "\tST";
 		List<String> writeST = new ArrayList<String>();
 		List<Integer> currentRegisters = new ArrayList<Integer>();
+		int offsetSB = 0;
+		boolean forceFlush = false;
+		
+		// Si on a besoin de charger S
+		if (asmCodeSIdx.size() > 0) {
+			// S est a charger sur le premier PULU pour le positionnement de la destination
+			regECache[Register.S] = true;
+		}
 
 		int posR = nbByteE.size() - 1;
 		// Parcours de toutes les données sauvegardées et construction du code de retablissement du fond
@@ -79,7 +87,7 @@ public abstract class Pattern {
 					offsetECache[Register.Y] = offsetE.get(posR);
 				}
 			} else if (nbByteE.get(posR) == 3) {
-				offsetE.set(posR, -1);
+				forceFlush = true;
 				if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
 					currentRegisters.add(Register.B);
 					offsetECache[Register.B] = null;
@@ -87,7 +95,7 @@ public abstract class Pattern {
 					offsetECache[Register.X] = null;
 				}
 			} else if (nbByteE.get(posR) == 4) {
-				offsetE.set(posR, -1);
+				forceFlush = true;
 				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
 					currentRegisters.add(Register.D);
 					offsetECache[Register.D] = null;
@@ -100,7 +108,7 @@ public abstract class Pattern {
 					offsetECache[Register.Y] = null;
 				}
 			} else if (nbByteE.get(posR) == 5) {
-				offsetE.set(posR, -1);
+				forceFlush = true;
 				if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
 					currentRegisters.add(Register.B);
 					offsetECache[Register.B] = null;
@@ -110,7 +118,7 @@ public abstract class Pattern {
 					offsetECache[Register.Y] = null;
 				}
 			} else if (nbByteE.get(posR) == 6) {
-				offsetE.set(posR, -1);
+				forceFlush = true;
 				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
 					currentRegisters.add(Register.D);
 					offsetECache[Register.D] = null;
@@ -121,15 +129,25 @@ public abstract class Pattern {
 				}
 			}
 			
-			if (currentRegisters.size() > 0 || regECache[Register.S] == true) { // On force la purge en cas de S
+			if (currentRegisters.size() > 0) {
 				for (int i = 0; i < currentRegisters.size(); i++ ) {
 					regECache[currentRegisters.get(i)] = true;
 				}
 				posR--;
 			}
 			
-			if (currentRegisters.size() == 0 || regECache[Register.S] == true) {
+			if (currentRegisters.size() == 0 || posR < 0 || forceFlush) {
+				
+				forceFlush = false;
+				
+				// Au premier passage on positionne l'écriture de S (asmCode) au bon endroit en fonction
+				// de l'optimisation trouvée dans le code de rétablissenment du fond
+				if (regECache[Register.S]) {
+					asmCode.set(asmCodeSIdx.get(posR+1), asmCode.get(asmCodeSIdx.get(posR+1))+",S");
+				}
+				
 				// on ecrit les instructions du cache, on purge le cache et on reboucle sans décrémenter posR
+				offsetSB = 0;
 				for (int i = 0; i < regECache.length; i++ ) {
 					if (regECache[i]) {
 
@@ -139,9 +157,10 @@ public abstract class Pattern {
 						} else {
 							read += "," + Register.name[i];
 						}
-
+						
 						// Construction du pshs (ecriture des données sauvegardées)
-						if (offsetECache[i] == null && i != Register.S) { // On ne traite pas S
+						// Le pshs est utilisé uniquement si le S a été sauvegardé avec le pulu correspondant, sinon on utilise les ST
+						if (offsetECache[i] == null && i != Register.S && (regECache[Register.S] && posR+1 == nbByteE.size()-1)) { // On ne traite pas S
 							if (writeSB.equals("")) {
 								writeSB = writeSBInit + Register.name[i];
 							} else {
@@ -150,7 +169,10 @@ public abstract class Pattern {
 						}
 
 						// Construction des st (ecriture des données sauvegardées)
-						if (offsetECache[i] != null) {
+						if (offsetECache[i] == null && (regECache[Register.S] && posR+1 != nbByteE.size()-1) && i != Register.S) {
+							offsetSB += Register.size[i];
+							writeST.add(writeSTInit + Register.name[i] + " "+offsetSB+",S");
+						} else if (offsetECache[i] != null) {
 							writeST.add(writeSTInit + Register.name[i] + " "+(offsetECache[i]!= 0?offsetECache[i]:"")+",S");
 						}
 					}
@@ -158,14 +180,14 @@ public abstract class Pattern {
 					offsetECache[i] = null;
 				}
 
-				asmCode.add(read);
+				asmECode.add(read);
 				if (!writeSB.equals("")) {
-					asmCode.add(writeSB);
+					asmECode.add(writeSB);
 				}
 				if (writeST.size() > 0) {
-					asmCode.addAll(writeST);
+					asmECode.addAll(writeST);
 				}
-				asmCode.add("");
+				asmECode.add("");
 				
 				read = "";
 				writeSB = "";
@@ -173,43 +195,7 @@ public abstract class Pattern {
 			}
 		}
 		
-		// fin du noeud, on ecrit les instructions du cache
-		for (int i = 0; i < regECache.length; i++ ) {
-			if (regECache[i]) {
-
-				// Construction du pulu (lecture des données sauvegardées)
-				if (read.equals("")) {
-					read = readInit + Register.name[i];
-				} else {
-					read += "," + Register.name[i];
-				}
-
-				// Construction du pshs (ecriture des données sauvegardées)
-				if (offsetECache[i] == null && i != Register.S) { // On ne traite pas S
-					if (writeSB.equals("")) {
-						writeSB = writeSBInit + Register.name[i];
-					} else {
-						writeSB += "," + Register.name[i];
-					}
-				}
-
-				// Construction des st (ecriture des données sauvegardées)
-				if (offsetECache[i] != null) {
-					writeST.add(writeSTInit + Register.name[i] + " "+(offsetECache[i]!= 0?offsetECache[i]:"")+",S");
-				}
-			}
-		}
-
-		asmCode.add(read);
-		if (!writeSB.equals("")) {
-			asmCode.add(writeSB);
-		}
-		if (writeST.size() > 0) {
-			asmCode.addAll(writeST);
-		}
-		asmCode.add("");
-		
-		return asmCode;
+		return asmECode;
 	}
 
 	public static int getEraseCodeBufCycles (List<Integer> nbByteE, List<Integer> offsetE) throws Exception {

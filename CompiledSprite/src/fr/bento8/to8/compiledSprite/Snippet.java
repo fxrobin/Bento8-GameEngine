@@ -1,6 +1,7 @@
 package fr.bento8.to8.compiledSprite;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.bento8.to8.compiledSprite.asmCode.ASMCode;
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
@@ -12,7 +13,7 @@ public class Snippet {
 
 	private List<Integer> registerIndexes;
 	private int offset;
-	private boolean saveS;
+	private AtomicInteger lineNumS;
 	private byte[] data;
 	private int position;
 	private List<Boolean> loadMask;
@@ -21,12 +22,12 @@ public class Snippet {
 	static final int DRAW = 1;
 	static final int LEAS = 2;
 
-	public Snippet(Pattern pattern, List<Integer> registerIndexes, int offset, boolean saveS) {
+	public Snippet(Pattern pattern, List<Integer> registerIndexes, int offset, AtomicInteger lineNumS) {
 		method = BACKGROUND_BACKUP;
 		this.pattern = pattern;
 		this.registerIndexes = registerIndexes;
 		this.offset = offset;
-		this.saveS = saveS;
+		this.lineNumS = lineNumS;
 	}
 
 	public Snippet(Pattern pattern, byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) {
@@ -48,7 +49,7 @@ public class Snippet {
 	public List<String> call() throws Exception {
 		List<String> code = null;
 		switch (method) {
-		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexes, offset, saveS); break;
+		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexes, offset, lineNumS); break;
 		case DRAW: code=pattern.getDrawCode(data, position, registerIndexes, loadMask, offset); break;
 		case LEAS: code=asmCode.getCode(offset); break;
 		}
@@ -58,7 +59,7 @@ public class Snippet {
 	public int getCycles() throws Exception {
 		int cycles = 0;
 		switch (method) {
-		case BACKGROUND_BACKUP: cycles=pattern.getBackgroundBackupCodeCycles(registerIndexes, offset, saveS); break;
+		case BACKGROUND_BACKUP: cycles=pattern.getBackgroundBackupCodeCycles(registerIndexes, offset); break;
 		case DRAW: cycles=pattern.getDrawCodeCycles(registerIndexes, loadMask, offset); break;
 		case LEAS: cycles=asmCode.getCycles(offset); break;
 		}

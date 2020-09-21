@@ -2,12 +2,13 @@ package fr.bento8.to8.compiledSprite.patterns;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.bento8.to8.InstructionSet.Register;
 
 public abstract class PatternStackBlast extends Pattern{
 
-	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception {
+	public List<String> getBackgroundBackupCode (List<Integer> registerIndexes, int offset, AtomicInteger lineNumS) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		String puls = "\tPULS ";
 		String pshu = "\tPSHU ";
@@ -15,11 +16,7 @@ public abstract class PatternStackBlast extends Pattern{
 
 		if (this.nbBytes <= 2) {
 			asmCode.add("\tLD"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
-			if (saveS) {
-				asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]+",S");
-			} else {
-				asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]);
-			}
+			asmCode.add("\tPSHU "+Register.name[registerIndexes.get(0)]);
 		} else {
 			firstPass = true;
 			for (int i=0; i<registerIndexes.size(); i++) {
@@ -43,26 +40,22 @@ public abstract class PatternStackBlast extends Pattern{
 					pshu += ","+Register.name[registerIndexes.get(i)];
 				}
 			}
-			if (saveS) {
-				pshu += ",S";
-			}
 			asmCode.add(pshu);
 		}
+				
+		lineNumS.addAndGet(1); // Indique le positionnement de la ligne PSHU dans le code généré
+		
 		return asmCode;
 	}
 
-	public int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset, boolean saveS) throws Exception {
+	public int getBackgroundBackupCodeCycles (List<Integer> registerIndexes, int offset) throws Exception {
 		int cycles = 0;
 		if (this.nbBytes <= 2) {
 			cycles += Register.costIndexedLD[registerIndexes.get(0)] + Register.getIndexedOffsetCost(offset);
 		} else {
 			cycles += Register.getCostImmediatePULPSH(nbBytes);
 		}
-		if (saveS) {
-			cycles += Register.getCostImmediatePULPSH(nbBytes+2);
-		} else {
-			cycles += Register.getCostImmediatePULPSH(nbBytes);
-		}
+		cycles += Register.getCostImmediatePULPSH(nbBytes);
 		return cycles;
 	}
 
