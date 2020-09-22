@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A000
+	ORG $ADE5
 DRAW_HJL5
 	PSHS U,DP
 	STS SSAV_HJL5+2
@@ -8,383 +8,679 @@ DRAW_HJL5
 	STS ERASE_POS_HJL5_1+2
 	LDU #ERASE_DATA_HJL5_2
 	LEAS 562,S
+
 	LDD ,S
 	PSHU D,S
+
 	ANDA #$F0
 	ANDB #$0F
 	ADDD #$0aa0
 	STD ,S
+
 	LEAS 160,S
+
+	LDD -40,S
+	PSHU D
+
+	LDA -78,S
+	PSHU A
+
+	ANDA #$0F
+	ORA #$d0
+	STA -78,S
+
+	LDA -38,S
+	PSHU A
+
+	ANDA #$0F
+	ORA #$f0
+	STA -38,S
+
+	LDD -80,S
+	PSHU D
+
 	LDD -120,S
 	PSHU D
+
 	ANDA #$F0
 	ANDB #$0F
 	ADDD #$0aa0
 	STD -120,S
-	LDA -38,S
-	PSHU A
-	ANDA #$0F
-	ORA #$f0
-	STA -38,S
-	LDA -78,S
-	PSHU A
-	ANDA #$0F
-	ORA #$d0
-	STA -78,S
+
+	LDD #$aaca
+	STD -40,S
+
+	STD -80,S
+
 	PULS A,X
 	PSHU A,X,S
+
 	LDA #$aa
 	LDX #$da11
 	PSHS A,X
+
 	LEAS 40,S
+
+	LDD 41,S
+	PSHU D
+
 	LDD 39,S
 	PSHU D
+
 	ANDA #$F0
 	ORA #$0a
 	LDB #$ac
 	STD 39,S
-	LDD 79,S
+
+	LDD 121,S
 	PSHU D
-	ANDA #$F0
-	ORA #$0a
-	LDB #$ac
-	STD 79,S
-	PULS A,X
-	PSHU A,X
-	LDX #$ac1e
-	PSHS B,X
+
 	LDD 119,S
-	PSHU D,S
+	PSHU D
+
 	ANDA #$F0
 	ORA #$0a
 	LDB #$ba
 	STD 119,S
-	LEAS 280,S
-	PULS A,X
-	PSHU A,X
-	LDA 42,S
-	PSHU A
-	ANDA #$0F
-	ORA #$a0
-	STA 42,S
-	LDD -81,S
+
+	LDD 81,S
 	PSHU D
-	ANDA #$F0
-	ORA #$0a
-	LDB #$ba
-	STD -81,S
+
+	LDD #$ac11
+	STD 41,S
+
+	LDA #$dd
+	STD 81,S
+
+	LDB #$aa
+	STD 121,S
+
 	LDD 79,S
 	PSHU D
-	ANDA #$0F
-	ORA #$a0
-	LDB #$cc
+
+	ANDA #$F0
+	ORA #$0a
+	LDB #$ac
 	STD 79,S
-	LDX #$dd91
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDX #$ac1e
 	PSHS B,X
+
+	LEAS 280,S
+
 	LDD -121,S
-	PSHU D,S
+	PSHU D
+
 	ANDA #$F0
 	ORA #$0a
 	LDB #$ba
 	STD -121,S
+
+	LDD -119,S
+	PSHU D
+
+	LDD -39,S
+	PSHU D
+
+	LDD -81,S
+	PSHU D
+
+	ANDA #$F0
+	ORA #$0a
+	LDB #$ba
+	STD -81,S
+
+	LDD -79,S
+	PSHU D
+
+	LDD #$dd91
+	STD -79,S
+
+	LDD 79,S
+	PSHU D
+
+	ANDA #$0F
+	ORA #$a0
+	LDB #$cc
+	STD 79,S
+
+	LDD #$cdaa
+	STD -119,S
+
+	LDB #$a1
+	STD -39,S
+
+	LDD 40,S
+	PSHU D
+
+	LDD #$ca22
+	STD 40,S
+
+	LDA 42,S
+	PSHU A
+
+	ANDA #$0F
+	ORA #$a0
+	STA 42,S
+
 	LDD -41,S
 	PSHU D
+
 	ANDA #$F0
 	ORA #$0c
 	LDB #$ac
 	STD -41,S
+
 	LDD 81,S
 	PSHU D
+
 	LDA #$c2
 	ANDB #$0F
 	ORB #$a0
 	STD 81,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$cc
+	LDX #$dd91
+	PSHS A,X
+
 	LEAS 119,S
+
+	LDA 3,S
+	PSHU A
+
+	ANDA #$0F
+	ORA #$90
+	STA 3,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$aa
 	LDX #$cc2c
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$90
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$ca
 	LDX #$ac31
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$90
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$ca
 	LDX #$acdd
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
-	LDA 3,S
-	PSHU A
-	ANDA #$0F
-	ORA #$90
-	STA 3,S
+
 	LEAS 40,S
-	LDD 40,S
-	PSHU D
-	ANDA #$F0
-	ORA #$0c
-	LDB #$ac
-	STD 40,S
+
 	LDD 42,S
 	PSHU D
+
 	LDA #$9a
 	ANDB #$F0
 	ORB #$01
 	STD 42,S
-	PULS D,X
-	PSHU D,X
-	LDD #$ccac
-	LDX #$d9a1
-	PSHS D,X
+
+	LDD 40,S
+	PSHU D
+
+	ANDA #$F0
+	ORA #$0c
+	LDB #$ac
+	STD 40,S
+
 	LDD 80,S
 	PSHU D
+
 	ANDA #$F0
 	ORA #$0c
 	LDB #$cc
 	STD 80,S
+
 	LDD 82,S
-	PSHU D,S
+	PSHU D
+
 	LDA #$aa
 	ANDB #$F0
 	ORB #$0f
 	STD 82,S
+
 	LDD 120,S
 	PSHU D
+
 	ANDA #$F0
 	ORA #$0d
 	LDB #$cc
 	STD 120,S
+
 	LDD 122,S
 	PSHU D
+
 	LDA #$aa
 	ANDB #$F0
 	ORB #$01
 	STD 122,S
+
+	PULS D,X
+	PSHU D,X,S
+
+	LDD #$ccac
+	LDX #$d9a1
+	PSHS D,X
+
 	LEAS 261,S
-	LDA 100,S
-	PSHU A
-	ANDA #$F0
-	ORA #$0d
-	STA 100,S
+
+	LDD -100,S
+	PSHU D
+
+	LDD -60,S
+	PSHU D
+
+	LDD #$cd9a
+	STD -60,S
+
+	LDB #$a0
+	STD -100,S
+
+	LDD -20,S
+	PSHU D
+
 	LDD 60,S
 	PSHU D,S
+
 	ANDA #$F0
 	ANDB #$0F
 	ADDD #$0dd0
 	STD 60,S
+
+	LDD 20,S
+	PSHU D
+
+	LDD #$dcdd
+	STD -20,S
+
+	LDA #$3d
+	STD 20,S
+
+	LDA 100,S
+	PSHU A
+
+	ANDA #$F0
+	ORA #$0d
+	STA 100,S
+
 
 	LDS $9F00+2
 	STS ERASE_POS_HJL5_2+2
 	LDU #ERASE_DATA_HJL5_END
 
 	LEAS 663,S
-	LDD 18,S
-	PSHU D,S
-	ANDA #$0F
-	ANDB #$F0
-	ADDD #$a00a
-	STD 18,S
+
 	LDD 58,S
 	PSHU D
+
 	ANDA #$0F
 	ANDB #$F0
 	ADDD #$a00a
 	STD 58,S
+
+	LDA 20,S
+	PSHU A
+
+	LDA #$dd
+	STA 20,S
+
+	LDA -20,S
+	PSHU A
+
+	LDD 18,S
+	PSHU D,S
+
+	ANDA #$0F
+	ANDB #$F0
+	ADDD #$a00a
+	STD 18,S
+
 	LDA -60,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$a0
 	STA -60,S
+
+	LDA #$cd
+	STA -20,S
+
+	LDA 60,S
+	PSHU A
+
+	LDA #$df
+	STA 60,S
+
 	LEAS 218,S
-	PULS A,X
-	PSHU A,X
-	LDD -40,S
-	PSHU D
-	ANDA #$0F
-	ORA #$c0
-	LDB #$cc
-	STD -40,S
-	LDD -38,S
-	PSHU D
-	LDA #$a9
-	ANDB #$0F
-	ORB #$00
-	STD -38,S
+
 	LDD -120,S
-	PSHU D,S
+	PSHU D
+
 	ANDA #$0F
 	ANDB #$F0
 	ADDD #$a00a
 	STD -120,S
+
 	LDD -80,S
 	PSHU D
+
 	ANDA #$0F
 	ORA #$a0
 	LDB #$aa
 	STD -80,S
-	LDA #$ca
-	LDX #$ccca
-	PSHS A,X
+
+	LDA -118,S
+	PSHU A
+
+	LDA #$c2
+	STA -118,S
+
+	LDA -78,S
+	PSHU A
+
+	LDA #$a2
+	STA -78,S
+
+	LDD -40,S
+	PSHU D
+
+	ANDA #$0F
+	ORA #$c0
+	LDB #$cc
+	STD -40,S
+
+	LDD -38,S
+	PSHU D
+
+	LDA #$a9
+	ANDB #$0F
+	ORB #$00
+	STD -38,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$90
 	STA 3,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$ca
+	LDX #$ccca
+	PSHS A,X
+
 	LEAS 40,S
+
+	LDA 3,S
+	PSHU A
+
+	ANDA #$0F
+	ORA #$90
+	STA 3,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$ca
 	LDX #$ccd0
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
-	ORA #$90
+	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$ca
 	LDX #$ccdc
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$cc
 	LDX #$caac
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$cc
 	LDX #$ccaa
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$cc
 	LDX #$ccca
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$dc
 	LDX #$cc9a
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$aa
 	LDX #$cdaa
-	PSHS B,X
-	PULS A,X
-	PSHU A,X,S
+	PSHS A,X
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$aa
 	LDX #$ccca
-	PSHS B,X
-	PULS A,X
-	PSHU A,X,S
+	PSHS A,X
+
+	LEAS 40,S
+
 	LDA 3,S
 	PSHU A
+
 	ANDA #$0F
 	ORA #$e0
 	STA 3,S
-	LEAS 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$aa
 	LDX #$cd1a
-	PSHS B,X
-	PULS A,X
-	PSHU A,X,S
-	LDA 3,S
-	PSHU A
-	ANDA #$0F
-	ORA #$e0
-	STA 3,S
+	PSHS A,X
+
 	LEAS 40,S
-	LDX #$cca9
-	PSHS B,X
-	PULS A,X
-	PSHU A,X
-	LDA 3,S
-	PSHU A
-	ANDA #$0F
-	ORA #$e0
-	STA 3,S
+
 	LDD 42,S
-	PSHU D,S
+	PSHU D
+
 	ANDA #$0F
 	ANDB #$0F
 	ADDD #$a000
 	STD 42,S
+
+	LDD 40,S
+	PSHU D
+
+	LDA 3,S
+	PSHU A
+
+	ANDA #$0F
+	ORA #$e0
+	STA 3,S
+
+	LDD #$cadd
+	STD 40,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$aa
+	LDX #$cca9
+	PSHS A,X
+
 	LEAS 80,S
+
+	PULS A,X
+	PSHU A,X,S
+
 	LDA #$cc
 	LDX #$cd30
 	PSHS A,X
-	PULS A,X
-	PSHU A,X,S
+
 	LEAS 40,S
-	LDA #$cc
-	LDX #$dd00
-	PSHS A,X
-	PULS A,X
-	PSHU A,X
-	LDA 42,S
-	PSHU A
-	ANDA #$F0
-	ORA #$00
-	STA 42,S
+
+	LDD 40,S
+	PSHU D
+
 	LDA 82,S
 	PSHU A
+
 	ANDA #$F0
 	ORA #$00
 	STA 82,S
+
+	LDA 42,S
+	PSHU A
+
+	ANDA #$F0
+	ORA #$00
+	STA 42,S
+
+	LDD 80,S
+	PSHU D
+
+	LDD #$ddcd
+	STD 40,S
+
+	LDB #$dd
+	STD 80,S
+
 	LDD 120,S
-	PSHU D,S
+	PSHU D
+
 	ANDA #$F0
 	ORA #$0d
 	LDB #$dd
 	STD 120,S
+
+	PULS A,X
+	PSHU A,X,S
+
+	LDA #$cc
+	LDX #$dd00
+	PSHS A,X
+
 	LEAS 181,S
+
+	LDA 20,S
+	PSHU A,S
+
+	LDA -20,S
+	PSHU A
+
+	STB -20,S
+
+	STB 20,S
+
 SSAV_HJL5
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
@@ -398,67 +694,92 @@ ERASE_POS_HJL5_1
 	LDU #ERASE_DATA_HJL5_1
 
 ERASE_CODE_HJL5_1
-	PULU D,S
-	STD 60,S
-
-	PULU A
+	PULU A,X,Y,S
 	STA 100,S
+	STX 20,S
+	STY 60,S
 
-	PULU D,X,Y,S
+	PULU D,X,Y
+	STD -20,S
+	STX -60,S
+	STY -100,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,Y
 	STD 122,S
 	STX 120,S
 	STY 82,S
 
 	PULU D,X,Y
 	STD 80,S
-
-	PULU D,X
-	STD 42,S
 	STX 40,S
-
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
-
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
-
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
-
-	PULU D,X,Y,S
-	STD 81,S
-	STX -41,S
-	STY -121,S
-
-	PULU D,X
-	STD 79,S
-	STX -81,S
-
-	PULU A,B,X
-	STA 42,S
-
-	PULU D,S
-	STD 119,S
-
-	PULU B,X
-
-	PULU D,X
-	STD 79,S
-	STX 39,S
+	STY 42,S
 
 	PULU B,X,S
 	PSHS B,X
 
+	PULU A
+	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A
+	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A
+	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU D,X
+	STD 81,S
+	STX -41,S
+
+	PULU A,X,Y
+	STA 42,S
+	STX 40,S
+	STY 79,S
+
+	PULU D,X,Y
+	STD -79,S
+	STX -81,S
+	STY -39,S
+
+	PULU D,X
+	STD -119,S
+	STX -121,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU D,X,Y
+	STD 79,S
+	STX 81,S
+	STY 119,S
+
+	PULU D,X,Y
+	STD 121,S
+	STX 39,S
+	STY 41,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU D,X
+	STD -120,S
+	STX -80,S
+
 	PULU A,B,X
-	STA -78,S
-	STB -38,S
-	STX -120,S
+	STA -38,S
+	STB -78,S
+	STX -40,S
 
 	PULU D,S
 	STD ,S
@@ -468,84 +789,110 @@ ERASE_POS_HJL5_2
 	LDU #ERASE_DATA_HJL5_2
 
 ERASE_CODE_HJL5_2
-	PULU D,S
-	STD 120,S
-
-	PULU A,B
-	STA 82,S
-	STB 42,S
-
-	PULU B,X
+	PULU A,B,S
+	STA -20,S
+	STB 20,S
 
 	PULU B,X,S
 	PSHS B,X
 
-	PULU D,S
-	STD 42,S
+	PULU D,X
+	STD 120,S
+	STX 80,S
 
 	PULU A,B,X
+	STA 42,S
+	STB 82,S
+	STX 40,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A,X,Y
+	STA 3,S
+	STX 40,S
+	STY 42,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A
 	STA 3,S
 
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
+	PULU B,X,S
+	PSHS B,X
 
-	PULU A,B,X,S
+	PULU A
 	STA 3,S
-	STB 1,S
-	STX 3,S
 
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
+	PULU B,X,S
+	PSHS B,X
 
-	PULU A,B,X,S
+	PULU A
 	STA 3,S
-	STB 1,S
-	STX 3,S
 
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
+	PULU B,X,S
+	PSHS B,X
 
-	PULU A,B,X,S
+	PULU A
 	STA 3,S
-	STB 1,S
-	STX 3,S
 
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
+	PULU B,X,S
+	PSHS B,X
 
-	PULU A,B,X,S
+	PULU A
 	STA 3,S
-	STB 1,S
-	STX 3,S
 
-	PULU A,B,X,S
-	STA 3,S
-	STB 1,S
-	STX 3,S
+	PULU B,X,S
+	PSHS B,X
 
-	PULU A,X,Y,S
+	PULU A
 	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A
+	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A
+	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A
+	STA 3,S
+
+	PULU B,X,S
+	PSHS B,X
+
+	PULU A,X,Y
+	STA 3,S
+	STX -38,S
+	STY -40,S
+
+	PULU A,B,X,Y
+	STA -78,S
+	STB -118,S
 	STX -80,S
 	STY -120,S
 
-	PULU D,X
-	STD -38,S
-	STX -40,S
+	PULU A,B,X,S
+	STA 60,S
+	STB -60,S
+	STX 18,S
 
-	PULU B,X
-
-	PULU A,X,Y,S
-	STA -60,S
+	PULU A,B,X
+	STA -20,S
+	STB 20,S
 	STX 58,S
-	STY 18,S
 
 ERASE_SSAV_HJL5
 	LDS #$0000

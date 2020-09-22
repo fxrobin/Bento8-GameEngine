@@ -1,0 +1,135 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : tmp/TST2.ASM
+ * Fichier destination : tmp/TST2.BIN
+ * Contenu :
+ *     Main     0:IMG.ASM      1304
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+      2        A000                      ORG $A000
+      3        A000               DRAW_TST2
+      4  5+3   A000 34   48              PSHS U,DP
+      5  7     A002 10FF A069            STS SSAV_TST2+2
+      6
+      7  7     A006 10FE 9F00            LDS $9F00
+      8  7     A00A 10FF A075            STS ERASE_POS_TST2_1+2
+      9  3     A00E CE   A0A9            LDU #ERASE_DATA_TST2_2
+     10  4+1   A011 32   E8 2A           LEAS 42,S
+     11
+     12  5+1   A014 EC   E8 D8           LDD -40,S
+     13  5+2   A017 36   06              PSHU D
+     14
+     15  4+1   A019 A6   E8 DA           LDA -38,S
+     16  5+1   A01C 36   02              PSHU A
+     17
+     18  2     A01E 84   0F              ANDA #$0F
+     19  2     A020 8A   A0              ORA #$a0
+     20  4+1   A022 A7   E8 DA           STA -38,S
+     21
+     22  3     A025 CC   CCDD            LDD #$ccdd
+     23  5+1   A028 ED   E8 D8           STD -40,S
+     24
+     25  5+3   A02B 35   12              PULS A,X
+     26  5+5   A02D 36   52              PSHU A,X,S
+     27
+     28  2     A02F 86   CD              LDA #$cd
+     29  3     A031 8E   CCAA            LDX #$ccaa
+     30  5+3   A034 34   12              PSHS A,X
+     31
+     32
+     33  7     A036 10FE 9F02            LDS $9F00+2
+     34  7     A03A 10FF A088            STS ERASE_POS_TST2_2+2
+     35  3     A03E CE   A0B1            LDU #ERASE_DATA_TST2_END
+     36
+     37  4+1   A041 32   E8 29           LEAS 41,S
+     38
+     39  4+1   A044 A6   E8 DA           LDA -38,S
+     40  5+1   A047 36   02              PSHU A
+     41
+     42  5+1   A049 EC   E8 D8           LDD -40,S
+     43  5+2   A04C 36   06              PSHU D
+     44
+     45  2     A04E 84   F0              ANDA #$F0
+     46  2     A050 8A   0C              ORA #$0c
+     47  2     A052 C6   DC              LDB #$dc
+     48  5+1   A054 ED   E8 D8           STD -40,S
+     49
+     50  2     A057 86   CD              LDA #$cd
+     51  4+1   A059 A7   E8 DA           STA -38,S
+     52
+     53  5+3   A05C 35   12              PULS A,X
+     54  5+5   A05E 36   52              PSHU A,X,S
+     55
+     56  2     A060 86   CC              LDA #$cc
+     57  3     A062 8E   CCDA            LDX #$ccda
+     58  5+3   A065 34   12              PSHS A,X
+     59
+     60        A067               SSAV_TST2
+     61  4     A067 10CE 0000            LDS #$0000
+     62  5+5   A06B 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
+     63
+     64        A06D               ERASE_TST2
+     65  5+3   A06D 34   48              PSHS U,DP
+     66  7     A06F 10FF A09D            STS ERASE_SSAV_TST2+2
+     67
+     68        A073               ERASE_POS_TST2_1
+     69  4     A073 10CE 0000            LDS #$0000
+     70  3     A077 CE   A0A1            LDU #ERASE_DATA_TST2_1
+     71
+     72        A07A               ERASE_CODE_TST2_1
+     73  5+5   A07A 37   54              PULU B,X,S
+     74  5+3   A07C 34   14              PSHS B,X
+     75
+     76  5+3   A07E 37   12              PULU A,X
+     77  4+1   A080 A7   E8 DA           STA -38,S
+     78  5+1   A083 AF   E8 D8           STX -40,S
+     79
+     80        A086               ERASE_POS_TST2_2
+     81  4     A086 10CE 0000            LDS #$0000
+     82  3     A08A CE   A0A9            LDU #ERASE_DATA_TST2_2
+     83
+     84        A08D               ERASE_CODE_TST2_2
+     85  5+5   A08D 37   54              PULU B,X,S
+     86  5+3   A08F 34   14              PSHS B,X
+     87
+     88  5+2   A091 37   06              PULU D
+     89  5+1   A093 ED   E8 D8           STD -40,S
+     90
+     91  5+1   A096 37   02              PULU A
+     92  4+1   A098 A7   E8 DA           STA -38,S
+     93
+     94        A09B               ERASE_SSAV_TST2
+     95  4     A09B 10CE 0000            LDS #$0000
+     96  5+5   A09F 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
+     97
+     98        A0A1               ERASE_DATA_TST2_1
+     99        A0A1 0000                 FDB $0000
+    100        A0A3 0000                 FDB $0000
+    101        A0A5 0000                 FDB $0000
+    102        A0A7 0000                 FDB $0000
+    103        A0A9               ERASE_DATA_TST2_2
+    104        A0A9 0000                 FDB $0000
+    105        A0AB 0000                 FDB $0000
+    106        A0AD 0000                 FDB $0000
+    107        A0AF 0000                 FDB $0000
+    108        A0B1               ERASE_DATA_TST2_END
+
+000000 Total Errors
+
+000011 Total Symbols
+     0x          Label A000 DRAW_TST2
+     0x          Label A07A ERASE_CODE_TST2_1
+     0x          Label A08D ERASE_CODE_TST2_2
+     1x          Label A0A1 ERASE_DATA_TST2_1
+     2x          Label A0A9 ERASE_DATA_TST2_2
+     1x          Label A0B1 ERASE_DATA_TST2_END
+     1x          Label A073 ERASE_POS_TST2_1
+     1x          Label A086 ERASE_POS_TST2_2
+     1x          Label A09B ERASE_SSAV_TST2
+     0x          Label A06D ERASE_TST2
+     1x          Label A067 SSAV_TST2
+

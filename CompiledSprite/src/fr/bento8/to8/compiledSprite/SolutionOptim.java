@@ -17,7 +17,7 @@ public class SolutionOptim{
 
 	private static final Logger logger = LogManager.getLogger("log");
 
-	private int[] fact = new int[]{1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800};
+	private int[] fact = new int[]{1, 1, 2, 6, 24, 120, 720, 5040, 40320, 50000, 50000};
 
 	private Solution solution;
 	private byte[] data;
@@ -193,6 +193,10 @@ public class SolutionOptim{
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
 		List<Integer[]> bestPatterns = new ArrayList<Integer[]>();
 
+		// Initialisation des contraintes
+		HashMap<Integer, Boolean> constaints = new HashMap<Integer, Boolean>();
+		Boolean isValidSolution = true;
+
 		// Test des combinaisons		
 		int[] indexes = new int[pattern.size()];
 		for (int i = 0; i < pattern.size(); i++) {
@@ -202,61 +206,89 @@ public class SolutionOptim{
 		int idx = 0;
 		int score = 0, bestScore = Integer.MAX_VALUE;
 
+		// Initialisation
+		for (Integer[] p : pattern) {
+			bestPatterns.add(p);
+		}
+		if (lastPattern != null) {
+			bestPatterns.add(new Integer[] {lastPattern, lastPattern});
+		}
+
+		// Optimisation de la liste
 		while (idx < pattern.size()) {
 			if (indexes[idx] < idx) {
 				Collections.swap(pattern, idx % 2 == 0 ?  0: indexes[idx], idx);
 
-				// Compute proposition
-				score = 0;
+				// Vérification des contraintes
 				for (Integer[] p : pattern) {
 					if (p[0] != null) {
-						testSolution.add(processPatternBackgroundBackup(p[0], saveS, false));
+						constaints.put(p[0], true);
+					}
+					if (p[1] != null && !constaints.containsKey(p[1])) {
+						isValidSolution = false;
+						break;
+					}
+				}
+
+				if (isValidSolution) {
+
+					// Compute proposition
+					score = 0;
+					for (Integer[] p : pattern) {
+						if (p[0] != null) {
+							testSolution.add(processPatternBackgroundBackup(p[0], saveS, false));
+							score += testSolution.get(testSolution.size()-1).getCycles();
+						}
+						if (p[1] != null) {
+							testSolution.add(processPatternDraw(p[1], false));
+							score += testSolution.get(testSolution.size()-1).getCycles();
+						}
+					}
+
+					if (lastPattern != null) {
+						testSolution.add(processPatternBackgroundBackup(lastPattern, saveS, false));
+						score += testSolution.get(testSolution.size()-1).getCycles();
+						testSolution.add(processPatternDraw(lastPattern, false));
 						score += testSolution.get(testSolution.size()-1).getCycles();
 					}
-					if (p[1] != null) {
-						testSolution.add(processPatternDraw(p[1], false));
-						score += testSolution.get(testSolution.size()-1).getCycles();
+
+					if (saveS) {
+						score += 2; // Ajout pour la sauvegarde du S
 					}
-				}
 
-				if (lastPattern != null) {
-					testSolution.add(processPatternBackgroundBackup(lastPattern, saveS, false));
-					score += testSolution.get(testSolution.size()-1).getCycles();
-					testSolution.add(processPatternDraw(lastPattern, false));
-					score += testSolution.get(testSolution.size()-1).getCycles();
-				}
+					score += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
 
-				if (saveS) {
-					score += 2; // Ajout pour la sauvegarde du S
-				}
+					nbBytesE.clear();
+					offsetE.clear();
+					asmCodeSIdx.clear();
 
-				score += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
+					if (score < bestScore) {
+						bestScore = score;
+						logger.debug("score: "+score);
+						bestSolution.clear();
+						bestSolution.addAll(testSolution);
+						bestPatterns.clear();
+						bestPatterns.addAll(pattern);
+						if (lastPattern != null) {
+							bestPatterns.add(new Integer[] {lastPattern, lastPattern});
+						}
+					}
 
-				nbBytesE.clear();
-				offsetE.clear();
-				asmCodeSIdx.clear();
+					// Restauration de l'état des registres
+					for (int i = 0; i < regSet.length; i++) {
+						regSet[i] = regSetSave[i];
+					}
 
-				if (score < bestScore) {
-					bestScore = score;
-					logger.debug("score: "+score);
-					bestSolution.clear();
-					bestSolution.addAll(testSolution);
-					bestPatterns.clear();
-					bestPatterns.addAll(pattern);
+					for (int i = 0; i < regVal.length; i++) {
+						for (int j = 0; j < regVal[0].length; j++) {
+							regVal[i][j] = regValSave[i][j];	
+						}
+					}
 				}
 
 				testSolution.clear();
-
-				// Restauration de l'état des registres
-				for (int i = 0; i < regSet.length; i++) {
-					regSet[i] = regSetSave[i];
-				}
-
-				for (int i = 0; i < regVal.length; i++) {
-					for (int j = 0; j < regVal[0].length; j++) {
-						regVal[i][j] = regValSave[i][j];	
-					}
-				}
+				constaints.clear();
+				isValidSolution = true;
 
 				indexes[idx]++;
 				idx = 0;
@@ -293,70 +325,104 @@ public class SolutionOptim{
 		List<Snippet> bestSolution = new ArrayList<Snippet>();
 		List<Integer[]> bestPatterns = new ArrayList<Integer[]>();
 
+		// Initialisation des contraintes
+		HashMap<Integer, Boolean> constaints = new HashMap<Integer, Boolean>();
+		Boolean isValidSolution = true;
+
+		// Initialisation
+		for (Integer[] p : pattern) {
+			bestPatterns.add(p);
+		}
+		if (lastPattern != null) {
+			bestPatterns.add(new Integer[] {lastPattern, lastPattern});
+		}
+
 		// Test des combinaisons		
 		int essais = (pattern.size()>9?fact[9]:fact[pattern.size()]);
 
 		int score = 0, bestScore = Integer.MAX_VALUE;
-		int a, b;
+		int a=0, b=0;
 		Random rand = new Random();
 		while (essais-- > 0) {
-			a = rand.nextInt(pattern.size());
-			b = rand.nextInt(pattern.size());
+			a = rand.nextInt(pattern.size()-1);
+			b = rand.nextInt(pattern.size()-1);
 			Collections.swap(pattern, a, b);
 
-			// Compute proposition
-			score = 0;
+			// Vérification des contraintes
 			for (Integer[] p : pattern) {
 				if (p[0] != null) {
-					testSolution.add(processPatternBackgroundBackup(p[0], saveS, false));
+					constaints.put(p[0], true);
+				}
+				if (p[1] != null && !constaints.containsKey(p[1])) {
+					isValidSolution = false;
+					break;
+				}
+			}
+
+			if (isValidSolution) {
+
+				// Calcul de la proposition
+				score = 0;
+				for (Integer[] p : pattern) {
+					if (p[0] != null) {
+						testSolution.add(processPatternBackgroundBackup(p[0], saveS, false));
+						score += testSolution.get(testSolution.size()-1).getCycles();
+					}
+					if (p[1] != null) {
+						testSolution.add(processPatternDraw(p[1], false));
+						score += testSolution.get(testSolution.size()-1).getCycles();
+					}
+				}
+
+				if (lastPattern != null) {
+					testSolution.add(processPatternBackgroundBackup(lastPattern, saveS, false));
+					score += testSolution.get(testSolution.size()-1).getCycles();
+					testSolution.add(processPatternDraw(lastPattern, false));
 					score += testSolution.get(testSolution.size()-1).getCycles();
 				}
-				if (p[1] != null) {
-					testSolution.add(processPatternDraw(p[1], false));
-					score += testSolution.get(testSolution.size()-1).getCycles();
+
+				if (saveS) {
+					score += 2; // Ajout pour la sauvegarde du S
 				}
-			}
 
-			if (lastPattern != null) {
-				testSolution.add(processPatternBackgroundBackup(lastPattern, saveS, false));
-				score += testSolution.get(testSolution.size()-1).getCycles();
-				testSolution.add(processPatternDraw(lastPattern, false));
-				score += testSolution.get(testSolution.size()-1).getCycles();
-			}
+				score += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
 
-			if (saveS) {
-				score += 2; // Ajout pour la sauvegarde du S
-			}
+				nbBytesE.clear();
+				offsetE.clear();
+				asmCodeSIdx.clear();
 
-			score += Pattern.getEraseCodeBufCycles(nbBytesE, offsetE, asmCodeSIdx);
+				if (score < bestScore) {
+					bestScore = score;
+					logger.debug("score: "+score);
+					bestSolution.clear();
+					bestSolution.addAll(testSolution);
+					bestPatterns.clear();
+					bestPatterns.addAll(pattern);
+					if (lastPattern != null) {
+						bestPatterns.add(new Integer[] {lastPattern, lastPattern});
+					}
+				} else {
+					//Collections.swap(pattern, a, b);
+				}
 
-			nbBytesE.clear();
-			offsetE.clear();
-			asmCodeSIdx.clear();
+				// Restauration de l'état des registres
+				for (int i = 0; i < regSet.length; i++) {
+					regSet[i] = regSetSave[i];
+				}
 
-			if (score < bestScore) {
-				bestScore = score;
-				logger.debug("score: "+score);
-				bestSolution.clear();
-				bestSolution.addAll(testSolution);
-				bestPatterns.clear();
-				bestPatterns.addAll(pattern);
+				for (int i = 0; i < regVal.length; i++) {
+					for (int j = 0; j < regVal[0].length; j++) {
+						regVal[i][j] = regValSave[i][j];	
+					}
+				}
+
 			} else {
-				Collections.swap(pattern, a, b);
+				//Collections.swap(pattern, a, b);
 			}
 
 			testSolution.clear();
-
-			// Restauration de l'état des registres
-			for (int i = 0; i < regSet.length; i++) {
-				regSet[i] = regSetSave[i];
-			}
-
-			for (int i = 0; i < regVal.length; i++) {
-				for (int j = 0; j < regVal[0].length; j++) {
-					regVal[i][j] = regValSave[i][j];	
-				}
-			}
+			constaints.clear();
+			isValidSolution = true;
 		}
 
 		// Positionne la solution
@@ -407,12 +473,13 @@ public class SolutionOptim{
 							&& solution.computedLeas.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAS
 							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
 						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
+						asmCode.add("");
 						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeas.get(solution.computedNodes.get(i)));
 						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeas.get(solution.computedNodes.get(i)));
 						lastLeas = solution.computedNodes.get(i);
 						saveS = true; // On enregistre le fait qu'un LEAS a été produit pour ce noeud
 					}
-	
+
 					// Constitution des groupes
 					if (!solution.patterns.get(i).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(i).useIndexedAddressing()) {
 						patterns.add(new Integer[] {i, i});
@@ -432,20 +499,20 @@ public class SolutionOptim{
 
 				logger.debug("Noeud: "+currentNode+" nb. patterns: "+patterns.size());
 
-				if (patterns.size() > 1) {
-					if (patterns.size() > 9) {
-						OptimizeRandom(patterns, lastPattern, saveS);
-					} else {
-						OptimizeFactorial(patterns, lastPattern, saveS);
-					}	
-				}
+				if (patterns.size() > 9) {
+					OptimizeRandom(patterns, lastPattern, saveS);
+				} else {
+					OptimizeFactorial(patterns, lastPattern, saveS);
+				}	
 
 				for (Integer[] p : patterns) {
 					if (p[0] != null) {
 						processPatternBackgroundBackup(p[0], saveS, true);
+						asmCode.add("");
 					}
 					if (p[1] != null) {
 						processPatternDraw(p[1], true);
+						asmCode.add("");
 					}
 				}
 

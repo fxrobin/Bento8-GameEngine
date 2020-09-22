@@ -1,0 +1,116 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : tmp/TST0.ASM
+ * Fichier destination : tmp/TST0.BIN
+ * Contenu :
+ *     Main     0:IMG.ASM      1099
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+      2        A000                      ORG $A000
+      3        A000               DRAW_TST0
+      4  5+3   A000 34   48              PSHS U,DP
+      5  7     A002 10FF A04D            STS SSAV_TST0+2
+      6
+      7  7     A006 10FE 9F00            LDS $9F00
+      8  7     A00A 10FF A059            STS ERASE_POS_TST0_1+2
+      9  3     A00E CE   A07B            LDU #ERASE_DATA_TST0_2
+     10
+     11  7     A011 10FE 9F02            LDS $9F00+2
+     12  7     A015 10FF A060            STS ERASE_POS_TST0_2+2
+     13  3     A019 CE   A087            LDU #ERASE_DATA_TST0_END
+     14
+     15  4+1   A01C 32   61              LEAS 1,S
+     16
+     17  4+1   A01E A6   63              LDA 3,S
+     18  5+1   A020 36   02              PSHU A
+     19
+     20  2     A022 84   0F              ANDA #$0F
+     21  2     A024 8A   C0              ORA #$c0
+     22  4+1   A026 A7   63              STA 3,S
+     23
+     24  5+3   A028 35   12              PULS A,X
+     25  5+5   A02A 36   52              PSHU A,X,S
+     26
+     27  2     A02C 86   DD              LDA #$dd
+     28  3     A02E 8E   CCCA            LDX #$ccca
+     29  5+3   A031 34   12              PSHS A,X
+     30
+     31  4+1   A033 32   E8 28           LEAS 40,S
+     32
+     33  4+1   A036 A6   63              LDA 3,S
+     34  5+1   A038 36   02              PSHU A
+     35
+     36  2     A03A 84   0F              ANDA #$0F
+     37  2     A03C 8A   C0              ORA #$c0
+     38  4+1   A03E A7   63              STA 3,S
+     39
+     40  5+3   A040 35   12              PULS A,X
+     41  5+5   A042 36   52              PSHU A,X,S
+     42
+     43  2     A044 86   DD              LDA #$dd
+     44  3     A046 8E   CCCA            LDX #$ccca
+     45  5+3   A049 34   12              PSHS A,X
+     46
+     47        A04B               SSAV_TST0
+     48  4     A04B 10CE 0000            LDS #$0000
+     49  5+5   A04F 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
+     50
+     51        A051               ERASE_TST0
+     52  5+3   A051 34   48              PSHS U,DP
+     53  7     A053 10FF A077            STS ERASE_SSAV_TST0+2
+     54
+     55        A057               ERASE_POS_TST0_1
+     56  4     A057 10CE 0000            LDS #$0000
+     57  3     A05B CE   A07B            LDU #ERASE_DATA_TST0_1
+     58
+     59        A05E               ERASE_CODE_TST0_1
+     60        A05E               ERASE_POS_TST0_2
+     61  4     A05E 10CE 0000            LDS #$0000
+     62  3     A062 CE   A07B            LDU #ERASE_DATA_TST0_2
+     63
+     64        A065               ERASE_CODE_TST0_2
+     65  5+5   A065 37   54              PULU B,X,S
+     66  5+3   A067 34   14              PSHS B,X
+     67
+     68  5+1   A069 37   02              PULU A
+     69  4+1   A06B A7   63              STA 3,S
+     70
+     71  5+5   A06D 37   54              PULU B,X,S
+     72  5+3   A06F 34   14              PSHS B,X
+     73
+     74  5+1   A071 37   02              PULU A
+     75  4+1   A073 A7   63              STA 3,S
+     76
+     77        A075               ERASE_SSAV_TST0
+     78  4     A075 10CE 0000            LDS #$0000
+     79  5+5   A079 35   C8              PULS DP,U,PC * Ajout du PC au PULS>>
+     80
+     81        A07B               ERASE_DATA_TST0_1
+     82        A07B               ERASE_DATA_TST0_2
+     83        A07B 0000                 FDB $0000
+     84        A07D 0000                 FDB $0000
+     85        A07F 0000                 FDB $0000
+     86        A081 0000                 FDB $0000
+     87        A083 0000                 FDB $0000
+     88        A085 0000                 FDB $0000
+     89        A087               ERASE_DATA_TST0_END
+
+000000 Total Errors
+
+000011 Total Symbols
+     0x          Label A000 DRAW_TST0
+     0x          Label A05E ERASE_CODE_TST0_1
+     0x          Label A065 ERASE_CODE_TST0_2
+     1x          Label A07B ERASE_DATA_TST0_1
+     2x          Label A07B ERASE_DATA_TST0_2
+     1x          Label A087 ERASE_DATA_TST0_END
+     1x          Label A057 ERASE_POS_TST0_1
+     1x          Label A05E ERASE_POS_TST0_2
+     1x          Label A075 ERASE_SSAV_TST0
+     0x          Label A051 ERASE_TST0
+     1x          Label A04B SSAV_TST0
+
