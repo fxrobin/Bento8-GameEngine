@@ -9,26 +9,20 @@ DRAW_TST2
 	LDU #ERASE_DATA_TST2_2
 	LEAS 42,S
 
-	LDD -40,S
-	PSHU D
-
-	LDA -38,S
-	PSHU A
-
+	LDX -40,S
+	PSHU X
+	LDB -38,S
+	PSHU B
 	ANDA #$0F
 	ORA #$a0
 	STA -38,S
-
 	LDD #$ccdd
 	STD -40,S
-
-	PULS A,X
-	PSHU A,X,S
-
+	PULS B,Y
+	PSHU B,Y,S
 	LDA #$cd
 	LDX #$ccaa
 	PSHS A,X
-
 
 	LDS $9F00+2
 	STS ERASE_POS_TST2_2+2
@@ -36,27 +30,21 @@ DRAW_TST2
 
 	LEAS 41,S
 
-	LDA -38,S
-	PSHU A
-
+	LDB -38,S
+	PSHU B
 	LDD -40,S
 	PSHU D
-
 	ANDA #$F0
 	ORA #$0c
 	LDB #$dc
 	STD -40,S
-
 	LDA #$cd
 	STA -38,S
-
 	PULS A,X
 	PSHU A,X,S
-
 	LDA #$cc
 	LDX #$ccda
 	PSHS A,X
-
 SSAV_TST2
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)

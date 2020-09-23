@@ -1,7 +1,6 @@
 package fr.bento8.to8.compiledSprite;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.bento8.to8.compiledSprite.asmCode.ASMCode;
 import fr.bento8.to8.compiledSprite.patterns.Pattern;
@@ -13,21 +12,19 @@ public class Snippet {
 
 	private List<Integer> registerIndexes;
 	private int offset;
-	private AtomicInteger lineNumS;
 	private byte[] data;
 	private int position;
 	private List<Boolean> loadMask;
 
-	static final int BACKGROUND_BACKUP = 0;
-	static final int DRAW = 1;
-	static final int LEAS = 2;
+	public static final int BACKGROUND_BACKUP = 0;
+	public static final int DRAW = 1;
+	public static final int LEAS = 2;
 
-	public Snippet(Pattern pattern, List<Integer> registerIndexes, int offset, AtomicInteger lineNumS) {
+	public Snippet(Pattern pattern, List<Integer> registerIndexes, int offset) {
 		method = BACKGROUND_BACKUP;
 		this.pattern = pattern;
 		this.registerIndexes = registerIndexes;
 		this.offset = offset;
-		this.lineNumS = lineNumS;
 	}
 
 	public Snippet(Pattern pattern, byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) {
@@ -49,7 +46,7 @@ public class Snippet {
 	public List<String> call() throws Exception {
 		List<String> code = null;
 		switch (method) {
-		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexes, offset, lineNumS); break;
+		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexes, offset); break;
 		case DRAW: code=pattern.getDrawCode(data, position, registerIndexes, loadMask, offset); break;
 		case LEAS: code=asmCode.getCode(offset); break;
 		}
@@ -78,5 +75,17 @@ public class Snippet {
 
 	public int getMethod() {
 		return method;
+	}
+
+	public List<Integer> getRegisterIndexes() {
+		return registerIndexes;
+	}
+
+	public void addRegister(Integer value) {
+		this.registerIndexes.add(value);
+	}
+	
+	public int getOffset() {
+		return offset;
 	}
 }
