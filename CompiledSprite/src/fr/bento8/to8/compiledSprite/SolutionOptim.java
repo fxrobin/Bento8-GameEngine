@@ -658,4 +658,37 @@ public class SolutionOptim{
 	public int getAsmECodeSize() {
 		return asmECodeSize;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
