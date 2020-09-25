@@ -591,10 +591,14 @@ public class SolutionOptim{
 					asmCodeCycles += s.getCycles();
 					asmCodeSize += s.getSize();
 				}
+				
+				logger.debug("Cycles: "+asmCodeCycles);
 
 				asmECode.addAll(0, Pattern.getEraseCodeBuf(bestSolution, regEBest, offsetEBest));
 				asmECodeCycles += Pattern.getEraseCodeBufCycles(bestSolution, regEBest, offsetEBest);
 				asmECodeSize += Pattern.getEraseCodeBufSize(bestSolution, regEBest, offsetEBest);
+				
+				logger.debug("CyclesE: "+asmECodeCycles);
 			}
 
 			saveS = false;

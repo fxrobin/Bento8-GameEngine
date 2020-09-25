@@ -16,7 +16,7 @@ DRAW_TST2
 
 	LDA -1,S
 	LDB 1,S
-	PSHU A,B,S
+	PSHU S,B,A
 	LDA #$ff
 	STA -1,S
 	LDA #$cc

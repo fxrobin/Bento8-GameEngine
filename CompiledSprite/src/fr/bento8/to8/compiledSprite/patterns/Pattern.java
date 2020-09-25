@@ -137,10 +137,10 @@ public abstract class Pattern {
 			currentRegisters.clear();
 
 			if (Register.size[regE.get(posR)] == 1) {
-				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.A);
 					offsetECache[Register.A] = offsetE.get(posR);
-				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.B);
 					offsetECache[Register.B] = offsetE.get(posR);
 				}
@@ -148,13 +148,13 @@ public abstract class Pattern {
 				if (regE.get(posR) == Register.S) {
 					currentRegisters.add(Register.S);
 					offsetECache[Register.S] = offsetE.get(posR);
-				} else if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.D);
 					offsetECache[Register.D] = offsetE.get(posR);
-				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.X);
 					offsetECache[Register.X] = offsetE.get(posR);
-				} else if (!regECache[Register.Y]) {
+				} else if (!regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.Y);
 					offsetECache[Register.Y] = offsetE.get(posR);
 				}
@@ -167,7 +167,7 @@ public abstract class Pattern {
 				posR--;
 			}
 
-			if (currentRegisters.size() == 0 || posR < 0) {
+			if (currentRegisters.size() == 0 || posR < 0 || regECache[Register.S]) {
 				
 				// on ecrit les instructions du cache, on purge le cache et on reboucle sans modifier posR
 				offsetSB = 0;
@@ -175,7 +175,7 @@ public abstract class Pattern {
 					if (regECache[i]) {
 
 						// Construction du pulu (lecture des données sauvegardées)
-						if (read.equals("")) {
+						if (read.contentEquals("")) {
 							read = readInit + Register.name[i];
 						} else {
 							read += "," + Register.name[i];
@@ -183,8 +183,8 @@ public abstract class Pattern {
 
 						// Construction du pshs (ecriture des données sauvegardées)
 						// Le pshs est utilisé uniquement si le S a été sauvegardé avec le pulu correspondant, sinon on utilise les ST
-						if (offsetECache[i] == null && i != Register.S && (regECache[Register.S] && posR-1 == regE.size()-1)) { // On ne traite pas S
-							if (writeSB.equals("")) {
+						if (offsetECache[i] == null && i != Register.S && regECache[Register.S] && areAllNull(offsetECache, regECache)) { // On ne traite pas S
+							if (writeSB.contentEquals("")) {
 								writeSB = writeSBInit + Register.name[i];
 							} else {
 								writeSB += "," + Register.name[i];
@@ -192,7 +192,7 @@ public abstract class Pattern {
 						}
 
 						// Construction des st (ecriture des données sauvegardées)
-						if (offsetECache[i] == null && (regECache[Register.S] && posR-1 != regE.size()-1) && i != Register.S) {
+						if (offsetECache[i] == null && i != Register.S && regECache[Register.S] && !areAllNull(offsetECache, regECache)) {
 							offsetSB += Register.size[i];
 							writeST.add(writeSTInit + Register.name[i] + " "+offsetSB+",S");
 						} else if (offsetECache[i] != null) {
@@ -204,7 +204,7 @@ public abstract class Pattern {
 				}
 
 				asmECode.add(read);
-				if (!writeSB.equals("")) {
+				if (!writeSB.contentEquals("")) {
 					asmECode.add(writeSB);
 				}
 				if (writeST.size() > 0) {
@@ -221,6 +221,18 @@ public abstract class Pattern {
 		return asmECode;
 	}
 
+	public static boolean areAllNull (Integer[] tab, boolean[] mask) {
+		boolean result = true;
+		for (int i = 0 ; i < tab.length; i++) {
+			if (mask[i] && tab[i] != null) {
+				result = false;
+				break;
+			}
+				
+		}
+		return result;
+	}
+	
 	public static void placeS (boolean saveS, List<Snippet> solution, List<Integer> idE, List<Integer> regE, List<Integer> offsetE) throws Exception {
 
 		if (!saveS) {
@@ -253,10 +265,10 @@ public abstract class Pattern {
 			currentRegisters.clear();
 
 			if (Register.size[regE.get(posR)] == 1) {
-				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.A);
 					offsetECache[Register.A] = offsetE.get(posR);
-				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.B);
 					offsetECache[Register.B] = offsetE.get(posR);
 				}
@@ -264,13 +276,13 @@ public abstract class Pattern {
 				if (regE.get(posR) == Register.S) {
 					currentRegisters.add(Register.S);
 					offsetECache[Register.S] = offsetE.get(posR);
-				} else if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.D);
 					offsetECache[Register.D] = offsetE.get(posR);
-				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.X);
 					offsetECache[Register.X] = offsetE.get(posR);
-				} else if (!regECache[Register.Y]) {
+				} else if (!regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.Y);
 					offsetECache[Register.Y] = offsetE.get(posR);
 				}
@@ -283,7 +295,7 @@ public abstract class Pattern {
 				posR--;
 			}
 
-			if (currentRegisters.size() == 0 || posR <= 0) {
+			if (currentRegisters.size() == 0 || posR < 0 || regECache[Register.S]) {
 				
 				// on ecrit les instructions du cache, on purge le cache et on reboucle sans modifier posR
 				offsetSB = 0;
@@ -295,12 +307,12 @@ public abstract class Pattern {
 
 						// Construction du pshs (ecriture des données sauvegardées)
 						// Le pshs est utilisé uniquement si le S a été sauvegardé avec le pulu correspondant, sinon on utilise les ST
-						if (offsetECache[i] == null && i != Register.S && (regECache[Register.S] && posR-1 == regE.size()-1)) { // On ne traite pas S
+						if (offsetECache[i] == null && i != Register.S && regECache[Register.S] && areAllNull(offsetECache, regECache)) { // On ne traite pas S
 							nbBytePsh += Register.size[i];
 						}
 
 						// Construction des st (ecriture des données sauvegardées)
-						if (offsetECache[i] == null && (regECache[Register.S] && posR-1 != regE.size()-1) && i != Register.S) {
+						if (offsetECache[i] == null && i != Register.S && regECache[Register.S] && !areAllNull(offsetECache, regECache)) {
 							offsetSB += Register.size[i];
 							cycles += Register.costIndexedST[i] + Register.getIndexedOffsetCost(offsetSB);
 						} else if (offsetECache[i] != null) {
@@ -334,10 +346,10 @@ public abstract class Pattern {
 			currentRegisters.clear();
 
 			if (Register.size[regE.get(posR)] == 1) {
-				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.A);
 					offsetECache[Register.A] = offsetE.get(posR);
-				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.B);
 					offsetECache[Register.B] = offsetE.get(posR);
 				}
@@ -345,13 +357,13 @@ public abstract class Pattern {
 				if (regE.get(posR) == Register.S) {
 					currentRegisters.add(Register.S);
 					offsetECache[Register.S] = offsetE.get(posR);
-				} else if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.A] && !regECache[Register.B] && !regECache[Register.D] && !regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.D);
 					offsetECache[Register.D] = offsetE.get(posR);
-				} else if (!regECache[Register.X] && !regECache[Register.Y]) {
+				} else if (!regECache[Register.X] && !regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.X);
 					offsetECache[Register.X] = offsetE.get(posR);
-				} else if (!regECache[Register.Y]) {
+				} else if (!regECache[Register.Y] && !regECache[Register.S]) {
 					currentRegisters.add(Register.Y);
 					offsetECache[Register.Y] = offsetE.get(posR);
 				}
@@ -364,7 +376,7 @@ public abstract class Pattern {
 				posR--;
 			}
 
-			if (currentRegisters.size() == 0 || posR <= 0) {
+			if (currentRegisters.size() == 0 || posR < 0 || regECache[Register.S]) {
 				
 				// on ecrit les instructions du cache, on purge le cache et on reboucle sans modifier posR
 				offsetSB = 0;
@@ -374,12 +386,12 @@ public abstract class Pattern {
 
 						// Construction du pshs (ecriture des données sauvegardées)
 						// Le pshs est utilisé uniquement si le S a été sauvegardé avec le pulu correspondant, sinon on utilise les ST
-						if (offsetECache[i] == null && i != Register.S && (regECache[Register.S] && posR-1 == regE.size()-1)) { // On ne traite pas S
+						if (offsetECache[i] == null && i != Register.S && regECache[Register.S] && areAllNull(offsetECache, regECache)) { // On ne traite pas S
 							nbBytePsh += Register.size[i];
 						}
 
 						// Construction des st (ecriture des données sauvegardées)
-						if (offsetECache[i] == null && (regECache[Register.S] && posR-1 != regE.size()-1) && i != Register.S) {
+						if (offsetECache[i] == null && i != Register.S && regECache[Register.S] && !areAllNull(offsetECache, regECache)) {
 							offsetSB += Register.size[i];
 							size += Register.sizeIndexedST[i] + Register.getIndexedOffsetSize(offsetSB);
 						} else if (offsetECache[i] != null) {
