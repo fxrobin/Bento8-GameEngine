@@ -34,7 +34,7 @@ public class Solution {
 	public void add(Pattern pattern, int i) {
 		patterns.add(0, pattern);
 		positions.add(0, i);
-		computedOffsets.add(0, 0);
+		computedOffsets.add(0, null);
 	}
 
 	public String toString() {

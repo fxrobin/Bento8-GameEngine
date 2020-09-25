@@ -7,7 +7,7 @@ import fr.bento8.to8.InstructionSet.Register;
 
 public abstract class PatternStackBlast extends Pattern{
 
-	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		String pixelValues;
 		String pshs = "\tPSHS ";
@@ -62,7 +62,7 @@ public abstract class PatternStackBlast extends Pattern{
 		return asmCode;
 	}
 
-	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		int cycles = 0, nbByte = 0;
 
 		for (int i=0; i<loadMask.size(); i++) {
@@ -86,7 +86,7 @@ public abstract class PatternStackBlast extends Pattern{
 		return cycles;
 	}
 
-	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		int size = 0;
 
 		for (int i=0; i<loadMask.size(); i++) {

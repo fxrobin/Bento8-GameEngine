@@ -82,8 +82,8 @@ class Permutations<E> implements  Iterator<E[]>{
 
     }
     
-    public void test() {
-        Permutations<Integer> perm = new Permutations<Integer>(new Integer[]{3,3,4,4,4,5,5});
+    public static void main(String[] args) throws Exception {
+        Permutations<Integer> perm = new Permutations<Integer>(new Integer[]{68,68,22});
         int count = 0;
         while(perm.hasNext()){
             System.out.println(Arrays.toString(perm.next()));

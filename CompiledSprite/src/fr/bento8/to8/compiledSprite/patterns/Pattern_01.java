@@ -18,21 +18,21 @@ public class Pattern_01 extends PatternAlpha {
 		registerCombi.add(new boolean[] {false, true, false, false, false, false, false});
 	}
 
-	public boolean matchesForward (byte[] data, int offset) {
+	public boolean matchesForward (byte[] data, Integer offset) {
 		if (offset+1 >= data.length) {
 			return false;
 		}
 		return (data[offset] == 0x00 && data[offset+1] != 0x00);
 	}
 	
-	public boolean matchesRearward (byte[] data, int offset) {
+	public boolean matchesRearward (byte[] data, Integer offset) {
 		if (offset < 0) {
 			return false;
 		}
 		return (data[offset] == 0x00 && data[offset+1] != 0x00);
 	}
 
-	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();		
 		asmCode.add("\tAND"+Register.name[registerIndexes.get(0)]+" #$F0");
 		asmCode.add("\tOR"+Register.name[registerIndexes.get(0)]+" "+"#$"+String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff));
@@ -40,7 +40,7 @@ public class Pattern_01 extends PatternAlpha {
 		return asmCode;
 	}
 	
-	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+	public int getDrawCodeCycles (List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		int cycles = 0;
 		cycles += Register.costImmediateAND[registerIndexes.get(0)];
 		cycles += Register.costImmediateOR[registerIndexes.get(0)];
@@ -48,7 +48,7 @@ public class Pattern_01 extends PatternAlpha {
 		return cycles;
 	}
 	
-	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, int offset) throws Exception {
+	public int getDrawCodeSize (List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		int size = 0;
 		size += Register.sizeImmediateAND[registerIndexes.get(0)]; 
 		size += Register.sizeImmediateOR[registerIndexes.get(0)];

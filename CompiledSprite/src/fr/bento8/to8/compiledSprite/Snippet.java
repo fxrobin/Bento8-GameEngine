@@ -11,7 +11,8 @@ public class Snippet {
 	private int method;
 
 	private List<Integer> registerIndexes;
-	private int offset;
+	private List<Integer> registerIndexesPUL, registerIndexesPSH;
+	private Integer offset;
 	private byte[] data;
 	private int position;
 	private List<Boolean> loadMask;
@@ -20,14 +21,15 @@ public class Snippet {
 	public static final int DRAW = 1;
 	public static final int LEAS = 2;
 
-	public Snippet(Pattern pattern, List<Integer> registerIndexes, int offset) {
+	public Snippet(Pattern pattern, List<Integer> registerIndexesPUL, List<Integer> registerIndexesPSH, Integer offset) {
 		method = BACKGROUND_BACKUP;
 		this.pattern = pattern;
-		this.registerIndexes = registerIndexes;
+		this.registerIndexesPUL = registerIndexesPUL;
+		this.registerIndexesPSH = registerIndexesPSH;
 		this.offset = offset;
 	}
 
-	public Snippet(Pattern pattern, byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, int offset) {
+	public Snippet(Pattern pattern, byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) {
 		method = DRAW;
 		this.pattern = pattern;
 		this.data = data;
@@ -37,7 +39,7 @@ public class Snippet {
 		this.offset = offset;
 	}
 
-	public Snippet(ASMCode asmCode, int offset) {
+	public Snippet(ASMCode asmCode, Integer offset) {
 		method = LEAS;
 		this.asmCode = asmCode;
 		this.offset = offset;
@@ -46,7 +48,7 @@ public class Snippet {
 	public List<String> call() throws Exception {
 		List<String> code = null;
 		switch (method) {
-		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexes, offset); break;
+		case BACKGROUND_BACKUP: code=pattern.getBackgroundBackupCode(registerIndexesPUL, registerIndexesPSH, offset); break;
 		case DRAW: code=pattern.getDrawCode(data, position, registerIndexes, loadMask, offset); break;
 		case LEAS: code=asmCode.getCode(offset); break;
 		}
@@ -56,7 +58,7 @@ public class Snippet {
 	public int getCycles() throws Exception {
 		int cycles = 0;
 		switch (method) {
-		case BACKGROUND_BACKUP: cycles=pattern.getBackgroundBackupCodeCycles(registerIndexes, offset); break;
+		case BACKGROUND_BACKUP: cycles=pattern.getBackgroundBackupCodeCycles(registerIndexesPUL, registerIndexesPSH, offset); break;
 		case DRAW: cycles=pattern.getDrawCodeCycles(registerIndexes, loadMask, offset); break;
 		case LEAS: cycles=asmCode.getCycles(offset); break;
 		}
@@ -66,7 +68,7 @@ public class Snippet {
 	public int getSize() throws Exception {
 		int size = 0;
 		switch (method) {
-		case BACKGROUND_BACKUP: size=pattern.getBackgroundBackupCodeSize(registerIndexes, offset); break;
+		case BACKGROUND_BACKUP: size=pattern.getBackgroundBackupCodeSize(registerIndexesPUL, registerIndexesPSH, offset); break;
 		case DRAW: size=pattern.getDrawCodeSize(registerIndexes, loadMask, offset); break;
 		case LEAS: size=asmCode.getSize(offset); break;
 		}
@@ -80,12 +82,24 @@ public class Snippet {
 	public List<Integer> getRegisterIndexes() {
 		return registerIndexes;
 	}
-
-	public void addRegister(Integer value) {
-		this.registerIndexes.add(value);
+	
+	public List<Integer> getRegisterIndexesPUL() {
+		return registerIndexesPUL;
 	}
 	
-	public int getOffset() {
+	public List<Integer> getRegisterIndexesPSH() {
+		return registerIndexesPSH;
+	}
+
+	public void addRegisterPSH(Integer value) {
+		this.registerIndexesPSH.add(value);
+	}
+	
+	public void prependRegisterPSH(Integer value) {
+		this.registerIndexesPSH.add(0, value);
+	}
+	
+	public Integer getOffset() {
 		return offset;
 	}
 }
