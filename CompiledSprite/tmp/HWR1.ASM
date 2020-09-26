@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $D2AD
+	ORG $D701
 DRAW_HWR1
 	PSHS U,DP
 	STS SSAV_HWR1+2
@@ -9,6 +9,15 @@ DRAW_HWR1
 	LDU #ERASE_DATA_HWR1_2
 	LEAS 523,S
 
+	LDA -81,S
+	LDX -41,S
+	LDY -1,S
+	PSHU Y,X,A
+	LDD #$cccc
+	STD -41,S
+	STA -81,S
+	LDD #$dcaa
+	STD -1,S
 	LDD 39,S
 	PSHU D
 	ANDA #$F0
@@ -21,25 +30,16 @@ DRAW_HWR1
 	ORA #$0d
 	LDB #$3a
 	STD 79,S
-	LDA -81,S
-	LDX -41,S
-	PSHU X,A
-	LDD #$cccc
-	STD -41,S
-	STA -81,S
 	LDA 41,S
 	PSHU A
 	ANDA #$0F
 	ORA #$d0
 	STA 41,S
 	LDB 81,S
+	PSHU S,B
 	ANDA #$0F
 	ORA #$d0
 	STA 81,S
-	LDX -1,S
-	PSHU S,X,B
-	LDD #$dcaa
-	STD -1,S
 	LEAS 239,S
 
 	LDD -119,S
@@ -74,166 +74,6 @@ DRAW_HWR1
 	PSHS A,X
 	LEAS 40,S
 
-	PULS A,X
-	PSHU S,X,A
-	LDA #$dd
-	LDX #$aaad
-	PSHS A,X
-	LEAS 40,S
-
-	PULS A,X
-	PSHU S,X,A
-	LDA #$dd
-	LDX #$aaa0
-	PSHS A,X
-	LEAS 40,S
-
-	LDD 40,S
-	PSHU D
-	ANDA #$F0
-	ORA #$00
-	LDB #$ca
-	STD 40,S
-	LDD 80,S
-	PSHU D
-	ANDA #$F0
-	ORA #$0d
-	LDB #$cc
-	STD 80,S
-	LDA 42,S
-	LDB 82,S
-	PSHU B,A
-	LDA #$a9
-	STA 42,S
-	LDA #$ba
-	STA 82,S
-	PULS A,X
-	PSHU S,X,A
-	LDA #$d0
-	LDX #$aac9
-	PSHS A,X
-	LEAS 120,S
-
-	PULS A,X
-	PSHU S,X,A
-	LDA #$cd
-	LDX #$2ba0
-	PSHS A,X
-	LEAS 40,S
-
-	LDA 42,S
-	PSHU A
-	ANDA #$0F
-	ORA #$30
-	STA 42,S
-	LDB 82,S
-	ANDA #$0F
-	ORA #$10
-	STA 82,S
-	LDX 40,S
-	LDY 80,S
-	PSHU Y,X,B
-	LDD 120,S
-	PSHU D
-	LDD #$dd22
-	STD 40,S
-	LDB #$32
-	STD 80,S
-	LDB #$d3
-	STD 120,S
-	PULS A,X
-	PSHU S,X,A
-	LDA #$dd
-	LDX #$2200
-	PSHS A,X
-	LEAS 280,S
-
-	LDD 40,S
-	PSHU D
-	LDA #$bd
-	ANDB #$0F
-	ORB #$b0
-	STD 40,S
-	LDD 80,S
-	PSHU D
-	LDA #$aa
-	ANDB #$0F
-	ORB #$b0
-	STD 80,S
-	LDX -120,S
-	LDY -80,S
-	PSHU Y,X
-	LDD #$3129
-	STD -80,S
-	LDD #$22e0
-	STD -120,S
-	LDD 120,S
-	LDX -40,S
-	LDY ,S
-	PSHU S,Y,X,D
-	LDD #$baaf
-	STD 120,S
-	LDD #$ddc9
-	STD -40,S
-	LDB #$d0
-	STD ,S
-	LEAS 280,S
-
-	LDA 42,S
-	PSHU A
-	ANDA #$0F
-	ORA #$f0
-	STA 42,S
-	LDB 82,S
-	ANDA #$0F
-	ORA #$10
-	STA 82,S
-	LDX -120,S
-	LDY -40,S
-	PSHU Y,X,B
-	LDA 80,S
-	LDB 120,S
-	LDX -80,S
-	LDY ,S
-	PSHU Y,X,B,A
-	LDA #$e1
-	STA 120,S
-	LDD #$1191
-	STD ,S
-	LDD 40,S
-	PSHU S,D
-	LDA #$01
-	ANDB #$F0
-	ORB #$0e
-	STD 40,S
-	STA 80,S
-	LDD #$bafb
-	STD -120,S
-	LDD #$a1aa
-	STD -40,S
-	LDD #$a91b
-	STD -80,S
-	LEAS 220,S
-
-	LDD 20,S
-	PSHU D
-	LDA #$ee
-	ANDB #$0F
-	ORB #$f0
-	STD 20,S
-	LDD 60,S
-	PSHU D
-	LDA #$e0
-	ANDB #$0F
-	ORB #$e0
-	STD 60,S
-	LDA -60,S
-	LDB -20,S
-	PSHU S,B,A
-	LDA #$e1
-	STA -60,S
-	LDA #$e0
-	STA -20,S
 
 	LDS $9F00+2
 	STS ERASE_POS_HWR1_2+2
@@ -241,47 +81,47 @@ DRAW_HWR1
 
 	LEAS 542,S
 
+	LDA -100,S
+	LDX 60,S
+	LDY 100,S
+	PSHU Y,X,A
+	LDD 20,S
+	PSHU D
 	LDD -20,S
 	PSHU D
 	LDA #$cd
 	ANDB #$0F
 	ORB #$c0
 	STD -20,S
-	LDX 100,S
-	PSHU X
+	LDD #$cdac
+	STD 20,S
 	LDD -61,S
-	PSHU D
+	PSHU S,D
 	ANDA #$F0
 	ORA #$0d
 	LDB #$cc
 	STD -61,S
-	LDA -100,S
 	STB -100,S
-	LDX 60,S
-	LDY 20,S
-	PSHU S,Y,X,A
 	LDD #$d2aa
 	STD 60,S
 	LDA #$c2
 	STD 100,S
-	LDD #$cdac
-	STD 20,S
 	LEAS 259,S
 
+	LDA -38,S
+	LDX -119,S
+	LDY -79,S
+	PSHU Y,X,A
+	LDD #$c2aa
+	STD -119,S
+	LDD #$cdda
+	STD -79,S
 	LDD -40,S
 	PSHU D
 	ANDA #$F0
 	ORA #$0c
 	LDB #$cc
 	STD -40,S
-	LDA -38,S
-	LDX -119,S
-	LDD #$c2aa
-	STD -119,S
-	LDY -79,S
-	PSHU Y,X,A
-	LDD #$cdda
-	STD -79,S
 	LDA #$ba
 	STA -38,S
 	PULS A,X
@@ -355,6 +195,9 @@ DRAW_HWR1
 	PSHS B,X
 	LEAS 281,S
 
+	LDX -1,S
+	LDY 79,S
+	PSHU Y,X
 	LDA -119,S
 	PSHU A
 	ANDA #$0F
@@ -364,20 +207,17 @@ DRAW_HWR1
 	ANDA #$0F
 	ORA #$b0
 	STA 121,S
-	LDX 79,S
-	LDD #$abe1
-	STD 79,S
-	LDY 39,S
+	LDX 39,S
+	LDY -41,S
 	PSHU Y,X,B
-	LDD -1,S
-	LDX -41,S
-	PSHU X,D
 	LDD #$aaaa
 	STD -41,S
 	LDD #$9bee
 	STD 39,S
 	LDB #$ea
 	STD -1,S
+	LDD #$abe1
+	STD 79,S
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
@@ -398,41 +238,14 @@ DRAW_HWR1
 	STD 119,S
 	LEAS 280,S
 
-	LDD -121,S
-	PSHU D
-	ANDA #$F0
-	ORA #$09
-	LDB #$0e
-	STD -121,S
-	LDD -81,S
-	PSHU D
-	ANDA #$F0
-	ORA #$01
-	LDB #$a0
-	STD -81,S
-	LDD 79,S
-	PSHU D
-	ANDA #$F0
-	ORA #$01
-	LDB #$af
-	STD 79,S
-	LDA -39,S
-	LDB 120,S
-	PSHU B,A
-	LDA 1,S
+	LDA -79,S
 	LDB -119,S
 	PSHU B,A
-	LDA #$0e
-	STA 1,S
-	LDA #$a1
-	STA 120,S
-	LDA -79,S
+	LDA 1,S
+	LDB 120,S
+	PSHU B,A
+	LDA -39,S
 	PSHU A
-	LDA #$f2
-	STA -79,S
-	LDA #$ff
-	STA -119,S
-	STA -39,S
 	LDD -41,S
 	PSHU D
 	ANDA #$F0
@@ -446,11 +259,38 @@ DRAW_HWR1
 	ADDD #$0e90
 	STD -1,S
 	LDD 39,S
-	PSHU S,D
+	PSHU D
 	ANDA #$F0
 	ANDB #$0F
 	ADDD #$01a0
 	STD 39,S
+	LDD -121,S
+	PSHU D
+	ANDA #$F0
+	ORA #$09
+	LDB #$0e
+	STD -121,S
+	LDD -81,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$a0
+	STD -81,S
+	LDD 79,S
+	PSHU S,D
+	ANDA #$F0
+	ORA #$01
+	LDB #$af
+	STD 79,S
+	LDA #$f2
+	STA -79,S
+	LDA #$ff
+	STA -119,S
+	STA -39,S
+	LDA #$0e
+	STA 1,S
+	LDA #$a1
+	STA 120,S
 	LEAS 180,S
 
 	LDA -20,S
@@ -473,102 +313,31 @@ ERASE_POS_HWR1_1
 	LDU #ERASE_DATA_HWR1_1
 
 ERASE_CODE_HWR1_1
-	PULU A,B,X,Y,S
-	STA -60,S
-	STB -20,S
-	STX 60,S
-	STY 20,S
+	PULU A,X
 
-	PULU D,S
-	STD 40,S
-
-	PULU A,B,X,Y
-	STA 80,S
-	STB 120,S
-	STX -80,S
-	STY ,S
-
-	PULU A,X,Y
-	STA 82,S
-	STX -120,S
-	STY -40,S
-
-	PULU A
-	STA 42,S
-
-	PULU D,X,Y,S
-	STD 120,S
-	STX -40,S
-	STY ,S
-
-	PULU D,X,Y
-	STD -120,S
-	STX -80,S
-	STY 80,S
+	PULU A,S
+	STA -38,S
 
 	PULU D
-	STD 40,S
-
-	PULU A,X,Y,S
-	STA 1,S
-	STX 3,S
-	STY 120,S
-
-	PULU A,X,Y
-	STA 82,S
-	STX 40,S
-	STY 80,S
-
-	PULU A
-	STA 42,S
-
-	PULU A,X,S
-	STA 1,S
-	STX 3,S
-
-	PULU A,X,S
-	STA 1,S
-	STX 3,S
-
-	PULU A,B,X,Y
-	STA 42,S
-	STB 82,S
-	STX 80,S
-	STY 40,S
-
-	PULU A,X,S
-	STA 1,S
-	STX 3,S
-
-	PULU A,X,S
-	STA 1,S
-	STX 3,S
-
-	PULU A,X,S
-	STA 1,S
-	STX 3,S
-
-	PULU A,X
-	STA -38,S
-	STX -40,S
+	STD -40,S
 
 	PULU A,X,Y
 	STA -78,S
 	STX -80,S
 	STY -119,S
 
-	PULU A,X,S
+	PULU A,S
 	STA 81,S
-	STX -1,S
 
-	PULU A,B,X,Y
+	PULU A,X,Y
 	STA 41,S
-	STB -81,S
-	STX -41,S
-	STY 79,S
+	STX 79,S
+	STY 39,S
 
-	PULU D
-	STD 39,S
+	PULU A,X,Y
+	STA -81,S
+	STX -41,S
+	STY -1,S
 
 ERASE_POS_HWR1_2
 	LDS #$0000
@@ -579,43 +348,45 @@ ERASE_CODE_HWR1_2
 	STA -20,S
 	STB 20,S
 
-	PULU D,X,Y,S
-	STD 39,S
-	STX -1,S
-	STY -41,S
+	PULU D,S
+	STD 79,S
 
-	PULU A,B
-	STA -79,S
-	STB 1,S
-
-	PULU A,B
-	STA -119,S
-	STB -39,S
-
-	PULU A,X,Y
-	STA 120,S
-	STX 79,S
-	STY -81,S
-
-	PULU D
-	STD -121,S
-
-	PULU D,X,Y,S
-	STD 119,S
-	STX -81,S
-	STY -121,S
+	PULU D,X,Y
+	STD -81,S
+	STX -121,S
+	STY 39,S
 
 	PULU D,X
 	STD -1,S
 	STX -41,S
 
-	PULU A,X,Y
-	STA 121,S
-	STX 79,S
-	STY 39,S
+	PULU A,B
+	STA -39,S
+	STB 1,S
+
+	PULU A,B
+	STA 120,S
+	STB -79,S
 
 	PULU A
 	STA -119,S
+
+	PULU D,S
+	STD 119,S
+
+	PULU D,X
+	STD -81,S
+	STX -121,S
+
+	PULU A,X,Y
+	STA 121,S
+	STX 39,S
+	STY -41,S
+
+	PULU A,X,Y
+	STA -119,S
+	STX -1,S
+	STY 79,S
 
 	PULU A,X,Y,S
 	STA 1,S
@@ -627,14 +398,14 @@ ERASE_CODE_HWR1_2
 	STX 81,S
 	STY 41,S
 
-	PULU A,X,S
-	STA 1,S
-	STX 3,S
+	PULU A,X
 
-	PULU A,X,Y
+	PULU A,S
 	STA -38,S
-	STX -79,S
-	STY -40,S
+
+	PULU D,X
+	STD -79,S
+	STX -40,S
 
 	PULU A,X,Y,S
 	STA 1,S
@@ -645,41 +416,33 @@ ERASE_CODE_HWR1_2
 	STD 41,S
 	STX 81,S
 
-	PULU A,X,S
+	PULU A,X,Y,S
 	STA 1,S
 	STX 3,S
+	STY -40,S
 
 	PULU A,X,Y
 	STA -38,S
 	STX -119,S
 	STY -79,S
 
-	PULU D
-	STD -40,S
+	PULU D,S
+	STD -61,S
 
-	PULU A,X,Y,S
+	PULU D,X
+	STD -20,S
+	STX 20,S
+
+	PULU A,X,Y
 	STA -100,S
 	STX 60,S
-	STY 20,S
-
-	PULU D,X,Y
-	STD -61,S
-	STX 100,S
-	STY -20,S
+	STY 100,S
 
 ERASE_SSAV_HWR1
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
 
 ERASE_DATA_HWR1_1
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
-	FDB $0000
 	FDB $0000
 	FDB $0000
 	FDB $0000

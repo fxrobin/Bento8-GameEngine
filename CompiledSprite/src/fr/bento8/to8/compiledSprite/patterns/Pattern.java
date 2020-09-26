@@ -79,9 +79,6 @@ public abstract class Pattern {
 		if (nbBytesPuls <= 2) {
 			cycles += Register.costIndexedLD[registerIndexesPUL.get(0)] + Register.getIndexedOffsetCost(offset);
 		} else {
-			for (Integer reg : registerIndexesPUL) {
-				nbBytesPuls += Register.size[reg];
-			}
 			cycles += Register.getCostImmediatePULPSH(nbBytesPuls);
 		}
 
@@ -244,8 +241,8 @@ public abstract class Pattern {
 		for (int i = solution.size()-1; i >= 0; i--) {
 			if (solution.get(i).getMethod() == Snippet.BACKGROUND_BACKUP) {
 				solution.get(i).prependRegisterPSH(Register.S);
-				regE.add(idE.indexOf(i), Register.S);
-				offsetE.add(idE.indexOf(i), null);
+				regE.add(idE.indexOf(i)-solution.get(i).getRegisterIndexesPSH().size()+2, Register.S);
+				offsetE.add(idE.indexOf(i)-solution.get(i).getRegisterIndexesPSH().size()+2, null);
 				break;
 			}
 		}

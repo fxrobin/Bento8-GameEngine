@@ -886,7 +886,7 @@ public class SolutionOptim{
 			for (int j = 0; j < solution.patterns.get(id).getResetRegisters().get(selectedCombi).length; j++) {
 				if (solution.patterns.get(id).getResetRegisters().get(selectedCombi)[j]) {
 					regSet[j] = false;
-					if (regBBSet[j]) {
+					if (regBBSet[j] || ((j == Register.A || j == Register.B) && regBBSet[Register.D] == true ) || (j == Register.D && (regBBSet[Register.A] == true || regBBSet[Register.B] == true))) {
 						flush = true;
 					}
 				}
@@ -894,7 +894,7 @@ public class SolutionOptim{
 		}		
 
 		for (int i = 0; i < selectedReg.size(); i++) {
-			if (regBBSet[selectedReg.get(i)]) {
+			if (regBBSet[selectedReg.get(i)] || ((selectedReg.get(i) == Register.A || selectedReg.get(i) == Register.B) && regBBSet[Register.D] == true ) || (selectedReg.get(i) == Register.D && (regBBSet[Register.A] == true || regBBSet[Register.B] == true))) {
 				flush = true;
 			}
 		}
