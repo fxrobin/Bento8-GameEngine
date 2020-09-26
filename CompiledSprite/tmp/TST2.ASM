@@ -14,6 +14,18 @@ DRAW_TST2
 
 	LEAS 1,S
 
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$ffff
+	LDX #$ffff
+	PSHS D,X
+	LEAS 40,S
+
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$ffff
+	LDX #$ffff
+	PSHS D,X
 SSAV_TST2
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
@@ -32,12 +44,20 @@ ERASE_POS_TST2_2
 	LDU #ERASE_DATA_TST2_2
 
 ERASE_CODE_TST2_2
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
 ERASE_SSAV_TST2
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
 
 ERASE_DATA_TST2_1
 ERASE_DATA_TST2_2
+	FDB $0000
+	FDB $0000
 	FDB $0000
 	FDB $0000
 	FDB $0000

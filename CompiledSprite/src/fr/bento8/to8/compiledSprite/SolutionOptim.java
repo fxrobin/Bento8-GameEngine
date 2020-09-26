@@ -44,7 +44,6 @@ public class SolutionOptim{
 	List<List<Integer>> pshuGroup = new ArrayList<List<Integer>>();
 
 	// Variables pour le code de retablissement du fond
-	List<Integer> idE = new ArrayList<Integer>(), idEBest = new ArrayList<Integer>();
 	List<Integer> regE = new ArrayList<Integer>(), regEBest = new ArrayList<Integer>();
 	List<Integer> offsetE = new ArrayList<Integer>(), offsetEBest = new ArrayList<Integer>();
 
@@ -54,7 +53,6 @@ public class SolutionOptim{
 	}
 
 	private void saveState() {
-
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
 			regSetSave[i] = regSet[i];
@@ -75,7 +73,6 @@ public class SolutionOptim{
 			offsetBBSet[i] = null;
 		}
 
-		idE.clear();
 		regE.clear();
 		offsetE.clear();
 
@@ -120,7 +117,6 @@ public class SolutionOptim{
 				if (p[0] != null) {
 					s = processPatternBackgroundBackup(p[0], saveS, s);
 					bestSolution.add(s);
-					idE.add(bestSolution.size()-1);
 				}
 				if (p[1] != null) {
 					bestSolution.add(processPatternDraw(p[1], s));
@@ -132,7 +128,6 @@ public class SolutionOptim{
 		if (lastPattern != null) {
 			s = processPatternBackgroundBackup(lastPattern, saveS, s);
 			bestSolution.add(s);
-			idE.add(bestSolution.size()-1);
 			bestSolution.add(processPatternDraw(lastPattern, s));
 		}
 
@@ -151,8 +146,6 @@ public class SolutionOptim{
 			offsetBBSet[i] = null;
 		}
 
-		idEBest.clear();
-		idEBest.addAll(idE);
 		regEBest.clear();
 		regEBest.addAll(regE);
 		offsetEBest.clear();
@@ -187,7 +180,6 @@ public class SolutionOptim{
 						if (p[0] != null) {
 							s = processPatternBackgroundBackup(p[0], saveS, s);
 							testSolution.add(s);
-							idE.add(testSolution.size()-1);
 						}
 						if (p[1] != null) {
 							testSolution.add(processPatternDraw(p[1], s));
@@ -198,7 +190,6 @@ public class SolutionOptim{
 				if (lastPattern != null) {
 					s = processPatternBackgroundBackup(lastPattern, saveS, s);
 					testSolution.add(s);
-					idE.add(testSolution.size()-1);
 					testSolution.add(processPatternDraw(lastPattern, s));
 				}
 
@@ -229,8 +220,6 @@ public class SolutionOptim{
 					logger.debug("score: "+score);
 					bestSolution.clear();
 					bestSolution.addAll(testSolution);
-					idEBest.clear();
-					idEBest.addAll(idE);
 					regEBest.clear();
 					regEBest.addAll(regE);
 					offsetEBest.clear();
@@ -296,7 +285,6 @@ public class SolutionOptim{
 				if (p[0] != null) {
 					s = processPatternBackgroundBackup(p[0], saveS, s);
 					bestSolution.add(s);
-					idE.add(bestSolution.size()-1);
 				}
 				if (p[1] != null) {
 					bestSolution.add(processPatternDraw(p[1], s));
@@ -307,7 +295,6 @@ public class SolutionOptim{
 		if (lastPattern != null) {
 			s = processPatternBackgroundBackup(lastPattern, saveS, s);
 			bestSolution.add(s);
-			idE.add(bestSolution.size()-1);
 			bestSolution.add(processPatternDraw(lastPattern, s));
 		}
 
@@ -326,8 +313,6 @@ public class SolutionOptim{
 			offsetBBSet[i] = null;
 		}
 
-		idEBest.clear();
-		idEBest.addAll(idE);
 		regEBest.clear();
 		regEBest.addAll(regE);
 		offsetEBest.clear();
@@ -370,8 +355,7 @@ public class SolutionOptim{
 					for (Integer[] p : pl) {
 						if (p[0] != null) {
 							s = processPatternBackgroundBackup(p[0], saveS, s);
-							testSolution.add(s);	
-							idE.add(testSolution.size()-1);
+							testSolution.add(s);
 						}
 						if (p[1] != null) {
 							testSolution.add(processPatternDraw(p[1], s));
@@ -382,7 +366,6 @@ public class SolutionOptim{
 				if (lastPattern != null) {
 					s = processPatternBackgroundBackup(lastPattern, saveS, s);
 					testSolution.add(s);
-					idE.add(testSolution.size()-1);
 					testSolution.add(processPatternDraw(lastPattern, s));
 				}
 
@@ -413,8 +396,6 @@ public class SolutionOptim{
 					logger.debug("score: "+score);
 					bestSolution.clear();
 					bestSolution.addAll(testSolution);
-					idEBest.clear();
-					idEBest.addAll(idE);
 					regEBest.clear();
 					regEBest.addAll(regE);
 					offsetEBest.clear();
@@ -581,7 +562,7 @@ public class SolutionOptim{
 				}	
 
 				// Enrichissement de la solution avec le positionnement de la sauvegarde du S
-				Pattern.placeS(saveS, bestSolution, idEBest, regEBest, offsetEBest);
+				Pattern.placeS(saveS, bestSolution, regEBest, offsetEBest);
 				if (saveS)
 					sizeSaveS += 2;
 

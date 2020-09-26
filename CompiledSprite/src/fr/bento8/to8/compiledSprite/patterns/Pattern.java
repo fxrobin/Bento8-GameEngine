@@ -230,19 +230,18 @@ public abstract class Pattern {
 		return result;
 	}
 	
-	public static void placeS (boolean saveS, List<Snippet> solution, List<Integer> idE, List<Integer> regE, List<Integer> offsetE) throws Exception {
+	public static void placeS (boolean saveS, List<Snippet> solution, List<Integer> regE, List<Integer> offsetE) throws Exception {
 
 		if (!saveS) {
 			return;
 		}
 		
 		// Ajout de la sauvegarde du pointeur S sur le dernier PSHU du noeud
-
 		for (int i = solution.size()-1; i >= 0; i--) {
 			if (solution.get(i).getMethod() == Snippet.BACKGROUND_BACKUP) {
+				regE.add(regE.size()-solution.get(i).getRegisterIndexesPSH().size(), Register.S);
+				offsetE.add(offsetE.size()-solution.get(i).getRegisterIndexesPSH().size(), null);
 				solution.get(i).prependRegisterPSH(Register.S);
-				regE.add(idE.indexOf(i)-solution.get(i).getRegisterIndexesPSH().size()+2, Register.S);
-				offsetE.add(idE.indexOf(i)-solution.get(i).getRegisterIndexesPSH().size()+2, null);
 				break;
 			}
 		}
