@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A6CA
+	ORG $A665
 DRAW_HJR0
 	PSHS U,DP
 	STS SSAV_HJR0+2
@@ -88,25 +88,25 @@ DRAW_HJR0
 	PSHS B,X
 	LEAS 280,S
 
-	LDX -39,S
-	LDY 81,S
+	LDX 1,S
+	LDY 41,S
 	PSHU Y,X
-	LDD -79,S
+	LDD -39,S
 	LDX -119,S
-	LDY 1,S
+	LDY 121,S
 	PSHU Y,X,D
-	LDD 121,S
-	LDX 41,S
+	LDD -79,S
+	LDX 81,S
 	PSHU X,D
-	LDD #$cccc
+	LDD #$ccac
+	STD -119,S
+	LDB #$cc
 	STD -79,S
 	STD -39,S
 	STD 1,S
 	STD 41,S
 	STD 81,S
 	STD 121,S
-	LDB #$ac
-	STD -119,S
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
@@ -292,8 +292,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccca
 	PSHS A,X
@@ -304,8 +304,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccca
 	PSHS A,X
@@ -316,8 +316,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dc
 	LDX #$ccab
 	PSHS A,X
@@ -328,8 +328,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dc
 	LDX #$ccab
 	PSHS A,X
@@ -396,8 +396,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -408,8 +408,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -420,8 +420,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -432,8 +432,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -444,8 +444,8 @@ DRAW_HJR0
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -550,17 +550,17 @@ ERASE_CODE_HJR0_1
 	STY -121,S
 
 	PULU D,X,Y
-	STD 121,S
-	STX 41,S
-	STY -79,S
+	STD -79,S
+	STX 81,S
+	STY -39,S
 
 	PULU D,X,Y
 	STD -119,S
-	STX 1,S
-	STY -39,S
+	STX 121,S
+	STY 1,S
 
 	PULU D
-	STD 81,S
+	STD 41,S
 
 	PULU A,X,S
 	PSHS A,X

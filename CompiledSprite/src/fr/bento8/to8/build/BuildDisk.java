@@ -310,7 +310,7 @@ public class BuildDisk
 				if (!spriteSheets.containsKey(animationPalette))
 					logger.fatal("animationPalette: L'image "+animationPalette+" n'est pas déclarée ou n'est pas utilisée dans une animation.");
 				
-				content = content.replace(animationPaletteTag, spriteSheets.get(animationPalette).getCodePalette(2.2));
+				content = content.replace(animationPaletteTag, spriteSheets.get(animationPalette).getCodePalette(3));
 				Files.write(pathMainTmp, content.getBytes(charset));
 
 				// Compilation du code principal

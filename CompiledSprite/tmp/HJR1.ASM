@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A000
+	ORG $C1EE
 DRAW_HJR1
 	PSHS U,DP
 	STS SSAV_HJR1+2
@@ -87,15 +87,15 @@ DRAW_HJR1
 	PSHS B,X
 	LEAS 280,S
 
-	LDX 1,S
-	LDY 81,S
+	LDX 41,S
+	LDY 121,S
 	PSHU Y,X
-	LDD 121,S
-	LDX -39,S
-	LDY -79,S
+	LDD 81,S
+	LDX 1,S
+	LDY -39,S
 	PSHU Y,X,D
-	LDD 41,S
-	LDX -119,S
+	LDD -119,S
+	LDX -79,S
 	PSHU X,D
 	LDD -121,S
 	PSHU D
@@ -290,8 +290,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -302,8 +302,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccca
 	PSHS A,X
@@ -314,8 +314,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccab
 	PSHS A,X
@@ -326,8 +326,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccab
 	PSHS A,X
@@ -394,8 +394,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -406,8 +406,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -418,8 +418,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cccc
 	PSHS A,X
@@ -430,8 +430,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$dccc
 	PSHS A,X
@@ -442,8 +442,8 @@ DRAW_HJR1
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ddcc
 	PSHS A,X
@@ -547,17 +547,17 @@ ERASE_CODE_HJR1_1
 	STY -121,S
 
 	PULU D,X,Y
-	STD 41,S
-	STX -119,S
-	STY 121,S
+	STD -119,S
+	STX -79,S
+	STY 81,S
 
 	PULU D,X,Y
-	STD -39,S
-	STX -79,S
-	STY 1,S
+	STD 1,S
+	STX -39,S
+	STY 41,S
 
 	PULU D
-	STD 81,S
+	STD 121,S
 
 	PULU A,X,S
 	PSHS A,X

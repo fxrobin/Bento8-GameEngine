@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C341
+	ORG $C26D
 DRAW_HJR9
 	PSHS U,DP
 	STS SSAV_HJR9+2
@@ -21,8 +21,8 @@ DRAW_HJR9
 	STA -119,S
 	LDD #$cacc
 	STD -40,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cd
 	LDX #$cdaf
 	PSHS A,X
@@ -127,15 +127,16 @@ DRAW_HJR9
 
 	LDX -40,S
 	PSHU X
+	LDD #$ddcc
+	STD -40,S
 	LDA -38,S
 	PSHU A
 	ANDA #$0F
 	ORA #$a0
 	STA -38,S
-	LDD #$ddcc
-	STD -40,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
+	LDA #$dd
 	LDX #$ddca
 	PSHS A,X
 	LEAS 40,S
@@ -203,8 +204,8 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$d0
 	STA 42,S
-	LDB 82,S
-	PSHU B
+	LDA 82,S
+	PSHU A
 	ANDA #$0F
 	ORA #$d0
 	STA 82,S
@@ -228,19 +229,18 @@ DRAW_HJR9
 	STA 20,S
 	LEAS 179,S
 
-	LDD -120,S
-	PSHU D
-	ANDA #$F0
-	ORA #$0a
-	LDB #$cc
-	STD -120,S
+	LDX -80,S
+	LDD #$accc
+	STD -80,S
+	LDY -40,S
+	PSHU Y,X
 	LDA -118,S
 	PSHU A
 	ANDA #$0F
 	ORA #$a0
 	STA -118,S
-	LDB -78,S
-	PSHU B
+	LDA -78,S
+	PSHU A
 	ANDA #$0F
 	ORA #$c0
 	STA -78,S
@@ -249,15 +249,17 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$00
 	STA -38,S
-	LDB 3,S
+	LDA 3,S
+	PSHU A
 	ANDA #$0F
 	ORA #$f0
 	STA 3,S
-	LDX -80,S
-	LDY -40,S
-	PSHU Y,X,B
-	LDD #$accc
-	STD -80,S
+	LDD -120,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0a
+	LDB #$cc
+	STD -120,S
 	LDD #$cc2c
 	STD -40,S
 	PULS A,X
@@ -272,8 +274,8 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$f0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cd
 	LDX #$ccc2
 	PSHS A,X
@@ -284,8 +286,8 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$f0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccc2
 	PSHS A,X
@@ -296,8 +298,8 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$10
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ccab
 	PSHS A,X
@@ -369,8 +371,8 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$a0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$dd3a
 	PSHS A,X
@@ -381,8 +383,8 @@ DRAW_HJR9
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$dd2c
 	PSHS A,X
@@ -425,8 +427,8 @@ DRAW_HJR9
 	STA 120,S
 	LDA #$cd
 	STA 122,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$dd2c
 	PSHS A,X
@@ -634,18 +636,18 @@ ERASE_CODE_HJR9_2
 	PULU A,X,S
 	PSHS A,X
 
-	PULU A,X,Y
-	STA 3,S
-	STX -80,S
-	STY -40,S
+	PULU D
+	STD -120,S
 
 	PULU A,B
-	STA -38,S
-	STB -78,S
+	STA 3,S
+	STB -38,S
 
-	PULU A,X
-	STA -118,S
-	STX -120,S
+	PULU A,B,X,Y
+	STA -78,S
+	STB -118,S
+	STX -80,S
+	STY -40,S
 
 	PULU A,B,S
 	STA -20,S

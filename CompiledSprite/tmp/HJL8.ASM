@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $AD2D
+	ORG $AD34
 DRAW_HJL8
 	PSHS U,DP
 	STS SSAV_HJL8+2
@@ -247,8 +247,8 @@ DRAW_HJL8
 	ANDA #$F0
 	ORA #$0f
 	STA -120,S
-	LDB -80,S
-	PSHU B
+	LDA -80,S
+	PSHU A
 	ANDA #$F0
 	ORA #$02
 	STA -80,S
@@ -259,8 +259,8 @@ DRAW_HJL8
 	STA -38,S
 	LDD #$ff90
 	STD -40,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$f1
 	LDX #$e0cc
 	PSHS A,X
@@ -311,8 +311,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$a3cc
 	PSHS A,X
@@ -323,8 +323,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$ca
 	LDX #$23cd
 	PSHS A,X
@@ -335,8 +335,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$ca
 	LDX #$23cd
 	PSHS A,X
@@ -347,8 +347,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$c1cd
 	PSHS A,X
@@ -359,8 +359,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$dccd
 	PSHS A,X
@@ -371,8 +371,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$a9
 	LDX #$ddcc
 	PSHS A,X
@@ -383,8 +383,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cc
 	LDX #$dccc
 	PSHS A,X
@@ -395,8 +395,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cc
 	LDX #$dddd
 	PSHS A,X
@@ -407,18 +407,13 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$ddcd
 	PSHS A,X
 	LEAS 40,S
 
-	LDA 3,S
-	PSHU A
-	ANDA #$0F
-	ORA #$d0
-	STA 3,S
 	LDD 42,S
 	PSHU D
 	LDA #$dd
@@ -443,6 +438,11 @@ DRAW_HJL8
 	ORA #$0d
 	LDB #$dd
 	STD 80,S
+	LDA 3,S
+	PSHU A
+	ANDA #$0F
+	ORA #$d0
+	STA 3,S
 	PULS A,X
 	PSHU S,X,A
 	LDX #$0ddd
@@ -476,8 +476,8 @@ DRAW_HJL8
 	ANDA #$0F
 	ORA #$d0
 	STA -40,S
-	LDB 39,S
-	PSHU S,B
+	LDA 39,S
+	PSHU S,A
 	ANDA #$F0
 	ORA #$0d
 	STA 39,S
@@ -600,16 +600,14 @@ ERASE_CODE_HJL8_2
 	PULU A,X,S
 	PSHS A,X
 
-	PULU D,X,Y
-	STD 80,S
-	STX 40,S
-	STY 82,S
-
-	PULU D
-	STD 42,S
-
-	PULU A
+	PULU A,X,Y
 	STA 3,S
+	STX 80,S
+	STY 40,S
+
+	PULU D,X
+	STD 82,S
+	STX 42,S
 
 	PULU A,X,S
 	PSHS A,X

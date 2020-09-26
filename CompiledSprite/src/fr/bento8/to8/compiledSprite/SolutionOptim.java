@@ -145,6 +145,7 @@ public class SolutionOptim{
 			regBBSet[i] = false;
 			offsetBBSet[i] = null;
 		}
+		regBBIdx = -1;
 
 		regEBest.clear();
 		regEBest.addAll(regE);
@@ -207,6 +208,7 @@ public class SolutionOptim{
 					regBBSet[i] = false;
 					offsetBBSet[i] = null;
 				}
+				regBBIdx = -1;
 
 				// Calcul des cycles pour la solution
 				for (Snippet ts : testSolution) {
@@ -312,6 +314,7 @@ public class SolutionOptim{
 			regBBSet[i] = false;
 			offsetBBSet[i] = null;
 		}
+		regBBIdx = -1;
 
 		regEBest.clear();
 		regEBest.addAll(regE);
@@ -383,6 +386,7 @@ public class SolutionOptim{
 					regBBSet[i] = false;
 					offsetBBSet[i] = null;
 				}
+				regBBIdx = -1;
 
 				// Calcul des cycles pour la solution
 				for (Snippet ts : testSolution) {
@@ -650,6 +654,7 @@ public class SolutionOptim{
 				regBBSet[i] = false;
 				offsetBBSet[i] = null;
 			}
+			regBBIdx = -1;
 
 			for (int j = 0; j < solution.patterns.get(id).getRegisterCombi().size() ; j++) {
 				for (int k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
@@ -895,6 +900,7 @@ public class SolutionOptim{
 				regBBSet[i] = false;
 				offsetBBSet[i] = null;
 			}
+			regBBIdx = -1;
 		}
 
 		return snippet;

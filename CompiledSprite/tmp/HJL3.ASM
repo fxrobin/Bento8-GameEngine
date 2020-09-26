@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A000
+	ORG $A6D8
 DRAW_HJL3
 	PSHS U,DP
 	STS SSAV_HJL3+2
@@ -25,8 +25,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$d0
 	STA -101,S
-	LDB -62,S
-	PSHU B
+	LDA -62,S
+	PSHU A
 	ANDA #$F0
 	ORA #$0a
 	STA -62,S
@@ -35,8 +35,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$c0
 	STA 60,S
-	LDB 100,S
-	PSHU S,B
+	LDA 100,S
+	PSHU S,A
 	ANDA #$0F
 	ORA #$d0
 	STA 100,S
@@ -49,20 +49,26 @@ DRAW_HJL3
 	LDX 81,S
 	LDY -120,S
 	PSHU Y,X
-	LDD 41,S
-	LDX -80,S
-	LDY -40,S
+	LDD -40,S
+	LDX 41,S
+	LDY -80,S
 	PSHU Y,X,D
+	LDD #$cdcd
+	STD -120,S
+	STD -80,S
 	LDA 121,S
 	LDB -38,S
 	PSHU B,A
 	ANDA #$0F
 	ORA #$c0
 	STA -38,S
-	LDD #$ccdd
-	STD -40,S
-	LDA #$dd
+	LDD #$dddd
 	STD 41,S
+	LDA #$cd
+	STA 121,S
+	STD 81,S
+	LDA #$cc
+	STD -40,S
 	LDD 39,S
 	PSHU D
 	ANDA #$F0
@@ -81,12 +87,6 @@ DRAW_HJL3
 	ORA #$0a
 	LDB #$ba
 	STD 119,S
-	LDD #$cdcd
-	STD -120,S
-	STD -80,S
-	STA 121,S
-	LDB #$dd
-	STD 81,S
 	PULS A,X
 	PSHU S,X,A
 	LDA #$ac
@@ -154,8 +154,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$d0
 	STA -38,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$dddd
 	PSHS A,X
@@ -255,31 +255,11 @@ DRAW_HJL3
 	STA 20,S
 	LEAS 179,S
 
-	LDA -78,S
-	LDX 80,S
-	LDY 40,S
-	PSHU Y,X,A
-	LDA -119,S
-	PSHU A
-	ANDA #$0F
-	ORA #$d0
-	STA -119,S
-	LDB 42,S
-	PSHU B
-	ANDA #$0F
-	ORA #$d0
-	STA 42,S
-	LDA 82,S
-	PSHU A
-	ANDA #$0F
-	ORA #$d0
-	STA 82,S
-	LDB 122,S
-	ANDA #$F0
-	ORA #$0c
-	STA 122,S
-	LDX 120,S
-	PSHU X,B
+	LDA -38,S
+	LDB -78,S
+	LDX 40,S
+	LDY 120,S
+	PSHU Y,X,B,A
 	LDD -80,S
 	PSHU D
 	ANDA #$F0
@@ -292,16 +272,37 @@ DRAW_HJL3
 	ANDB #$0F
 	ADDD #$0ad0
 	STD -40,S
+	LDA -119,S
+	PSHU A
+	ANDA #$0F
+	ORA #$d0
+	STA -119,S
+	LDA 42,S
+	PSHU A
+	ANDA #$0F
+	ORA #$d0
+	STA 42,S
+	LDA 82,S
+	PSHU A
+	ANDA #$0F
+	ORA #$d0
+	STA 82,S
+	LDA 122,S
+	PSHU A
+	ANDA #$F0
+	ORA #$0c
+	STA 122,S
 	LDD #$aadc
 	STD 40,S
+	LDX 80,S
+	PSHU X
 	LDB #$cc
 	STD 80,S
 	STD 120,S
-	LDA -38,S
 	STB -78,S
 	STB -38,S
-	PULS B,X
-	PSHU S,X,B,A
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$dcdd
 	PSHS A,X
@@ -319,8 +320,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$3a
 	LDX #$cccd
 	PSHS A,X
@@ -331,8 +332,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$ccdd
 	PSHS A,X
@@ -343,8 +344,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$aa
 	LDX #$ccdd
 	PSHS A,X
@@ -352,15 +353,16 @@ DRAW_HJL3
 
 	LDX 40,S
 	PSHU X
+	LDD #$aacc
+	STD 40,S
 	LDA 42,S
 	PSHU A
 	ANDA #$0F
 	ORA #$d0
 	STA 42,S
-	LDD #$aacc
-	STD 40,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
 	LDX #$ccdd
 	PSHS A,X
 	LEAS 80,S
@@ -384,8 +386,8 @@ DRAW_HJL3
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$ca
 	LDX #$22dc
 	PSHS A,X
@@ -434,35 +436,35 @@ DRAW_HJL3
 	LEAS 281,S
 
 	LDX -120,S
-	LDY -80,S
-	PSHU Y,X
-	LDA 120,S
-	LDX -40,S
 	LDY 40,S
-	PSHU Y,X,A
+	PSHU Y,X
+	LDD #$2f90
+	STD 40,S
+	LDD #$aaa0
+	STD -120,S
+	LDA 120,S
+	LDB 1,S
+	LDX -80,S
+	LDY -40,S
+	PSHU Y,X,B,A
 	LDD 80,S
 	PSHU D
 	LDA #$f1
 	ANDB #$0F
 	ORB #$00
 	STD 80,S
-	LDD #$2f90
-	STD 40,S
+	LDD #$aa9e
+	STD -80,S
+	STB 1,S
 	LDD #$99ae
 	STD -40,S
 	LDA #$ee
 	STA 120,S
-	LDA 1,S
-	LDB -1,S
-	PSHU S,B,A
+	LDA -1,S
+	PSHU S,A
 	ANDA #$F0
 	ORA #$01
 	STA -1,S
-	LDD #$aaa0
-	STD -120,S
-	LDB #$9e
-	STD -80,S
-	STB 1,S
 SSAV_HJL3
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
@@ -544,11 +546,11 @@ ERASE_CODE_HJL3_1
 	PULU A,B,X,Y
 	STA 121,S
 	STB -38,S
-	STX 41,S
-	STY -80,S
+	STX -40,S
+	STY 41,S
 
 	PULU D,X,Y
-	STD -40,S
+	STD -80,S
 	STX 81,S
 	STY -120,S
 
@@ -573,21 +575,21 @@ ERASE_POS_HJL3_2
 	LDU #ERASE_DATA_HJL3_2
 
 ERASE_CODE_HJL3_2
-	PULU A,B,S
-	STA 1,S
-	STB -1,S
+	PULU A,S
+	STA -1,S
 
 	PULU D
 	STD 80,S
 
-	PULU A,X,Y
+	PULU A,B,X,Y
 	STA 120,S
-	STX -40,S
-	STY 40,S
+	STB 1,S
+	STX -80,S
+	STY -40,S
 
 	PULU D,X
 	STD -120,S
-	STX -80,S
+	STX 40,S
 
 	PULU A,X,S
 	PSHS A,X
@@ -647,27 +649,27 @@ ERASE_CODE_HJL3_2
 	PULU A,X,S
 	PSHS A,X
 
-	PULU A,B,X,S
-	PSHS B,X
-	STA -38,S
+	PULU A,X,S
+	PSHS A,X
 
-	PULU D,X
-	STD -40,S
-	STX -80,S
-
-	PULU A,X
-	STA 122,S
-	STX 120,S
+	PULU D
+	STD 80,S
 
 	PULU A,B
-	STA 82,S
-	STB 42,S
+	STA 122,S
+	STB 82,S
 
 	PULU A,B,X,Y
-	STA -119,S
+	STA 42,S
+	STB -119,S
+	STX -40,S
+	STY -80,S
+
+	PULU A,B,X,Y
+	STA -38,S
 	STB -78,S
-	STX 80,S
-	STY 40,S
+	STX 40,S
+	STY 120,S
 
 	PULU A,B,S
 	STA -20,S

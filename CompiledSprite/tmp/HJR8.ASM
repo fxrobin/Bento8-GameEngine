@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C990
+	ORG $C8C0
 DRAW_HJR8
 	PSHS U,DP
 	STS SSAV_HJR8+2
@@ -35,8 +35,8 @@ DRAW_HJR8
 	STA -78,S
 	LDA #$ff
 	STA -38,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cc
 	LDX #$0e1f
 	PSHS A,X
@@ -52,8 +52,8 @@ DRAW_HJR8
 	ANDA #$F0
 	ORA #$01
 	STA 42,S
-	LDB 82,S
-	PSHU B
+	LDA 82,S
+	PSHU A
 	ANDA #$F0
 	ORA #$01
 	STA 82,S
@@ -108,12 +108,14 @@ DRAW_HJR8
 	PSHS A,X
 	LEAS 260,S
 
-	LDX -59,S
-	LDY -19,S
+	LDX 101,S
+	LDY -59,S
 	PSHU Y,X
-	LDD 21,S
-	LDX 61,S
+	LDD -99,S
+	LDX -19,S
 	PSHU X,D
+	LDD #$1caa
+	STD -99,S
 	LDD -101,S
 	PSHU D
 	ANDA #$F0
@@ -150,19 +152,17 @@ DRAW_HJR8
 	ORA #$0d
 	LDB #$dc
 	STD 99,S
-	LDX 101,S
-	LDY -99,S
-	PSHU S,Y,X
-	LDD #$cdcc
-	STD 21,S
-	LDB #$aa
+	LDX 21,S
+	LDD #$cdaa
 	STD -59,S
-	LDA #$1c
-	STD -99,S
-	LDD #$dddd
-	STD 101,S
 	LDB #$cc
+	STD 21,S
+	LDY 61,S
+	PSHU S,Y,X
+	LDA #$dd
 	STD 61,S
+	LDB #$dd
+	STD 101,S
 	LDB #$9a
 	STD -19,S
 	LEAS 260,S
@@ -227,8 +227,8 @@ DRAW_HJR8
 	ANDA #$F0
 	ORA #$0d
 	STA -41,S
-	LDB 40,S
-	PSHU S,B
+	LDA 40,S
+	PSHU S,A
 	ANDA #$0F
 	ORA #$d0
 	STA 40,S
@@ -293,8 +293,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$ac
 	LDX #$ccca
 	PSHS A,X
@@ -305,8 +305,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cc
 	LDX #$ccca
 	PSHS A,X
@@ -317,8 +317,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$a0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$cc
 	LDX #$acab
 	PSHS A,X
@@ -371,8 +371,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dc
 	LDX #$ccdc
 	PSHS A,X
@@ -383,8 +383,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$c0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$dddc
 	PSHS A,X
@@ -395,8 +395,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	PULS B,X
-	PSHU S,X,B
+	PULS A,X
+	PSHU S,X,A
 	LDA #$dd
 	LDX #$cddd
 	PSHS A,X
@@ -410,8 +410,8 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$d0
 	STA 3,S
-	LDB 42,S
-	PSHU B
+	LDA 42,S
+	PSHU A
 	ANDA #$F0
 	ORA #$0d
 	STA 42,S
@@ -458,17 +458,17 @@ DRAW_HJR8
 	ANDA #$0F
 	ORA #$d0
 	STA -59,S
-	LDB 100,S
+	LDA 100,S
+	PSHU A
 	ANDA #$F0
 	ORA #$0d
 	STA 100,S
+	LDA 60,S
 	LDX 20,S
-	PSHU X,B
+	PSHU S,X,A
 	LDD #$dddd
 	STD 20,S
-	LDA 60,S
-	PSHU S,A
-	STB 60,S
+	STA 60,S
 SSAV_HJR8
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
@@ -507,8 +507,8 @@ ERASE_CODE_HJR8_1
 	STY -121,S
 
 	PULU D,X,S
-	STD 101,S
-	STX -99,S
+	STD 21,S
+	STX 61,S
 
 	PULU D,X,Y
 	STD 99,S
@@ -521,12 +521,12 @@ ERASE_CODE_HJR8_1
 	STY -101,S
 
 	PULU D,X,Y
-	STD 21,S
-	STX 61,S
-	STY -59,S
+	STD -99,S
+	STX -19,S
+	STY 101,S
 
 	PULU D
-	STD -19,S
+	STD -59,S
 
 	PULU A,X,S
 	PSHS A,X
@@ -572,15 +572,13 @@ ERASE_POS_HJR8_2
 	LDU #ERASE_DATA_HJR8_2
 
 ERASE_CODE_HJR8_2
-	PULU A,S
+	PULU A,X,S
 	STA 60,S
-
-	PULU A,X
-	STA 100,S
 	STX 20,S
 
-	PULU A,X,Y
-	STA -59,S
+	PULU A,B,X,Y
+	STA 100,S
+	STB -59,S
 	STX -20,S
 	STY -61,S
 
