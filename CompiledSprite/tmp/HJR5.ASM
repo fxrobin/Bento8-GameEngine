@@ -73,16 +73,27 @@ DRAW_HJR5
 	STD 118,S
 	LEAS 279,S
 
-	LDX 121,S
-	LDY 81,S
-	PSHU Y,X
-	LDD -79,S
-	LDX 1,S
+	LDX 41,S
 	LDY -119,S
+	PSHU Y,X
+	LDD -39,S
+	LDX 1,S
+	LDY 121,S
 	PSHU Y,X,D
-	LDD 41,S
-	LDX -39,S
+	LDD -79,S
+	LDX 81,S
 	PSHU X,D
+	LDD #$ccac
+	STD -119,S
+	STD -79,S
+	STD -39,S
+	LDB #$cd
+	STD 121,S
+	LDB #$cc
+	STD 41,S
+	STD 81,S
+	LDA #$ac
+	STD 1,S
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
@@ -125,17 +136,6 @@ DRAW_HJR5
 	ORA #$0e
 	LDB #$a9
 	STD 119,S
-	LDD #$accc
-	STD 1,S
-	LDA #$cc
-	STD 41,S
-	STD 81,S
-	LDB #$ac
-	STD -119,S
-	STD -79,S
-	STD -39,S
-	LDB #$cd
-	STD 121,S
 	LEAS 180,S
 
 	LDD -21,S
@@ -456,12 +456,8 @@ DRAW_HJR5
 	LEAS 262,S
 
 	LDX 19,S
-	LDD #$ddd3
-	STD 19,S
 	LDY -21,S
 	PSHU Y,X
-	LDB #$cd
-	STD -21,S
 	LDD -101,S
 	LDX -61,S
 	PSHU X,D
@@ -471,15 +467,19 @@ DRAW_HJR5
 	ANDB #$0F
 	ADDD #$0dd0
 	STD 59,S
+	LDD #$ddd3
+	STD 19,S
+	LDB #$cd
+	STD -21,S
 	LDA 100,S
 	PSHU S,A
 	ANDA #$0F
 	ORA #$d0
 	STA 100,S
-	LDD #$0adc
-	STD -101,S
-	LDA #$a9
+	LDD #$a9dc
 	STD -61,S
+	LDA #$0a
+	STD -101,S
 SSAV_HJR5
 	LDS #$0000
 	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
@@ -544,17 +544,17 @@ ERASE_CODE_HJR5_1
 	STY -121,S
 
 	PULU D,X,Y
-	STD 41,S
-	STX -39,S
-	STY -79,S
+	STD -79,S
+	STX 81,S
+	STY -39,S
 
 	PULU D,X,Y
 	STD 1,S
-	STX -119,S
-	STY 121,S
+	STX 121,S
+	STY 41,S
 
 	PULU D
-	STD 81,S
+	STD -119,S
 
 	PULU D,S
 	STD 118,S

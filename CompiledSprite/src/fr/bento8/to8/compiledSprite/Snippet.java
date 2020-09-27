@@ -16,20 +16,22 @@ public class Snippet {
 	private byte[] data;
 	private int position;
 	private List<Boolean> loadMask;
+	private int combiIdx;
 
 	public static final int BACKGROUND_BACKUP = 0;
 	public static final int DRAW = 1;
 	public static final int LEAS = 2;
 
-	public Snippet(Pattern pattern, List<Integer> registerIndexesPUL, List<Integer> registerIndexesPSH, Integer offset) {
+	public Snippet(Pattern pattern, List<Integer> registerIndexesPUL, List<Integer> registerIndexesPSH, Integer offset, int combiIdx) {
 		method = BACKGROUND_BACKUP;
 		this.pattern = pattern;
 		this.registerIndexesPUL = registerIndexesPUL;
 		this.registerIndexesPSH = registerIndexesPSH;
 		this.offset = offset;
+		this.combiIdx = combiIdx;
 	}
 
-	public Snippet(Pattern pattern, byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) {
+	public Snippet(Pattern pattern, byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset, int combiIdx) {
 		method = DRAW;
 		this.pattern = pattern;
 		this.data = data;
@@ -101,5 +103,9 @@ public class Snippet {
 	
 	public Integer getOffset() {
 		return offset;
+	}
+
+	public int getCombiIdx() {
+		return combiIdx;
 	}
 }

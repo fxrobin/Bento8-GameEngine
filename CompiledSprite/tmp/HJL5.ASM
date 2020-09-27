@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A71D
+	ORG $C17A
 DRAW_HJL5
 	PSHS U,DP
 	STS SSAV_HJL5+2
@@ -88,25 +88,25 @@ DRAW_HJL5
 	ANDB #$0F
 	ORB #$a0
 	STD 81,S
-	LDX -39,S
-	LDY 40,S
+	LDX -119,S
+	LDY -39,S
 	PSHU Y,X
 	LDD -79,S
-	LDX -119,S
+	LDX 40,S
 	PSHU X,D
-	LDD #$cdaa
-	STD -119,S
-	LDB #$a1
-	STD -39,S
 	LDA 42,S
 	PSHU A
 	ANDA #$0F
 	ORA #$a0
 	STA 42,S
-	LDD #$ca22
-	STD 40,S
 	LDD #$dd91
 	STD -79,S
+	LDD #$cda1
+	STD -39,S
+	LDB #$aa
+	STD -119,S
+	LDD #$ca22
+	STD 40,S
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
@@ -217,14 +217,10 @@ DRAW_HJL5
 	LEAS 261,S
 
 	LDX -20,S
-	LDY 20,S
+	LDY -100,S
 	PSHU Y,X
-	LDD #$dcdd
-	STD -20,S
-	LDA #$3d
-	STD 20,S
-	LDD -100,S
-	LDX -60,S
+	LDD -60,S
+	LDX 20,S
 	PSHU X,D
 	LDD 60,S
 	PSHU D
@@ -237,10 +233,14 @@ DRAW_HJL5
 	ANDA #$F0
 	ORA #$0d
 	STA 100,S
-	LDD #$cda0
-	STD -100,S
-	LDB #$9a
+	LDD #$dcdd
+	STD -20,S
+	LDA #$3d
+	STD 20,S
+	LDD #$cd9a
 	STD -60,S
+	LDB #$a0
+	STD -100,S
 
 	LDS $9F00+2
 	STS ERASE_POS_HJL5_2+2
@@ -251,9 +251,9 @@ DRAW_HJL5
 	LDA -20,S
 	LDB -60,S
 	PSHU B,A
-	ANDA #$0F
-	ORA #$a0
-	STA -60,S
+	ANDB #$0F
+	ORB #$a0
+	STB -60,S
 	LDA #$cd
 	STA -20,S
 	LDD 18,S
@@ -302,9 +302,9 @@ DRAW_HJL5
 	LDA -78,S
 	LDB 3,S
 	PSHU B,A
-	ANDA #$0F
-	ORA #$90
-	STA 3,S
+	ANDB #$0F
+	ORB #$90
+	STB 3,S
 	LDA #$a2
 	STA -78,S
 	LDD -38,S
@@ -511,12 +511,12 @@ ERASE_CODE_HJL5_1
 
 	PULU D,X,Y
 	STD 60,S
-	STX -100,S
-	STY -60,S
+	STX -60,S
+	STY 20,S
 
 	PULU D,X
 	STD -20,S
-	STX 20,S
+	STX -100,S
 
 	PULU D,X,S
 	PSHS D,X
@@ -563,11 +563,11 @@ ERASE_CODE_HJL5_1
 	PULU A,X,Y
 	STA 42,S
 	STX -79,S
-	STY -119,S
+	STY 40,S
 
 	PULU D,X,Y
-	STD -39,S
-	STX 40,S
+	STD -119,S
+	STX -39,S
 	STY 81,S
 
 	PULU A,X,S

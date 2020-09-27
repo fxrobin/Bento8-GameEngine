@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C8C0
+	ORG $C9A4
 DRAW_HJR8
 	PSHS U,DP
 	STS SSAV_HJR8+2
@@ -25,9 +25,9 @@ DRAW_HJR8
 	LDA -38,S
 	LDB -118,S
 	PSHU B,A
-	ANDA #$0F
-	ORA #$f0
-	STA -118,S
+	ANDB #$0F
+	ORB #$f0
+	STB -118,S
 	LDA -78,S
 	PSHU A
 	ANDA #$0F
@@ -108,14 +108,12 @@ DRAW_HJR8
 	PSHS A,X
 	LEAS 260,S
 
-	LDX 101,S
-	LDY -59,S
+	LDX -59,S
+	LDY 21,S
 	PSHU Y,X
-	LDD -99,S
-	LDX -19,S
+	LDD 61,S
+	LDX 101,S
 	PSHU X,D
-	LDD #$1caa
-	STD -99,S
 	LDD -101,S
 	PSHU D
 	ANDA #$F0
@@ -152,19 +150,21 @@ DRAW_HJR8
 	ORA #$0d
 	LDB #$dc
 	STD 99,S
-	LDX 21,S
-	LDD #$cdaa
-	STD -59,S
-	LDB #$cc
-	STD 21,S
-	LDY 61,S
-	PSHU S,Y,X
-	LDA #$dd
-	STD 61,S
+	LDX -19,S
+	LDD #$dd9a
+	STD -19,S
 	LDB #$dd
 	STD 101,S
-	LDB #$9a
-	STD -19,S
+	LDB #$cc
+	STD 61,S
+	LDA #$cd
+	STD 21,S
+	LDY -99,S
+	PSHU S,Y,X
+	LDB #$aa
+	STD -59,S
+	LDA #$1c
+	STD -99,S
 	LEAS 260,S
 
 	LDD -121,S
@@ -507,8 +507,8 @@ ERASE_CODE_HJR8_1
 	STY -121,S
 
 	PULU D,X,S
-	STD 21,S
-	STX 61,S
+	STD -19,S
+	STX -99,S
 
 	PULU D,X,Y
 	STD 99,S
@@ -521,12 +521,12 @@ ERASE_CODE_HJR8_1
 	STY -101,S
 
 	PULU D,X,Y
-	STD -99,S
-	STX -19,S
-	STY 101,S
+	STD 61,S
+	STX 101,S
+	STY -59,S
 
 	PULU D
-	STD -59,S
+	STD 21,S
 
 	PULU A,X,S
 	PSHS A,X

@@ -18,7 +18,7 @@ public class SolutionOptim{
 
 	private static final Logger logger = LogManager.getLogger("log");
 
-	private int[] fact = new int[]{1, 1, 4, 10, 40, 150, 800, 6000, 40000, 250000, 250000};
+	private int[] fact = new int[]{1, 1, 4, 10, 40, 150, 800, 6000, 40000, 5000000};
 
 	private Solution solution;
 	private byte[] data;
@@ -576,13 +576,13 @@ public class SolutionOptim{
 					asmCodeCycles += s.getCycles();
 					asmCodeSize += s.getSize();
 				}
-				
+
 				logger.debug("Cycles: "+asmCodeCycles);
 
 				asmECode.addAll(0, Pattern.getEraseCodeBuf(bestSolution, regEBest, offsetEBest));
 				asmECodeCycles += Pattern.getEraseCodeBufCycles(bestSolution, regEBest, offsetEBest);
 				asmECodeSize += Pattern.getEraseCodeBufSize(bestSolution, regEBest, offsetEBest);
-				
+
 				logger.debug("CyclesE: "+asmECodeCycles);
 			}
 
@@ -599,7 +599,7 @@ public class SolutionOptim{
 		List<Integer> selectedRegPSH = new ArrayList<Integer>();
 		Snippet snippet = null;
 
-		int bestIdx = -1;
+		int bestCombi = -1;
 		int minIdx = 8;
 		int bestMinIdx = 8;
 		int bestMaxIdx = -1;
@@ -629,14 +629,14 @@ public class SolutionOptim{
 			if (isValid && minIdx < bestMinIdx) {
 				bestMinIdx = minIdx;
 				bestMaxIdx = maxIdx;
-				bestIdx = j;
+				bestCombi = j;
 			}
 			isValid = true;
 			minIdx = solution.patterns.get(id).getRegisterCombi().size()+1;
 			maxIdx = -1;
 		}
 
-		if (bestIdx == -1) {
+		if (bestCombi == -1) {
 			// Il n'y plus la place pour une nouvelle combinaison
 			// On rejoue la sélection mais sans la contrainte des précédents registres
 
@@ -670,7 +670,7 @@ public class SolutionOptim{
 				if (minIdx < bestMinIdx) {
 					bestMinIdx = minIdx;
 					bestMaxIdx = maxIdx;
-					bestIdx = j;
+					bestCombi = j;
 				}
 				minIdx = solution.patterns.get(id).getRegisterCombi().size()+1;
 				maxIdx = -1;
@@ -680,8 +680,8 @@ public class SolutionOptim{
 		regBBIdx = bestMaxIdx;
 
 		// Parcours des registres de la combinaison
-		for (int k = 0; k < solution.patterns.get(id).getRegisterCombi().get(bestIdx).length; k++) {
-			if (solution.patterns.get(id).getRegisterCombi().get(bestIdx)[k]) {
+		for (int k = 0; k < solution.patterns.get(id).getRegisterCombi().get(bestCombi).length; k++) {
+			if (solution.patterns.get(id).getRegisterCombi().get(bestCombi)[k]) {
 				// Le registre est utilisé dans la combinaison
 				selectedRegPUL.add(k);
 				regBBSet[k] = true;
@@ -690,7 +690,7 @@ public class SolutionOptim{
 		}
 
 		// Sauvegarde de la méthode a exécuter
-		snippet = new Snippet(solution.patterns.get(id), selectedRegPUL, selectedRegPSH, solution.computedOffsets.get(id));
+		snippet = new Snippet(solution.patterns.get(id), selectedRegPUL, selectedRegPSH, solution.computedOffsets.get(id), bestCombi);
 
 		// Réinitialisation des registres utilisés par l'écriture du fond
 		for (int r : selectedRegPUL) {
@@ -719,21 +719,31 @@ public class SolutionOptim{
 		List<Integer> selectedReg = new ArrayList<Integer>();
 		List<Boolean> selectedLoadMask = new ArrayList<Boolean>();
 		Snippet snippet = null;
+		List<boolean[]> combiList = new ArrayList<boolean[]>();
 
 		selectedCombi = -1;
 		minCycles = Integer.MAX_VALUE;
 
 		// Parcours des combinaisons possibles de registres pour le pattern
-		for (int j = 0; j < solution.patterns.get(id).getRegisterCombi().size(); j++) {
+		// Cas particulier:
+		// Gestion des patterns non dissociables, on doit utiliser la même
+		// combinaison que celle utilisée pour la sauvegarde du fond
+		if (!solution.patterns.get(id).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(id).useIndexedAddressing()) {
+			combiList.add(solution.patterns.get(id).getRegisterCombi().get(lastSnippet.getCombiIdx()));
+		} else {
+			combiList = solution.patterns.get(id).getRegisterCombi();
+		}
+
+		for (int j = 0; j < combiList.size(); j++) {
 			cycles = 0;
 			pos = solution.positions.get(id)*2;
 			currentReg.clear();
 			currentLoadMask.clear();
 
 			// Parcours des registres de la combinaison
-			for (int k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
+			for (int k = 0; k < combiList.get(j).length; k++) {
 
-				if (solution.patterns.get(id).getRegisterCombi().get(j)[k]) {
+				if (combiList.get(j)[k]) {
 					// Le registre est utilisé dans la combinaison
 
 					currentReg.add(k);
@@ -798,13 +808,13 @@ public class SolutionOptim{
 		}
 
 		// Sauvegarde de la méthode a exécuter
-		snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id));
+		snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id), selectedCombi);
 
 		// Sauvegarde les valeurs chargées en cache
 		pos = solution.positions.get(id)*2;
-		for (int j = 0; j < solution.patterns.get(id).getRegisterCombi().get(selectedCombi).length; j++) {
+		for (int j = 0; j < combiList.get(selectedCombi).length; j++) {
 
-			if (solution.patterns.get(id).getRegisterCombi().get(selectedCombi)[j] &&
+			if (combiList.get(selectedCombi)[j] &&
 					(solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
 					(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
 							!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[j]))) {

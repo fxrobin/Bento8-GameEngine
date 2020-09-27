@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A000
+	ORG $C1EC
 DRAW_HJR2
 	PSHS U,DP
 	STS SSAV_HJR2+2
@@ -158,9 +158,9 @@ DRAW_HJR2
 	LDA 42,S
 	LDB 82,S
 	PSHU B,A
-	ANDA #$0F
-	ORA #$a0
-	STA 82,S
+	ANDB #$0F
+	ORB #$a0
+	STB 82,S
 	LDA #$a9
 	STA 42,S
 	PULS A,X
@@ -211,9 +211,9 @@ DRAW_HJR2
 	LDA 82,S
 	LDB 122,S
 	PSHU B,A
-	ANDA #$0F
-	ORA #$e0
-	STA 122,S
+	ANDB #$0F
+	ORB #$e0
+	STB 122,S
 	LDA #$1e
 	STA 82,S
 	PULS A,X
@@ -408,43 +408,43 @@ DRAW_HJR2
 	PSHS B,X
 	LEAS 281,S
 
-	LDX -40,S
-	LDY 120,S
-	PSHU Y,X
-	LDD #$de0e
-	STD 120,S
-	LDD -80,S
-	PSHU D
-	LDA #$c9
-	ANDB #$0F
-	ORB #$a0
-	STD -80,S
-	LDX 80,S
+	LDX 120,S
 	LDY -120,S
 	PSHU Y,X
-	LDD ,S
-	LDX 40,S
+	LDD 40,S
+	LDX ,S
 	PSHU X,D
-	LDD #$dda1
-	STD 40,S
-	LDA #$d9
-	STD ,S
 	LDA -118,S
 	PSHU A
 	ANDA #$0F
 	ORA #$10
 	STA -118,S
 	LDA -78,S
-	PSHU S,A
+	PSHU A
 	ANDA #$0F
 	ORA #$10
 	STA -78,S
-	LDD #$cc99
-	STD -120,S
-	LDA #$d0
-	STD 80,S
-	LDB #$9f
+	LDD -80,S
+	PSHU D
+	LDA #$c9
+	ANDB #$0F
+	ORB #$a0
+	STD -80,S
+	LDX -40,S
+	LDD #$de0e
+	STD 120,S
+	LDY 80,S
+	PSHU S,Y,X
+	LDD #$dda1
+	STD 40,S
+	LDA #$d9
+	STD ,S
+	LDD #$d09f
 	STD -40,S
+	LDB #$99
+	STD 80,S
+	LDA #$cc
+	STD -120,S
 	LEAS 160,S
 
 	LDA ,S
@@ -567,22 +567,22 @@ ERASE_CODE_HJR2_2
 	PULU A,S
 	STA ,S
 
-	PULU A,S
+	PULU D,X,S
+	STD -40,S
+	STX 80,S
+
+	PULU D
+	STD -80,S
+
+	PULU A,B,X,Y
 	STA -78,S
-
-	PULU A,X,Y
-	STA -118,S
-	STX ,S
-	STY 40,S
-
-	PULU D,X,Y
-	STD 80,S
-	STX -120,S
-	STY -80,S
+	STB -118,S
+	STX 40,S
+	STY ,S
 
 	PULU D,X
-	STD -40,S
-	STX 120,S
+	STD 120,S
+	STX -120,S
 
 	PULU A,X,S
 	PSHS A,X
