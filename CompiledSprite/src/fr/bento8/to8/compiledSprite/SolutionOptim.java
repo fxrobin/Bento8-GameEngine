@@ -18,7 +18,7 @@ public class SolutionOptim{
 
 	private static final Logger logger = LogManager.getLogger("log");
 
-	private int[] fact = new int[]{1, 1, 4, 10, 40, 150, 800, 6000, 40000, 5000000};
+	private int[] fact = new int[]{1, 1, 2, 6, 24, 120, 720, 5040, 40320, 500000};
 
 	private Solution solution;
 	private byte[] data;
@@ -47,9 +47,10 @@ public class SolutionOptim{
 	List<Integer> regE = new ArrayList<Integer>(), regEBest = new ArrayList<Integer>();
 	List<Integer> offsetE = new ArrayList<Integer>(), offsetEBest = new ArrayList<Integer>();
 
-	public SolutionOptim(Solution solution, byte[] data) {
+	public SolutionOptim(Solution solution, byte[] data, int maxTries) {
 		this.solution = solution;
 		this.data = data;
+		this.fact[9] = maxTries;
 	}
 
 	private void saveState() {

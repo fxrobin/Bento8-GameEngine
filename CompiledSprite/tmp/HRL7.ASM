@@ -1,53 +1,49 @@
 (main)IMG.ASM
-	ORG $C886
+	ORG $C978
 DRAW_HRL7
-	PSHS U,DP
+	PSHS U
 	STS SSAV_HRL7+2
 
 	LDS $9F00
-	STS ERASE_POS_HRL7_1+2
 	LDU #ERASE_DATA_HRL7_2
 	LEAS 603,S
 
-	LDD -81,S
-	PSHU D
-	ANDA #$F0
-	ORA #$0a
-	LDB #$ac
-	STD -81,S
+	LDX 39,S
+	LDY -1,S
+	PSHU Y,X
+	LDD 119,S
+	LDX -41,S
+	PSHU X,D
 	LDA -120,S
 	LDB -79,S
 	PSHU B,A
 	ANDB #$0F
 	ORB #$c0
 	STB -79,S
-	LDX -41,S
-	LDA #$aa
-	STA -120,S
-	LDY 119,S
-	PSHU Y,X
-	LDD 39,S
-	LDX -1,S
-	PSHU X,D
-	LDD 79,S
-	PSHU S,D
-	LDA #$32
-	ANDB #$0F
-	ORB #$d0
-	STD 79,S
 	LDD #$d2dd
 	STD -1,S
 	LDA #$32
 	STD 39,S
+	LDD 79,S
+	PSHU D
+	LDA #$32
+	ANDB #$0F
+	ORB #$d0
+	STD 79,S
+	LDA #$aa
+	STA -120,S
 	LDD #$a2cc
 	STD 119,S
 	LDA #$dd
 	STD -41,S
+	LDD -81,S
+	PSHU S,D
+	ANDA #$F0
+	ORA #$0a
+	LDB #$ac
+	STD -81,S
 	LEAS 280,S
 
-	LDX -121,S
-	LDY 79,S
-	PSHU Y,X
 	LDD -82,S
 	PSHU D
 	ANDA #$F0
@@ -78,10 +74,6 @@ DRAW_HRL7
 	ORA #$0a
 	LDB #$ac
 	STD 118,S
-	LDA 120,S
-	LDB 40,S
-	LDX ,S
-	PSHU X,B,A
 	LDD -80,S
 	PSHU D
 	LDA #$cc
@@ -89,19 +81,26 @@ DRAW_HRL7
 	ORB #$c0
 	STD -80,S
 	LDD -40,S
-	PSHU S,D
+	PSHU D
 	LDA #$cc
 	ANDB #$0F
 	ORB #$c0
 	STD -40,S
-	LDD #$aacc
-	STD -121,S
-	LDB #$cd
+	LDX ,S
+	LDY 79,S
+	PSHU Y,X
+	LDA 120,S
+	LDB 40,S
+	LDX -121,S
+	PSHU S,X,B,A
+	LDD #$ccdd
+	STD ,S
+	LDD #$aacd
 	STD 79,S
 	STB 40,S
 	STB 120,S
-	LDD #$ccdd
-	STD ,S
+	LDB #$cc
+	STD -121,S
 	LEAS 159,S
 
 	LDD -1,S
@@ -118,9 +117,16 @@ DRAW_HRL7
 
 	LDA 42,S
 	LDB -119,S
-	LDX -80,S
-	LDY -40,S
+	LDX -40,S
+	LDY -80,S
 	PSHU Y,X,B,A
+	LDA #$99
+	STA 42,S
+	LDD #$22cd
+	STD -40,S
+	LDB #$dd
+	STD -80,S
+	STB -119,S
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
@@ -133,12 +139,6 @@ DRAW_HRL7
 	ORA #$0d
 	LDB #$aa
 	STD 40,S
-	LDD #$22cd
-	STD -40,S
-	LDB #$dd
-	STD -80,S
-	LDA #$99
-	STA 42,S
 	LDA -78,S
 	PSHU A
 	ANDA #$0F
@@ -149,7 +149,6 @@ DRAW_HRL7
 	ANDA #$0F
 	ORA #$d0
 	STA -38,S
-	STB -119,S
 	PULS A,X
 	PSHU S,X,A
 	LDA #$31
@@ -201,15 +200,13 @@ DRAW_HRL7
 	PSHS A,X
 	LEAS 282,S
 
-	LDA -81,S
+	LDA 39,S
+	LDB -81,S
+	PSHU B,A
+	LDA -41,S
 	LDB -1,S
 	LDX 118,S
 	PSHU X,B,A
-	LDA 39,S
-	LDB -41,S
-	PSHU B,A
-	LDA #$9a
-	STA -41,S
 	LDD 79,S
 	PSHU D
 	LDA #$aa
@@ -217,12 +214,12 @@ DRAW_HRL7
 	ORB #$00
 	STD 79,S
 	STA -1,S
-	LDD #$f119
-	STD 118,S
-	LDA #$a1
-	STA 39,S
 	LDA #$d9
 	STA -81,S
+	LDA #$a1
+	STA 39,S
+	LDD #$f119
+	STD 118,S
 	LDA -121,S
 	PSHU A
 	ANDA #$0F
@@ -233,6 +230,8 @@ DRAW_HRL7
 	ANDA #$0F
 	ORA #$e0
 	STA 120,S
+	LDA #$9a
+	STA -41,S
 	LEAS 159,S
 
 	LDX -1,S
@@ -246,7 +245,6 @@ DRAW_HRL7
 	STA 1,S
 
 	LDS $9F00+2
-	STS ERASE_POS_HRL7_2+2
 	LDU #ERASE_DATA_HRL7_END
 
 	LEAS 543,S
@@ -482,14 +480,13 @@ DRAW_HRL7
 	STD ,S
 SSAV_HRL7
 	LDS #$0000
-	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
+	PULS U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
 
 ERASE_HRL7
-	PSHS U,DP
+	PSHS U
 	STS ERASE_SSAV_HRL7+2
 
 ERASE_POS_HRL7_1
-	LDS #$0000
 	LDU #ERASE_DATA_HRL7_1
 
 ERASE_CODE_HRL7_1
@@ -506,14 +503,14 @@ ERASE_CODE_HRL7_1
 	STA -121,S
 	STX 79,S
 
-	PULU A,B
-	STA 39,S
-	STB -41,S
-
 	PULU A,B,X
-	STA -81,S
+	STA -41,S
 	STB -1,S
 	STX 118,S
+
+	PULU A,B
+	STA 39,S
+	STB -81,S
 
 	PULU A,X,S
 	PSHS A,X
@@ -546,8 +543,8 @@ ERASE_CODE_HRL7_1
 	PULU A,B,X,Y
 	STA 42,S
 	STB -119,S
-	STX -80,S
-	STY -40,S
+	STX -40,S
+	STY -80,S
 
 	PULU A,S
 	STA 1,S
@@ -555,49 +552,42 @@ ERASE_CODE_HRL7_1
 	PULU D
 	STD -1,S
 
-	PULU D,S
-	STD -40,S
-
-	PULU D
-	STD -80,S
-
-	PULU A,B,X,Y
+	PULU A,B,X,S
 	STA 120,S
 	STB 40,S
-	STX ,S
-	STY 118,S
-
-	PULU D,X,Y
-	STD 38,S
-	STX -2,S
-	STY -42,S
-
-	PULU D,X,Y
-	STD -82,S
 	STX -121,S
-	STY 79,S
+
+	PULU D,X,Y
+	STD ,S
+	STX 79,S
+	STY -40,S
+
+	PULU D,X,Y
+	STD -80,S
+	STX 118,S
+	STY 38,S
+
+	PULU D,X,Y
+	STD -2,S
+	STX -42,S
+	STY -82,S
 
 	PULU D,S
-	STD 79,S
-
-	PULU D,X,Y
-	STD 39,S
-	STX -1,S
-	STY -41,S
+	STD -81,S
 
 	PULU D
-	STD 119,S
+	STD 79,S
 
-	PULU A,B,X
+	PULU A,B,X,Y
 	STA -120,S
 	STB -79,S
-	STX -81,S
+	STX 119,S
+	STY -41,S
 
-ERASE_POS_HRL7_2
-	LDS #$0000
-	LDU #ERASE_DATA_HRL7_2
+	PULU D,X
+	STD 39,S
+	STX -1,S
 
-ERASE_CODE_HRL7_2
 	PULU D,S
 	STD ,S
 
@@ -694,7 +684,7 @@ ERASE_CODE_HRL7_2
 
 ERASE_SSAV_HRL7
 	LDS #$0000
-	PULS DP,U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
+	PULS U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
 
 ERASE_DATA_HRL7_1
 	FDB $0000

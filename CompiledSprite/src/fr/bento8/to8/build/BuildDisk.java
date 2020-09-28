@@ -45,7 +45,10 @@ public class BuildDisk
 	private static String debugMode;
 	public  static String tmpDirName;
 	public  static String compiler;
+	public  static int maxTries;
+	public static boolean useCache;
 	private static String animationPalette;
+	private static double animationPaletteGamma;
 	private static String animationPaletteTag;
 	private static String animationTag;
 	private static String memoryPages;
@@ -165,7 +168,7 @@ public class BuildDisk
 				int itemIdx = 0;
 				int binaryLength = 0;
 
-				// première compilation de sprite pour connaitre leur taille
+				// génération du sprite compilé
 				for (String currentImage : singleImages) {
 					
 					logger.debug("**************** Génération du code ASM de l'image " + currentImage + " ****************");
@@ -310,7 +313,7 @@ public class BuildDisk
 				if (!spriteSheets.containsKey(animationPalette))
 					logger.fatal("animationPalette: L'image "+animationPalette+" n'est pas déclarée ou n'est pas utilisée dans une animation.");
 				
-				content = content.replace(animationPaletteTag, spriteSheets.get(animationPalette).getCodePalette(2.2));
+				content = content.replace(animationPaletteTag, spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma));
 				Files.write(pathMainTmp, content.getBytes(charset));
 
 				// Compilation du code principal
@@ -385,11 +388,21 @@ public class BuildDisk
 		if (compiler == null) {
 			throw new Exception("Paramètre compiler manquant dans le fichier "+file);
 		}
-
+		
 		memoryPages = prop.getProperty("memorypages");
 		if (memoryPages == null) {
 			throw new Exception("Paramètre memorypages manquant dans le fichier "+file);
 		}
+		
+		if (prop.getProperty("compilatedsprite.maxTries") == null) {
+			throw new Exception("Paramètre compilatedsprite.maxTries manquant dans le fichier "+file);
+		}
+		maxTries = Integer.parseInt(prop.getProperty("compilatedsprite.maxTries"));
+		
+		if (prop.getProperty("compilatedsprite.usecache") == null) {
+			throw new Exception("Paramètre compilatedsprite.usecache manquant dans le fichier "+file);
+		}
+		useCache = (prop.getProperty("compilatedsprite.usecache").contentEquals("O")?true:false);
 
 		String[] el = memoryPages.split(";");
 		pages = new int[el.length];
@@ -411,6 +424,11 @@ public class BuildDisk
 		if (animationPalette == null) {
 			throw new Exception("Paramètre animation.palette manquant dans le fichier "+file);
 		}
+		
+		if (prop.getProperty("animation.palette.gamma") == null) {
+			throw new Exception("Paramètre animation.palette.gamma manquant dans le fichier "+file);
+		}
+		animationPaletteGamma  = Double.parseDouble(prop.getProperty("animation.palette.gamma"));
 		
 		animationPaletteTag  = prop.getProperty("animation.palette.tag");
 		if (animationPaletteTag == null) {
