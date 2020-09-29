@@ -39,8 +39,6 @@ public class AssemblyGenerator{
 	private List<String> spriteCode2 = new ArrayList<String>();
 	private List<String> spriteECode1 = new ArrayList<String>();
 	private List<String> spriteECode2 = new ArrayList<String>();
-	private List<String> spriteEData1 = new ArrayList<String>();
-	private List<String> spriteEData2 = new ArrayList<String>();
 	private int cyclesSpriteCode1;
 	private int cyclesSpriteCode2;
 	private int cyclesSpriteECode1;
@@ -90,7 +88,6 @@ public class AssemblyGenerator{
 			sizeSpriteECode1 = regOpt.getAsmECodeSize();
 
 			sizeSpriteEData1 = regOpt.getDataSize();
-			generateDataFDB(sizeSpriteEData1, spriteEData1);
 
 			logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
 			logger.debug("RAM 1 (val hex 0 à f par pixel, . Transparent):");
@@ -115,7 +112,6 @@ public class AssemblyGenerator{
 			sizeSpriteECode2 = regOpt.getAsmECodeSize();
 
 			sizeSpriteEData2 = regOpt.getDataSize();
-			generateDataFDB(sizeSpriteEData2, spriteEData2);
 
 			logger.debug("Taille de la zone data 2: "+sizeSpriteEData2);
 
@@ -164,10 +160,6 @@ public class AssemblyGenerator{
 				Files.write(asmFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmFile, getCodeFrame5(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteEData1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, getCodeFrame6(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteEData2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, getCodeFrame7(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			} else {
 				// change ORG adress in existing ASM file
 				String str = new String(Files.readAllBytes(asmFile), StandardCharsets.UTF_8);
@@ -356,18 +348,6 @@ public class AssemblyGenerator{
 		return size;
 	}
 
-	public List<String> getCodeFrame6() {
-		List<String> asm = new ArrayList<String>();
-		asm.add("ERASE_DATA_" + spriteName + "_2");
-		return asm;
-	}
-
-	public List<String> getCodeFrame7() {
-		List<String> asm = new ArrayList<String>();
-		asm.add("ERASE_DATA_" + spriteName + "_END");
-		return asm;
-	}
-
 	public void generateDataFDB(int size, List<String> spriteData) {
 
 		// **************************************************************
@@ -391,7 +371,7 @@ public class AssemblyGenerator{
 	}
 
 	public int getSize() {
-		return sizeFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeSpriteECode1 + sizeSpriteECode2 + sizeSpriteEData1 + sizeSpriteEData2 + sizeCache;
+		return sizeFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeSpriteECode1 + sizeSpriteECode2 + sizeCache;
 	}
 
 	public int getSizeData1() {

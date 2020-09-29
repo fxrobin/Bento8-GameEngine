@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $D7B3
+	ORG $D7F4
 DRAW_HWR2
 	PSHS U
 	STS SSAV_HWR2+2
@@ -317,29 +317,29 @@ DRAW_HWR2
 	ORA #$0d
 	LDB #$cd
 	STD -41,S
-	LDA -80,S
-	LDB -39,S
-	PSHU B,A
-	ANDB #$0F
-	ORB #$c0
-	STB -39,S
 	LDA -120,S
-	LDX 40,S
-	LDY 120,S
-	PSHU Y,X,A
-	LDD ,S
-	LDX 80,S
-	PSHU S,X,D
-	LDD #$c2aa
-	STD 80,S
-	STD 120,S
-	LDA #$d2
-	STD 40,S
+	LDB -80,S
+	LDX 120,S
+	LDY 80,S
+	PSHU Y,X,B,A
+	LDD 40,S
+	LDX ,S
+	PSHU X,D
+	LDD #$cdac
+	STD ,S
+	LDA -39,S
+	PSHU S,A
+	ANDA #$0F
+	ORA #$c0
+	STA -39,S
 	LDA #$cc
 	STA -120,S
 	STA -80,S
-	LDD #$cdac
-	STD ,S
+	LDD #$d2aa
+	STD 40,S
+	LDA #$c2
+	STD 80,S
+	STD 120,S
 	LEAS 279,S
 
 	LDD -80,S
@@ -517,20 +517,20 @@ DRAW_HWR2
 	LDA 82,S
 	LDB 120,S
 	PSHU B,A
-	LDA 80,S
-	LDB 3,S
-	PSHU B,A
-	ANDB #$0F
-	ORB #$10
-	STB 3,S
-	LDA #$ee
-	STA 80,S
-	LDA 122,S
-	PSHU A
-	LDA #$11
-	STA 122,S
 	LDA #$e9
 	STA 120,S
+	LDA 3,S
+	PSHU A
+	ANDA #$0F
+	ORA #$10
+	STA 3,S
+	LDA 122,S
+	LDB 80,S
+	PSHU B,A
+	LDA #$ee
+	STA 80,S
+	LDA #$11
+	STA 122,S
 	LDA #$ef
 	STA 82,S
 	PULS A,X
@@ -540,33 +540,33 @@ DRAW_HWR2
 	PSHS A,X
 	LEAS 260,S
 
-	LDA -20,S
-	LDB 60,S
-	PSHU B,A
-	LDA -98,S
+	LDA -60,S
 	LDB -100,S
-	PSHU B,A
-	LDA #$1e
-	STA 60,S
-	LDA -58,S
-	LDB -60,S
 	PSHU B,A
 	LDA #$ee
 	STA -60,S
+	LDA -58,S
+	LDB 20,S
+	PSHU B,A
+	LDA -20,S
+	LDB -98,S
+	PSHU B,A
 	LDA #$e9
 	STA -100,S
-	LDA #$11
-	STA -98,S
-	LDA 20,S
+	LDA #$e0
+	STA -20,S
+	STA 20,S
+	LDA 60,S
 	LDB 100,S
 	PSHU S,B,A
 	ANDB #$F0
 	ORB #$00
 	STB 100,S
-	LDA #$e0
-	STA -20,S
-	STA 20,S
+	LDA #$1e
+	STA 60,S
 	STB -58,S
+	LDA #$11
+	STA -98,S
 SSAV_HWR2
 	LDS #$0000
 	PULS U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)
@@ -700,20 +700,20 @@ ERASE_CODE_HWR2_1
 	STX -21,S
 
 	PULU A,B,S
-	STA 20,S
+	STA 60,S
 	STB 100,S
 
 	PULU A,B
-	STA -58,S
-	STB -60,S
-
-	PULU A,B
-	STA -98,S
-	STB -100,S
-
-	PULU A,B
 	STA -20,S
-	STB 60,S
+	STB -98,S
+
+	PULU A,B
+	STA -58,S
+	STB 20,S
+
+	PULU A,B
+	STA -60,S
+	STB -100,S
 
 	PULU A,X,S
 	PSHS A,X
@@ -793,19 +793,21 @@ ERASE_CODE_HWR2_1
 	PULU D
 	STD -80,S
 
-	PULU D,X,S
-	STD ,S
-	STX 80,S
+	PULU A,S
+	STA -39,S
 
-	PULU A,X,Y
+	PULU D,X
+	STD 40,S
+	STX ,S
+
+	PULU A,B,X,Y
 	STA -120,S
-	STX 40,S
-	STY 120,S
+	STB -80,S
+	STX 120,S
+	STY 80,S
 
-	PULU A,B,X
-	STA -80,S
-	STB -39,S
-	STX -41,S
+	PULU D
+	STD -41,S
 
 ERASE_SSAV_HWR2
 	LDS #$0000

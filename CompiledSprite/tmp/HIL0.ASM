@@ -300,12 +300,30 @@ DRAW_HIL0
 	STD ,S
 	LEAS 160,S
 
+	LDA 121,S
+	LDX -120,S
+	LDY -80,S
+	PSHU Y,X,A
+	LDD 40,S
+	LDX 80,S
+	LDY -40,S
+	PSHU Y,X,D
 	LDD 119,S
 	PSHU D
 	ANDA #$F0
 	ORA #$00
 	LDB #$ba
 	STD 119,S
+	LDA #$dd
+	STA 121,S
+	LDD #$abcd
+	STD -80,S
+	LDA #$bb
+	STD -40,S
+	STD 40,S
+	STD 80,S
+	LDA #$cb
+	STD -120,S
 	LDA -78,S
 	PSHU A
 	ANDA #$0F
@@ -316,24 +334,6 @@ DRAW_HIL0
 	ANDA #$0F
 	ORA #$d0
 	STA -38,S
-	LDA 121,S
-	LDX -80,S
-	LDY -40,S
-	PSHU Y,X,A
-	LDD -120,S
-	LDX 80,S
-	LDY 40,S
-	PSHU Y,X,D
-	LDD #$cbcd
-	STD -120,S
-	LDA #$ab
-	STD -80,S
-	LDA #$dd
-	STA 121,S
-	LDA #$bb
-	STD -40,S
-	STD 40,S
-	STD 80,S
 	PULS A,X
 	PSHU S,X,A
 	LDA #$bb
@@ -341,17 +341,19 @@ DRAW_HIL0
 	PSHS A,X
 	LEAS 280,S
 
-	LDX ,S
-	LDY -40,S
-	PSHU Y,X
-	LDD 120,S
 	LDX 40,S
-	LDY -80,S
+	LDY 120,S
+	PSHU Y,X
+	LDD -80,S
+	LDX -40,S
+	LDY ,S
 	PSHU Y,X,D
-	LDD #$222c
-	STD 120,S
-	LDB #$0d
+	LDD #$220d
 	STD -40,S
+	LDB #$2c
+	STD 120,S
+	LDB #$dd
+	STD -80,S
 	LDA -119,S
 	LDB 2,S
 	PSHU B,A
@@ -370,32 +372,24 @@ DRAW_HIL0
 	ORA #$00
 	LDB #$b2
 	STD -121,S
-	LDD #$22dd
-	STD -80,S
-	LDA #$e0
-	STD 40,S
-	LDA #$33
+	LDD #$33dd
 	STD ,S
 	STB -119,S
+	LDA #$e0
+	STD 40,S
 	LEAS 280,S
 
-	LDX -40,S
-	LDD #$31b3
-	STD -40,S
-	LDY 40,S
+	LDX 40,S
+	LDY -40,S
 	PSHU Y,X
-	LDD #$0d9d
-	STD 40,S
-	LDD -120,S
-	LDX -80,S
+	LDD -80,S
+	LDX -120,S
 	LDY ,S
 	PSHU Y,X,D
 	LDD #$2232
 	STD -120,S
 	LDB #$d2
 	STD -80,S
-	LDD #$ddae
-	STD ,S
 	LDD 80,S
 	PSHU D
 	ANDA #$0F
@@ -408,6 +402,12 @@ DRAW_HIL0
 	ANDB #$0F
 	ADDD #$d090
 	STD 120,S
+	LDD #$31b3
+	STD -40,S
+	LDD #$0d9d
+	STD 40,S
+	LDD #$ddae
+	STD ,S
 	LEAS 240,S
 
 	LDD 40,S
@@ -609,13 +609,13 @@ ERASE_CODE_HIL0_1
 
 	PULU D,X,Y
 	STD 80,S
-	STX -120,S
-	STY -80,S
+	STX -80,S
+	STY -120,S
 
 	PULU D,X,Y
 	STD ,S
-	STX -40,S
-	STY 40,S
+	STX 40,S
+	STY -40,S
 
 	PULU D,S
 	STD -121,S
@@ -626,31 +626,31 @@ ERASE_CODE_HIL0_1
 	PULU A,B,X,Y
 	STA -119,S
 	STB 2,S
-	STX 120,S
-	STY 40,S
+	STX -80,S
+	STY -40,S
 
 	PULU D,X,Y
-	STD -80,S
-	STX ,S
-	STY -40,S
+	STD ,S
+	STX 40,S
+	STY 120,S
 
 	PULU A,X,S
 	PSHS A,X
 
-	PULU D,X,Y
-	STD -120,S
-	STX 80,S
-	STY 40,S
-
-	PULU A,X,Y
-	STA 121,S
-	STX -80,S
-	STY -40,S
-
-	PULU A,B,X
+	PULU A,B,X,Y
 	STA -38,S
 	STB -78,S
 	STX 119,S
+	STY 40,S
+
+	PULU D,X
+	STD 80,S
+	STX -40,S
+
+	PULU A,X,Y
+	STA 121,S
+	STX -120,S
+	STY -80,S
 
 	PULU D,S
 	STD ,S

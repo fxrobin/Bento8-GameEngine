@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $C2BD
+	ORG $C2CB
 DRAW_HWR7
 	PSHS U
 	STS SSAV_HWR7+2
@@ -147,29 +147,29 @@ DRAW_HWR7
 	PSHS A,X
 	LEAS 281,S
 
-	LDA 120,S
-	LDB 80,S
-	LDX -121,S
+	LDA 80,S
+	LDB 120,S
+	LDX -41,S
 	LDY -81,S
 	PSHU Y,X,B,A
 	LDD -1,S
 	LDX 39,S
-	LDY -41,S
+	LDY -121,S
 	PSHU S,Y,X,D
-	LDA #$da
-	STA 120,S
-	LDD #$d031
-	STD 39,S
 	LDD #$1aa3
 	STD -1,S
-	LDD #$2bb3
-	STD -41,S
-	LDA #$9a
-	STD -81,S
-	LDA #$10
-	STA 80,S
+	LDD #$d031
+	STD 39,S
 	LDD #$adbe
 	STD -121,S
+	LDA #$10
+	STA 80,S
+	LDD #$9ab3
+	STD -81,S
+	LDA #$da
+	STA 120,S
+	LDA #$2b
+	STD -41,S
 	LEAS 280,S
 
 	LDD -81,S
@@ -265,28 +265,28 @@ DRAW_HWR7
 
 	LEAS 522,S
 
-	LDA 1,S
-	LDB -80,S
-	LDX 40,S
-	PSHU X,B,A
+	LDX -41,S
+	LDY 40,S
+	PSHU Y,X
 	LDD -1,S
 	PSHU D
 	ANDA #$F0
 	ORA #$0d
 	LDB #$cc
 	STD -1,S
+	LDA 1,S
+	LDB -80,S
 	LDX 80,S
-	LDA #$dd
-	STA 1,S
-	LDD #$dc3a
-	STD 80,S
-	LDY -41,S
-	PSHU S,Y,X
-	LDB #$da
+	PSHU S,X,B,A
+	LDD #$dcda
 	STD 40,S
+	LDB #$3a
+	STD 80,S
 	LDD #$ccaa
 	STD -41,S
 	STB -80,S
+	LDA #$dd
+	STA 1,S
 	LEAS 239,S
 
 	LDA -38,S
@@ -439,6 +439,26 @@ DRAW_HWR7
 	STD 80,S
 	LEAS 279,S
 
+	LDA -78,S
+	LDB 80,S
+	PSHU B,A
+	LDA #$ea
+	STA -78,S
+	LDA 2,S
+	LDB ,S
+	PSHU B,A
+	LDA #$a1
+	STA 2,S
+	LDA #$ab
+	STA 80,S
+	LDA -38,S
+	LDB 42,S
+	PSHU B,A
+	LDA -118,S
+	LDB 40,S
+	PSHU B,A
+	LDA #$aa
+	STA -38,S
 	LDD -120,S
 	PSHU D
 	LDA #$1e
@@ -457,41 +477,21 @@ DRAW_HWR7
 	ANDB #$0F
 	ORB #$f0
 	STD 120,S
-	LDA -118,S
+	LDA -40,S
 	LDB 82,S
-	PSHU B,A
+	PSHU S,B,A
 	ANDB #$F0
 	ORB #$0e
 	STB 82,S
-	LDA 2,S
-	LDB 80,S
-	PSHU B,A
-	LDA 42,S
-	LDB -38,S
-	PSHU B,A
-	LDA #$9a
-	STA -118,S
-	LDA ,S
-	LDB -40,S
-	PSHU B,A
-	LDA 40,S
-	LDB -78,S
-	PSHU S,B,A
-	LDA #$ea
-	STA -78,S
 	LDA #$19
 	STA ,S
-	LDA #$a1
-	STA 2,S
+	LDA #$9a
+	STA -118,S
 	LDA #$1a
 	STA -40,S
 	STA 40,S
-	LDA #$aa
-	STA -38,S
 	LDA #$91
 	STA 42,S
-	LDA #$ab
-	STA 80,S
 	LEAS 180,S
 
 	LDX -20,S
@@ -547,12 +547,12 @@ ERASE_CODE_HWR7_1
 	PULU D,X,Y,S
 	STD -1,S
 	STX 39,S
-	STY -41,S
+	STY -121,S
 
 	PULU A,B,X,Y
-	STA 120,S
-	STB 80,S
-	STX -121,S
+	STA 80,S
+	STB 120,S
+	STX -41,S
 	STY -81,S
 
 	PULU A,X,S
@@ -615,29 +615,29 @@ ERASE_CODE_HWR7_1
 	STX 20,S
 
 	PULU A,B,S
-	STA 40,S
-	STB -78,S
+	STA -40,S
+	STB 82,S
+
+	PULU D,X,Y
+	STD 120,S
+	STX -80,S
+	STY -120,S
 
 	PULU A,B
-	STA ,S
-	STB -40,S
+	STA -118,S
+	STB 40,S
 
 	PULU A,B
-	STA 42,S
-	STB -38,S
+	STA -38,S
+	STB 42,S
 
 	PULU A,B
 	STA 2,S
+	STB ,S
+
+	PULU A,B
+	STA -78,S
 	STB 80,S
-
-	PULU A,B,X,Y
-	STA -118,S
-	STB 82,S
-	STX 120,S
-	STY -80,S
-
-	PULU D
-	STD -120,S
 
 	PULU D,S
 	STD 80,S
@@ -699,17 +699,15 @@ ERASE_CODE_HWR7_1
 	STX -119,S
 	STY -79,S
 
-	PULU D,X,S
-	STD 80,S
-	STX -41,S
-
-	PULU D
-	STD -1,S
-
-	PULU A,B,X
+	PULU A,B,X,S
 	STA 1,S
 	STB -80,S
-	STX 40,S
+	STX 80,S
+
+	PULU D,X,Y
+	STD -1,S
+	STX -41,S
+	STY 40,S
 
 ERASE_SSAV_HWR7
 	LDS #$0000

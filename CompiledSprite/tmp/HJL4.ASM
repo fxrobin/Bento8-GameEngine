@@ -1,5 +1,5 @@
 (main)IMG.ASM
-	ORG $A6B0
+	ORG $ADB7
 DRAW_HJL4
 	PSHS U
 	STS SSAV_HJL4+2
@@ -8,20 +8,9 @@ DRAW_HJL4
 	LDU #ERASE_DATA_HJL4_2
 	LEAS 643,S
 
-	LDX 80,S
-	PSHU X
-	LDD -81,S
-	PSHU D
-	ANDA #$F0
-	ANDB #$F0
-	ADDD #$0c0a
-	STD -81,S
-	LDA 40,S
-	LDB -121,S
-	PSHU B,A
-	ANDB #$F0
-	ORB #$0a
-	STB -121,S
+	LDX -41,S
+	LDY 80,S
+	PSHU Y,X
 	LDD 38,S
 	PSHU D
 	ANDA #$F0
@@ -40,42 +29,56 @@ DRAW_HJL4
 	ORA #$0a
 	LDB #$ac
 	STD 118,S
-	LDD 120,S
+	LDA 40,S
+	LDB -121,S
+	PSHU B,A
+	ANDB #$F0
+	ORB #$0a
+	STB -121,S
+	LDD -81,S
 	PSHU D
+	ANDA #$F0
+	ANDB #$F0
+	ADDD #$0c0a
+	STD -81,S
+	LDD #$acac
+	STD -41,S
+	LDX -1,S
+	PSHU X
+	LDB #$cc
+	STD -1,S
+	LDD #$cdcd
+	STD 80,S
+	STA 40,S
+	LDD 120,S
+	PSHU S,D
 	LDA #$cd
 	ANDB #$0F
 	ORB #$d0
 	STD 120,S
-	STA 40,S
-	LDX -1,S
-	LDY -41,S
-	PSHU S,Y,X
-	LDD #$cdcd
-	STD 80,S
-	LDD #$acac
-	STD -41,S
-	LDB #$cc
-	STD -1,S
 	LEAS 279,S
 
 	LDA -119,S
-	LDX 81,S
-	LDY 41,S
+	LDX 41,S
+	LDY 81,S
 	PSHU Y,X,A
-	LDD 121,S
-	LDX -39,S
-	LDY 1,S
+	LDD -39,S
+	LDX 1,S
+	LDY 121,S
 	PSHU Y,X,D
+	LDD #$ad90
+	STD 81,S
+	LDD -79,S
+	PSHU D
+	LDA #$dd
+	ANDB #$F0
+	ORB #$0d
+	STD -79,S
+	STA -119,S
 	LDD #$cd9e
 	STD 121,S
 	LDB #$dd
 	STD 41,S
-	LDA #$dd
-	STD -39,S
-	STD 1,S
-	STA -119,S
-	LDD #$ad90
-	STD 81,S
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
@@ -113,17 +116,14 @@ DRAW_HJL4
 	LDB #$ac
 	STD 79,S
 	LDD 119,S
-	PSHU D
+	PSHU S,D
 	ANDA #$F0
 	ORA #$0a
 	LDB #$ac
 	STD 119,S
-	LDD -79,S
-	PSHU S,D
-	LDA #$dd
-	ANDB #$F0
-	ORB #$0d
-	STD -79,S
+	LDD #$dddd
+	STD -39,S
+	STD 1,S
 	LEAS 180,S
 
 	LDD -21,S
@@ -557,47 +557,47 @@ ERASE_CODE_HJL4_1
 	STX -21,S
 
 	PULU D,S
-	STD -79,S
-
-	PULU D,X,Y
 	STD 119,S
-	STX 79,S
-	STY 39,S
 
 	PULU D,X,Y
-	STD -1,S
-	STX -41,S
-	STY -81,S
+	STD 79,S
+	STX 39,S
+	STY -1,S
 
 	PULU D,X,Y
-	STD -121,S
-	STX 121,S
-	STY -39,S
+	STD -41,S
+	STX -81,S
+	STY -121,S
+
+	PULU D,X,Y
+	STD -79,S
+	STX -39,S
+	STY 1,S
 
 	PULU D
-	STD 1,S
+	STD 121,S
 
 	PULU A,X,Y
 	STA -119,S
-	STX 81,S
-	STY 41,S
+	STX 41,S
+	STY 81,S
 
-	PULU D,X,S
-	STD -1,S
-	STX -41,S
-
-	PULU D,X,Y
+	PULU D,S
 	STD 120,S
-	STX 118,S
-	STY 78,S
 
-	PULU D
-	STD 38,S
+	PULU D,X
+	STD -1,S
+	STX -81,S
 
 	PULU A,B,X,Y
 	STA 40,S
 	STB -121,S
-	STX -81,S
+	STX 118,S
+	STY 78,S
+
+	PULU D,X,Y
+	STD 38,S
+	STX -41,S
 	STY 80,S
 
 	PULU A,B,S
