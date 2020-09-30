@@ -402,7 +402,7 @@ public class BuildDisk
 		if (prop.getProperty("compilatedsprite.usecache") == null) {
 			throw new Exception("Paramètre compilatedsprite.usecache manquant dans le fichier "+file);
 		}
-		useCache = (prop.getProperty("compilatedsprite.usecache").contentEquals("O")?true:false);
+		useCache = (prop.getProperty("compilatedsprite.usecache").contentEquals("Y")?true:false);
 
 		String[] el = memoryPages.split(";");
 		pages = new int[el.length];
