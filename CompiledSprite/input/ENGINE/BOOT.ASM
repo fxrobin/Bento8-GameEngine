@@ -1,62 +1,72 @@
-*********************************************
+********************************************************************************
 * Boot loader / Routine de lecture disquette
-* 6100-61B2 exomizer (179 octets)
+* ------------------------------------------
+* 6100-61B9 exomizer (186 octets)
 * 6200-6263 espace bootloader (100 octets)
 * 6264-62FF biba de l'exomizer (156 octets)
-*********************************************
+*
+* Paramètres DK_lecture
+* Registres:
+*  A: nombre de blocs de 256 octets a charger (A0:1, A1:2, ..., 9F:80)
+*  X: lecteur (0 à 3), 0
+*  Y: piste (0 à 79), secteur (1-16)
+*
+* Le numéro de piste est incrémenté a chaque changement de secteur de 16 à 1
+* Il n'y a pas de changement de lecteur une fois arrivé à la fin de la piste 79
+********************************************************************************
 (main)BOOT
    setdp $60
    org $6200
-   
-boot1
-   cmpa   >$fff0         * Error if not
-   beq    DK_lecture     * TO8 Touche B
-   ldb    #$ff-$10       * TO8 Touche C
-   andb   <$6081         * PIA switch
-   stb    <$6081         * RAM mode
-   stb    >$e7e7
-DK_lecture               * routine de lecture disquette
-   lda #$02                        
+
+init
+   ldd #$6300            * Emplacement du MAIN
+   std ,s                * Enregistrement de l adresse qui sera appellee lors du premier RTS (lancement MAIN)
+   ldu data              * Chargement des données d'initialisation lecteur, piste, secteur
+   pulu a,x,y
+DK_lecture               * Point d'entrée pour exécution de lecture disquette et exomizer
+   ldu #$604C            * Chargement des données d'entrée DK.DRV, DK.TRK, DK.SEC
+   pshu x,y              * X: lecteur,0 Y: piste,secteur
+   sta DK_dernier_bloc+2 * utilisation de cette valeur pour le nombre de blocs de 256 octets
+   ldd #$6100            * Emplacement Exomizer
+   pshs d                * Enregistrement de l'adresse qui sera appellee lors du RTS (Exomizer)
+   lda #$02              * A la fois code opération et code page tmp          
    sta <$6048            * DK.OPC $02 Operation - Lecture d un secteur
 DK_destinationPage
-   ldb #$04              * Page
-   stb $E7E5             * Selection de la page en RAM Donnees (A000-DFFF)
-DK_piste                 
-   ldd #$0000            * Numero de la piste de depart
-   std <$604A            * DK.TRK Piste a lire
-DK_secteur               
-   lda #$02              * Numero du secteur de depart
-   sta <$604C            * DK.SEC Secteur a lire
-DK_destination           
+   ldb $E7E5             * identification de la page en espace données
+   stb $61B9             * Sauvegarde de la page
+   sta $E7E5             * Selection de la page en RAM Donnees (A000-DFFF)
+DK_destination
    ldd #$A000            * Debut de la zone memoire cible
    std <$604F            * DK.BUF Destination des donnees lues
+DKCO
    jsr $E82A             * DKCO Appel 
-   inc DK_secteur+1      * Secteur suivant
-   lda DK_secteur+1      
-   cmpa #$10             * Si on depasse le secteur 16
-   bhi DK_reinit_secteur * on branche
-DK_retour_reinit_secteur 
-   inc DK_destination+1  * Increment de 256 octets de la zone a ecrire
-   ldd DK_destination+1  * Destination des donnees lues
-DK_dernier_bloc          * Dernier bloc a ecrire (Attention a la pile systeme remontante en 9FFF au boot)
-   cmpd #$A000           * 2B fin de la zone memoire cible, debut du dernier bloc de 256 octets
-   bls DK_piste
+   inc <$604C            * Secteur suivant
+   lda <$604C            * Chargement de DK.SEC
+   cmpa #$10
+   bls DK_continue      
+   lda #$01              * Si on depasse le secteur 16
+   sta <$604C            * Positionnement du secteur a 1
+   inc <$604B            * Increment de la piste
+DK_continue 
+   inc <$604F            * Increment de 256 octets de la zone a ecrire DK.BUF
+   ldd <$604F            * Chargement de la zone a ecrire DK.BUF
+DK_dernier_bloc          * Dernier bloc a ecrire
+   cmpd #$A000           * TODO !!! dynamique Fin de la zone memoire cible, debut du dernier bloc de 256 octets
+   bls DKCO
 dyn_rts
+   nop                   * TODO !!! passages suivants comment renseigner Y et U ?
    nop
-load_exomize
-   lda #$39
-   sta dyn_rts
-   ldy #$6321            * paramètre destination (fin) !!! a rendre dynamique (taille+1)
-   ldu #$A03A            * paramètre source (fin) !!! a rendre dynamique
-   ldd #$6100            * emplacement du code exomizer
-   std DK_destination+1
-   std DK_dernier_bloc+2
-   std ,s                * Enregistrement de l adresse qui sera appellee lors du RTS dans la pile systeme
-   jsr DK_lecture
-	          
-DK_reinit_secteur        
-   lda #$01              * Positionnement du secteur a 1
-   sta DK_secteur+1      
-   inc DK_piste+2        * Increment de la piste
-   bra DK_retour_reinit_secteur
+load_exomize             * Auto-modification de code positionne deux rts en place des deux nop
+   ldd #$3939            * Au boot permet de charger le code exomizer
+   std dyn_rts           * Aux passages suivants, permet d'enchainer DKCO et EXO
+fin_donnees_comp   
+   ldy #$6324            * paramètre destination (fin) !!! a rendre dynamique (taille+1)
+fin_donnees_decomp
+   ldu #$A03D            * paramètre source (fin) !!! a rendre dynamique (taille+1)
+   ldd #$6100            * emplacement d'écriture du code exomizer
+   std <$604F            * renseignement DK.BUF
+   std DK_dernier_bloc+2 * renseignement limite de fin a écrire (1 seul bloc de 256 octets ici)
+   jsr DKCO
+   
+data fcb $A0,0,0,0,2     * lecteur, 0, piste, secteur
 (info)

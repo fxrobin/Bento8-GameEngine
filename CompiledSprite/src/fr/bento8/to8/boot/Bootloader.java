@@ -38,22 +38,13 @@ public class Bootloader {
 	 *    - ajouter la somme des octets (avec complément à 2) de la signature
 	 *    - ajouter 0x55
 	 * 
-	 * Au lancement du basic (Touche 1, B, 2 ou C) le système execute la lecture du secteur d'amorçage (point d'entrée $E007)
-	 * S'il est présent, le TO8 charge le code d'amorçage à l'adresse $6200, sinon il execute le Basic
-	 * 
-	 * Quand on boot par C, il bascule en "compatibilité TO7/70" et la commutation mémoire doit se faire via le PIA (comme sur TO9 et TO7/70). Il faut alors modifier le registre système pour restaurer la commutation de bank rapide comme sur TO8. D'ailleurs dans le BootLoader fait par Préhisto pour la démo "In the Shadow of the thomson", il y a ceci:
-	 * Dans le cas du lancement par C mettre en place ce code :
-	 * (lda #2)
- 	 * ...
- 	 **PIA memory switch
-	 *boot1  cmpa   >$fff0  ! Error if not
-     *  beq    boot2   ! TO9/8/D/9+
-     *  ldb    #$ff-$10 !
-     *  andb   <$6081   ! PIA switch
-     *  stb    <$6081   ! RAM mode
-     *  stb    >$e7e7   !
-     **Initialize system
-	 *boot2
+	 * Les differentes machines sont differenciables au niveau de la lecture de l'octet
+     * $FFF0:
+     *  0:      TO7
+     *  1:      TO7-70
+     *  2:      TO9
+     *  3:      TO8
+     *  6:      TO9+
 	 *
 	 * Rappel:
 	 * 6000-60FF : Registres du Moniteur

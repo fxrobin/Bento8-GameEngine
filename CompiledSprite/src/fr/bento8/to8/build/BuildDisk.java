@@ -127,7 +127,7 @@ public class BuildDisk
 			// Compilation du code d'initialisation (boot)
 			// *******************************************
 
-			if (compileRAW(bootFile) == 0) {
+			if (compileRAW(bootFile) == 0) { // TODO le boot doit contenir la taille du main (bin + exo)
 
 				// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
 				Bootloader bootLoader = new Bootloader();
@@ -339,7 +339,7 @@ public class BuildDisk
 				//				Files.write(pathMainTmp, content.getBytes(charset));
 
 				// Compilation du code principal
-				if (exomize(mainFile) == 0 && exomize(getBINFileName(mainFile)) == 0) {
+				if (compileLIN(mainFile) == 0 && exomize(getBINFileName(mainFile)) == 0) {
 					byte[] mainBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainFile)));
 
 					// Ecriture sur disquette
@@ -355,7 +355,7 @@ public class BuildDisk
 						byte[] exoBytes = Files.readAllBytes(Paths.get(getBINFileName(exomizerFile)));
 
 						// Ecriture sur disquette
-						fd.setIndex(0, 0, 3);
+						fd.setIndex(0, 0, 3); // TODO poser le bon index en fonction de l'ecriture du main
 						fd.write(exoBytes, 5, exoBytes.length-10); // On ne recopie pas le header et trailer
 
 						// Génération des images disquette

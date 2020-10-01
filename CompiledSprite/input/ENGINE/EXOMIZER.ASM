@@ -97,6 +97,8 @@ offs    lda     $1234,y                 * Self-modified code
         bra     mloop
 
 endr    sty     6,s                     * End
+        lda     page
+        sta     $E7E5                   * Add-on Bento8 Restore page
         puls    cc,d,dp,x,y,u,pc        * Restore context and set Y
 
 * getbits  : get 0 to 16 bits from input stream
@@ -136,5 +138,6 @@ cook    leax    $6264,pcr
 * Values used in the switch (index)   
 tab1    fcb     4,2,4
         fcb     16,48,32
+page    fcb     0                       * Add-on Bento8 sauvegarde page depuis BOOT.ASM
 
 (info)
