@@ -58,11 +58,11 @@ public class AssemblyGenerator{
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
-		String asmFileName = BuildDisk.tmpDirName+"/"+spriteName+".ASM";
+		String asmFileName = BuildDisk.genDirName+"/"+spriteName+".ASM";
 		Path asmFile = Paths.get(asmFileName);
-		String lstFileName = BuildDisk.tmpDirName+"/"+spriteName+".lst";
+		String lstFileName = BuildDisk.genDirName+"/"+spriteName+".lst";
 		Path lstFile = Paths.get(lstFileName);
-		String binFileName = BuildDisk.tmpDirName+"/"+spriteName+".BIN";
+		String binFileName = BuildDisk.genDirName+"/"+spriteName+".BIN";
 		Path binFile = Paths.get(binFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
@@ -132,15 +132,15 @@ public class AssemblyGenerator{
 			byte[] content = Files.readAllBytes(Paths.get(binFileName));	
 			sizeCache = content.length;
 			// Utilisation du .lst existant
-			cycleCache = C6809Util.countCycle(lstFileName);
+			cycleCache = C6809Util.countCycles(lstFileName);
 		}
 	}
 
 	public byte[] getCompiledCode(String org) {
 		byte[]  content = {};
-		String asmFileName = BuildDisk.tmpDirName+"/"+spriteName+".ASM";
-		String binFileName = BuildDisk.tmpDirName+"/"+spriteName+".BIN";
-		String lstFileName = BuildDisk.tmpDirName+"/"+spriteName+".lst";
+		String asmFileName = BuildDisk.genDirName+"/"+spriteName+".ASM";
+		String binFileName = BuildDisk.genDirName+"/"+spriteName+".BIN";
+		String lstFileName = BuildDisk.genDirName+"/"+spriteName+".lst";
 
 		Path asmFile = Paths.get(asmFileName);
 		Path lstFile = Paths.get(lstFileName);
@@ -192,7 +192,7 @@ public class AssemblyGenerator{
 			f.renameTo(new File(lstFileName));
 
 			// Compte le nombre de cycles du .lst
-			int compilerCycles = C6809Util.countCycle(lstFileName);
+			int compilerCycles = C6809Util.countCycles(lstFileName);
 			int computedCycles = getCycles();
 			int computedSize = getSize();
 			logger.debug(lstFileName + " c6809.exe cycles: " + compilerCycles + " computed cycles: " + computedCycles);

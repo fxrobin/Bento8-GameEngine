@@ -1,0 +1,86 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : .\input\ENGINE\BOOT.ASM
+ * Fichier destination : .\input\GENERATED\TMP.BIN
+ * Contenu :
+ *     Main     0:BOOT.ASM     1267
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+      8                  60          setdp $60
+      9        6200                  org $6200
+     10                            
+     11        6200               boot1
+     12  5     6200 B1   FFF0        cmpa   >$fff0         * Error if not
+     13  3     6203 27   09          beq    DK_lecture     * TO8 Touche B
+     14  2     6205 C6   EF          ldb    #$ff-$10       * TO8 Touche C
+     15  4     6207 D4   81          andb   <$6081         * PIA switch
+     16  4     6209 D7   81          stb    <$6081         * RAM mode
+     17  5     620B F7   E7E7        stb    >$e7e7
+     18        620E               DK_lecture               * routine de lec>>
+     19  2     620E 86   02          lda #$02
+     20  4     6210 97   48          sta <$6048            * DK.OPC $02 Ope>>
+     21        6212               DK_destinationPage
+     22  2     6212 C6   04          ldb #$04              * Page
+     23  5     6214 F7   E7E5        stb $E7E5             * Selection de l>>
+     24        6217               DK_piste
+     25  3     6217 CC   0000        ldd #$0000            * Numero de la p>>
+     26  5     621A DD   4A          std <$604A            * DK.TRK Piste a>>
+     27        621C               DK_secteur
+     28  2     621C 86   02          lda #$02              * Numero du sect>>
+     29  4     621E 97   4C          sta <$604C            * DK.SEC Secteur>>
+     30        6220               DK_destination
+     31  3     6220 CC   A000        ldd #$A000            * Debut de la zo>>
+     32  5     6223 DD   4F          std <$604F            * DK.BUF Destina>>
+     33  8     6225 BD   E82A        jsr $E82A             * DKCO Appel
+     34  7     6228 7C   621D        inc DK_secteur+1      * Secteur suivan>>
+     35  5     622B B6   621D        lda DK_secteur+1
+     36  2     622E 81   10          cmpa #$10             * Si on depasse >>
+     37  3     6230 22   27          bhi DK_reinit_secteur * on branche
+     38        6232               DK_retour_reinit_secteur
+     39  7     6232 7C   6221        inc DK_destination+1  * Increment de 2>>
+     40  6     6235 FC   6221        ldd DK_destination+1  * Destination de>>
+     41        6238               DK_dernier_bloc          * Dernier bloc a>>
+     42  5     6238 1083 A000        cmpd #$A000           * 2B fin de la z>>
+     43  3     623C 23   D9          bls DK_piste
+     44        623E               dyn_rts
+     45  2     623E 12               nop
+     46        623F               load_exomize
+     47  2     623F 86   39          lda #$39
+     48  5     6241 B7   623E        sta dyn_rts
+     49  4     6244 108E 6321        ldy #$6321            * paramètre dest>>
+     50  3     6248 CE   A03A        ldu #$A03A            * paramètre sour>>
+     51  3     624B CC   6100        ldd #$6100            * emplacement du>>
+     52  6     624E FD   6221        std DK_destination+1
+     53  6     6251 FD   623A        std DK_dernier_bloc+2
+     54  5+0   6254 ED   E4          std ,s                * Enregistrement>>
+     55  8     6256 BD   620E        jsr DK_lecture
+     56                            
+     57        6259               DK_reinit_secteur
+     58  2     6259 86   01          lda #$01              * Positionnement>>
+     59  5     625B B7   621D        sta DK_secteur+1
+     60  7     625E 7C   6219        inc DK_piste+2        * Increment de l>>
+     61  3     6261 20   CF          bra DK_retour_reinit_secteur
+----------------
+165 cycle(s)
+99 byte(s)
+----------------
+
+000000 Total Errors
+
+000011 Total Symbols
+     0x          Label 6200 boot1
+     1x          Label 6238 DK_dernier_bloc
+     3x          Label 6220 DK_destination
+     0x          Label 6212 DK_destinationPage
+     2x          Label 620E DK_lecture
+     2x          Label 6217 DK_piste
+     1x          Label 6259 DK_reinit_secteur
+     1x          Label 6232 DK_retour_reinit_secteur
+     3x          Label 621C DK_secteur
+     1x          Label 623E dyn_rts
+     0x          Label 623F load_exomize
+

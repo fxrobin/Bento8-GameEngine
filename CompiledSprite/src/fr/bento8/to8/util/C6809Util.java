@@ -12,14 +12,12 @@ import java.util.regex.Pattern;
 
 public class C6809Util {
 
-	public static int countCycle(String lstFile) throws IOException {
+	public static int countCycles(String lstFile) throws IOException {
 		int cycles = 0;
 
 		Path path = Paths.get(lstFile);
 		Pattern regexp = Pattern.compile("^[\\s0-9]{7}\\s\\s([^\\s]+).*$");
 		Matcher matcher = regexp.matcher("");
-
-		//String content = new String(Files.readAllBytes(pathMain), StandardCharsets.UTF_8);
 
 		BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.ISO_8859_1);
 		LineNumberReader lineReader = new LineNumberReader(reader);
@@ -38,5 +36,26 @@ public class C6809Util {
 		}      
 
 		return cycles;
+	}
+	
+	public static int countErrors(String lstFile) throws IOException {
+		int errors = 0;
+
+		Path path = Paths.get(lstFile);
+		Pattern regexp = Pattern.compile("^([0-9]{6}) Total Errors.*$");
+		Matcher matcher = regexp.matcher("");
+		
+		BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.ISO_8859_1);
+		LineNumberReader lineReader = new LineNumberReader(reader);
+		String line = null;
+		while ((line = lineReader.readLine()) != null) {
+			matcher.reset(line); //reset the input
+			if(matcher.matches())
+			{
+				errors += Integer.parseInt(matcher.group(1));
+			}
+		}      
+
+		return errors;
 	}
 }

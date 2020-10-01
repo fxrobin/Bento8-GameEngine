@@ -53,9 +53,23 @@ public class FdUtil
 	 */
 	public void write(byte[] bytes) {
 		System.out.println("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
-		int i=0;
+		int i;
 		for (i=0; i<bytes.length; i++) {
 			fdBytes[index+i] = bytes[i];
+		}
+		index+=i;
+	}
+	
+	/**
+	 * Eciture de données à l'index courant dans le fichier fd monté en mémoire
+	 * 
+	 * @param bytes données à copier
+	 */
+	public void write(byte[] bytes, int start, int length) {
+		System.out.println("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
+		int i;
+		for (i=start; i<start+length; i++) {
+			fdBytes[index+i-start] = bytes[i];
 		}
 		index+=i;
 	}

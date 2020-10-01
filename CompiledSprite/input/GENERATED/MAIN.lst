@@ -1,0 +1,45 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : .\input\ENGINE\MAIN.ASS
+ * Fichier destination : .\input\GENERATED\TMP.BIN
+ * Contenu :
+ *     Main     0:MAIN.ASM     685
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+     12        6300                      ORG $6300
+     13  2     6300 1A   50              ORCC #$50   * desactive les interr>>
+     14                            
+     15                           *****************************************>>
+     16                           * Initialisation du mode video
+     17                           *****************************************>>
+     18  2     6302 86   7B              LDA #$7B      * passage en mode 16>>
+     19  5     6304 B7   E7DC            STA $E7DC
+     20                            
+     21                           *****************************************>>
+     22                           * Initialisation de la palette en noir
+     23                           *****************************************>>
+     24  3     6307 CC   0000            LDD #$0000
+     25        630A               SETBLACKPALETTE
+     26  5     630A B7   E7DB            STA $E7DB     * determine l'indice>>
+     27  5     630D F7   E7DA            STB $E7DA     * set de la couleur >>
+     28  5     6310 F7   E7DA            STB $E7DA   * set de la couleur Bl>>
+     29  2     6313 8B   02              ADDA #$02     * increment de l'ind>>
+     30  2     6315 81   20              CMPA #$20     * si on atteint 32 s>>
+     31  3     6317 26   F1              BNE    SETBLACKPALETTE
+     32                            
+     33                                  * Bordure initialisee avec couleur>>
+     34                                  **********************************>>
+     35                            
+     36  5     6319 F6   E7DD         LDB $E7DD
+     37  2     631C C4   F0              ANDB #$F0
+     38  5     631E F7   E7DD            STB $E7DD
+
+000000 Total Errors
+
+000001 Total Symbols
+     1x          Label 630A SETBLACKPALETTE
+

@@ -21,6 +21,8 @@ public class Bootloader {
 	 * Encode le secteur d'amorçage d'une disquette Thomson TO8
 	 * 
 	 * Le secteur d'amorçage est présent en face=0 piste=0 secteur=1 octets=0-127 
+	 * Pour optimmiser l'espace, le bootloader est réduit à 100 octets
+	 * Cela permet de placer le buffer de l'exomizer en position 6264-62FF
 	 * 
 	 * Le code a exécuter est contenu en position 0 à 119 (encodé par un complément à 2 sur chaque octet)
 	 * Le secteur d'amorçage contient "BASIC2" en position 120 à 125
@@ -53,6 +55,9 @@ public class Bootloader {
      **Initialize system
 	 *boot2
 	 *
+	 * Rappel:
+	 * 6000-60FF : Registres du Moniteur
+	 *
 	 * @param file fichier binaire contenant le code compilé d'amorçage
 	 * @return
 	 */
@@ -65,7 +70,7 @@ public class Bootloader {
 			byte[] bootLoaderBIN = Files.readAllBytes(Paths.get(file));
 			
 			// Taille maximum de 120 octets pour le bootloader
-			if (bootLoaderBIN.length <= 120) {
+			if (bootLoaderBIN.length <= 100) {
 				
 				// Initialisation de la somme de controle
 				bootLoader[127] = (byte) 0x55;
@@ -87,7 +92,7 @@ public class Bootloader {
 				bootLoader[127] = (byte) (bootLoader[127] + signatureSum);
 				
 			} else {
-				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 120 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
+				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 100 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
