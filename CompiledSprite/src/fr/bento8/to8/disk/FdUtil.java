@@ -5,6 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author Benoît Rousseau
  * @version 1.0
@@ -12,6 +15,8 @@ import java.nio.file.Paths;
  */
 public class FdUtil
 {
+	private static final Logger logger = LogManager.getLogger("log");
+	
 	private final byte[] fdBytes = new byte[655360];
 	private int index = 0;
 
@@ -30,8 +35,8 @@ public class FdUtil
 	 */
 	public void setIndex(int unite, int piste, int secteur) {
 		if (unite < 0 || unite > 3 || piste < 0 || piste > 79 || secteur < 1 || secteur > 16) {
-			System.out.println("DiskUtil.getIndex: paramètres incorrects");
-			System.out.println("unité (0-3):"+unite+" piste (0-79):"+piste+" secteur (1-16):"+secteur);
+			logger.debug("DiskUtil.getIndex: paramètres incorrects");
+			logger.debug("unité (0-3):"+unite+" piste (0-79):"+piste+" secteur (1-16):"+secteur);
 		} else {
 			index = (unite*327680)+(piste*4096)+((secteur-1)*256);
 		}
@@ -52,7 +57,7 @@ public class FdUtil
 	 * @param bytes données à copier
 	 */
 	public void write(byte[] bytes) {
-		System.out.println("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
+		logger.debug("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
 		int i;
 		for (i=0; i<bytes.length; i++) {
 			fdBytes[index+i] = bytes[i];
@@ -66,7 +71,7 @@ public class FdUtil
 	 * @param bytes données à copier
 	 */
 	public void write(byte[] bytes, int start, int length) {
-		System.out.println("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
+		logger.debug("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
 		int i;
 		for (i=start; i<start+length; i++) {
 			fdBytes[index+i-start] = bytes[i];

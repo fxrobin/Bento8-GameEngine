@@ -1,10 +1,10 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\input\ENGINE\EXOMIZER.ASM
+ * Fichier source      : .\input\GENERATED\EXOMIZER.ASM
  * Fichier destination : .\input\GENERATED\TMP.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     1565
+ *     Main     0:MAIN.ASM     1581
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -13,152 +13,153 @@ Pass2
      24                  61               setdp $61
      25        6100                       org $6100
      26                            
-     27  5+10  6100 34   7F       exo2    pshs    u,y,x,dp,d,cc           *>>
-     28  6     6102 1F   50               tfr     pc,d                    *>>
-     29  6     6104 1F   8B               tfr     a,dp
-     30  4+5   6106 31   8D 015A          leay    $6264,pcr                >>
-     31  2     610A 5F                    clrb
-     32  4     610B D7   93               stb     <bitbuf+1               *>>
-     33
-     34  2     610D 4F            nxt     clra
-     35  5+2   610E 34   06               pshs    a,b
-     36  2     6110 C5   0F               bitb    #$0f                    *>>
-     37  3     6112 26   03               bne     skp
-     38  3     6114 8E   0001             ldx     #$0001                  *>>
-     39  2     6117 C6   04       skp     ldb     #4                      *>>
-     40  7     6119 8D   73               bsr     getbits
-     41  4+2   611B E7   A0               stb     ,y+                     *>>
-     42  2     611D 53                    comb                            *>>
-     43  6+0   611E 69   E4       roll    rol     ,s
-     44  2     6120 49                    rola
-     45  2     6121 5C                    incb
-     46  3     6122 2B   FA               bmi     roll
-     47  4+0   6124 E6   E4               ldb     ,s
-     48  5+3   6126 AF   A1               stx     ,y++                    *>>
-     49  4+4   6128 30   8B               leax    d,x                     *>>
-     50  5+2   612A 35   06               puls    a,b
-     51  2     612C 5C                    incb
-     52  2     612D C1   34               cmpb    #52                     *>>
-     53  3     612F 26   DC               bne     nxt
-     54                            
-     55  6+1   6131 10AE 66       go      ldy     6,s                     *>>
-     56  2     6134 C6   01       mloop   ldb     #1                      *>>
-     57  7     6136 8D   56               bsr     getbits                 *>>
-     58  3     6138 26   15               bne     cpy                     *>>
-     59  4     613A D7   45               stb     <idx+1                  *>>
-     60        613C 8C                    fcb     $8c                     *>>
-     61  6     613D 0C   45       rbl     inc     <idx+1                  *>>
-     62  2     613F 5C                    incb
-     63  7     6140 8D   4C               bsr     getbits
-     64  3     6142 27   F9               beq     rbl
-     65
-     66  2     6144 C6   00       idx     ldb     #$00                    *>>
-     67  2     6146 C1   10               cmpb    #$10                    *>>
-     68  3     6148 27   37               beq     endr
-     69  3     614A 25   0F               blo     coffs                   *>>
-     70  2     614C 5A                    decb                            *>>
-     71  7     614D 8D   3F               bsr     getbits                 *>>
-     72
-     73  6     614F 1F   01       cpy     tfr     d,x                     *>>
-     74  4+2   6151 A6   C2       cpyl    lda     ,-u
-     75  4+2   6153 A7   A2               sta     ,-y
-     76  4+1   6155 30   1F               leax    -1,x
-     77  3     6157 26   F8               bne     cpyl
-     78  3     6159 20   D9               bra     mloop
-     79
-     80  7     615B 8D   4A       coffs   bsr     cook                    *>>
-     81  5+2   615D 34   06               pshs    d
-     82  4+1   615F 30   8C 51            leax    <tab1,pcr
-     83  5     6162 1083 0003             cmpd    #$03
-     84  3     6166 24   01               bhs     scof
-     85  3     6168 3A                    abx
-     86  7     6169 8D   21       scof    bsr     getbix
-     87  4+1   616B EB   03               addb    3,x
-     88  7     616D 8D   38               bsr     cook
-     89  5     616F DD   77               std     <offs+2
-     90  5+2   6171 35   10               puls    x
-     91
-     92  4+1   6173 31   3F       cpy2    leay    -1,y                    *>>
-     93  4+4   6175 A6   A9 1234  offs    lda     $1234,y                 *>>
-     94  4+0   6179 A7   A4               sta     ,y
-     95  4+1   617B 30   1F               leax    -1,x
-     96  3     617D 26   F4               bne     cpy2
-     97  3     617F 20   B3               bra     mloop
-     98
-     99  6+1   6181 10AF 66       endr    sty     6,s                     *>>
-    100  5     6184 B6   61B9             lda     page
-    101  5     6187 B7   E7E5             sta     $E7E5                   *>>
-    102  5+12  618A 35   FF               puls    cc,d,dp,x,y,u,pc        *>>
-    103
-    104                           * getbits  : get 0 to 16 bits from input >>
-    105                           * Input    : B = bit count, U points to i>>
-    106                           * Output   : D = bits
-    107                           * Modifies : D,U.
-    108
-    109  4+0   618C E6   84       getbix  ldb     ,x
-    110  6+2   618E 6F   E2       getbits clr     ,-s                     *>>
-    111  6+2   6190 6F   E2               clr     ,-s
-    112  2     6192 86   12       bitbuf  lda     #$12                    *>>
-    113  3     6194 20   09               bra     get3
-    114  4+2   6196 A6   C2       get1    lda     ,-u
-    115  2     6198 46            get2    rora
-    116  3     6199 27   FB               beq     get1                    *>>
-    117  6+1   619B 69   61               rol     1,s
-    118  6+0   619D 69   E4               rol     ,s
-    119  2     619F 5A            get3    decb
-    120  3     61A0 2A   F6               bpl     get2
-    121  4     61A2 97   93               sta     <bitbuf+1               *>>
-    122  5+3   61A4 EC   E1               ldd     ,s++
-    123  5     61A6 39                    rts                             *>>
-    124                            
-    125                           * cook     : computes base[index] + readb>>
-    126                           * Input    : B = index
-    127                           * Output   : D = base[index] + readbits(&>>
-    128                           * Modifies : D,X,U.
-    129
-    130  4+5   61A7 30   8D 00B9  cook    leax    $6264,pcr
-    131  3     61AB 3A                    abx                             *>>
-    132  2     61AC 58                    aslb                            *>>
-    133  3     61AD 3A                    abx
-    134  7     61AE 8D   DC               bsr     getbix                  *>>
-    135  6+1   61B0 E3   01               addd    1,x                     *>>
-    136  5     61B2 39                    rts
-    137
-    138                           * Values used in the switch (index)
-    139        61B3 04 02 04      tab1    fcb     4,2,4
-    140        61B6 10 30 20              fcb     16,48,32
-    141        61B9 00            page    fcb     0                       *>>
-    142
+     27        6100               init
+     28  3     6100 CE   A03D             ldu #$A03D                  * par>>
+     29  4     6103 108E 6324             ldy #$6324             * paramètr>>
+     30
+     31  5+10  6107 34   7F       exo2    pshs    u,y,x,dp,d,cc           *>>
+     32  6     6109 1F   50               tfr     pc,d                    *>>
+     33  6     610B 1F   8B               tfr     a,dp
+     34  4+5   610D 31   8D 0153          leay    $6264,pcr               *>>
+     35  2     6111 5F                    clrb
+     36  4     6112 D7   94               stb     <bitbuf+1               *>>
+     37
+     38  2     6114 4F            nxt     clra
+     39  5+2   6115 34   06               pshs    a,b
+     40  2     6117 C5   0F               bitb    #$0f                    *>>
+     41  3     6119 26   03               bne     skp
+     42  3     611B 8E   0001             ldx     #$0001                  *>>
+     43  2     611E C6   04       skp     ldb     #4                      *>>
+     44  7     6120 8D   6D               bsr     getbits
+     45  4+2   6122 E7   A0               stb     ,y+                     *>>
+     46  2     6124 53                    comb                            *>>
+     47  6+0   6125 69   E4       roll    rol     ,s
+     48  2     6127 49                    rola
+     49  2     6128 5C                    incb
+     50  3     6129 2B   FA               bmi     roll
+     51  4+0   612B E6   E4               ldb     ,s
+     52  5+3   612D AF   A1               stx     ,y++                    *>>
+     53  4+4   612F 30   8B               leax    d,x                     *>>
+     54  5+2   6131 35   06               puls    a,b
+     55  2     6133 5C                    incb
+     56  2     6134 C1   34               cmpb    #52                     *>>
+     57  3     6136 26   DC               bne     nxt
+     58                            
+     59  6+1   6138 10AE 66       go      ldy     6,s                     *>>
+     60  2     613B C6   01       mloop   ldb     #1                      *>>
+     61  7     613D 8D   50               bsr     getbits                 *>>
+     62  3     613F 26   15               bne     cpy                     *>>
+     63  4     6141 D7   4C               stb     <idx+1                  *>>
+     64        6143 8C                    fcb     $8c                     *>>
+     65  6     6144 0C   4C       rbl     inc     <idx+1                  *>>
+     66  2     6146 5C                    incb
+     67  7     6147 8D   46               bsr     getbits
+     68  3     6149 27   F9               beq     rbl
+     69
+     70  2     614B C6   00       idx     ldb     #$00                    *>>
+     71  2     614D C1   10               cmpb    #$10                    *>>
+     72  3     614F 27   37               beq     endr
+     73  3     6151 25   0F               blo     coffs                   *>>
+     74  2     6153 5A                    decb                            *>>
+     75  7     6154 8D   39               bsr     getbits                 *>>
+     76
+     77  6     6156 1F   01       cpy     tfr     d,x                     *>>
+     78  4+2   6158 A6   C2       cpyl    lda     ,-u
+     79  4+2   615A A7   A2               sta     ,-y
+     80  4+1   615C 30   1F               leax    -1,x
+     81  3     615E 26   F8               bne     cpyl
+     82  3     6160 20   D9               bra     mloop
+     83
+     84  7     6162 8D   44       coffs   bsr     cook                    *>>
+     85  5+2   6164 34   06               pshs    d
+     86  4+1   6166 30   8C 4B            leax    <tab1,pcr
+     87  5     6169 1083 0003             cmpd    #$03
+     88  3     616D 24   01               bhs     scof
+     89  3     616F 3A                    abx
+     90  7     6170 8D   1B       scof    bsr     getbix
+     91  4+1   6172 EB   03               addb    3,x
+     92  7     6174 8D   32               bsr     cook
+     93  5     6176 DD   7E               std     <offs+2
+     94  5+2   6178 35   10               puls    x
+     95
+     96  4+1   617A 31   3F       cpy2    leay    -1,y                    *>>
+     97  4+4   617C A6   A9 1234  offs    lda     $1234,y                 *>>
+     98  4+0   6180 A7   A4               sta     ,y
+     99  4+1   6182 30   1F               leax    -1,x
+    100  3     6184 26   F4               bne     cpy2
+    101  3     6186 20   B3               bra     mloop
+    102
+    103  6+1   6188 10AF 66       endr    sty     6,s                     *>>
+    104  5+12  618B 35   FF               puls    cc,d,dp,x,y,u,pc        *>>
+    105
+    106                           * getbits  : get 0 to 16 bits from input >>
+    107                           * Input    : B = bit count, U points to i>>
+    108                           * Output   : D = bits
+    109                           * Modifies : D,U.
+    110
+    111  4+0   618D E6   84       getbix  ldb     ,x
+    112  6+2   618F 6F   E2       getbits clr     ,-s                     *>>
+    113  6+2   6191 6F   E2               clr     ,-s
+    114  2     6193 86   12       bitbuf  lda     #$12                    *>>
+    115  3     6195 20   09               bra     get3
+    116  4+2   6197 A6   C2       get1    lda     ,-u
+    117  2     6199 46            get2    rora
+    118  3     619A 27   FB               beq     get1                    *>>
+    119  6+1   619C 69   61               rol     1,s
+    120  6+0   619E 69   E4               rol     ,s
+    121  2     61A0 5A            get3    decb
+    122  3     61A1 2A   F6               bpl     get2
+    123  4     61A3 97   94               sta     <bitbuf+1               *>>
+    124  5+3   61A5 EC   E1               ldd     ,s++
+    125  5     61A7 39                    rts                             *>>
+    126                            
+    127                           * cook     : computes base[index] + readb>>
+    128                           * Input    : B = index
+    129                           * Output   : D = base[index] + readbits(&>>
+    130                           * Modifies : D,X,U.
+    131
+    132  4+5   61A8 30   8D 00B8  cook    leax    $6264,pcr
+    133  3     61AC 3A                    abx                             *>>
+    134  2     61AD 58                    aslb                            *>>
+    135  3     61AE 3A                    abx
+    136  7     61AF 8D   DC               bsr     getbix                  *>>
+    137  6+1   61B1 E3   01               addd    1,x                     *>>
+    138  5     61B3 39                    rts
+    139
+    140                           * Values used in the switch (index)
+    141        61B4 04 02 04      tab1    fcb     4,2,4
+    142        61B7 10 30 20              fcb     16,48,32
+    143
 ----------------
-442 cycle(s)
+439 cycle(s)
 186 byte(s)
 ----------------
 
 000000 Total Errors
 
 000024 Total Symbols
-     2x          Label 6192 bitbuf
-     1x          Label 615B coffs
-     2x          Label 61A7 cook
-     1x          Label 614F cpy
-     1x          Label 6173 cpy2
-     1x          Label 6151 cpyl
-     1x          Label 6181 endr
-     0x          Label 6100 exo2
-     1x          Label 6196 get1
-     1x          Label 6198 get2
-     1x          Label 619F get3
-     4x          Label 618E getbits
-     2x          Label 618C getbix
-     0x          Label 6131 go
-     2x          Label 6144 idx
-     2x          Label 6134 mloop
-     1x          Label 610D nxt
-     1x          Label 6175 offs
-     1x          Label 61B9 page
-     1x          Label 613D rbl
-     1x          Label 611E roll
-     1x          Label 6169 scof
-     1x          Label 6117 skp
-     1x          Label 61B3 tab1
+     2x          Label 6193 bitbuf
+     1x          Label 6162 coffs
+     2x          Label 61A8 cook
+     1x          Label 6156 cpy
+     1x          Label 617A cpy2
+     1x          Label 6158 cpyl
+     1x          Label 6188 endr
+     0x          Label 6107 exo2
+     1x          Label 6197 get1
+     1x          Label 6199 get2
+     1x          Label 61A0 get3
+     4x          Label 618F getbits
+     2x          Label 618D getbix
+     0x          Label 6138 go
+     2x          Label 614B idx
+     0x          Label 6100 init
+     2x          Label 613B mloop
+     1x          Label 6114 nxt
+     1x          Label 617C offs
+     1x          Label 6144 rbl
+     1x          Label 6125 roll
+     1x          Label 6170 scof
+     1x          Label 611E skp
+     1x          Label 61B4 tab1
 

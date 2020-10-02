@@ -17,23 +17,26 @@
 (main)BOOT
    setdp $60
    org $6200
+   
+exomizer equ $6100
+main     equ $6300
 
 init
-   ldd #$6300            * Emplacement du MAIN
+   ldd #main             * Emplacement du MAIN
    std ,s                * Enregistrement de l adresse qui sera appellee lors du premier RTS (lancement MAIN)
-   ldu data              * Chargement des données d'initialisation lecteur, piste, secteur
-   pulu a,x,y
+   ldu #data             * Chargement des données d'initialisation
+   pulu x,y
 DK_lecture               * Point d'entrée pour exécution de lecture disquette et exomizer
-   ldu #$604C            * Chargement des données d'entrée DK.DRV, DK.TRK, DK.SEC
-   pshu x,y              * X: lecteur,0 Y: piste,secteur
+   ldu #$604D            * Chargement des données d'entrée DK.DRV, (poids fort) DK_dernier_bloc, (poids faible) DK.TRK, DK.SEC
+   pshu x,y
+   lda <$604A            * Chargement d'une donnée tmp depuis DK.TRK (poids fort)
    sta DK_dernier_bloc+2 * utilisation de cette valeur pour le nombre de blocs de 256 octets
-   ldd #$6100            * Emplacement Exomizer
-   pshs d                * Enregistrement de l'adresse qui sera appellee lors du RTS (Exomizer)
+   clr <$604A            * positionnement de l'octet fort de DK.TRK a zéro
    lda #$02              * A la fois code opération et code page tmp          
-   sta <$6048            * DK.OPC $02 Operation - Lecture d un secteur
+   sta <$6048            * DK.OPC $02 Operation - Lecture d'un secteur
 DK_destinationPage
    ldb $E7E5             * identification de la page en espace données
-   stb $61B9             * Sauvegarde de la page
+   stb load_page+1       * Sauvegarde de la page
    sta $E7E5             * Selection de la page en RAM Donnees (A000-DFFF)
 DK_destination
    ldd #$A000            * Debut de la zone memoire cible
@@ -51,22 +54,28 @@ DK_continue
    inc <$604F            * Increment de 256 octets de la zone a ecrire DK.BUF
    ldd <$604F            * Chargement de la zone a ecrire DK.BUF
 DK_dernier_bloc          * Dernier bloc a ecrire
-   cmpd #$A000           * TODO !!! dynamique Fin de la zone memoire cible, debut du dernier bloc de 256 octets
+   cmpd #$A000           * test debut du dernier bloc de 256 octets a écrire
    bls DKCO
+   bra load_exomize
+dyn_exo
+load_page
+   lda #$00              * Numero de page
+   sta $E7E5             * Recharge de la page d'appel
 dyn_rts
-   nop                   * TODO !!! passages suivants comment renseigner Y et U ?
    nop
-load_exomize             * Auto-modification de code positionne deux rts en place des deux nop
-   ldd #$3939            * Au boot permet de charger le code exomizer
-   std dyn_rts           * Aux passages suivants, permet d'enchainer DKCO et EXO
-fin_donnees_comp   
-   ldy #$6324            * paramètre destination (fin) !!! a rendre dynamique (taille+1)
-fin_donnees_decomp
-   ldu #$A03D            * paramètre source (fin) !!! a rendre dynamique (taille+1)
-   ldd #$6100            * emplacement d'écriture du code exomizer
-   std <$604F            * renseignement DK.BUF
-   std DK_dernier_bloc+2 * renseignement limite de fin a écrire (1 seul bloc de 256 octets ici)
-   jsr DKCO
-   
-data fcb $A0,0,0,0,2     * lecteur, 0, piste, secteur
+load_exomize
+   lda #$39
+   sta dyn_rts           * Auto-modification de code positionne un rts
+   lda #$BD              * Aux passages suivants, permet d'enchainer DKCO et EXO
+   ldx #exomizer
+   ldu dyn_exo
+   pshu a,x              * Auto-modification de code positionne un appel à exomizer
+   stx <$604F            * Emplacement d'écriture du code exomizer Renseignement DK.BUF
+   jsr $E82A
+   jsr exomizer
+   rts
+
+* A partir de ce point le code pourra être effacé au premier run exo par biba (position max $6264)
+data fcb 0,$A0,0,2     * DK.DRV, poids fort DK_dernier_bloc, poids faible DK.TRK, DK.SEC
+
 (info)

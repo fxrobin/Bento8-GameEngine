@@ -4,7 +4,7 @@
  * Fichier source      : .\input\ENGINE\BOOT.ASM
  * Fichier destination : .\input\GENERATED\TMP.BIN
  * Contenu :
- *     Main     0:BOOT.ASM     1309
+ *     Main     0:BOOT.ASM     1367
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -12,77 +12,87 @@ Pass1
 Pass2
      18                  60          setdp $60
      19        6200                  org $6200
-     20
-     21        6200               init
-     22  3     6200 CC   6300        ldd #$6300            * Emplacement du>>
-     23  5+0   6203 ED   E4          std ,s                * Enregistrement>>
-     24  6     6205 FE   625E        ldu data              * Chargement des>>
-     25  5+5   6208 37   32          pulu a,x,y
-     26        620A               DK_lecture               * Point d'entrée>>
-     27  3     620A CE   604C        ldu #$604C            * Chargement des>>
-     28  5+4   620D 36   30          pshu x,y              * X: lecteur,0 Y>>
-     29  5     620F B7   6240        sta DK_dernier_bloc+2 * utilisation de>>
-     30  3     6212 CC   6100        ldd #$6100            * Emplacement Ex>>
-     31  5+2   6215 34   06          pshs d                * Enregistrement>>
-     32  2     6217 86   02          lda #$02              * A la fois code>>
-     33  4     6219 97   48          sta <$6048            * DK.OPC $02 Ope>>
-     34        621B               DK_destinationPage
-     35  5     621B F6   E7E5        ldb $E7E5             * identification>>
-     36  5     621E F7   61B9        stb $61B9             * Sauvegarde de >>
-     37  5     6221 B7   E7E5        sta $E7E5             * Selection de l>>
-     38        6224               DK_destination
-     39  3     6224 CC   A000        ldd #$A000            * Debut de la zo>>
-     40  5     6227 DD   4F          std <$604F            * DK.BUF Destina>>
-     41        6229               DKCO
-     42  8     6229 BD   E82A        jsr $E82A             * DKCO Appel
-     43  6     622C 0C   4C          inc <$604C            * Secteur suivan>>
-     44  4     622E 96   4C          lda <$604C            * Chargement de >>
-     45  2     6230 81   10          cmpa #$10
-     46  3     6232 23   06          bls DK_continue
-     47  2     6234 86   01          lda #$01              * Si on depasse >>
-     48  4     6236 97   4C          sta <$604C            * Positionnement>>
-     49  6     6238 0C   4B          inc <$604B            * Increment de l>>
-     50        623A               DK_continue
-     51  6     623A 0C   4F          inc <$604F            * Increment de 2>>
-     52  5     623C DC   4F          ldd <$604F            * Chargement de >>
-     53        623E               DK_dernier_bloc          * Dernier bloc a>>
-     54  5     623E 1083 A000        cmpd #$A000           * TODO !!! dynam>>
-     55  3     6242 23   E5          bls DKCO
-     56        6244               dyn_rts
-     57  2     6244 12               nop                   * TODO !!! passa>>
-     58  2     6245 12               nop
-     59        6246               load_exomize             * Auto-modificat>>
-     60  3     6246 CC   3939        ldd #$3939            * Au boot permet>>
-     61  6     6249 FD   6244        std dyn_rts           * Aux passages s>>
-     62        624C               fin_donnees_comp
-     63  4     624C 108E 6324        ldy #$6324            * paramètre dest>>
-     64        6250               fin_donnees_decomp
-     65  3     6250 CE   A03D        ldu #$A03D            * paramètre sour>>
-     66  3     6253 CC   6100        ldd #$6100            * emplacement d'>>
-     67  5     6256 DD   4F          std <$604F            * renseignement >>
-     68  6     6258 FD   6240        std DK_dernier_bloc+2 * renseignement >>
-     69  8     625B BD   6229        jsr DKCO
-     70                            
-     71        625E A0 00 00 00   data fcb $A0,0,0,0,2     * lecteur, 0, pi>>
-               6262 02
+     20                            
+     21                  6100     exomizer equ $6100
+     22                  6300     main     equ $6300
+     23
+     24        6200               init
+     25  3     6200 CC   6300        ldd #main             * Emplacement du>>
+     26  5+0   6203 ED   E4          std ,s                * Enregistrement>>
+     27  3     6205 CE   6263        ldu #data             * Chargement des>>
+     28  5+4   6208 37   30          pulu x,y
+     29        620A               DK_lecture               * Point d'entrée>>
+     30  3     620A CE   604D        ldu #$604D            * Chargement des>>
+     31  5+4   620D 36   30          pshu x,y
+     32  4     620F 96   4A          lda <$604A            * Chargement d'u>>
+     33  5     6211 B7   623F        sta DK_dernier_bloc+2 * utilisation de>>
+     34  6     6214 0F   4A          clr <$604A            * positionnement>>
+     35  2     6216 86   02          lda #$02              * A la fois code>>
+     36  4     6218 97   48          sta <$6048            * DK.OPC $02 Ope>>
+     37        621A               DK_destinationPage
+     38  5     621A F6   E7E5        ldb $E7E5             * identification>>
+     39  5     621D F7   6246        stb load_page+1       * Sauvegarde de >>
+     40  5     6220 B7   E7E5        sta $E7E5             * Selection de l>>
+     41        6223               DK_destination
+     42  3     6223 CC   A000        ldd #$A000            * Debut de la zo>>
+     43  5     6226 DD   4F          std <$604F            * DK.BUF Destina>>
+     44        6228               DKCO
+     45  8     6228 BD   E82A        jsr $E82A             * DKCO Appel
+     46  6     622B 0C   4C          inc <$604C            * Secteur suivan>>
+     47  4     622D 96   4C          lda <$604C            * Chargement de >>
+     48  2     622F 81   10          cmpa #$10
+     49  3     6231 23   06          bls DK_continue
+     50  2     6233 86   01          lda #$01              * Si on depasse >>
+     51  4     6235 97   4C          sta <$604C            * Positionnement>>
+     52  6     6237 0C   4B          inc <$604B            * Increment de l>>
+     53        6239               DK_continue
+     54  6     6239 0C   4F          inc <$604F            * Increment de 2>>
+     55  5     623B DC   4F          ldd <$604F            * Chargement de >>
+     56        623D               DK_dernier_bloc          * Dernier bloc a>>
+     57  5     623D 1083 A000        cmpd #$A000           * test debut du >>
+     58  3     6241 23   E5          bls DKCO
+     59  3     6243 20   06          bra load_exomize
+     60        6245               dyn_exo
+     61        6245               load_page
+     62  2     6245 86   00          lda #$00              * Numero de page>>
+     63  5     6247 B7   E7E5        sta $E7E5             * Recharge de la>>
+     64        624A               dyn_rts
+     65  2     624A 12               nop
+     66        624B               load_exomize
+     67  2     624B 86   39          lda #$39
+     68  5     624D B7   624A        sta dyn_rts           * Auto-modificat>>
+     69  2     6250 86   BD          lda #$BD              * Aux passages s>>
+     70  3     6252 8E   6100        ldx #exomizer
+     71  6     6255 FE   6245        ldu dyn_exo
+     72  5+3   6258 36   12          pshu a,x              * Auto-modificat>>
+     73  5     625A 9F   4F          stx <$604F            * Emplacement d'>>
+     74  8     625C BD   E82A        jsr $E82A
+     75  8     625F BD   6100        jsr exomizer
+     76  5     6262 39               rts
+     77
+     78                           * A partir de ce point le code pourra êtr>>
+     79        6263 00 A0 00 02   data fcb 0,$A0,0,2     * DK.DRV, poids fo>>
+     80
 ----------------
-176 cycle(s)
-99 byte(s)
+194 cycle(s)
+103 byte(s)
 ----------------
 
 000000 Total Errors
 
-000012 Total Symbols
-     1x          Label 625E data
-     2x          Label 6229 DKCO
-     1x          Label 623A DK_continue
-     2x          Label 623E DK_dernier_bloc
-     0x          Label 6224 DK_destination
-     0x          Label 621B DK_destinationPage
+000014 Total Symbols
+     1x          Label 6263 data
+     1x          Label 6228 DKCO
+     1x          Label 6239 DK_continue
+     1x          Label 623D DK_dernier_bloc
+     0x          Label 6223 DK_destination
+     0x          Label 621A DK_destinationPage
      0x          Label 620A DK_lecture
-     1x          Label 6244 dyn_rts
-     0x          Label 624C fin_donnees_comp
-     0x          Label 6250 fin_donnees_decomp
+     1x          Label 6245 dyn_exo
+     1x          Label 624A dyn_rts
+     2x          Equ   6100 exomizer
      0x          Label 6200 init
-     0x          Label 6246 load_exomize
+     1x          Label 624B load_exomize
+     1x          Label 6245 load_page
+     1x          Equ   6300 main
 

@@ -61,7 +61,7 @@ public class Bootloader {
 			byte[] bootLoaderBIN = Files.readAllBytes(Paths.get(file));
 			
 			// Taille maximum de 120 octets pour le bootloader
-			if (bootLoaderBIN.length <= 100) {
+			if (bootLoaderBIN.length <= 120) {
 				
 				// Initialisation de la somme de controle
 				bootLoader[127] = (byte) 0x55;
@@ -83,7 +83,7 @@ public class Bootloader {
 				bootLoader[127] = (byte) (bootLoader[127] + signatureSum);
 				
 			} else {
-				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 100 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
+				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 120 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
