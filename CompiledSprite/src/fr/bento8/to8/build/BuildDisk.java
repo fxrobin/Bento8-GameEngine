@@ -122,18 +122,6 @@ public class BuildDisk
 			// Initialisation de l'image de disquette en sortie
 			FdUtil fd = new FdUtil();
 
-			// Compilation du code d'initialisation (boot)
-			// *******************************************
-
-			compileRAW(bootFile);
-
-			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
-			Bootloader bootLoader = new Bootloader();
-			byte[] bootLoaderBytes = bootLoader.encodeBootLoader(getBINFileName(bootFile));
-
-			fd.setIndex(0, 0, 1);
-			fd.write(bootLoaderBytes);
-
 			// Traitement de l'image pour l'écran de démarrage
 			// ***********************************************
 
@@ -370,6 +358,21 @@ public class BuildDisk
 			fd.setIndex(0, 0, 3); // TODO poser le bon index en fonction de l'ecriture du main
 			fd.write(exoBytes, 5, exoBytes.length-10); // On ne recopie pas le header et trailer
 
+			// Compilation du code d'initialisation (boot)
+			// *******************************************
+
+	        String bootTmpFile = duplicateFile(bootFile);
+	        replaceTag(bootTmpFile, "<DERNIER_BLOC>", String.format("%1$02X", uReg >> 8));
+			
+			compileRAW(bootTmpFile);
+
+			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
+			Bootloader bootLoader = new Bootloader();
+			byte[] bootLoaderBytes = bootLoader.encodeBootLoader(getBINFileName(bootTmpFile));
+
+			fd.setIndex(0, 0, 1);
+			fd.write(bootLoaderBytes);
+			
 			// Génération des images disquette
 			fd.save(outputFileName);
 			fd.saveToSd(outputFileName);

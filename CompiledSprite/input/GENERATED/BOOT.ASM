@@ -81,7 +81,7 @@ load_exomize
 ********************************************************************************	
 data
    fcb 0                 * DK.DRV
-   fcb $<DERNIER_BLOC>   * poids fort DK_dernier_bloc
+   fcb $A0   * poids fort DK_dernier_bloc
    fcb 0                 * poids faible DK.TRK
    fcb 2                 * DK.SEC
 

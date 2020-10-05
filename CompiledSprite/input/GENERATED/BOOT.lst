@@ -1,98 +1,281 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\input\ENGINE\BOOT.ASM
+ * Fichier source      : .\input\GENERATED\BOOT.ASM
  * Fichier destination : .\input\GENERATED\TMP.BIN
  * Contenu :
- *     Main     0:BOOT.ASM     1367
+ *     Main     0:BOOT.ASM     5091
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-     18                  60          setdp $60
-     19        6200                  org $6200
-     20                            
-     21                  6100     exomizer equ $6100
-     22                  6300     main     equ $6300
-     23
-     24        6200               init
-     25  3     6200 CC   6300        ldd #main             * Emplacement du>>
-     26  5+0   6203 ED   E4          std ,s                * Enregistrement>>
-     27  3     6205 CE   6263        ldu #data             * Chargement des>>
-     28  5+4   6208 37   30          pulu x,y
-     29        620A               DK_lecture               * Point d'entrée>>
-     30  3     620A CE   604D        ldu #$604D            * Chargement des>>
-     31  5+4   620D 36   30          pshu x,y
-     32  4     620F 96   4A          lda <$604A            * Chargement d'u>>
-     33  5     6211 B7   623F        sta DK_dernier_bloc+2 * utilisation de>>
-     34  6     6214 0F   4A          clr <$604A            * positionnement>>
-     35  2     6216 86   02          lda #$02              * A la fois code>>
-     36  4     6218 97   48          sta <$6048            * DK.OPC $02 Ope>>
-     37        621A               DK_destinationPage
-     38  5     621A F6   E7E5        ldb $E7E5             * identification>>
-     39  5     621D F7   6246        stb load_page+1       * Sauvegarde de >>
-     40  5     6220 B7   E7E5        sta $E7E5             * Selection de l>>
-     41        6223               DK_destination
-     42  3     6223 CC   A000        ldd #$A000            * Debut de la zo>>
-     43  5     6226 DD   4F          std <$604F            * DK.BUF Destina>>
-     44        6228               DKCO
-     45  8     6228 BD   E82A        jsr $E82A             * DKCO Appel
-     46  6     622B 0C   4C          inc <$604C            * Secteur suivan>>
-     47  4     622D 96   4C          lda <$604C            * Chargement de >>
-     48  2     622F 81   10          cmpa #$10
-     49  3     6231 23   06          bls DK_continue
-     50  2     6233 86   01          lda #$01              * Si on depasse >>
-     51  4     6235 97   4C          sta <$604C            * Positionnement>>
-     52  6     6237 0C   4B          inc <$604B            * Increment de l>>
-     53        6239               DK_continue
-     54  6     6239 0C   4F          inc <$604F            * Increment de 2>>
-     55  5     623B DC   4F          ldd <$604F            * Chargement de >>
-     56        623D               DK_dernier_bloc          * Dernier bloc a>>
-     57  5     623D 1083 A000        cmpd #$A000           * test debut du >>
-     58  3     6241 23   E5          bls DKCO
-     59  3     6243 20   06          bra load_exomize
-     60        6245               dyn_exo
-     61        6245               load_page
-     62  2     6245 86   00          lda #$00              * Numero de page>>
-     63  5     6247 B7   E7E5        sta $E7E5             * Recharge de la>>
-     64        624A               dyn_rts
-     65  2     624A 12               nop
-     66        624B               load_exomize
-     67  2     624B 86   39          lda #$39
-     68  5     624D B7   624A        sta dyn_rts           * Auto-modificat>>
-     69  2     6250 86   BD          lda #$BD              * Aux passages s>>
-     70  3     6252 8E   6100        ldx #exomizer
-     71  6     6255 FE   6245        ldu dyn_exo
-     72  5+3   6258 36   12          pshu a,x              * Auto-modificat>>
-     73  5     625A 9F   4F          stx <$604F            * Emplacement d'>>
-     74  8     625C BD   E82A        jsr $E82A
-     75  8     625F BD   6100        jsr exomizer
-     76  5     6262 39               rts
-     77
-     78                           * A partir de ce point le code pourra êtr>>
-     79        6263 00 A0 00 02   data fcb 0,$A0,0,2     * DK.DRV, poids fo>>
-     80
+     19                  60          setdp $60
+     20        6200                  org $6200
+     21                            
+     22                  6100     exomizer equ $6100
+     23                  6300     main     equ $6300
+     24
+     25                           *****************************************>>
+     26                           * desactivation des interruptions
+     27                           *****************************************>>
+     28  2     6200 1A   50          orcc #$50             * desactivation >>
+     29  3     6202 20   5D          bra init              * Appel du code >>
+     30        6204               DK_lecture               * Point d'entrée>>
+     31  3     6204 CE   604D        ldu #$604D            * Chargement des>>
+     32  5+4   6207 36   30          pshu x,y
+     33  4     6209 96   4A          lda <$604A            * Chargement d'u>>
+     34  5     620B B7   6239        sta DK_dernier_bloc+2 * utilisation de>>
+     35  6     620E 0F   4A          clr <$604A            * positionnement>>
+     36  2     6210 86   02          lda #$02              * A la fois code>>
+     37  4     6212 97   48          sta <$6048            * DK.OPC $02 Ope>>
+     38        6214               DK_destinationPage
+     39  5     6214 F6   E7E5        ldb $E7E5             * identification>>
+     40  5     6217 F7   6240        stb load_page+1       * Sauvegarde de >>
+     41  5     621A B7   E7E5        sta $E7E5             * Selection de l>>
+     42        621D               DK_destination
+     43  3     621D CC   A000        ldd #$A000            * Debut de la zo>>
+     44  5     6220 DD   4F          std <$604F            * DK.BUF Destina>>
+     45        6222               DKCO
+     46  8     6222 BD   E82A        jsr $E82A             * DKCO Appel
+     47  6     6225 0C   4C          inc <$604C            * Secteur suivan>>
+     48  4     6227 96   4C          lda <$604C            * Chargement de >>
+     49  2     6229 81   10          cmpa #$10
+     50  3     622B 23   06          bls DK_continue
+     51  2     622D 86   01          lda #$01              * Si on depasse >>
+     52  4     622F 97   4C          sta <$604C            * Positionnement>>
+     53  6     6231 0C   4B          inc <$604B            * Increment de l>>
+     54        6233               DK_continue
+     55  6     6233 0C   4F          inc <$604F            * Increment de 2>>
+     56  5     6235 DC   4F          ldd <$604F            * Chargement de >>
+     57        6237               DK_dernier_bloc          * Dernier bloc a>>
+     58  5     6237 1083 A000        cmpd #$A000           * test debut du >>
+     59  3     623B 23   E5          bls DKCO
+     60  3     623D 20   06          bra load_exomize
+     61        623F               dyn_exo
+     62        623F               load_page
+     63  2     623F 86   00          lda #$00              * Numero de page>>
+     64  5     6241 B7   E7E5        sta $E7E5             * Recharge de la>>
+     65        6244               dyn_rts
+     66  2     6244 12               nop
+     67        6245               load_exomize
+     68  2     6245 86   39          lda #$39
+     69  5     6247 B7   6244        sta dyn_rts           * Auto-modificat>>
+     70  2     624A 86   BD          lda #$BD              * Aux passages s>>
+     71  3     624C 8E   6100        ldx #exomizer
+     72  6     624F FE   623F        ldu dyn_exo
+     73  5+3   6252 36   12          pshu a,x              * Auto-modificat>>
+     74  5     6254 9F   4F          stx <$604F            * Emplacement d'>>
+     75  8     6256 BD   E82A        jsr $E82A
+     76  8     6259 BD   6100        jsr exomizer
+     77  5     625C 39               rts
+     78
+     79                           *****************************************>>
+     80                           * Données d'initialisation des paramètres>>
+     81                           *****************************************>>
+     82        625D               data
+     83        625D 00               fcb 0                 * DK.DRV
+     84        625E A0               fcb $A0   * poids fort DK_dernier_bloc>>
+     85        625F 00               fcb 0                 * poids faible D>>
+     86        6260 02               fcb 2                 * DK.SEC
+     87
+     88                           *****************************************>>
+     89                           * A partir de ce point le code sera effac>>
+     90                           * l'effacement à lieu à partir de la posi>>
+     91                           *****************************************>>
+     92
+     93        6261               init
+     94                           *****************************************>>
+     95                           * Initialisation de la commutation de pag>>
+     96                           *****************************************>>
+     97  4     6261 D6   81          ldb $6081             * $6081 est l'im>>
+     98  2     6263 CA   10          orb #$10              * positionne le >>
+     99  4     6265 D7   81          stb $6081             * maintient une >>
+    100  5     6267 F7   E7E7        stb $E7E7             * bit d4 à 1 pou>>
+    101  3     626A 20   1E          bra SETINITPALETTE       * saut par de>>
+    102
+    103                           *****************************************>>
+    104                           * données pour le fondu de palette
+    105                           * Au boot (sélection B ou C), les couleur>>
+    106                           *    $00 $0000 Noir (Thomson)
+    107                           *    $0C $F00F Turquoise (Bordure écran)
+    108                           *    $0E $FF0F Blanc (TO8)
+    109                           *    $10 $7707 Gris (Fond Bas)
+    110                           *    $16 $AA03 Jaune (Intérieur case)
+    111                           *    $18 $330A Mauve (Fond TO8)
+    112                           *****************************************>>
+    113
+    114        626C               PALETTEFROM
+    115        626C 0000             fdb $0000
+    116        626E F00F             fdb $F00F
+    117        6270 FF0F             fdb $FF0F
+    118        6272 7707             fdb $7707
+    119        6274 AA03             fdb $AA03
+    120        6276 330A             fdb $330A
+    121
+    122                           *****************************************>>
+    123                           * Espace libre pour signature du boot et >>
+    124                           *****************************************>>
+    125        6278               TMPBUFFER
+    126        6278 00 00 00 00      fcb 0,0,0,0,0,0,0,0 * espace réservé p>>
+               627C 00 00 00 00
+    127
+    128                           *****************************************>>
+    129                           * A partir de ce point le code doit comme>>
+    130                           *****************************************>>
+    131
+    132                           *****************************************>>
+    133                           * Transition de la palette de couleurs ve>>
+    134                           *****************************************>>
+    135                           * Ecriture en $E7DB de l'adresse ou sera >>
+    136                           *
+    137                           * les adresses vont de deux en deux car i>>
+    138                           * couleur: 0, adresse: 00
+    139                           * couleur: 1, adresse: 02
+    140                           * couleur: 2, adresse: 04
+    141                           * ...
+    142                           *
+    143                           * Deux ecritures en $E7DA (auto-increment>>
+    144                           *                          positionnee en>>
+    145                           *
+    146                           *                             V V V V    >>
+    147                           * Premiere adresse        fondamentale V >>
+    148                           *
+    149                           * Deuxieme adresse            X X X M    >>
+    150                           * auto-incrementee        bit de marquage>>
+    151                           *                       (incrustation vid>>
+    152                           *
+    153                           * Attention: les instructions suivantes e>>
+    154                           * ASL, ASR, CLR, COM, DEL, INC, LSL, LSR,>>
+    155                           * un seul appel sur $E7DA va lire $E7DA p>>
+    156                           * Sur $E7DA il faut donc utiliser l'instr>>
+    157                           *****************************************>>
+    158
+    159        6280               PALETTECYCLES
+    160        6280 0F               fcb $0F
+    161                            
+    162        6281               PALETTEMASK
+    163        6281 0F               fcb $0F
+    164
+    165        6282               PALETTEINDEX
+    166        6282 00               fcb $00
+    167        6283 0C               fcb $0C
+    168        6284 0E               fcb $0E
+    169        6285 10               fcb $10
+    170        6286 16               fcb $16
+    171        6287 18               fcb $18
+    172        6288               ENDPALETTEINDEX
+    173
+    174        6288               PALETTETO
+    175        6288 FF0F             fdb $FF0F
+    176
+    177        628A               SETINITPALETTE
+    178  3     628A 8E   6282         LDX #PALETTEINDEX
+    179  4     628D 108E 626C            LDY #PALETTEFROM
+    180  3     6291 CE   6288            LDU #PALETTETO
+    181        6294               SETPAL
+    182  4+0   6294 A6   A4              LDA ,Y                   * chargem>>
+    183  5     6296 B4   6281            ANDA PALETTEMASK
+    184  4+0   6299 E6   C4              LDB ,U              * chargement d>>
+    185  5     629B F4   6281            ANDB PALETTEMASK
+    186  5     629E F7   6278            STB TMPBUFFER
+    187  2     62A1 C6   11              LDB #$11
+    188  5     62A3 F4   6281            ANDB PALETTEMASK
+    189  5     62A6 F7   6279            STB TMPBUFFER+1
+    190  5     62A9 B1   6278            CMPA TMPBUFFER     * comparaison d>>
+    191  3     62AC 27   10           BEQ SETPALVERT
+    192  3     62AE 22   07           BHI SETPALROUGEDEC
+    193  4+0   62B0 A6   A4           LDA ,Y
+    194  5     62B2 BB   6279         ADDA TMPBUFFER+1
+    195  3     62B5 20   05           BRA SETPALSAVEROUGE
+    196        62B7               SETPALROUGEDEC
+    197  4+0   62B7 A6   A4           LDA ,Y
+    198  5     62B9 B0   6279         SUBA TMPBUFFER+1
+    199        62BC               SETPALSAVEROUGE
+    200  4+0   62BC A7   A4           STA ,Y              * sauvegarde de l>>
+    201                            
+    202        62BE               SETPALVERT
+    203  7     62BE 73   6281         COM PALETTEMASK
+    204  3     62C1 2B   D1           BMI SETPAL
+    205                            
+    206        62C3               SETPALBLEU
+    207  4+1   62C3 E6   21              LDB 1,Y                         * >>
+    208  4+1   62C5 E1   41              CMPB 1,U            * comparaison >>
+    209  3     62C7 27   08           BEQ SETPALNEXT
+    210  3     62C9 22   03           BHI SETPALBLEUDEC
+    211  2     62CB 5C                INCB
+    212  3     62CC 20   01           BRA SETPALSAVEBLEU
+    213        62CE               SETPALBLEUDEC
+    214  2     62CE 5A                DECB
+    215        62CF               SETPALSAVEBLEU
+    216  4+1   62CF E7   21           STB 1,Y              * sauvegarde de >>
+    217                            
+    218        62D1               SETPALNEXT
+    219  4+2   62D1 A6   80              LDA ,X+                           >>
+    220  5     62D3 B7   E7DB            STA $E7DB                   * dete>>
+    221  4+3   62D6 A6   A1              LDA ,Y++                 * chargem>>
+    222  5     62D8 B7   E7DA            STA $E7DA                   * set >>
+    223  5     62DB F7   E7DA            STB $E7DA           * set de la no>>
+    224  4     62DE 8C   6288            CMPX #ENDPALETTEINDEX * test fin d>>
+    225  3     62E1 26   B1              BNE    SETPAL      * on reboucle s>>
+    226                            
+    227        62E3               VSYNC_1
+    228  7     62E3 7D   E7E7            TST    $E7E7   * le faisceau n'est>>
+    229  3     62E6 2A   FB              BPL    VSYNC_1 * tant que le bit e>>
+    230        62E8               VSYNC_2
+    231  7     62E8 7D   E7E7            TST    $E7E7   * le faisceau est d>>
+    232  3     62EB 2B   FB              BMI    VSYNC_2 * tant que le bit e>>
+    233                            
+    234  7     62ED 7A   6280            DEC PALETTECYCLES
+    235  3     62F0 26   98              BNE    SETINITPALETTE      * on re>>
+    236                            
+    237                           *****************************************>>
+    238                           * Initialisation des paramètres pour le c>>
+    239                           *****************************************>>
+    240  3     62F2 CC   6300        ldd #main             * Emplacement du>>
+    241  5+0   62F5 ED   E4          std ,s                * Enregistrement>>
+    242  3     62F7 CE   625D        ldu #data
+    243  5+4   62FA 37   30          pulu x,y
+    244  5     62FC 16   FF05        lbra DK_lecture        * Chargement de>>
+    245
 ----------------
-194 cycle(s)
-103 byte(s)
+406 cycle(s)
+255 byte(s)
 ----------------
 
 000000 Total Errors
 
-000014 Total Symbols
-     1x          Label 6263 data
-     1x          Label 6228 DKCO
-     1x          Label 6239 DK_continue
-     1x          Label 623D DK_dernier_bloc
-     0x          Label 6223 DK_destination
-     0x          Label 621A DK_destinationPage
-     0x          Label 620A DK_lecture
-     1x          Label 6245 dyn_exo
-     1x          Label 624A dyn_rts
+000032 Total Symbols
+     1x          Label 625D data
+     1x          Label 6222 DKCO
+     1x          Label 6233 DK_continue
+     1x          Label 6237 DK_dernier_bloc
+     0x          Label 621D DK_destination
+     0x          Label 6214 DK_destinationPage
+     1x          Label 6204 DK_lecture
+     1x          Label 623F dyn_exo
+     1x          Label 6244 dyn_rts
+     1x          Label 6288 ENDPALETTEINDEX
      2x          Equ   6100 exomizer
-     0x          Label 6200 init
-     1x          Label 624B load_exomize
-     1x          Label 6245 load_page
+     1x          Label 6261 init
+     1x          Label 6245 load_exomize
+     1x          Label 623F load_page
      1x          Equ   6300 main
+     1x          Label 6280 PALETTECYCLES
+     1x          Label 626C PALETTEFROM
+     1x          Label 6282 PALETTEINDEX
+     4x          Label 6281 PALETTEMASK
+     1x          Label 6288 PALETTETO
+     2x          Label 628A SETINITPALETTE
+     2x          Label 6294 SETPAL
+     0x          Label 62C3 SETPALBLEU
+     1x          Label 62CE SETPALBLEUDEC
+     1x          Label 62D1 SETPALNEXT
+     1x          Label 62B7 SETPALROUGEDEC
+     1x          Label 62CF SETPALSAVEBLEU
+     1x          Label 62BC SETPALSAVEROUGE
+     1x          Label 62BE SETPALVERT
+     5x          Label 6278 TMPBUFFER
+     1x          Label 62E3 VSYNC_1
+     1x          Label 62E8 VSYNC_2
 

@@ -4,7 +4,7 @@
  * Fichier source      : .\input\ENGINE\MAIN.ASS
  * Fichier destination : .\input\GENERATED\TMP.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     989
+ *     Main     0:MAIN.ASM     2949
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -13,50 +13,126 @@ Pass2
      12        6300                      ORG $6300
      13
      14                           *****************************************>>
-     15                           * Référence des zones de données
+     15                           * Référence des variables globales
      16                           *****************************************>>
      17                  6101     exo_src equ $6101
      18                  6105     exo_dst equ $6105
      19
      20                           *****************************************>>
-     21                           * desactivation des interruptions
+     21                           * Initialisation de la palette en noir
      22                           *****************************************>>
-     23  2     6300 1A   50              ORCC #$50
-     24                            
-     25                           *****************************************>>
-     26                           * Initialisation du mode video
-     27                           *****************************************>>
-     28  2     6302 86   7B              LDA #$7B      * passage en mode 16>>
-     29  5     6304 B7   E7DC            STA $E7DC
-     30                            
-     31                           *****************************************>>
-     32                           * Initialisation de la palette en noir
-     33                           *****************************************>>
-     34  3     6307 CC   0000            LDD #$0000
-     35        630A               SETBLACKPALETTE
-     36  5     630A B7   E7DB            STA $E7DB     * determine l'indice>>
-     37  5     630D F7   E7DA            STB $E7DA     * set de la couleur >>
-     38  5     6310 F7   E7DA            STB $E7DA   * set de la couleur Bl>>
-     39  2     6313 8B   02              ADDA #$02     * increment de l'ind>>
-     40  2     6315 81   20              CMPA #$20     * si on atteint 32 s>>
-     41  3     6317 26   F1              BNE    SETBLACKPALETTE
-     42                            
-     43                                  * Bordure initialisee avec couleur>>
-     44                                  **********************************>>
-     45                            
-     46  5     6319 F6   E7DD         LDB $E7DD
-     47  2     631C C4   F0              ANDB #$F0
-     48  5     631E F7   E7DD            STB $E7DD
-     49                            
-     50        6321               MAINLOOP
-     51  2     6321 12                   nop
-     52  3     6322 20   FD              BRA MAINLOOP
+     23  3     6300 CC   00FF            LDD #$00FF
+     24        6303               SETBLACKPALETTE
+     25  5     6303 B7   E7DB            STA $E7DB     * determine l'indice>>
+     26  5     6306 F7   E7DA            STB $E7DA     * set de la couleur >>
+     27  5     6309 F7   E7DA            STB $E7DA   * set de la couleur Bl>>
+     28  2     630C 8B   02              ADDA #$02     * increment de l'ind>>
+     29  2     630E 81   20              CMPA #$20     * si on atteint 32 s>>
+     30  3     6310 26   F1              BNE    SETBLACKPALETTE
+     31
+     32                                  * Bordure initialisee avec couleur>>
+     33                                  **********************************>>
+     34                            
+     35  5     6312 F6   E7DD         LDB $E7DD
+     36  2     6315 C4   F0              ANDB #$F0
+     37  5     6317 F7   E7DD            STB $E7DD
+     38                            
+     39                           *****************************************>>
+     40                           * Initialisation du mode video
+     41                           *****************************************>>
+     42  2     631A 86   7B              LDA #$7B      * passage en mode 16>>
+     43  5     631C B7   E7DC            STA $E7DC
+     44
+     45                           *****************************************>>
+     46                           * Boucle principale
+     47                           *****************************************>>
+     48
+     49        631F               MAINLOOP
+     50  2     631F 12                   nop
+     51  3     6320 20   FD              BRA MAINLOOP
+     52                            
+     53                           *****************************************>>
+     54                           * Changement de page ESPACE CARTOUCHE (ec>>
+     55                           *      $E7E6 determine la page affichee d>>
+     56                           *   D5 : 1 = espace cartouche recouvert p>>
+     57                           *   D4 : 0 = CAS1N valide : banques 0-15 >>
+     58                           *      D5=1 D4=0 D3=0 D2=0 D1=0 D0=0 (#$6>>
+     59                           *   ...
+     60                           *      D5=1 D4=0 D3=1 D2=1 D1=1 D0=1 (#$6>>
+     61                           *      D5=1 D4=1 D3=0 D2=0 D1=0 D0=0 (#$7>>
+     62                           *   ...
+     63                           *      D5=1 D4=1 D3=1 D2=1 D1=1 D0=1 (#$7>>
+     64                           *
+     65                           * Changement de page ESPACE ECRAN (affich>>
+     66                           *      $E7DD determine la page affichee d>>
+     67                           *      D7=0 D6=0 D5=0 D4=0 (#$0_) : page >>
+     68                           *      D7=0 D6=1 D5=0 D4=0 (#$4_) : page >>
+     69                           *      D7=1 D6=0 D5=0 D4=0 (#$8_) : page >>
+     70                           *      D7=1 D6=1 D5=0 D4=0 (#$C_) : page >>
+     71                           *   D3 D2 D1 D0  (#$_0 a #$_F) : couleur >>
+     72                           *   Remarque : D5 et D4 utilisable unique>>
+     73                           *
+     74                           * Changement de page ESPACE DONNNEES
+     75                           *   $E7E5 determine la page affichee dans>>
+     76                           *   D4 : 0 = CAS1N valide : banques 0-15 >>
+     77                           *      D4=0 D3=0 D2=0 D1=0 D0=0 (#$60) : >>
+     78                           *   ...
+     79                           *      D4=0 D3=1 D2=1 D1=1 D0=1 (#$6F) : >>
+     80                           *      D4=1 D3=0 D2=0 D1=0 D0=0 (#$70) : >>
+     81                           *   ...
+     82                           *      D4=1 D3=1 D2=1 D1=1 D0=1 (#$7F) : >>
+     83                           *****************************************>>
+     84        6322               SCRC
+     85  7     6322 8D   15              BSR VSYNC
+     86
+     87                           *      LDB SCRC0+1
+     88                           *      ANDB #$01
+     89                           *      ADDB HERO_ANIMATION_PAG_REF
+     90                           *      STB HERO_ANIMATION_PAG
+     91                            
+     92  5     6324 F6   6330            LDB SCRC0+1   * charge la valeur d>>
+     93  2     6327 C4   80              ANDB #$80     * permute #$00 ou #$>>
+     94  5     6329 F7   E7DD            STB $E7DD     * changement page da>>
+     95  7     632C 73   6330            COM SCRC0+1   * modification du co>>
+     96        632F               SCRC0
+     97  2     632F C6   00              LDB #$00
+     98  2     6331 C4   02              ANDB #$02     * permute #$60 ou #$>>
+     99  2     6333 CA   60              ORB #$60      * espace cartouche r>>
+    100  5     6335 F7   E7E6            STB $E7E6     * changement page da>>
+    101  5     6338 39                   RTS                  * E7E6 D5=1 p>>
+    102                                                       * CAS1N : ban>>
+    103
+    104                           *****************************************>>
+    105                           * Attente VBL
+    106                           * -----------
+    107                           *
+    108                           *   Synchronisation Verticale $E7E7 bit 7>>
+    109                           *     Modifié au début de l'affichage de >>
+    110                           *     Modifié à la fin de l'affichage de >>
+    111                           *   Synchronisation Horizontale $E7E6 bit>>
+    112                           *     Modifié au début et à la fin de l'a>>
+    113                           *
+    114                           *   Les bits sont à 1 quand le faisceau e>>
+    115                           *****************************************>>
+    116        6339               VSYNC
+    117        6339               VSYNC_1
+    118  7     6339 7D   E7E7            TST    $E7E7   * le faisceau n'est>>
+    119  3     633C 2A   FB              BPL    VSYNC_1 * tant que le bit e>>
+    120        633E               VSYNC_2
+    121  7     633E 7D   E7E7            TST    $E7E7   * le faisceau est d>>
+    122  3     6341 2B   FB              BMI    VSYNC_2 * tant que le bit e>>
+    123  5     6343 39                   RTS         * l'écran est rafraich>>
 
 000000 Total Errors
 
-000004 Total Symbols
+000009 Total Symbols
      0x          Equ   6105 exo_dst
      0x          Equ   6101 exo_src
-     1x          Label 6321 MAINLOOP
-     1x          Label 630A SETBLACKPALETTE
+     1x          Label 631F MAINLOOP
+     0x          Label 6322 SCRC
+     2x          Label 632F SCRC0
+     1x          Label 6303 SETBLACKPALETTE
+     1x          Label 6339 VSYNC
+     1x          Label 6339 VSYNC_1
+     1x          Label 633E VSYNC_2
 

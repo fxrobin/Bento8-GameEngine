@@ -16,13 +16,14 @@ public class Bootloader {
 
 	public Bootloader() {
 	}
-	
+
 	/**
 	 * Encode le secteur d'amorçage d'une disquette Thomson TO8
 	 * 
 	 * Le secteur d'amorçage est présent en face=0 piste=0 secteur=1 octets=0-127 
-	 * Pour optimmiser l'espace, le bootloader est réduit à 100 octets
-	 * Cela permet de placer le buffer de l'exomizer en position 6264-62FF
+	 * Dans le cas d'une disquette double densité, c'est 256 octets qui sont chargés
+	 * Dans le code source, définir des données en position 120 à 125 permet de compiler
+	 * du code qui dépassera la taille des 120 octets possible pour le secteur de boot 
 	 * 
 	 * Le code a exécuter est contenu en position 0 à 119 (encodé par un complément à 2 sur chaque octet)
 	 * Le secteur d'amorçage contient "BASIC2" en position 120 à 125
@@ -39,12 +40,12 @@ public class Bootloader {
 	 *    - ajouter 0x55
 	 * 
 	 * Les differentes machines sont differenciables au niveau de la lecture de l'octet
-     * $FFF0:
-     *  0:      TO7
-     *  1:      TO7-70
-     *  2:      TO9
-     *  3:      TO8
-     *  6:      TO9+
+	 * $FFF0:
+	 *  0:      TO7
+	 *  1:      TO7-70
+	 *  2:      TO9
+	 *  3:      TO8
+	 *  6:      TO9+
 	 *
 	 * Rappel:
 	 * 6000-60FF : Registres du Moniteur
@@ -53,27 +54,27 @@ public class Bootloader {
 	 * @return
 	 */
 	public byte[] encodeBootLoader(String file) {
-		byte[] bootLoader = new byte[128];
+		byte[] bootLoader = new byte[256];
 		Arrays.fill(bootLoader, (byte) 0x00);
 		int i,j=0;
-		
+
 		try {
 			byte[] bootLoaderBIN = Files.readAllBytes(Paths.get(file));
-			
-			// Taille maximum de 120 octets pour le bootloader
-			if (bootLoaderBIN.length <= 120) {
-				
+
+			// Taille maximum de 256 octets pour le bootloader
+			if (bootLoaderBIN.length <= 256) {
+
 				// Initialisation de la somme de controle
 				bootLoader[127] = (byte) 0x55;
-				
-				for (i = 0; i < bootLoaderBIN.length; i++) {
+
+				for (i = 0; i < bootLoaderBIN.length && i < 120; i++) {
 					// Ajout de l'octet courant (avant complément à 2) à la somme de contrôle
 					bootLoader[127] = (byte) (bootLoader[127] + bootLoaderBIN[i]);
-					
+
 					// Encodage de l'octet par complément à 2
 					bootLoader[i] = (byte) (256 - bootLoaderBIN[i]);
 				}
-				
+
 				for (i = 120; i <= 125; i++) {
 					// Copie de la signature (SANS complément à 2)
 					bootLoader[i] = signature[j++];
@@ -81,9 +82,14 @@ public class Bootloader {
 				
 				// Ajout de la somme de la signature à la somme de contrôle
 				bootLoader[127] = (byte) (bootLoader[127] + signatureSum);
-				
+
+				for (i = 128; i < bootLoaderBIN.length; i++) {
+					// Copie du reste du code (SANS complément à 2)
+					bootLoader[i] = (byte) bootLoaderBIN[i];
+				}
+
 			} else {
-				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 120 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
+				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 256 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

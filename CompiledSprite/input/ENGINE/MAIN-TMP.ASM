@@ -1,24 +1,95 @@
 ********************************************************************************
+* Demo - Outil de gestion d'animation de sprites (TO8 Thomson)                 *
+********************************************************************************
+* Auteur  : Benoit Rousseau                                                    *
+* Date    : 29/09/2020                                                         *
+* Licence :                                                                    *
+********************************************************************************
+*
+********************************************************************************
+
+(main)MAIN
+	ORG $6300
+
+********************************************************************************  
+* Constantes et variables
+********************************************************************************
+
+DK_lecture		EQU $6205 * routine de lecture disquette
+DK_piste		EQU $620A * 2B numero de la piste de depart
+DK_secteur		EQU $620F * 1B numero du secteur de depart
+DK_destination	EQU $6213 * 2B debut de la zone memoire cible
+DK_dernier_bloc	EQU $622C * 2B fin de la zone memoire cible (debut du dernier bloc de 256 octets)
+
+DEBUTECRANA 	EQU $0014 * test pour fin stack blasting
+FINECRANA   	EQU $1F40 * fin de la RAM A video
+DEBUTECRANB 	EQU $2014 * test pour fin stack blasting
+FINECRANB   	EQU $3F40 * fin de la RAM B video
+
+JOY_BD 			EQU $05 * Bas Droite
+JOY_HD 			EQU $06 * Haut Droite
+JOY_D  			EQU $07 * Droite
+JOY_BG 			EQU $09 * Bas Gauche
+JOY_HG 			EQU $0A * Haut Gauche
+JOY_G  			EQU $0B * Gauche
+JOY_B  			EQU $0D * Bas
+JOY_H  			EQU $0E * Haut
+JOY_C  			EQU $0F * Centre
+JOY_A  			EQU $40 * Bouton
+
+********************************************************************************  
+* Debut du programme
+********************************************************************************
+MAIN:
+	ORCC #$50	* desactive les interruptions	
+	
+********************************************************************************  
+* Initialisation du mode video
+********************************************************************************
+	LDA #$7B	* passage en mode 160x200x16c
+	STA $E7DC
+	
+********************************************************************************  
+* Initialisation de la palette en noir
+********************************************************************************
+
+	LDD #$0000
+SETBLACKPALETTE
+	STA $E7DB	* determine l'indice de couleur
+	STB $E7DA	* set de la couleur Vert et Rouge
+	STB $E7DA   * set de la couleur Bleu
+	ADDA #$02	* increment de l'indice de couleur (x2)
+	CMPA #$20	* si on atteint 32 sortie
+	BNE	SETBLACKPALETTE
+	
+	* Bordure initialisee avec couleur 0
+	************************************
+	
+    LDB $E7DD
+	ANDB #$F0
+	STB $E7DD
+
+********************************************************************************
 * Chargement des pages memoire
 ********************************************************************************
 	* Chargement des pages depuis la dsk
 	***************************************
 	
 	LDD #$0004
-	STD DK_piste+1
+	STD DK_piste
 	LDA #$01
-	STA DK_secteur+1
+	STA DK_secteur
 	LDD #$DF00
-	STD DK_dernier_bloc+2
+	STD DK_dernier_bloc
 	
 LDPAGE_LOOP
 	LDB #$00
 	STB $E7E5 * Selection de la page en RAM Donnees (A000-DFFF)
 	
 	LDA #$01
-	STA DK_secteur+1
+	STA DK_secteur
 	LDD #$A000
-	STD DK_destination+1
+	STD DK_destination
 	JSR DK_lecture
 	
 	* Duplication de la page p en p+1
@@ -60,7 +131,6 @@ PAGENEXT
 	CMPB #$16
 	BLS LDPAGE_LOOP
 
-
 ********************************************************************************
 * Initialisation de la routine de commutation de page video
 ********************************************************************************
@@ -90,9 +160,12 @@ INIT_VID
 *
 * Deuxieme adresse            X X X M                 B B B B
 * auto-incrementee        bit de marquage         fondamentale B
+*                       (incrustation video)
 *
-* Piste d'optim pour changer plus de couleurs par raster :
-* ne changer que la moditie des donnees d'une couleur par retour de ligne
+* Attention: les instructions suivantes effectuent une lecture avant l'écriture
+* ASL, ASR, CLR, COM, DEL, INC, LSL, LSR, NEG, ROL, RDR
+* un seul appel sur $E7DA va lire $E7DA puis écrire sur la seconde adresse $E7DA 
+* Sur $E7DA il faut donc utiliser l'instruction ST pour écrire
 ********************************************************************************
 
 	LDY #TABPALETTE
@@ -466,3 +539,29 @@ HERO_ANIMATION_NEXT_00
 ********************************************************************************
 
 	INCLUD ANIMATION_SCRIPT
+	
+********************************************************************************
+* OBJECT Variables
+********************************************************************************
+
+* TODO mettre ces données en tableau générique pour la position des objets
+
+HERO_POS EQU $9F00 * Emplacement memoire pour stockage HERO Position
+HERO_X_POS	FCB $0f	* Horizontal Position
+HERO_Y_POS	FCB $72	* Vertical Position (TODO Bug si position Y=00)
+	
+HERO_ANIMATION_ADR		FDB $0000	* Animation courante - Pointeurs Adresse
+HERO_ANIMATION_ADR_OLD	FDB $0000	* Sauvegarde ancienne animation
+HERO_ANIMATION_RTN_ADR	FDB $0000	* Animation courante - Pointeur Adresse Retour Animation apellante
+HERO_ANIMATION_PAG		FCB $00		* Animation courante - Pointeur Page actif
+HERO_ANIMATION_PAG_REF	FCB $00		* Animation courante - Pointeur Page de reference
+HERO_ANIMATION_PAG_DEL	FCB $00		* Animation courante - Pointeur Page Effacement img-1
+						FCB $00		* Animation courante - Pointeur Page Effacement
+HERO_ANIMATION_DEL		FDB $0000	* Animation courante - Pointeur Effacement img-1
+						FDB $0000	* Animation courante - Pointeur Effacement
+HERO_ANIMATION_DRW		FDB $0000	* Animation courante - Pointeur Dessin
+HERO_ANIMATION_IMC		FCB $00		* Animation courante - Image courante (doit etre suivi de RTN_IMC)
+HERO_ANIMATION_RTN_IMC	FCB $00		* Animation courante - Image courante Retourn Animation apellante (doit etre precede de IMC)
+HERO_ANIMATION_FRR		FCB $00		* Animation courante - Frames restante
+	
+	end MAIN

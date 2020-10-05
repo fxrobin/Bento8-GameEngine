@@ -25,8 +25,8 @@
         org $6100       
         
 init
-        ldu #$A03D                  * paramètre source (fin)
-        ldy #$6324             * paramètre destination (fin)
+        ldu #$A058                  * paramètre source (fin)
+        ldy #$6344             * paramètre destination (fin)
 
 exo2    pshs    u,y,x,dp,d,cc           * Save context
         tfr     pc,d                    * Set direct page
