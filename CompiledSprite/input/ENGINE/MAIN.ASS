@@ -14,17 +14,22 @@
 ********************************************************************************  
 * Référence des variables globales
 ********************************************************************************
-exo_src equ $6101
-exo_dst equ $6105 
+EXO_SRC EQU $6101
+EXO_DST EQU $6105 
+DK_DST  EQU $621E
 
 ********************************************************************************  
 * Initialisation de la palette en blanc
 ********************************************************************************
-	LDD #$00FF
+PALETTEIDX
+	LDA #$00    * couleur
 SETBLACKPALETTE
 	STA $E7DB	* determine l'indice de couleur
-	STB $E7DA	* set de la couleur Vert et Rouge
+	STA PALETTEIDX+1
+	LDD #$FF0F
+	STA $E7DA	* set de la couleur Vert et Rouge
 	STB $E7DA   * set de la couleur Bleu
+	LDA PALETTEIDX+1
 	ADDA #$02	* increment de l'indice de couleur (x2)
 	CMPA #$20	* si on atteint 32 sortie
 	BNE	SETBLACKPALETTE
