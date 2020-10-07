@@ -47,6 +47,7 @@ public class BuildDisk
 	private static boolean logtodisplay;
 	private static String bootFile;
 	private static String exomizerFile;
+	private static String swapFile;
 	private static String mainFile;
 	private static String outputFileName;
 	public  static String genDirName;
@@ -353,10 +354,19 @@ public class BuildDisk
 			// Compilation du code de décodage exomizer
 			compileLIN(exomizerTmpFile);
 			byte[] exoBytes = Files.readAllBytes(Paths.get(getBINFileName(exomizerTmpFile)));
+			
+			// Compilation du code de swap page
+			compileRAW(swapFile);
+			byte[] swapBytes = Files.readAllBytes(Paths.get(getBINFileName(swapFile)));
+			
+			if (exoBytes.length-10 + swapBytes.length > 256) {
+				throw new Exception("Les fichiers Exomizer ("+(exoBytes.length-10)+") et Swap ("+swapBytes.length+") sont trop volumineux: "+(exoBytes.length-10+swapBytes.length)+" octets (max:256 destination 6100-61FF)");
+			}
 
 			// Ecriture sur disquette
-			fd.setIndex(0, 0, 3); // TODO poser le bon index en fonction de l'ecriture du main
+			fd.nextSector();
 			fd.write(exoBytes, 5, exoBytes.length-10); // On ne recopie pas le header et trailer
+			fd.write(swapBytes);
 
 			// Compilation du code d'initialisation (boot)
 			// *******************************************
@@ -424,6 +434,11 @@ public class BuildDisk
 			throw new Exception("Paramètre file.exomizer manquant dans le fichier "+file);
 		}
 
+		swapFile = prop.getProperty("file.swap");
+		if (swapFile == null) {
+			throw new Exception("Paramètre file.swap manquant dans le fichier "+file);
+		}
+		
 		mainFile = prop.getProperty("file.main");
 		if (mainFile == null) {
 			throw new Exception("Paramètre file.main manquant dans le fichier "+file);

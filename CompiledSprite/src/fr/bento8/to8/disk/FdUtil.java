@@ -52,6 +52,16 @@ public class FdUtil
 	}
 	
 	/**
+	 * Positionne l'index d'écriture au secteur suivant
+	 * avance de la piste si nécessaire
+	 * avance de l'unité si nécessaire
+	 * 
+	 */
+	public void nextSector() {
+		index = Math.floorDiv(index, 256)*256 + 256;
+	}
+	
+	/**
 	 * Eciture de données à l'index courant dans le fichier fd monté en mémoire
 	 * 
 	 * @param bytes données à copier

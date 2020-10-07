@@ -1,5 +1,5 @@
 ********************************************************************************
-* Boot loader
+* Boot loader - Benoit Rousseau 07/10/2020
 * ------------------------------------------------------------------------------
 * 
 * Description
@@ -13,19 +13,21 @@
 *
 * Empreinte mémoire
 * -----------------
-* 6100-61B9 code exomizer           (186 octets)
-* 61BA-61FF données non utilisées   (70 octets)
+* 6100-61BE code exomizer           (191 octets)
+* 61BF-61DD code swap page          (31 octets)
+* 61DE-61FF données non utilisées   (34 octets)
 * 6200-62FF code bootloader         (256 octets)
 *
 * Après un premier appel à l'exomizer :
-* 6100-61B9 code exomizer           (186 octets)
-* 61BA-61FF données non utilisées   (70 octets)
-* 6200-6244 code lecture disquette  (69 octets)
-* 6245-6263 données non utilisées   (31 octets)
+* 6100-61BE code exomizer           (191 octets)
+* 61BF-61DD code swap page          (31 octets)
+* 61DE-61FF données non utilisées   (34 octets)
+* 6200-6246 code lecture disquette  (71 octets)
+* 6247-6263 données non utilisées   (29 octets)
 * 6264-62FF données tampon exomizer (156 octets)
 *
-* Fonctions
-* ---------
+* Fonction
+* --------
 * Lecture des données depuis la disquette et décompression par exomizer
 * Entrée:      DK_lecture
 * Description: Réalise le chargement de données depuis la disquette dans une
@@ -34,11 +36,13 @@
 *              Le numéro de piste est incrémenté a chaque changement de secteur
 *              de 16 à 1. Il n'y a pas de changement de lecteur une fois arrivé
 *              à la fin de la piste 79.
-* Registres:   [X] lecteur (0-3), nb. octets x256 a charger (A0-9F) pour 1 à 80
-*              [Y] piste (0-79), secteur (1-16)
+* Registres:   IN  [A] nb. octets x256 a charger (A0-9F) pour 1 à 80
+*              IN  [X] lecteur (0-3), 0
+*              IN  [Y] piste (0-79), secteur (1-16)
+*              RST [D] [X] [Y] [U]
+*              OUT [Y] pointeur sur début données décompressées 
 ********************************************************************************
 (main)BOOT
-   SETDP  $60
    ORG    $6200
 
 EXOMIZER  EQU    $6100
@@ -51,11 +55,12 @@ MAIN      EQU    $6300
 * Lecture des données depuis la disquette et décompression par exomizer
 ********************************************************************************
 DK_LECTURE                  * point d'entrée
+   SETDP  $60
+   LDB    #$60
+   TFR    B,DP              * positionne la direct page à 60
    LDU    #$604D            * positionne la pile U sur les registres Moniteur
    PSHU   X,Y               * écrit DK.DRV, DK_DERNIER_BLOC, DK.TRK, DK.SEC
-   LDA    <$604A            * charge DK_DERNIER_BLOC depuis DK.TRK (poids fort)
    STA    DK_DERNIER_BLOC+2 * auto-modif de code: positionne butée d'écriture
-   CLR    <$604A            * positionne l'octet fort de DK.TRK a zéro
    LDA    #$02              * DK.OPC $02 Operation - lecture d'un secteur
    STA    <$6048            * valorise le registre Moniteur DK.OPC
    LDB    $E7E5             * identie la page courante en espace données
@@ -77,30 +82,20 @@ DK_CONTINUE
    LDD    <$604F            * chargement de la zone a ecrire DK.BUF
 DK_DERNIER_BLOC
    CMPD   #$A000            * test debut du dernier bloc de 256 octets a écrire
-   BLS    DKCO              * si DK.BUF inférieur ou égal à la limite alors DKCO 
-   LBRA   LOAD_EXOMIZE      * fin chargement disquette Main, chargement exomizer
-DYN_JSR_EXO                 * LBRA pour réserver 3 octets pour auto-modif code
+   BLS    DKCO              * si DK.BUF inférieur ou égal à la limite alors DKCO
+DYN_JSR_EXO 
+   JSR    LOAD_EXOMIZE      * fin chargement disquette Main, chargement exomizer
 DK_RESTORE_PAGE
    LDA    #$00              * numéro de page courante avant appel à DK_LECTURE
    STA    $E7E5             * restauration de la page appelante
    RTS
-LOAD_EXOMIZE                * auto-modif de code: positionne un JSR EXOMIZER
-   LDA    #$BD              * $BD = JSR
+LOAD_EXOMIZE
    LDX    #EXOMIZER         * adresse d'implantation EXOMIZER
-   LDU    DYN_JSR_EXO       * emplacement de l'auto-modif (adresse de fin)
-   PSHU   A,X               * écriture de l'auto-modif de code
+   STX    DYN_JSR_EXO+1     * auto-modif de code: positionne un JSR EXOMIZER
    STX    <$604F            * chargement de la zone a ecrire DK.BUF
    JSR    $E82A             * DKCO Appel Moniteur - lecture d'un secteur
    JSR    EXOMIZER          * Appel de l'exomizer sur le Main
    RTS
-
-* Données d'initialisation des paramètres pour le chargement du MAIN
-********************************************************************************	
-DK_DATA
-   FCB    $00               * DK.DRV
-   FCB    $<DERNIER_BLOC>   * poids fort DK_dernier_bloc
-   FCB    $00               * poids faible DK.TRK
-   FCB    $02               * DK.SEC
 
 *-------------------------------------------------------------------------------
 * A partir de ce point le code sera effacé lors du premier appel à l'exomizer
@@ -115,22 +110,48 @@ INIT
    ORB    #$10              * positionne le bit d4 a 1
    STB    $6081             * maintient une image cohérente de $E7E7
    STB    $E7E7             * bit d4 à 1 pour pages données en mode registre
+   SETDP  $62
+   TFR    PC,D
+   TFR    A,DP              * positionne la direct page à 62
    BRA    PAL_INIT          * saut par dessus signature et somme de contrôle
 
 * données pour le fondu de palette
 ********************************************************************************
 
 PAL_FROM
-   FDB    $0000             * couleur $00 Noir (Thomson)
+   FDB    $0000             * couleur $00 Noir (Thomson) => 06 change bordure
    FDB    $F00F             * couleur $0C Turquoise (Bordure écran)
    FDB    $FF0F             * couleur $0E Blanc (TO8)
    FDB    $7707             * couleur $10 Gris (Fond Bas)
    FDB    $AA03             * couleur $16 Jaune (Intérieur case)
    FDB    $330A             * couleur $18 Mauve (Fond TO8)
-
+   
+PAL_LEN
+   FCB    $0C               * pour chaque couleur on défini un index limite
+   FCB    $0E               * (exclu) de chargement. ex: 0C, 0E, ... 
+   FCB    $10               * la première couleur de PAL_FROM est chargée
+   FCB    $16               * pour les couleurs 0(00) à 5(0A)
+   FCB    $18               * la seconde couleur de PAL_FORM  est chargée
+   FCB    $20               * pour la couleur 6(0C)
+END_PAL_LEN
+   
+PAL_CYCLES
+   FCB    $0F               * nombre de frames de la transition (VSYNC)
+   
+PAL_MASK
+   FCB    $0F               * masque pour l'aternance du traitemet vert/rouge
+   
 PAL_BUFFER
-   FCB    0,0,0,0           * espace vide
-   FCB    0,0,0,0,0,0,0,0   * espace réservé pour signature et somme de contrôle
+   FCB    $42               * B et buffer de comparaison
+   FCB    $41               * A et buffer de comparaison
+   FCB    $53               * S
+   FCB    $49               * I
+   FCB    $43               * C
+   FCB    $32               * 2
+
+PAL_IDX
+   FCB    $00               * index de la couleur courante dans le traitement
+   FCB    $00               * espace réservé pour somme de contrôle
 
 *-------------------------------------------------------------------------------
 * A partir de ce point le code doit commencer à l'adresse $6280
@@ -161,34 +182,15 @@ PAL_BUFFER
 * ASL, ASR, CLR, COM, DEL, INC, LSL, LSR, NEG, ROL, RDR
 * un seul appel sur $E7DA va lire $E7DA puis écrire sur la seconde adresse $E7DA 
 * Sur $E7DA il faut donc utiliser l'instruction ST pour écrire
-********************************************************************************
-
-PAL_CYCLES
-   FCB    $0F               * nombre d'itérations de la transition (VSYNC)
-   
-PAL_MASK
-   FCB    $0F               * masque pour l'aternance du traitemet vert/rouge
-
-PAL_INDEX
-   FCB    $00               * index $00 Noir (Thomson)
-   FCB    $0C               * index $0C Turquoise (Bordure écran)
-   FCB    $0E               * index $0E Blanc (TO8)
-   FCB    $10               * index $10 Gris (Fond Bas)
-   FCB    $16               * index $16 Jaune (Intérieur case)
-   FCB    $18               * index $18 Mauve (Fond TO8)
-END_PAL_INDEX
-
-PAL_TO
-   FDB    $FF0F             * couleur cible de la transition
+********************************************************************************   
 
 PAL_INIT
-   LDX    #PAL_INDEX        * chargement pointeur index des couleurs à traiter
+   LDX    #PAL_LEN          * index limite de chargement pour couleur courante 
    LDY    #PAL_FROM         * chargement pointeur valeur des couleurs actuelles
-   LDU    #PAL_TO           * chargement pointeur index de la couleur cible
 PAL_RUN
    LDA    ,Y			    * chargement de la composante verte et rouge
    ANDA   PAL_MASK          * on efface la valeur vert ou rouge par masque
-   LDB    ,U                * chargement de la composante vert et rouge cible
+   LDB    #$FF              * composante verte et rouge couleur cible
    ANDB   PAL_MASK          * on efface la valeur vert ou rouge par masque
    STB    PAL_BUFFER        * on stocke la valeur cible pour comparaison
    LDB    #$11              * préparation de la valeur d'incrément de couleur
@@ -205,14 +207,13 @@ PAL_VR_DEC
    SUBA   PAL_BUFFER+1      * on décrémente la composante verte ou rouge
 PAL_VR_SAVE
    STA    ,Y                * sauvegarde de la nouvelle valeur vert ou rouge
-       
 PAL_VR_SUIVANTE
    COM    PAL_MASK          * inversion du masque pour traiter l'autre semioctet
    BMI    PAL_RUN           * si on traite $F0 on branche sinon on continue
 	    
 SETPALBLEU
-   LDB    1,Y			    * chargement de la composante bleue courante
-   CMPB   1,U               * comparaison de la composante courante et cible
+   LDB    1,Y			    * chargement composante bleue courante
+   CMPB   #$0F              * comparaison composante courante et cible
    BEQ    SETPALNEXT        * si composante est égale à la cible on passe
    BHI    SETPALBLEUDEC     * si la composante est supérieure on branche
    INCB                     * on incrémente la composante bleue
@@ -223,12 +224,19 @@ SETPALSAVEBLEU
    STB    1,Y               * sauvegarde de la nouvelle valeur bleue
     
 SETPALNEXT
-   LDA    ,X+               * Lecture index couleur
+   LDA    PAL_IDX           * Lecture index couleur
    STA    $E7DB             * sélectionne l'indice de couleur à écrire
-   LDA    ,Y++              * chargement de la nouvelle couleur courante
+   ADDA   #$02              * increment de l'indice de couleur (x2)
+   STA    PAL_IDX           * stockage du nouvel index
+   LDA    ,Y                * chargement de la nouvelle couleur courante
    STA    $E7DA             * positionne la nouvelle couleur (Vert et Rouge)
    STB    $E7DA             * positionne la nouvelle couleur (Bleu)
-   CMPX   #END_PAL_INDEX    * test de position dans la liste des couleurs
+   LDA    PAL_IDX           * rechargement de l'index couleur
+   CMPA   ,X                * comparaison avec l'index limite pour cette couleur
+   BNE    SETPALNEXT        * si inferieur on continue avec la même couleur
+   LEAY   2,Y               * on avance le pointeur vers la nouvelle couleur
+   LEAX   1,X               * on avance le pointeur vers la nouvelle limite
+   CMPX   #END_PAL_LEN      * test de fin de liste
    BNE    PAL_RUN           * on reboucle si fin de liste pas atteinte
 	
 VSYNC_1
@@ -240,6 +248,12 @@ VSYNC_2
 
    DEC    PAL_CYCLES        * décrémente le compteur du nombre de frame
    BNE    PAL_INIT          * on reboucle si nombre de frame n'est pas réalisé
+   
+********************************************************************************  
+* Initialisation du mode video
+********************************************************************************
+   LDA    #$7B              * passage en mode 160x200x16c
+   STA    $E7DC
 	
 ********************************************************************************
 * Initialisation des paramètres pour le chargement du MAIN
@@ -247,7 +261,14 @@ VSYNC_2
    LDD    #MAIN             * adresse d'implantation du MAIN
    STD    ,S                * ajoute l'adresse dans la pile, utilisé lors du RTS
    LDU    #DK_DATA          * chargement des données pour lecture
-   PULU   X,Y               * du code principal (MAIN)
+   PULU   A,X,Y             * du code principal (MAIN)
    LBRA   DK_LECTURE        * lecture disquette et chargement en mémoire du MAIN
 
+* Données d'initialisation des paramètres pour le chargement du MAIN
+********************************************************************************	
+DK_DATA
+   FCB    $<DERNIER_BLOC>   * adresse poids fort du dernier bloc de 256 octets
+   FCB    $00               * DK.DRV
+   FDB    $0000             * DK.TRK
+   FCB    $02               * DK.SEC
 (info)

@@ -23,10 +23,12 @@
 (main)MAIN
         setdp $61
         org $6100       
-        
+
+*- AJOUT PAR RAPPORT AU CODE D'ORIGINE -----------------------------------------        
 init
-        ldu #$A060                  * paramètre source (fin)
-        ldy #$634C             * paramètre destination (fin)
+        ldu     #$A022              * BENTO8 ajout param source (fin)
+        ldy     #$6305         * BENTO8 ajout param destination (fin)
+*-------------------------------------------------------------------------------  
 
 exo2    pshs    u,y,x,dp,d,cc           * Save context
         tfr     pc,d                    * Set direct page
