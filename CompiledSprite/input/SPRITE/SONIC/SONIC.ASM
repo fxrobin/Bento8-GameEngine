@@ -5,6 +5,108 @@
 *
 ********************************************************************************
 
+; ---------------------------------------------------------------------------
+; Object 18 - Sonic
+; ---------------------------------------------------------------------------
+
+Obj18:
+		moveq	#0,d0
+		move.b	$24(a0),d0
+		move.w	Obj18_Index(pc,d0.w),d1
+		jmp	Obj18_Index(pc,d1.w)
+
+=> Routine qui lance le code indiqué dans obRoutine pour l'objet concerné
+=> A partir d'une table indexée contenant les adresses des différentes routines
+
+Routines are used to organize where certain code is and to be able to branch to those sections easily. Most objects used $24(a0) as the main routine counter and $25 as a secondary, but any scratch ram (ram not used by the object) can be used as a routine counter. The value in the routine counter needs to be even in order to work.
+
+;===========================================================================
+Obj18_Index:	dc.w Obj18_Main-Obj18_Index	; Jumped to if #0 is in $24(a0)
+		dc.w Obj18_Solid-Obj18_Index	; Jumped to if #2 is in $24(a0)
+		dc.w Obj18_Action2-Obj18_Index	; Jumped to if #4 is in $24(a0)
+		dc.w Obj18_Delete-Obj18_Index	; Jumped to if #6 is in $24(a0)
+		dc.w Obj18_Action-Obj18_Index	; Jumped to if #8 is in $24(a0)
+; ===========================================================================
+
+Obj18_Main:			; XREF: Obj18_Index
+		addq.b	#2,$24(a0)      => maj de la routine pour passer a la suivante au prochain appel de routine
+When it gets to the next rts instead of going to Obj18_Main again,
+ it will skip over that code and go to Obj18_Solid.
+ Be warned if you put an odd value into the routine counter it won't work properly or
+  if you put a number greater then the amount of routines, your game will crash.
+
+Display 
+************************************************
+
+Obj18_Main:
+		addq.b	#2,$24(a0)		; adds to the routine so this isn't run again
+		move.w	#$4000,2(a0)		; moves #$4000 to the art tile's SST (it's 2 in S1 and S2)
+		move.l	#Map_obj18,4(a0)	; moves the mappings into the mapping's SST
+		move.b	#$20,$19(a0)		; width of object in pixels 
+		cmpi.b	#4,($FFFFFE10).w	; check if level is SYZ
+		bne.s	Obj18_NotSYZ
+		move.l	#Map_obj18a,4(a0)	; SYZ specific code (use different mappings)
+		move.b	#$20,$19(a0)		; this really isn't needed since $19(a0) already has #$20 in it from the code before
+What this basically does is define the width of the object in pixels and loads the starting art tile and palette and mappings. Down more in the code you'll see:
+
+Obj18_NotSLZ:
+		move.b	#4,1(a0)	; use screen coordinates (such as the ones you see in debug mode)
+		move.b	#4,$18(a0)	; set priority (if other objects have a priority of a number less then 4 then the other object will be seen over this one if they interact)
+		move.w	$C(a0),$2C(a0)	; store a copy of the y coordinate ($C(a0) is y coordingate in S1 and S2 and $2C(a0) is scratch ram)
+		move.w	$C(a0),$34(a0)	; store another copy of the y coordinate
+		move.w	8(a0),$32(a0)	; store a copy of the x coordinate
+		move.w	#$80,$26(a0)	; move #$80 into $26(a0) (to be used later)
+
+This is a continuation of the loading of the object (the priority and using screen coordinates) and it saves the x and y pos and a value which will be used later. All you need to do to display an object it to fill in 1(a0), 2(a0), 4(a0) and jump to DisplaySprite.
+
+mouvements 
+****************************
+
+Welcome to lesson 2 of my object tutorials, in this section we're going to talk about other things that can be done with objects. So say you have an object displaying now and would like it to move. What you'll have to do is set its X and/or Y speed which are the SSTs $10(a0) and $12(a0) consecutively and then simply call a SpeedtoPos (or ObjectMove in S2)
+
+		move.w	#-$40,$10(a0)	; make the object have a speed which moves it to the left slowly
+		move.w	#$400,$12(a0)	; make the object have a speed which moves it down quickly
+		jmp	SpeedToPos	; update the object's position (move the object)
+If SpeedToPos is not called the object will stay immobilized. Also as a note, if you have a positive speed in the Y speed SST, the object will move down and if you have a negative speed in the Y speed SST, the object will move up. This is just a simple explanation of movement and I will eventually cover things such as how to make objects move in circular motions, but for now it's not necessary.
+
+timers
+***************************
+
+Another pretty basic idea used quite frequently is timers. It's what the GHZ boss uses to turn around and go back and forth. To use a timer what you'll have to do is take an unused SST and make sure it's set aside. In this example code, let's use $38(a0). What you want to do is somewhere before the timer starts (say the main loading code) where the code won't be used again is fill this with a number:
+
+ObjXX_Main:
+		move.w	#$100,$38(a0)
+When you come to an area where you want to start counting down, you'll want to set up a code that gets repeated until the time is up, as in:
+
+ObjXX_CountDown:
+		sub.w	#1,$38(a0)	; subtracts from the timer
+		beq.s	ObjXX_Next	; tests if timer has hit 0
+		rts
+Now, in ObjXX_Next you can increase the routine, change the speed/reverse it and you can reset the timer there as well so that it keeps changing speed:
+
+ObjXX_Next:
+		neg.w	$10(a0)
+		move.w	#$100,$38(a0)
+		rts
+		
+*****************************
+Ajout au niveau
+*****************************
+If you wanted to create object at the level, you need to add this object to objects' pointers (_inc/Object Pointers.asm):
+
+	dc.l Obj01, ObjectFall,	ObjectFall, ObjectFall
+As you can see, there is free slots for objects, you can replace "ObjectFall" with your object's routine:
+
+	dc.l Obj01, ObjXX,	ObjectFall, ObjectFall
+If you want to create object as the gameplay starts, you need to find free slots for object in Objects's ram (aka RAM from $D000 to $D800, every object has a $3F bytes).
+
+After you find one, you need to add this line into sonic's code:
+
+		move.b	#$XX,$FFFFXXXX.w	; create object
+replace $XX with your object's id, also replace XXXX with RAM you find.
+
+******************************
+
 SONIC_ACCELERATION			EQU $000C	* 000C constante acceleration 0.046875 = 12/256
 SONIC_DECELERATION			EQU $0080	* 0080 constante deceleration 0.5 = 128/256
 SONIC_FRICTION				EQU $000C	* 000C constante de friction 0.046875 = 12/256

@@ -1,0 +1,94 @@
+********************************************************************************
+* Moteur de jeu (TO8 Thomson) - Benoit Rousseau 07/10/2020
+* ------------------------------------------------------------------------------
+*
+*
+********************************************************************************
+
+(main)MAIN
+	ORG $6300
+
+********************************************************************************  
+* Référence des variables globales
+********************************************************************************
+EXO_SRC            EQU $6101
+EXO_DST            EQU $6105 
+DK_DST             EQU $6222
+WAIT_VBL_SWAP_PAGE EQU $61BF
+
+********************************************************************************  
+* Boucle principale
+********************************************************************************
+
+MAINLOOP
+   JSR    WAIT_VBL_SWAP_PAGE
+   BRA    MAINLOOP
+
+********************************************************************************  
+* Ordre des niveaux de jeu
+* Octet 1: Zone (niveau de jeu qui nécessite un chargement disquette)
+* Octet 2: Acte (sous-niveau de jeu qui ne nécessite pas d'accès disquette)
+********************************************************************************
+LEVEL_ORDER                 * level.order=AIZ:0;AIZ:1;MZ:0
+   FDB    $0000
+   FDB    $0001
+   FDB    $0100
+
+********************************************************************************
+* Sprite table
+********************************************************************************
+$AC00-$AFFF	Sprite table input. Consists of 8 different priority levels, each level taking up $80 bytes. The first word of each level is the number of objects currently in that priority level multiplied by 2, and the next $3F words are the addresses in RAM (inside the object RAM space) of the objects on that priority level. The information in this table is processed by BuildSprites to create the actual sprite table
+
+********************************************************************************
+* Sprite loading adress
+********************************************************************************
+* déclarer un tableau qui liste les infos ci dessous pour chaque sprite
+obAniPage (ajout):  HERO_ANIMATION_PAG		FCB $00		* Animation courante - Pointeur Page actif
+obAniDraw (ajout):  HERO_ANIMATION_DRW		FDB $0000	* Animation courante - Pointeur Dessin
+obAniDel  (ajout):  HERO_ANIMATION_DEL		FDB $0000	* Animation courante - Pointeur Effacement
+
+********************************************************************************
+* SST - Table des variables de chaque Objet
+********************************************************************************
+* déclarer un tableau de $40 octets pour chaque instance d'objets
+The first object is always player 1, the second is always player 2. Each object is allocated a block of 
+$B000-$CFCB	Object attribute table
+   $B000-$B049 - Reserved object SST for Player 1 in levels, miscellaneous purpose otherwise.
+   $B04A-$B093 - Reserved object SST for Player 2 in levels, miscellaneous purpose otherwise.
+   $B094-$B0DC - Reserved object SST for an object, which clears the number of objects in collision response list ($E380).
+   $B0DE-$CAE1 - Dynamic object SST (Level objects are loaded here). 90 objects total.
+   $CAE2-$CFCB - Reserved object SST (Various important objects, such as Sonic, shields, invincibility stars, and title cards, are loaded here).
+
+********************************************************************************
+* collision response list
+********************************************************************************
+$E380	Number of objects currently in collision response list, multiplied by 2.
+$E382-$E3FF	Collision response list. The format is one word per object, where the word is the starting address of the object's status table. Only objects in this list are processed by the collision response routine.
+
+********************************************************************************
+* Object respawn table
+* --------------------
+* Each object which is part of a level's object placement gets an entry in this
+* table, and whenever the objects manager creates a new object, it sets bit 7 of
+* the object's entry in the object respawn table. While bit 7 is set, the object
+* will not be loaded again by the objects manager. The other seven bits of the
+* entry are free for use by the object - for example, monitors set bit 0 to
+* signify a broken monitor. Since every object which is part of the level's
+* object placement has an entry in this table, the maximum number of objects
+* any level can have in its object placement is 256
+* Object.respawn_index: contient l'index sur cette table pour l'objet concerné
+* Contenu des données respawn :
+*
+********************************************************************************
+Object_Respawn_Table:
+Obj_respawn_index:		rmb 2		; respawn table indices of the next objects when moving left or right for the first player
+Obj_respawn_data:		rmb $100	; Maximum possible number of respawn entries that S2 can handle; for stock S2, $80 is enough
+Obj_respawn_data_End:
+
+
+
+
+	
+	
+
+
