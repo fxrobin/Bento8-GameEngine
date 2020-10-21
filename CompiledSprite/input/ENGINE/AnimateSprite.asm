@@ -45,8 +45,8 @@ Anim_Run                               *Anim_Run:
 		bhs   Anim_End_FF              *    bhs     Anim_End_FF   ; MJ: if so, branch to flag routines
                                        *; loc_1657C:
 Anim_Next                              *Anim_Next:
-	    * non implémenté               *    andi.b  #$7F,d0               ; clear sign bit
-        * non implémenté               *    move.b  d0,mapping_frame(a0)  ; load sprite number
+	    * ne pas utiliser              *    andi.b  #$7F,d0               ; clear sign bit
+        sta   mapping_frame,x          *    move.b  d0,mapping_frame(a0)  ; load sprite number
         ldb   status,x                 *    move.b  status(a0),d1         ; match the orientaion dictated by the object
         andb  #3                       *    andi.b  #3,d1                 ; with the orientation used by the object engine
         lda   render_flags,x           *    andi.b  #$FC,render_flags(a0)

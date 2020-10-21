@@ -15,9 +15,9 @@ ObjID_ShellcrackerClaw equ $02
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
-delay                         equ $1B ; and $1C (nombre de frames)
-parent                        equ $1D ; and $1E (adresse OST de l'objet parent)
-instance                      equ $1F (numéro d'instance du sous objet)
+delay                         equ $1C ; and $1D (nombre de frames)
+parent                        equ $1E ; and $1F (adresse OST de l'objet parent)
+instance                      equ $20 (numéro d'instance du sous objet)
 
 * A REMPLACER AU BUILD **************************************************************************
 MarkObjGone
@@ -254,19 +254,27 @@ ShellcrackerClaw_Init                  *ObjA0_Init:
         stb   priority,x
         inc   routine,x
         inc   routine,x                *    ; fin LoadSubObject
-                                       *    movea.w objoff_2C(a0),a1 ; a1=object
-                                       *    move.b  render_flags(a1),d0
-                                       *    andi.b  #1,d0
-                                       *    or.b    d0,render_flags(a0)
-                                       *    move.w  objoff_2E(a0),d0
-                                       *    beq.s   loc_38198
-                                       *    move.b  #4,mapping_frame(a0)
-                                       *    addq.w  #6,x_pos(a0)
-                                       *    addq.w  #6,y_pos(a0)
-                                       *
+        ldy   parent,x                 *    movea.w objoff_2C(a0),a1 ; a1=object                               
+        lda   render_flags,y           *    move.b  render_flags(a1),d0
+        anda  #$1                      *    andi.b  #1,d0
+        ora   render_flags,x           *    or.b    d0,render_flags(a0)
+        sta   render_flags,x
+        lda   instance,x               *    move.w  objoff_2E(a0),d0
+        beq   ShellcrackerClaw_Init_01 *    beq.s   loc_38198
+        lda   #$04
+        sta   mapping_frame,x          *    move.b  #4,mapping_frame(a0)
+        ldd   x_pos,x
+        addd  #$06
+        std   x_pos,x                  *    addq.w  #6,x_pos(a0)
+        ldd   y_pos,x
+        addd  #$06
+        std   y_pos,x                  *    addq.w  #6,y_pos(a0)
+        lda   instance,x               *
 ShellcrackerClaw_Init_01               *loc_38198:
-                                       *    lsr.w   #1,d0
-                                       *    move.b  byte_381A4(pc,d0.w),objoff_2A(a0)
+        lsra                           *    lsr.w   #1,d0
+        ldy   Cal_ShellcrackerClaw_Extend
+        ldb   [a,y]                    
+        stb   delay,x                  *    move.b  byte_381A4(pc,d0.w),objoff_2A(a0)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
 Cal_ShellcrackerClaw_Extend            *byte_381A4:
@@ -281,8 +289,10 @@ Cal_ShellcrackerClaw_Extend            *byte_381A4:
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_Type                  *loc_381AC:
-                                       *    movea.w objoff_2C(a0),a1 ; a1=object
-                                       *    cmpi.b  #ObjID_Shellcracker,id(a1)
+        ldy   parent,x                 *    movea.w objoff_2C(a0),a1 ; a1=object
+        lda   #ObjID_Shellcracker
+        cmpa  id,y                     *    cmpi.b  #ObjID_Shellcracker,id(a1)
+        bne   ShellcrackerClaw_Projectile
                                        *    bne.s   loc_381D0
                                        *    moveq   #0,d0
         lda   routine_secondary,x      *    move.b  routine_secondary(a0),d0
@@ -299,39 +309,48 @@ ShellcrackerClaw_SubRoutines           *off_381C8:  offsetTable
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_Projectile            *loc_381D0:
-                                       *    move.b  #4,routine(a0)
-                                       *    move.w  #$40,objoff_2A(a0)
+        lda   #$04
+        sta   routine,x                *    move.b  #4,routine(a0)
+        ldd   #$0040
+        std   delay,x                  *    move.w  #$40,objoff_2A(a0)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_ExtInit               *loc_381E0:
-                                       *    subq.b  #1,objoff_2A(a0)
+        dec   delay,x                  *    subq.b  #1,objoff_2A(a0)
+        beq   ShellcrackerClaw_ExtInit_01
                                        *    beq.s   loc_381EA
                                        *    bmi.s   loc_381EA
         rts                            *    rts
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_ExtInit_01            *loc_381EA:
-                                       *    addq.b  #2,routine_secondary(a0)
-                                       *    move.w  objoff_2E(a0),d0
-                                       *    cmpi.w  #$E,d0
+        inc   routine_secondary,x
+        inc   routine_secondary,x      *    addq.b  #2,routine_secondary(a0)
+        lda   instance,x               *    move.w  objoff_2E(a0),d0
+        cmpa  #$0E                     *    cmpi.w  #$E,d0
+        bhs   ShellcrackerClaw_ExtInit_03
                                        *    bhs.s   loc_3821A
-                                       *    move.w  #-$400,d2
-                                       *    btst    #0,render_flags(a0)
+        ldy   #-$400                   *    move.w  #-$400,d2
+        ldb   render_flags,x
+        bitb  #render_xmirror_mask     *    btst    #0,render_flags(a0)
+        beq   ShellcrackerClaw_ExtInit_02
                                        *    beq.s   loc_38206
-                                       *    neg.w   d2
+        ldy   #$400                    *    neg.w   d2
                                        *
 ShellcrackerClaw_ExtInit_02            *loc_38206:
-                                       *    move.w  d2,x_vel(a0)
-                                       *    lsr.w   #1,d0
-                                       *    move.b  byte_38222(pc,d0.w),d1
-                                       *    move.b  d1,objoff_2A(a0)
-                                       *    move.b  d1,objoff_2B(a0)
+        sty   x_vel,x                  *    move.w  d2,x_vel(a0)
+        lsra                           *    lsr.w   #1,d0
+        ldy   Cal_ShellcrackerClaw_Retract
+        ldb   [a,y]                    *    move.b  byte_38222(pc,d0.w),d1
+        stb   delay                    *    move.b  d1,objoff_2A(a0)
+        stb   delay+1                  *    move.b  d1,objoff_2B(a0)
         rts                            *    rts
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_ExtInit_03            *loc_3821A:
-                                       *    move.w  #$B,objoff_2A(a0)
+        ldd   #$000B
+        std   delay,x                  *    move.w  #$B,objoff_2A(a0)
         rts                            *    rts
                                        *; ===========================================================================
 Cal_ShellcrackerClaw_Retract           *byte_38222:
@@ -346,28 +365,33 @@ Cal_ShellcrackerClaw_Retract           *byte_38222:
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_Extend                *loc_3822A:
-                                       *    jsrto   (ObjectMove).l, JmpTo26_ObjectMove
-                                       *    subq.b  #1,objoff_2A(a0)
+        jsr   ObjectMove               *    jsrto   (ObjectMove).l, JmpTo26_ObjectMove
+        dec   delay,x                  *    subq.b  #1,objoff_2A(a0)
+        beq   ShellcrackerClaw_Extend_01
                                        *    beq.s   loc_38238
                                        *    bmi.s   loc_38238
         rts                            *    rts
                                        *; ===========================================================================
                                        *
-                                       *loc_38238:
-                                       *    addq.b  #2,routine_secondary(a0)
-                                       *    move.b  #8,objoff_2A(a0)
+ShellcrackerClaw_Extend_01             *loc_38238:
+        inc   routine_secondary,x
+        inc   routine_secondary,x      *    addq.b  #2,routine_secondary(a0)
+        lda   #$08
+        sta   delay,x                  *    move.b  #8,objoff_2A(a0)
         rts                            *    rts
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_RetInit               *loc_38244:
-                                       *    subq.b  #1,objoff_2A(a0)
+        dec   delay,x                  *    subq.b  #1,objoff_2A(a0)
+        beq   ShellcrackerClaw_RetInit_01
                                        *    beq.s   loc_3824E
                                        *    bmi.s   loc_3824E
         rts                            *    rts
                                        *; ===========================================================================
                                        *
-                                       *loc_3824E:
-                                       *    addq.b  #2,routine_secondary(a0)
+ShellcrackerClaw_RetInit_01            *loc_3824E:
+        inc   routine_secondary,x
+        inc   routine_secondary,x      *    addq.b  #2,routine_secondary(a0)
                                        *    neg.w   x_vel(a0)
         rts                            *    rts
                                        *; ===========================================================================
@@ -458,7 +482,7 @@ Ani_Shellcracker_Walk fcb $0E,$00,$01,$02,$FF
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ $20 ; the size of an object
+object_size                   equ $21 ; the size of an object
 next_object                   equ object_size
 			                  
 id                            equ $00 ; object ID (00: free slot, 01: Object1, ...)
@@ -471,23 +495,24 @@ y_pixel                       equ $09 ;
 y_sub                         equ $0A ; and $0B ; subpixel
 priority                      equ $0C ; 0 equ front
 width_pixels                  equ $0D
-x_vel                         equ $0E ; and $0F ; horizontal velocity
-y_vel                         equ $10 ; and $11 ; vertical velocity
-y_radius                      equ $12 ; collision height / 2
-x_radius                      equ $13 ; collision width / 2
-anim_frame                    equ $14
-anim                          equ $15
-prev_anim                     equ $16
-anim_frame_duration           equ $17
-status                        equ $18 ; note: exact meaning depends on the object...
-routine                       equ $19
-routine_secondary             equ $1A
-objoff_01                     equ $1B ; variables spécifiques aux objets
-objoff_02                     equ $1C
-objoff_03                     equ $1D
-objoff_04                     equ $1E
-objoff_05                     equ $1F
-collision_flags               equ $20
+mapping_frame                 equ $0E
+x_vel                         equ $0F ; and $10 ; horizontal velocity
+y_vel                         equ $11 ; and $12 ; vertical velocity
+y_radius                      equ $13 ; collision height / 2
+x_radius                      equ $14 ; collision width / 2
+anim_frame                    equ $15
+anim                          equ $16
+prev_anim                     equ $17
+anim_frame_duration           equ $18 ; range: 00-7F (0-127)
+status                        equ $19 ; note: exact meaning depends on the object...
+routine                       equ $1A
+routine_secondary             equ $1B
+objoff_01                     equ $1C ; variables spécifiques aux objets
+objoff_02                     equ $1D
+objoff_03                     equ $1E
+objoff_04                     equ $1F
+objoff_05                     equ $20
+collision_flags               equ $21
 
 * ---------------------------------------------------------------------------
 * render_flags bitfield variables
