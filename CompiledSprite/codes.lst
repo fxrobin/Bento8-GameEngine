@@ -1,705 +1,204 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\input\SPRITE\Shellcracker\Shellcracker.asm
- * Fichier destination : Shellcracker.BIN
+ * Fichier source      : .\input\ENGINE\Obj_GetOrientationToPlayer.asm
+ * Fichier destination : Obj_GetOrientationToPlayer.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     9267
- *     Include  0:Constant.ASM 1489
+ *     Main     0:MAIN.ASM     770
+ *     Include  0:Constant.ASM 1541
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-      8        0000                      ORG $0000
-      9
-    519                                  INCLUD Constant
-    520                           * --------------------------------------->>
-    521                           * Object Status Table offsets
-    522                           * --------------------------------------->>
-    523
-    524                  0022     object_size                   equ $22 ; t>>
-    525                  0022     next_object                   equ object_>>
-    526                            
-    527                  0000     id                            equ $00 ; o>>
-    528                  0001     render_flags                  equ $01 ; b>>
-    529                  0002     x_pos                         equ $02 ; a>>
-    530                  0004     x_pixel                       equ $04 ;
-    531                  0005     x_sub                         equ $05 ; a>>
-    532                  0007     y_pos                         equ $07 ; a>>
-    533                  0009     y_pixel                       equ $09 ;
-    534                  000A     y_sub                         equ $0A ; a>>
-    535                  000C     priority                      equ $0C ; 0>>
-    536                  000D     width_pixels                  equ $0D
-    537                  000E     mapping_frame                 equ $0E
-    538                  000F     x_vel                         equ $0F ; a>>
-    539                  0011     y_vel                         equ $11 ; a>>
-    540                  0013     y_radius                      equ $13 ; c>>
-    541                  0014     x_radius                      equ $14 ; c>>
-    542                  0015     anim_frame                    equ $15
-    543                  0016     anim                          equ $16
-    544                  0017     prev_anim                     equ $17
-    545                  0018     anim_frame_duration           equ $18 ; r>>
-    546                  0019     status                        equ $19 ; n>>
-    547                  001A     routine                       equ $1A
-    548                  001B     routine_secondary             equ $1B
-    549                  001C     objoff_01                     equ $1C ; v>>
-    550                  001D     objoff_02                     equ $1D
-    551                  001E     objoff_03                     equ $1E
-    552                  001F     objoff_04                     equ $1F
-    553                  0020     objoff_05                     equ $20
-    554                  0021     collision_flags               equ $21
-    555                  0022     subtype                       equ $22
-    556
-    557                           * --------------------------------------->>
-    558                           * render_flags bitfield variables
-    559                  0001     render_xmirror_mask           equ $01 ; b>>
-    560                  0002     render_ymirror_mask           equ $02 ; b>>
-    561                  0004     render_coordinate_mask        equ $04 ; b>>
-    562                  0008     render_7_mask                 equ $08 : b>>
-    563                  0010     render_ycheckonscreen_mask    equ $10 : b>>
-    564                  0020     render_staticmappings_mask    equ $20 : b>>
-    565                  0040     render_subobjects_mask        equ $40 ; b>>
-    566                  0080     render_onscreen_mask          equ $80 ; b>>
-    567
-    568                           * --------------------------------------->>
-    569                           * status bitfield variables
-    570                  0001     status_leftfacing_mask        equ $01 ; b>>
-    571                  0002     status_inair_mask             equ $02 ; b>>
-    572                  0004     status_spinning_mask          equ $04 ; b>>
-    573                  0008     status_onobject_mask          equ $08 ; b>>
-    574                  0010     status_rolljumping_mask       equ $10 ; b>>
-    575                  0020     status_pushing_mask           equ $20 ; b>>
-    576                  0040     status_underwater_mask        equ $40 ; b>>
-    577                  0080     status_7_mask                 equ $80 ; b>>
-     11
-     12                  0001     ObjID_Shellcracker     equ $01
-     13                  0002     ObjID_ShellcrackerClaw equ $02
-     14
-     15                           * --------------------------------------->>
-     16                           * Object Status Table offsets
-     17                           * --------------------------------------->>
-     18                  001C     delay                         equ $1C ; a>>
-     19                  001E     parent                        equ $1E ; a>>
-     20                  0020     instance                      equ $20 (nu>>
-     21
-     22                           * A REMPLACER AU BUILD ******************>>
-     23        0000               MarkObjGone
-     24        0000               Obj_GetOrientationToPlayer
-     25        0000               ObjectMove
-     26        0000               ObjectMoveAndFall
-     27        0000               AnimateSprite
-     28        0000               DeleteObject
-     29        0000               SingleObjLoad2
-     30        0000 0000          gotp_closest_player    fdb   $0000     * >>
-     31        0002 00            gotp_player_is_left    fcb   $00       * >>
-     32        0003 00            gotp_player_is_above   fcb   $00       * >>
-     33        0004 0000          gotp_player_h_distance fdb   $0000     * >>
-     34        0006 0000          gotp_player_v_distance fdb   $0000     * >>
-     35                           *****************************************>>
-     36
+     14        0000                      ORG $0000
+     15
+     84                                  INCLUD Constant
+     85                  0000     MainCharacter                 equ $0000
+     86                  0000     Sidekick                      equ $0000
+     87
+     88                           * --------------------------------------->>
+     89                           * Object Status Table offsets
+     90                           * --------------------------------------->>
+     91
+     92                  0022     object_size                   equ $22 ; t>>
+     93                  0022     next_object                   equ object_>>
+     94                            
+     95                  0000     id                            equ $00 ; o>>
+     96                  0001     render_flags                  equ $01 ; b>>
+     97                  0002     x_pos                         equ $02 ; a>>
+     98                  0004     x_pixel                       equ $04 ;
+     99                  0005     x_sub                         equ $05 ; a>>
+    100                  0007     y_pos                         equ $07 ; a>>
+    101                  0009     y_pixel                       equ $09 ;
+    102                  000A     y_sub                         equ $0A ; a>>
+    103                  000C     priority                      equ $0C ; 0>>
+    104                  000D     width_pixels                  equ $0D
+    105                  000E     mapping_frame                 equ $0E
+    106                  000F     x_vel                         equ $0F ; a>>
+    107                  0011     y_vel                         equ $11 ; a>>
+    108                  0013     y_radius                      equ $13 ; c>>
+    109                  0014     x_radius                      equ $14 ; c>>
+    110                  0015     anim_frame                    equ $15
+    111                  0016     anim                          equ $16
+    112                  0017     prev_anim                     equ $17
+    113                  0018     anim_frame_duration           equ $18 ; r>>
+    114                  0019     status                        equ $19 ; n>>
+    115                  001A     routine                       equ $1A
+    116                  001B     routine_secondary             equ $1B
+    117                  001C     objoff_01                     equ $1C ; v>>
+    118                  001D     objoff_02                     equ $1D
+    119                  001E     objoff_03                     equ $1E
+    120                  001F     objoff_04                     equ $1F
+    121                  0020     objoff_05                     equ $20
+    122                  0021     collision_flags               equ $21
+    123                  0022     subtype                       equ $22
+    124
+    125                           * --------------------------------------->>
+    126                           * render_flags bitfield variables
+    127                  0001     render_xmirror_mask           equ $01 ; b>>
+    128                  0002     render_ymirror_mask           equ $02 ; b>>
+    129                  0004     render_coordinate_mask        equ $04 ; b>>
+    130                  0008     render_7_mask                 equ $08 : b>>
+    131                  0010     render_ycheckonscreen_mask    equ $10 : b>>
+    132                  0020     render_staticmappings_mask    equ $20 : b>>
+    133                  0040     render_subobjects_mask        equ $40 ; b>>
+    134                  0080     render_onscreen_mask          equ $80 ; b>>
+    135
+    136                           * --------------------------------------->>
+    137                           * status bitfield variables
+    138                  0001     status_leftfacing_mask        equ $01 ; b>>
+    139                  0002     status_inair_mask             equ $02 ; b>>
+    140                  0004     status_spinning_mask          equ $04 ; b>>
+    141                  0008     status_onobject_mask          equ $08 ; b>>
+    142                  0010     status_rolljumping_mask       equ $10 ; b>>
+    143                  0020     status_pushing_mask           equ $20 ; b>>
+    144                  0040     status_underwater_mask        equ $40 ; b>>
+    145                  0080     status_7_mask                 equ $80 ; b>>
+     17                            
+     18                                                                  *;>>
+     19                                                                  *;>>
+     20                                                                  *;>>
+     21                                                                  *;>>
+     22                                                                  *;>>
+     23                                                                  *;>>
+     24                                                                  *;>>
+     25                                                                  *;>>
+     26                                                                  *;>>
+     27                                                                  *;>>
+     28                                                                  *;>>
+     29                                                                  *;>>
+     30                                                                  *;>>
+     31                                                                  *;>>
+     32                                                                  *;>>
+     33                                                                  *;>>
+     34                                                                  *;>>
+     35                                                                  *;>>
+     36                                                                  *;>>
      37                                                                  *;>>
-     38                                                                  *;>>
-     39                                                                  *;>>
-     40                                                                  *;>>
-     41                                                                  *;>>
-     42        0008               Shellcracker                           *O>>
-     43                                                                  * >>
-     44  4+1   0008 A6   88 1A            lda   routine,x                * >>
-     45  7     000B 10BE 0011             ldy   Shellcracker_Routines    * >>
-     46  3+4   000F 6E   B6               jmp   [a,y]                    * >>
-     47                                                                  *;>>
-     48                                                                  *;>>
-     49        0011               Shellcracker_Routines                  *O>>
-     50        0011 0019                  fdb   Shellcracker_Init        * >>
-     51        0013 0051                  fdb   Shellcracker_Walk        * >>
-     52        0015 00A6                  fdb   Shellcracker_Pause       * >>
-     53        0017 00DD                  fdb   Shellcracker_Punch       * >>
-     54                                                                  *;>>
-     55                                                                  *;>>
-     56        0019               Shellcracker_Init                      *O>>
-     57  3     0019 CC   180A             ldd   #$180A                   * >>
-     58  4+1   001C A7   0D               sta   width_pixels,x
-     59  4+1   001E E7   88 21            stb   collision_flags,x
-     60  3     0021 CC   0405             ldd   #$0405
-     61  4+1   0024 AA   01               ora   render_flags,x
-     62  4+1   0026 A7   01               sta   render_flags,x
-     63  4+1   0028 E7   0C               stb   priority,x
-     64  6+1   002A 6C   88 1A            inc   routine,x
-     65  6+1   002D 6C   88 1A            inc   routine,x                * >>
-     66  2     0030 85   01               bita  #render_xmirror_mask     * >>
-     67  3     0032 27   08               beq   Shellcracker_Init_01     * >>
-     68  4+1   0034 A6   88 19            lda   status,x
-     69  2     0037 8A   01               ora   #status_leftfacing_mask
-     70  4+1   0039 A7   88 19            sta   status,x                 * >>
-     71        003C               Shellcracker_Init_01                   *+>>
-     72  3     003C CC   FFC0             ldd   #-$0040
-     73  5+1   003F ED   0F               std   x_vel,x                  * >>
-     74  3     0041 CC   0C18             ldd   #$0C18
-     75  4+1   0044 A7   88 13            sta   y_radius,x               * >>
-     76  4+1   0047 E7   88 14            stb   x_radius,x               * >>
-     77  3     004A CC   0140             ldd   #$0140
-     78  5+1   004D ED   88 1C            std   delay,x                  * >>
-     79  5     0050 39                    rts                            * >>
-     80                                                                  *;>>
-     81                                                                  *
-     82        0051               Shellcracker_Walk                      *l>>
-     83  9     0051 17   FFAC             lbsr   Obj_GetOrientationToPlayer>>
-     84                                                                  * >>
-     85  6     0054 0D   02               tst   gotp_player_is_left      * >>
-     86  3     0056 27   06               beq   Shellcracker_Walk_01     * >>
-     87  4+1   0058 A6   01               lda   render_flags,x
-     88  2     005A 85   01               bita  #render_xmirror_mask     * >>
-     89  3     005C 27   0B               beq   Shellcracker_Walk_02     * >>
-     90                                                                  *
-     91        005E               Shellcracker_Walk_01                   *l>>
-     92  5     005E DC   04               ldd   gotp_player_h_distance
-     93  4     0060 C3   0060             addd  #$0060                   * >>
-     94  5     0063 1083 00C0             cmpd  #$00C0                   * >>
-     95  3     0067 25   2E               blo   Shellcracker_Walk_05     * >>
-     96                                                                  *
-     97        0069               Shellcracker_Walk_02                   *l>>
-     98  7     0069 9D   00               jsr   ObjectMove               * >>
-     99                                   *                              * >>
-    100                                   * Attente                      * >>
-    101                                   * Implémentation               * >>
-    102                                   * Terrain                      * >>
-    103                                   *                              * >>
-    104                                   *                              * >>
-    105  5+1   006B EC   88 1C            ldd   delay,x
-    106  4     006E 83   0001             subd  #$0001
-    107  5+1   0071 ED   88 1C            std   delay,x                  * >>
-    108  3     0074 2B   11               bmi   Shellcracker_Walk_04     * >>
-    109  7     0076 10BE 02AA             ldy   Ani_Shellcracker         * >>
-    110  7     007A 9D   00               jsr   AnimateSprite            * >>
-    111  3     007C 0E   00               jmp   MarkObjGone              * >>
-    112                                                                  *;>>
-    113                                                                  *
-    114        007E               Shellcracker_Walk_03                   *l>>
-    115  5+1   007E EC   0F               ldd   x_vel,x
-    116  2     0080 43                    coma
-    117  2     0081 53                    comb
-    118  4     0082 C3   0001             addd  #$0001
-    119  5+1   0085 ED   0F               std   x_vel,x                  * >>
-    120                                                                  *
-    121        0087               Shellcracker_Walk_04                   *l>>
-    122  6+1   0087 6C   88 1A            inc   routine,x
-    123  6+1   008A 6C   88 1A            inc   routine,x                * >>
-    124  3     008D CC   003B             ldd   #$003B
-    125  4+1   0090 A7   0E               sta   mapping_frame,x          * >>
-    126  5+1   0092 ED   88 1C            std   delay,x                  * >>
-    127  3     0095 0E   00               jmp   MarkObjGone              * >>
-    128                                                                  *;>>
-    129                                                                  *
-    130        0097               Shellcracker_Walk_05                   *l>>
-    131  2     0097 86   06               lda   #$06
-    132  4+1   0099 A7   88 1A            sta   routine,x                * >>
-    133  3     009C CC   0008             ldd   #$0008
-    134  4+1   009F A7   0E               sta   mapping_frame,x          * >>
-    135  5+1   00A1 ED   88 1C            std   delay,x                  * >>
-    136  3     00A4 0E   00               jmp   MarkObjGone              * >>
-    137                                                                  *;>>
-    138                                                                  *
-    139        00A6               Shellcracker_Pause                     *l>>
-    140  6+1   00A6 6D   01               tst   render_flags,x           * >>
-    141  3     00A8 2A   18               bpl   Shellcracker_Pause_02    * >>
-    142  9     00AA 17   FF53             lbsr   Obj_GetOrientationToPlayer>>
-    143                                                                  * >>
-    144  6     00AD 0D   02               tst   gotp_player_is_left      * >>
-    145  3     00AF 27   06               beq   Shellcracker_Pause_01    * >>
-    146  4+1   00B1 A6   01               lda   render_flags,x
-    147  2     00B3 85   01               bita  #render_xmirror_mask     * >>
-    148  3     00B5 27   0B               beq   Shellcracker_Pause_02    * >>
-    149                                                                  *
-    150        00B7               Shellcracker_Pause_01                  *l>>
-    151  5     00B7 DC   04               ldd   gotp_player_h_distance
-    152  4     00B9 C3   0060             addd  #$0060                   * >>
-    153  5     00BC 1083 00C0             cmpd  #$00C0                   * >>
-    154  3     00C0 25   D5               blo   Shellcracker_Walk_05     * >>
-    155                                                                  *
-    156        00C2               Shellcracker_Pause_02                  *l>>
-    157  5+1   00C2 EC   88 1C            ldd   delay,x
-    158  4     00C5 83   0001             subd  #$0001
-    159  5+1   00C8 ED   88 1C            std   delay,x                  * >>
-    160  3     00CB 2B   02               bmi   Shellcracker_Pause_03    * >>
-    161  3     00CD 0E   00               jmp   MarkObjGone              * >>
-    162                                                                  *;>>
-    163                                                                  *
-    164        00CF               Shellcracker_Pause_03                  *l>>
-    165  6+1   00CF 6A   88 1A            dec   routine,x
-    166  6+1   00D2 6A   88 1A            dec   routine,x                * >>
-    167  3     00D5 CC   0140             ldd   #$0140
-    168  5+1   00D8 ED   88 1C            std   delay,x                  * >>
-    169  3     00DB 0E   00               jmp   MarkObjGone              * >>
-    170                                                                  *;>>
-    171                                                                  *
-    172        00DD               Shellcracker_Punch                     *l>>
-    173                                                                  * >>
-    174  4+1   00DD A6   88 1B            lda   routine_secondary,x      * >>
-    175  7     00E0 10BE 00E8             ldy   Shellcracker_SubRoutines * >>
-    176  7+4   00E4 AD   B6               jsr   [a,y]                    * >>
-    177  3     00E6 0E   00               jmp   MarkObjGone              * >>
-    178                                                                  *;>>
-    179        00E8               Shellcracker_SubRoutines               *o>>
-    180        00E8 00EE                  fdb   Shellcracker_Punch_Init  * >>
-    181        00EA 0107                  fdb   Shellcracker_Punch_Wait  * >>
-    182        00EC 011A                  fdb   Shellcracker_Punch_End   * >>
-    183                                                                  *;>>
-    184                                                                  *
-    185        00EE               Shellcracker_Punch_Init                *l>>
-    186  5+1   00EE EC   88 1C            ldd   delay,x
-    187  4     00F1 83   0001             subd  #$01
-    188  5+1   00F4 ED   88 1C            std   delay,x                  * >>
-    189  3     00F7 2B   FE               bmi                            * >>
-    190  5     00F9 39                    rts                            * >>
-    191                                                                  *;>>
-    192                                                                  *
-    193        00FA               Shellcracker_Punch_Init_01             *l>>
-    194  6+1   00FA 6C   88 1B            inc   routine_secondary,x
-    195  6+1   00FD 6C   88 1B            inc   routine_secondary,x      * >>
-    196  2     0100 86   03               lda   #$03
-    197  4+1   0102 A7   0E               sta   mapping_frame,x          * >>
-    198  5     0104 16   014F             lbra   ShellcrackerClaw_instantia>>
-    199                                                                  * >>
-    200                                                                  *;>>
-    201                                                                  *
-    202        0107               Shellcracker_Punch_Wait                *l>>
-    203  6+1   0107 6D   88 1E            tst   parent,x                 * >>
-    204  3     010A 26   01               bne   Shellcracker_Punch_Wait_01
-    205                                                                  * >>
-    206  5     010C 39                    rts                            * >>
-    207                                                                  *;>>
-    208                                                                  *
-    209        010D               Shellcracker_Punch_Wait_01             *l>>
-    210  6+1   010D 6C   88 1B            inc   routine_secondary,x
-    211  6+1   0110 6C   88 1B            inc   routine_secondary,x      * >>
-    212  3     0113 CC   0020             ldd   #$0020
-    213  5+1   0116 ED   88 1C            std   delay,x                  * >>
-    214  5     0119 39                    rts                            * >>
-    215                                                                  *;>>
-    216                                                                  *
-    217        011A               Shellcracker_Punch_End                 *l>>
-    218  5+1   011A EC   88 1C            ldd   delay,x
-    219  4     011D 83   0001             subd  #$01
-    220  5+1   0120 ED   88 1C            std   delay,x                  * >>
-    221  3     0123 2B   01               bmi   Shellcracker_Punch_End_01
-    222                                                                  * >>
-    223  5     0125 39                    rts                            * >>
-    224                                                                  *;>>
-    225                                                                  *
-    226        0126               Shellcracker_Punch_End_01              *l>>
-    227  2     0126 86   02               lda   #$0002
-    228  4+1   0128 A7   88 1B            sta   routine_secondary,x      * >>
-    229  4+1   012B A7   88 1E            sta   parent,x                 * >>
-    230  4+1   012E E7   88 1A            stb   routine,x                * >>
-    231  3     0131 CC   0140             ldd   #$0140
-    232  5+1   0134 ED   88 1C            std   delay,x                  * >>
-    233  5     0137 39                    rts                            * >>
-    234                                                                  *;>>
-    235                                                                  *;>>
-    236                                                                  *;>>
-    237                                                                  *;>>
-    238                                                                  *;>>
-    239        0138               ShellcrackerClaw                       *O>>
-    240                                                                  * >>
-    241  4+1   0138 A6   88 1A            lda   routine,x                * >>
-    242  7     013B 10BE 0141             ldy   ShellcrackerClaw_Routines
-    243                                                                  * >>
-    244  3+4   013F 6E   B6               jmp   [a,y]                    * >>
-    245                                                                  *;>>
-    246                                                                  *;>>
-    247        0141               ShellcrackerClaw_Routines              *O>>
-    248        0141 0147                  fdb   ShellcrackerClaw_Init    * >>
-    249        0143 0198                  fdb   ShellcrackerClaw_Type    * >>
-    250        0145 0247                  fdb   ShellcrackerClaw_Proj    * >>
-    251                                                                  *;>>
-    252                                                                  *;>>
-    253        0147               ShellcrackerClaw_Init                  *O>>
-    254  3     0147 CC   0C9A             ldd   #$0C9A                   * >>
-    255  4+1   014A A7   0D               sta   width_pixels,x
-    256  4+1   014C E7   88 21            stb   collision_flags,x
-    257  3     014F CC   0404             ldd   #$0404
-    258  4+1   0152 AA   01               ora   render_flags,x
-    259  4+1   0154 A7   01               sta   render_flags,x
-    260  4+1   0156 E7   0C               stb   priority,x
-    261  6+1   0158 6C   88 1A            inc   routine,x
-    262  6+1   015B 6C   88 1A            inc   routine,x                * >>
-    263  6+1   015E 10AE 88 1E            ldy   parent,x                 * >>
-    264  4+1   0162 A6   21               lda   render_flags,y           * >>
-    265  2     0164 84   01               anda  #$01                     * >>
-    266  4+1   0166 AA   01               ora   render_flags,x           * >>
-    267  4+1   0168 A7   01               sta   render_flags,x
-    268  4+1   016A A6   88 20            lda   instance,x               * >>
-    269  3     016D 27   15               beq   ShellcrackerClaw_Init_01 * >>
-    270  2     016F 86   04               lda   #$04
-    271  4+1   0171 A7   0E               sta   mapping_frame,x          * >>
-    272  5+1   0173 EC   02               ldd   x_pos,x
-    273  4     0175 C3   0006             addd  #$0006
-    274  5+1   0178 ED   02               std   x_pos,x                  * >>
-    275  5+1   017A EC   07               ldd   y_pos,x
-    276  4     017C C3   0006             addd  #$0006
-    277  5+1   017F ED   07               std   y_pos,x                  * >>
-    278  4+1   0181 A6   88 20            lda   instance,x               *
-    279        0184               ShellcrackerClaw_Init_01               *l>>
-    280  2     0184 44                    lsra                           * >>
-    281  7     0185 10BE 0190             ldy   Cal_ShellcrackerClaw_Extend>>
-    282  4+4   0189 E6   B6               ldb   [a,y]
-    283  4+1   018B E7   88 1C            stb   delay,x                  * >>
-    284  3     018E 0E   00               jmp   MarkObjGone              * >>
-    285                                                                  *;>>
-    286        0190               Cal_ShellcrackerClaw_Extend            *b>>
-    287        0190 00                    fcb   $00                      * >>
-    288        0191 03                    fcb   $03                      * >>
-    289        0192 05                    fcb   $05                      * >>
-    290        0193 07                    fcb   $07                      * >>
-    291        0194 09                    fcb   $09                      * >>
-    292        0195 0B                    fcb   $0B                      * >>
-    293        0196 0D                    fcb   $0D                      * >>
-    294        0197 0F                    fcb   $0F                      * >>
-    295                                                                  *;>>
-    296                                                                  *
-    297        0198               ShellcrackerClaw_Type                  *l>>
-    298  6+1   0198 10AE 88 1E            ldy   parent,x                 * >>
-    299  2     019C 86   01               lda   #ObjID_Shellcracker
-    300  4+1   019E A1   20               cmpa  id,y                     * >>
-    301  3     01A0 26   13               bne   ShellcrackerClaw_Projectile>>
-    302                                                                  * >>
-    303                                                                  * >>
-    304  4+1   01A2 A6   88 1B            lda   routine_secondary,x      * >>
-    305  7     01A5 10BE 01AD             ldy   ShellcrackerClaw_SubRoutine>>
-    306                                                                  * >>
-    307  7+4   01A9 AD   B6               jsr   [a,y]                    * >>
-    308  3     01AB 0E   00               jmp   MarkObjGone              * >>
-    309                                                                  *;>>
-    310        01AD               ShellcrackerClaw_SubRoutines           *o>>
-    311        01AD 01C2                  fdb   ShellcrackerClaw_ExtInit * >>
-    312        01AF 0201                  fdb   ShellcrackerClaw_Extend  * >>
-    313        01B1 0215                  fdb   ShellcrackerClaw_RetInit * >>
-    314        01B3 022B                  fdb   ShellcrackerClaw_Retract * >>
-    315                                                                  *;>>
-    316                                                                  *
-    317        01B5               ShellcrackerClaw_Projectile            *l>>
-    318  2     01B5 86   04               lda   #$04
-    319  4+1   01B7 A7   88 1A            sta   routine,x                * >>
-    320  3     01BA CC   0040             ldd   #$0040
-    321  5+1   01BD ED   88 1C            std   delay,x                  * >>
-    322  3     01C0 0E   00               jmp   MarkObjGone              * >>
-    323                                                                  *;>>
-    324                                                                  *
-    325        01C2               ShellcrackerClaw_ExtInit               *l>>
-    326  6+1   01C2 6A   88 1C            dec   delay,x                  * >>
-    327  3     01C5 27   01               beq   ShellcrackerClaw_ExtInit_01>>
-    328                                                                  * >>
-    329                                                                  * >>
-    330  5     01C7 39                    rts                            * >>
-    331                                                                  *;>>
-    332                                                                  *
-    333        01C8               ShellcrackerClaw_ExtInit_01            *l>>
-    334  6+1   01C8 6C   88 1B            inc   routine_secondary,x
-    335  6+1   01CB 6C   88 1B            inc   routine_secondary,x      * >>
-    336  4+1   01CE A6   88 20            lda   instance,x               * >>
-    337  2     01D1 81   0E               cmpa  #$0E                     * >>
-    338  3     01D3 24   1D               bhs   ShellcrackerClaw_ExtInit_03>>
-    339                                                                  * >>
-    340  4     01D5 108E FC00             ldy   #-$0400                  * >>
-    341  4+1   01D9 E6   01               ldb   render_flags,x
-    342  2     01DB C5   01               bitb  #render_xmirror_mask     * >>
-    343  3     01DD 27   04               beq   ShellcrackerClaw_ExtInit_02>>
-    344                                                                  * >>
-    345  4     01DF 108E 0400             ldy   #$0400                   * >>
-    346                                                                  *
-    347        01E3               ShellcrackerClaw_ExtInit_02            *l>>
-    348  6+1   01E3 10AF 0F               sty   x_vel,x                  * >>
-    349  2     01E6 44                    lsra                           * >>
-    350  7     01E7 10BE 01F9             ldy   Cal_ShellcrackerClaw_Retrac>>
-    351  4+4   01EB E6   B6               ldb   [a,y]                    * >>
-    352  4     01ED D7   1C               stb   delay                    * >>
-    353  4     01EF D7   1D               stb   delay+1                  * >>
-    354  5     01F1 39                    rts                            * >>
-    355                                                                  *;>>
-    356                                                                  *
-    357        01F2               ShellcrackerClaw_ExtInit_03            *l>>
-    358  3     01F2 CC   000B             ldd   #$000B
-    359  5+1   01F5 ED   88 1C            std   delay,x                  * >>
-    360  5     01F8 39                    rts                            * >>
-    361                                                                  *;>>
-    362        01F9               Cal_ShellcrackerClaw_Retract           *b>>
-    363        01F9 0D                    fcb   $0D                      * >>
-    364        01FA 0C                    fcb   $0C                      * >>
-    365        01FB 0A                    fcb   $0A                      * >>
-    366        01FC 08                    fcb   $08                      * >>
-    367        01FD 06                    fcb   $06                      * >>
-    368        01FE 04                    fcb   $04                      * >>
-    369        01FF 02                    fcb   $02                      * >>
-    370        0200 00                    fcb   $00                      * >>
-    371                                                                  *;>>
-    372                                                                  *
-    373        0201               ShellcrackerClaw_Extend                *l>>
-    374  7     0201 9D   00               jsr   ObjectMove               * >>
-    375  6+1   0203 6A   88 1C            dec   delay,x                  * >>
-    376  3     0206 27   01               beq   ShellcrackerClaw_Extend_01
-    377                                                                  * >>
-    378                                                                  * >>
-    379  5     0208 39                    rts                            * >>
-    380                                                                  *;>>
-    381                                                                  *
-    382        0209               ShellcrackerClaw_Extend_01             *l>>
-    383  6+1   0209 6C   88 1B            inc   routine_secondary,x
-    384  6+1   020C 6C   88 1B            inc   routine_secondary,x      * >>
-    385  2     020F 86   08               lda   #$08
-    386  4+1   0211 A7   88 1C            sta   delay,x                  * >>
-    387  5     0214 39                    rts                            * >>
-    388                                                                  *;>>
-    389                                                                  *
-    390        0215               ShellcrackerClaw_RetInit               *l>>
-    391  6+1   0215 6A   88 1C            dec   delay,x                  * >>
-    392  3     0218 27   01               beq   ShellcrackerClaw_RetInit_01>>
-    393                                                                  * >>
-    394                                                                  * >>
-    395  5     021A 39                    rts                            * >>
-    396                                                                  *;>>
-    397                                                                  *
-    398        021B               ShellcrackerClaw_RetInit_01            *l>>
-    399  6+1   021B 6C   88 1B            inc   routine_secondary,x
-    400  6+1   021E 6C   88 1B            inc   routine_secondary,x      * >>
-    401  5+1   0221 EC   0F               ldd   x_vel,x
-    402  2     0223 43                    coma
-    403  2     0224 53                    comb
-    404  4     0225 C3   0001             addd  #$0001
-    405  5+1   0228 ED   0F               std   x_vel,x                  * >>
-    406  5     022A 39                    rts                            * >>
-    407                                                                  *;>>
-    408                                                                  *
-    409        022B               ShellcrackerClaw_Retract               *l>>
-    410  7     022B 9D   00               jsr   ObjectMove               * >>
-    411  6+1   022D 6A   88 1D            dec   delay+1,x                * >>
-    412  3     0230 27   01               beq   ShellcrackerClaw_Retract_01>>
-    413                                                                  * >>
-    414                                                                  * >>
-    415  5     0232 39                    rts                            * >>
-    416                                                                  *;>>
-    417                                                                  *
-    418        0233               ShellcrackerClaw_Retract_01            *l>>
-    419  6+1   0233 6D   88 20            tst   instance,x               * >>
-    420  3     0236 26   0B               bne   ShellcrackerClaw_Retract_02>>
-    421                                                                  * >>
-    422  6+1   0238 10AE 88 1E            ldy   parent,x                 * >>
-    423  6+1   023C 6F   2E               clr   mapping_frame,y          * >>
-    424  2     023E 86   FF               lda   #$FF
-    425  4+1   0240 A7   A8 1E            sta   parent,y                 * >>
-    426                                                                  *
-    427        0243               ShellcrackerClaw_Retract_02            *l>>
-    428  4+1   0243 32   62               leas  2,s                      * >>
-    429  3     0245 0E   00               jmp   DeleteObject             * >>
-    430                                                                  *;>>
-    431                                                                  *
-    432        0247               ShellcrackerClaw_Proj                  *l>>
-    433  7     0247 9D   00               jsr   ObjectMoveAndFall        * >>
-    434  5+1   0249 EC   88 1C            ldd   delay,x
-    435  4     024C 83   0001             subd  #$0001
-    436  5+1   024F ED   88 1C            std   delay,x                  * >>
-    437  3     0252 0E   00               jmp   DeleteObject             * >>
-    438  3     0254 0E   00               jmp   MarkObjGone              * >>
-    439                                                                  *;>>
-    440                                                                  *
-    441        0256               ShellcrackerClaw_instantiate           *l>>
-    442  3     0256 CC   0007             ldd   #$0007
-    443  5     0259 B7   0271             sta   am_ShellcrackerClaw_instant>>
-    444                                                                  * >>
-    445  5     025C F7   02A4             stb   am_ShellcrackerClaw_instant>>
-    446                                                                  * >>
-    447                                                                  *
-    448        025F               ShellcrackerClaw_instantiate_01        *l>>
-    449  7     025F 9D   00               jsr   SingleObjLoad2           * >>
-    450  3     0261 26   46               bne   ShellcrackerClaw_instantiat>>
-    451                                                                  * >>
-    452  2     0263 86   02               lda   #ObjID_ShellcrackerClaw
-    453  4+0   0265 A7   A4               sta   ,y                       * >>
-    454  3     0267 CC   2605             ldd   #$2605
-    455  4+1   026A A7   A8 22            sta   subtype,y                * >>
-    456  4+1   026D E7   2E               stb   mapping_frame,y          * >>
-    457        026F               am_ShellcrackerClaw_instantiate_01
-    458  3     026F CC   0400             ldd   #$0400
-    459  4+1   0272 A7   2C               sta   priority,y               * >>
-    460  5+1   0274 AF   A8 1E            stx   parent,y                 * >>
-    461  4+1   0277 E7   A8 20            stb   instance,y               * >>
-    462                                                                  * >>
-    463                                                                  * >>
-    464  4+1   027A A6   01               lda   render_flags,x
-    465  2     027C 85   01               bita  #render_xmirror_mask     * >>
-    466  3     027E 27   0F               beq   ShellcrackerClaw_instantiat>>
-    467                                                                  * >>
-    468  5+1   0280 EC   02               ldd   x_pos,x
-    469  4     0282 C3   0014             addd  #$0014                   * >>
-    470  6+1   0285 6D   A8 20            tst   instance,y               * >>
-    471  3     0288 27   0A               beq   ShellcrackerClaw_instantiat>>
-    472                                                                  * >>
-    473  4     028A 83   000C             subd  #$000C                   * >>
-    474  3     028D 20   05               bra   ShellcrackerClaw_instantiat>>
-    475                                                                  *
-    476        028F               ShellcrackerClaw_instantiate_02
-    477  5+1   028F EC   02               ldd   x_pos,x
-    478  4     0291 83   0014             subd  #$0014
-    479
-    480        0294               ShellcrackerClaw_instantiate_03        *l>>
-    481  5+1   0294 ED   22               std   x_pos,y                  * >>
-    482  5+1   0296 EC   07               ldd   y_pos,x
-    483  4     0298 83   0008             subd  #$0008                   * >>
-    484  5+1   029B ED   27               std   y_pos,y                  * >>
-    485  7     029D 7C   0271             inc   am_ShellcrackerClaw_instant>>
-    486  7     02A0 7C   0271             inc   am_ShellcrackerClaw_instant>>
-    487                                                                  * >>
-    488        02A3               am_ShellcrackerClaw_instantiate_02
-    489  2     02A3 86   00               lda   #$00
-    490  2     02A5 80   01               suba  #$01
-    491  3     02A7 2A   B6               bpl   ShellcrackerClaw_instantiat>>
-    492                                                                  * >>
-    493                                                                  *
-    494        02A9               ShellcrackerClaw_instantiate_04        *r>>
-    495  5     02A9 39                    rts                            * >>
-    496                                                                  *;>>
-    497                                                                  *;>>
-    498                                                                  *O>>
-    499                                                                  * >>
-    500                                                                  *;>>
-    501                                                                  *O>>
-    502                                                                  * >>
-    503                                                                  *;>>
-    504                                                                  *;>>
-    505                  0000     AniIDShellAni_Walk equ $00
-    506        02AA               Ani_Shellcracker                       *A>>
-    507        02AA 02AC                  fdb Ani_Shellcracker_Walk      * >>
-    508                                                                  * >>
-    509        02AC 0E 00 01 02   Ani_Shellcracker_Walk fcb $0E,$00,$01,$02>>
-               02B0 FF
-    510                                                                  *b>>
-    511                                                                  *b>>
-    512                                                                  * >>
-    513                                                                  *;>>
-    514                                                                  *;>>
-    515                                                                  *;>>
-    516                                                                  *O>>
-    517                                                                  *;>>
-    518                            
+     38        0000               Obj_GetOrientationToPlayer             *O>>
+     39  5+4   0000 34   26               pshs  d,y
+     40                                                                  * >>
+     41  6     0002 109E 00               ldy   MainCharacter            * >>
+     42  7     0005 10BF 0015             sty   gotp_closest_player      * >>
+     43  5+1   0009 EC   22               ldd   x_pos,y
+     44  6     000B FD   0019             std   gotp_player_h_distance   * >>
+     45  6+1   000E A3   02               subd  x_pos,x                  * >>
+     46  6     0010 FD   0019             std   gotp_player_h_distance
+     47                                                                  * >>
+     48                                                                  * >>
+     49                                                                  * >>
+     50                                                                  * >>
+     51                                                                  * >>
+     52                                                                  * >>
+     53                                                                  * >>
+     54                                                                  * >>
+     55                                                                  * >>
+     56                                                                  * >>
+     57                                                                  *+>>
+     58                                                                  * >>
+     59                                                                  * >>
+     60                                                                  * >>
+     61                                                                  *+>>
+     62                                                                  * >>
+     63                                                                  * >>
+     64                                                                  * >>
+     65                                                                  * >>
+     66                                                                  *+>>
+     67  5+6   0013 35   A6               puls  d,y,pc
+     68                                                                  * >>
+     69                                                                  *
+     70                                                                  *;>>
+     71                                                                  *m>>
+     72                                                                  * >>
+     73                                                                  * >>
+     74                                                                  * >>
+     75                                                                  *+>>
+     76                                                                  *e>>
+     77
+     78        0015 0000          gotp_closest_player    fdb   $0000     * >>
+     79        0017 00            gotp_player_is_left    fcb   $00       * >>
+     80        0018 00            gotp_player_is_above   fcb   $00       * >>
+     81        0019 0000          gotp_player_h_distance fdb   $0000     * >>
+     82        001B 0000          gotp_player_v_distance fdb   $0000     * >>
+     83
 
 000000 Total Errors
 
-000117 Total Symbols
-     3x          Label 026F am_ShellcrackerClaw_instantiate_01
-     1x          Label 02A3 am_ShellcrackerClaw_instantiate_02
-     0x          Equ   0000 AniIDShellAni_Walk
+000055 Total Symbols
      0x          Equ   0016 anim
-     1x          Label 0000 AnimateSprite
      0x          Equ   0015 anim_frame
      0x          Equ   0018 anim_frame_duration
-     1x          Label 02AA Ani_Shellcracker
-     1x          Label 02AC Ani_Shellcracker_Walk
-     1x          Label 0190 Cal_ShellcrackerClaw_Extend
-     1x          Label 01F9 Cal_ShellcrackerClaw_Retract
-     2x          Equ   0021 collision_flags
-    26x          Equ   001C delay
-     2x          Label 0000 DeleteObject
-     0x          Label 0000 gotp_closest_player
-     2x          Label 0004 gotp_player_h_distance
-     0x          Label 0003 gotp_player_is_above
-     2x          Label 0002 gotp_player_is_left
-     0x          Label 0006 gotp_player_v_distance
-     1x          Equ   0000 id
-     6x          Equ   0020 instance
-     6x          Equ   000E mapping_frame
-    10x          Label 0000 MarkObjGone
+     0x          Equ   0021 collision_flags
+     1x          Label 0015 gotp_closest_player
+     2x          Label 0019 gotp_player_h_distance
+     0x          Label 0018 gotp_player_is_above
+     0x          Label 0017 gotp_player_is_left
+     0x          Label 001B gotp_player_v_distance
+     0x          Equ   0000 id
+     1x          Equ   0000 MainCharacter
+     0x          Equ   000E mapping_frame
      0x          Equ   0022 next_object
-     3x          Label 0000 ObjectMove
-     1x          Label 0000 ObjectMoveAndFall
      1x          Equ   0022 object_size
-     1x          Equ   0001 ObjID_Shellcracker
-     1x          Equ   0002 ObjID_ShellcrackerClaw
      0x          Equ   001C objoff_01
      0x          Equ   001D objoff_02
      0x          Equ   001E objoff_03
      0x          Equ   001F objoff_04
      0x          Equ   0020 objoff_05
-     2x          Label 0000 Obj_GetOrientationToPlayer
-     7x          Equ   001E parent
+     0x          Label 0000 Obj_GetOrientationToPlayer
      0x          Equ   0017 prev_anim
-     3x          Equ   000C priority
+     0x          Equ   000C priority
      0x          Equ   0008 render_7_mask
      0x          Equ   0004 render_coordinate_mask
-    12x          Equ   0001 render_flags
+     0x          Equ   0001 render_flags
      0x          Equ   0080 render_onscreen_mask
      0x          Equ   0020 render_staticmappings_mask
      0x          Equ   0040 render_subobjects_mask
-     5x          Equ   0001 render_xmirror_mask
+     0x          Equ   0001 render_xmirror_mask
      0x          Equ   0010 render_ycheckonscreen_mask
      0x          Equ   0002 render_ymirror_mask
-    13x          Equ   001A routine
-    13x          Equ   001B routine_secondary
-     0x          Label 0008 Shellcracker
-     0x          Label 0138 ShellcrackerClaw
-     1x          Label 0201 ShellcrackerClaw_Extend
-     1x          Label 0209 ShellcrackerClaw_Extend_01
-     1x          Label 01C2 ShellcrackerClaw_ExtInit
-     1x          Label 01C8 ShellcrackerClaw_ExtInit_01
-     1x          Label 01E3 ShellcrackerClaw_ExtInit_02
-     1x          Label 01F2 ShellcrackerClaw_ExtInit_03
-     1x          Label 0147 ShellcrackerClaw_Init
-     1x          Label 0184 ShellcrackerClaw_Init_01
-     1x          Label 0256 ShellcrackerClaw_instantiate
-     1x          Label 025F ShellcrackerClaw_instantiate_01
-     1x          Label 028F ShellcrackerClaw_instantiate_02
-     2x          Label 0294 ShellcrackerClaw_instantiate_03
-     1x          Label 02A9 ShellcrackerClaw_instantiate_04
-     1x          Label 0247 ShellcrackerClaw_Proj
-     1x          Label 01B5 ShellcrackerClaw_Projectile
-     1x          Label 0215 ShellcrackerClaw_RetInit
-     1x          Label 021B ShellcrackerClaw_RetInit_01
-     1x          Label 022B ShellcrackerClaw_Retract
-     1x          Label 0233 ShellcrackerClaw_Retract_01
-     1x          Label 0243 ShellcrackerClaw_Retract_02
-     1x          Label 0141 ShellcrackerClaw_Routines
-     1x          Label 01AD ShellcrackerClaw_SubRoutines
-     1x          Label 0198 ShellcrackerClaw_Type
-     1x          Label 0019 Shellcracker_Init
-     1x          Label 003C Shellcracker_Init_01
-     1x          Label 00A6 Shellcracker_Pause
-     1x          Label 00B7 Shellcracker_Pause_01
-     2x          Label 00C2 Shellcracker_Pause_02
-     1x          Label 00CF Shellcracker_Pause_03
-     1x          Label 00DD Shellcracker_Punch
-     1x          Label 011A Shellcracker_Punch_End
-     1x          Label 0126 Shellcracker_Punch_End_01
-     1x          Label 00EE Shellcracker_Punch_Init
-     0x          Label 00FA Shellcracker_Punch_Init_01
-     1x          Label 0107 Shellcracker_Punch_Wait
-     1x          Label 010D Shellcracker_Punch_Wait_01
-     1x          Label 0011 Shellcracker_Routines
-     1x          Label 00E8 Shellcracker_SubRoutines
-     1x          Label 0051 Shellcracker_Walk
-     1x          Label 005E Shellcracker_Walk_01
-     1x          Label 0069 Shellcracker_Walk_02
-     0x          Label 007E Shellcracker_Walk_03
-     1x          Label 0087 Shellcracker_Walk_04
-     2x          Label 0097 Shellcracker_Walk_05
-     1x          Label 0000 SingleObjLoad2
-     2x          Equ   0019 status
+     0x          Equ   001A routine
+     0x          Equ   001B routine_secondary
+     0x          Equ   0000 Sidekick
+     0x          Equ   0019 status
      0x          Equ   0080 status_7_mask
      0x          Equ   0002 status_inair_mask
-     1x          Equ   0001 status_leftfacing_mask
+     0x          Equ   0001 status_leftfacing_mask
      0x          Equ   0008 status_onobject_mask
      0x          Equ   0020 status_pushing_mask
      0x          Equ   0010 status_rolljumping_mask
      0x          Equ   0004 status_spinning_mask
      0x          Equ   0040 status_underwater_mask
-     1x          Equ   0022 subtype
-     2x          Equ   000D width_pixels
+     0x          Equ   0022 subtype
+     0x          Equ   000D width_pixels
      0x          Equ   0004 x_pixel
-     5x          Equ   0002 x_pos
-     1x          Equ   0014 x_radius
+     2x          Equ   0002 x_pos
+     0x          Equ   0014 x_radius
      0x          Equ   0005 x_sub
-     6x          Equ   000F x_vel
+     0x          Equ   000F x_vel
      0x          Equ   0009 y_pixel
-     4x          Equ   0007 y_pos
-     1x          Equ   0013 y_radius
+     0x          Equ   0007 y_pos
+     0x          Equ   0013 y_radius
      0x          Equ   000A y_sub
      0x          Equ   0011 y_vel
 

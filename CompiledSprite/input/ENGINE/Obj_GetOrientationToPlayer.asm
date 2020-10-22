@@ -14,12 +14,6 @@
 	ORG $0000
 
 	INCLUD Constant
-	
-gotp_closest_player    fdb   $0000     * ptr objet de MainCharacter ou Sidekick
-gotp_player_is_left    fcb   $00       * 0: player left from object, 2: right
-gotp_player_is_above   fcb   $00       * 0: player above object, 2: below
-gotp_player_h_distance fdb   $0000     * closest character's h distance to obj
-gotp_player_v_distance fdb   $0000     * closest character's v distance to obj
 										   
                                        *; ---------------------------------------------------------------------------
                                        *; Get Orientation To Player
@@ -42,22 +36,41 @@ gotp_player_v_distance fdb   $0000     * closest character's v distance to obj
                                        *; ---------------------------------------------------------------------------
                                        *;loc_366D6:
 Obj_GetOrientationToPlayer             *Obj_GetOrientationToPlayer:
+        pshs  d,y
                                        *    moveq   #0,d0
-                                       *    moveq   #0,d1
+        ldy   MainCharacter            *    moveq   #0,d1
                                        *    lea (MainCharacter).w,a1 ; a1=character
+        ldd   x_pos,x
                                        *    move.w  x_pos(a0),d2
-                                       *    sub.w   x_pos(a1),d2
+        subd  x_pos,y                  *    sub.w   x_pos(a1),d2
                                        *    mvabs.w d2,d4   ; absolute horizontal distance to main character
-                                       *    lea (Sidekick).w,a2 ; a2=character
+        std   gotp_player_h_distance
+        bpl   gotp_skip1
+        coma
+        comb
+        addd  #$0001
+gotp_skip1
+        std   gotp_abs_h_distance_mainc
+        ldy   Sidekick
+                                       *    lea (Sidekick).w,a1 ; a1=character
+        ldd   x_pos,x
                                        *    move.w  x_pos(a0),d3
-                                       *    sub.w   x_pos(a2),d3
+        subd  x_pos,y                  *    sub.w   x_pos(a2),d3
+        std   gotp_h_distance_sidek
                                        *    mvabs.w d3,d5   ; absolute horizontal distance to sidekick
+        bpl   gotp_skip2
+        coma
+        comb
+        addd  #$0001
+gotp_skip2
+        cmpd  gotp_abs_h_distance_mainc
                                        *    cmp.w   d5,d4   ; get shorter distance
-                                       *    bls.s   +   ; branch, if main character is closer
+        bhi   MainCharacterIsCloser    *    bls.s   +   ; branch, if main character is closer
                                        *    ; if sidekick is closer
-                                       *    movea.l a2,a1
-                                       *    move.w  d3,d2
-                                       *+
+        sty   gotp_closest_player      *    movea.l a2,a1
+        ldd   gotp_h_distance_sidek
+        std   gotp_player_h_distance   *    move.w  d3,d2
+MainCharacterIsCloser                  *+
                                        *    tst.w   d2  ; is player to enemy's left?
                                        *    bpl.s   +   ; if not, branch
                                        *    addq.w  #2,d0
@@ -67,7 +80,8 @@ Obj_GetOrientationToPlayer             *Obj_GetOrientationToPlayer:
                                        *    bhs.s   +   ; branch, if enemy is under
                                        *    addq.w  #2,d1
                                        *+
-        rts                            *    rts
+        puls  d,y,pc
+                                       *    rts
                                        *
                                        *; macro to move the absolute value of the source in the destination
                                        *mvabs macro source,destination
@@ -77,12 +91,23 @@ Obj_GetOrientationToPlayer             *Obj_GetOrientationToPlayer:
                                        *+
                                        *endm
 
+gotp_closest_player        fdb   $0000     * ptr objet de MainCharacter ou Sidekick
+gotp_player_is_left        fcb   $00       * 0: player left from object, 2: right
+gotp_player_is_above       fcb   $00       * 0: player above object, 2: below
+gotp_player_h_distance     fdb   $0000     * closest character's h distance to obj
+gotp_player_v_distance     fdb   $0000     * closest character's v distance to obj 
+gotp_abs_h_distance_mainc  fdb   $0000     * absolute horizontal distance to main character
+gotp_h_distance_sidek      fdb   $0000     * horizontal distance to sidekick
+
 (include)Constant
+MainCharacter                 equ $0000
+Sidekick                      equ $0000
+
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ $20 ; the size of an object
+object_size                   equ $22 ; the size of an object
 next_object                   equ object_size
 			                  
 id                            equ $00 ; object ID (00: free slot, 01: Object1, ...)
@@ -95,22 +120,25 @@ y_pixel                       equ $09 ;
 y_sub                         equ $0A ; and $0B ; subpixel
 priority                      equ $0C ; 0 equ front
 width_pixels                  equ $0D
-x_vel                         equ $0E ; and $0F ; horizontal velocity
-y_vel                         equ $10 ; and $11 ; vertical velocity
-y_radius                      equ $12 ; collision height / 2
-x_radius                      equ $13 ; collision width / 2
-anim_frame                    equ $14
-anim                          equ $15
-prev_anim                     equ $16
-anim_frame_duration           equ $17
-status                        equ $18 ; note: exact meaning depends on the object...
-routine                       equ $19
-routine_secondary             equ $1A
-objoff_01                     equ $1B ; variables génériques
-objoff_02                     equ $1C
-objoff_03                     equ $1D
-objoff_04                     equ $1E
-objoff_05                     equ $1F
+mapping_frame                 equ $0E
+x_vel                         equ $0F ; and $10 ; horizontal velocity
+y_vel                         equ $11 ; and $12 ; vertical velocity
+y_radius                      equ $13 ; collision height / 2
+x_radius                      equ $14 ; collision width / 2
+anim_frame                    equ $15
+anim                          equ $16
+prev_anim                     equ $17
+anim_frame_duration           equ $18 ; range: 00-7F (0-127)
+status                        equ $19 ; note: exact meaning depends on the object...
+routine                       equ $1A
+routine_secondary             equ $1B
+objoff_01                     equ $1C ; variables spécifiques aux objets
+objoff_02                     equ $1D
+objoff_03                     equ $1E
+objoff_04                     equ $1F
+objoff_05                     equ $20
+collision_flags               equ $21
+subtype                       equ $22
 
 * ---------------------------------------------------------------------------
 * render_flags bitfield variables

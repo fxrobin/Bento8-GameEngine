@@ -1,8 +1,11 @@
+MainCharacter                 equ $0000
+Sidekick                      equ $0000
+
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ $21 ; the size of an object
+object_size                   equ $22 ; the size of an object
 next_object                   equ object_size
 			                  
 id                            equ $00 ; object ID (00: free slot, 01: Object1, ...)
@@ -15,23 +18,25 @@ y_pixel                       equ $09 ;
 y_sub                         equ $0A ; and $0B ; subpixel
 priority                      equ $0C ; 0 equ front
 width_pixels                  equ $0D
-x_vel                         equ $0E ; and $0F ; horizontal velocity
-y_vel                         equ $10 ; and $11 ; vertical velocity
-y_radius                      equ $12 ; collision height / 2
-x_radius                      equ $13 ; collision width / 2
-anim_frame                    equ $14
-anim                          equ $15
-prev_anim                     equ $16
-anim_frame_duration           equ $17
-status                        equ $18 ; note: exact meaning depends on the object...
-routine                       equ $19
-routine_secondary             equ $1A
-objoff_01                     equ $1B ; variables génériques
-objoff_02                     equ $1C
-objoff_03                     equ $1D
-objoff_04                     equ $1E
-objoff_05                     equ $1F
-collision_flags               equ $20
+mapping_frame                 equ $0E
+x_vel                         equ $0F ; and $10 ; horizontal velocity
+y_vel                         equ $11 ; and $12 ; vertical velocity
+y_radius                      equ $13 ; collision height / 2
+x_radius                      equ $14 ; collision width / 2
+anim_frame                    equ $15
+anim                          equ $16
+prev_anim                     equ $17
+anim_frame_duration           equ $18 ; range: 00-7F (0-127)
+status                        equ $19 ; note: exact meaning depends on the object...
+routine                       equ $1A
+routine_secondary             equ $1B
+objoff_01                     equ $1C ; variables spécifiques aux objets
+objoff_02                     equ $1D
+objoff_03                     equ $1E
+objoff_04                     equ $1F
+objoff_05                     equ $20
+collision_flags               equ $21
+subtype                       equ $22
 
 * ---------------------------------------------------------------------------
 * render_flags bitfield variables
@@ -54,4 +59,3 @@ status_rolljumping_mask       equ $10 ; bit 4
 status_pushing_mask           equ $20 ; bit 5
 status_underwater_mask        equ $40 ; bit 6
 status_7_mask                 equ $80 ; bit 7
-

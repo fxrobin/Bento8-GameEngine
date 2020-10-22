@@ -6,23 +6,42 @@
 ********************************************************************************
 
 (main)MAIN
-	ORG $6300
+	org $6300
 
 ********************************************************************************  
 * Référence des variables globales
 ********************************************************************************
-EXO_SRC            EQU $6101
-EXO_DST            EQU $6105 
-DK_DST             EQU $6222
-WAIT_VBL_SWAP_PAGE EQU $61BF
+EXO_SRC            equ $6101
+EXO_DST            equ $6105 
+DK_DST             equ $6222
+WAIT_VBL_SWAP_PAGE equ $61BF
 
 ********************************************************************************  
 * Boucle principale
 ********************************************************************************
 
-MAINLOOP
-   JSR    WAIT_VBL_SWAP_PAGE
-   BRA    MAINLOOP
+LevelMainLoop
+        jsr   WaitVBL
+        jsr   ReadJoypads
+        jsr   RunObjects
+        jsr   BuildSprites
+        jsr   ObjectsManager
+        bra   LevelMainLoop
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ********************************************************************************  
 * Ordre des niveaux de jeu

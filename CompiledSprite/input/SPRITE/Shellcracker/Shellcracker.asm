@@ -15,25 +15,9 @@ ObjID_ShellcrackerClaw equ $03
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
-delay                         equ $1C ; and $1D (nombre de frames+1)
-parent                        equ $1E ; and $1F (adresse OST de l'objet parent)
-instance                      equ $20 (numéro d'instance du sous objet, w dans code 68k, b dans le code 6809)
-
-* A REMPLACER AU BUILD **************************************************************************
-MarkObjGone
-Obj_GetOrientationToPlayer
-ObjectMove
-ObjectMoveAndFall
-AnimateSprite
-DeleteObject
-SingleObjLoad2
-
-gotp_closest_player    fdb   $0000     * ptr objet de MainCharacter ou Sidekick
-gotp_player_is_left    fcb   $00       * 0: player left from object, 2: right
-gotp_player_is_above   fcb   $00       * 0: player above object, 2: below
-gotp_player_h_distance fdb   $0000     * closest character's h distance to obj
-gotp_player_v_distance fdb   $0000     * closest character's v distance to obj 
-*************************************************************************************************
+delay    equ $1C ; and $1D (nombre de frames+1)
+parent   equ $1E ; and $1F (adresse OST de l'objet parent)
+instance equ $20 (numéro d'instance du sous objet, w dans code 68k, b dans le code 6809)
 
                                        *; ===========================================================================
                                        *; ----------------------------------------------------------------------------
