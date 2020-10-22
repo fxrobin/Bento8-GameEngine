@@ -9,8 +9,8 @@
 
 	INCLUD Constant
 
-ObjID_Shellcracker     equ $01
-ObjID_ShellcrackerClaw equ $02
+ObjID_Shellcracker     equ $02
+ObjID_ShellcrackerClaw equ $03
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -27,6 +27,7 @@ ObjectMoveAndFall
 AnimateSprite
 DeleteObject
 SingleObjLoad2
+
 gotp_closest_player    fdb   $0000     * ptr objet de MainCharacter ou Sidekick
 gotp_player_is_left    fcb   $00       * 0: player left from object, 2: right
 gotp_player_is_above   fcb   $00       * 0: player above object, 2: below
