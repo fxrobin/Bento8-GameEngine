@@ -4,7 +4,7 @@
  * Fichier source      : .\input\ENGINE\Obj_GetOrientationToPlayer.asm
  * Fichier destination : Obj_GetOrientationToPlayer.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     770
+ *     Main     0:MAIN.ASM     1366
  *     Include  0:Constant.ASM 1541
  *--------------------------------------------------------------*/
 
@@ -13,68 +13,68 @@ Pass1
 Pass2
      14        0000                      ORG $0000
      15
-     84                                  INCLUD Constant
-     85                  0000     MainCharacter                 equ $0000
-     86                  0000     Sidekick                      equ $0000
-     87
-     88                           * --------------------------------------->>
-     89                           * Object Status Table offsets
-     90                           * --------------------------------------->>
-     91
-     92                  0022     object_size                   equ $22 ; t>>
-     93                  0022     next_object                   equ object_>>
-     94                            
-     95                  0000     id                            equ $00 ; o>>
-     96                  0001     render_flags                  equ $01 ; b>>
-     97                  0002     x_pos                         equ $02 ; a>>
-     98                  0004     x_pixel                       equ $04 ;
-     99                  0005     x_sub                         equ $05 ; a>>
-    100                  0007     y_pos                         equ $07 ; a>>
-    101                  0009     y_pixel                       equ $09 ;
-    102                  000A     y_sub                         equ $0A ; a>>
-    103                  000C     priority                      equ $0C ; 0>>
-    104                  000D     width_pixels                  equ $0D
-    105                  000E     mapping_frame                 equ $0E
-    106                  000F     x_vel                         equ $0F ; a>>
-    107                  0011     y_vel                         equ $11 ; a>>
-    108                  0013     y_radius                      equ $13 ; c>>
-    109                  0014     x_radius                      equ $14 ; c>>
-    110                  0015     anim_frame                    equ $15
-    111                  0016     anim                          equ $16
-    112                  0017     prev_anim                     equ $17
-    113                  0018     anim_frame_duration           equ $18 ; r>>
-    114                  0019     status                        equ $19 ; n>>
-    115                  001A     routine                       equ $1A
-    116                  001B     routine_secondary             equ $1B
-    117                  001C     objoff_01                     equ $1C ; v>>
-    118                  001D     objoff_02                     equ $1D
-    119                  001E     objoff_03                     equ $1E
-    120                  001F     objoff_04                     equ $1F
-    121                  0020     objoff_05                     equ $20
-    122                  0021     collision_flags               equ $21
-    123                  0022     subtype                       equ $22
-    124
-    125                           * --------------------------------------->>
-    126                           * render_flags bitfield variables
-    127                  0001     render_xmirror_mask           equ $01 ; b>>
-    128                  0002     render_ymirror_mask           equ $02 ; b>>
-    129                  0004     render_coordinate_mask        equ $04 ; b>>
-    130                  0008     render_7_mask                 equ $08 : b>>
-    131                  0010     render_ycheckonscreen_mask    equ $10 : b>>
-    132                  0020     render_staticmappings_mask    equ $20 : b>>
-    133                  0040     render_subobjects_mask        equ $40 ; b>>
-    134                  0080     render_onscreen_mask          equ $80 ; b>>
+     95                                  INCLUD Constant
+     96                  0000     MainCharacter                 equ $0000
+     97                  0000     Sidekick                      equ $0000
+     98
+     99                           * --------------------------------------->>
+    100                           * Object Status Table offsets
+    101                           * --------------------------------------->>
+    102
+    103                  0022     object_size                   equ $22 ; t>>
+    104                  0022     next_object                   equ object_>>
+    105                            
+    106                  0000     id                            equ $00 ; o>>
+    107                  0001     render_flags                  equ $01 ; b>>
+    108                  0002     x_pos                         equ $02 ; a>>
+    109                  0004     x_pixel                       equ $04 ;
+    110                  0005     x_sub                         equ $05 ; a>>
+    111                  0007     y_pos                         equ $07 ; a>>
+    112                  0009     y_pixel                       equ $09 ;
+    113                  000A     y_sub                         equ $0A ; a>>
+    114                  000C     priority                      equ $0C ; 0>>
+    115                  000D     width_pixels                  equ $0D
+    116                  000E     mapping_frame                 equ $0E
+    117                  000F     x_vel                         equ $0F ; a>>
+    118                  0011     y_vel                         equ $11 ; a>>
+    119                  0013     y_radius                      equ $13 ; c>>
+    120                  0014     x_radius                      equ $14 ; c>>
+    121                  0015     anim_frame                    equ $15
+    122                  0016     anim                          equ $16
+    123                  0017     prev_anim                     equ $17
+    124                  0018     anim_frame_duration           equ $18 ; r>>
+    125                  0019     status                        equ $19 ; n>>
+    126                  001A     routine                       equ $1A
+    127                  001B     routine_secondary             equ $1B
+    128                  001C     objoff_01                     equ $1C ; v>>
+    129                  001D     objoff_02                     equ $1D
+    130                  001E     objoff_03                     equ $1E
+    131                  001F     objoff_04                     equ $1F
+    132                  0020     objoff_05                     equ $20
+    133                  0021     collision_flags               equ $21
+    134                  0022     subtype                       equ $22
     135
     136                           * --------------------------------------->>
-    137                           * status bitfield variables
-    138                  0001     status_leftfacing_mask        equ $01 ; b>>
-    139                  0002     status_inair_mask             equ $02 ; b>>
-    140                  0004     status_spinning_mask          equ $04 ; b>>
-    141                  0008     status_onobject_mask          equ $08 ; b>>
-    142                  0010     status_rolljumping_mask       equ $10 ; b>>
-    143                  0020     status_pushing_mask           equ $20 ; b>>
-    144                  0040     status_underwater_mask        equ $40 ; b>>
-    145                  0080     status_7_mask                 equ $80 ; b>>
+    137                           * render_flags bitfield variables
+    138                  0001     render_xmirror_mask           equ $01 ; b>>
+    139                  0002     render_ymirror_mask           equ $02 ; b>>
+    140                  0004     render_coordinate_mask        equ $04 ; b>>
+    141                  0008     render_7_mask                 equ $08 : b>>
+    142                  0010     render_ycheckonscreen_mask    equ $10 : b>>
+    143                  0020     render_staticmappings_mask    equ $20 : b>>
+    144                  0040     render_subobjects_mask        equ $40 ; b>>
+    145                  0080     render_onscreen_mask          equ $80 ; b>>
+    146
+    147                           * --------------------------------------->>
+    148                           * status bitfield variables
+    149                  0001     status_leftfacing_mask        equ $01 ; b>>
+    150                  0002     status_inair_mask             equ $02 ; b>>
+    151                  0004     status_spinning_mask          equ $04 ; b>>
+    152                  0008     status_onobject_mask          equ $08 ; b>>
+    153                  0010     status_rolljumping_mask       equ $10 ; b>>
+    154                  0020     status_pushing_mask           equ $20 ; b>>
+    155                  0040     status_underwater_mask        equ $40 ; b>>
+    156                  0080     status_7_mask                 equ $80 ; b>>
      17                            
      18                                                                  *;>>
      19                                                                  *;>>
@@ -98,65 +98,81 @@ Pass2
      37                                                                  *;>>
      38        0000               Obj_GetOrientationToPlayer             *O>>
      39  5+4   0000 34   26               pshs  d,y
-     40                                                                  * >>
-     41  6     0002 109E 00               ldy   MainCharacter            * >>
-     42  7     0005 10BF 0015             sty   gotp_closest_player      * >>
-     43  5+1   0009 EC   22               ldd   x_pos,y
-     44  6     000B FD   0019             std   gotp_player_h_distance   * >>
-     45  6+1   000E A3   02               subd  x_pos,x                  * >>
-     46  6     0010 FD   0019             std   gotp_player_h_distance
-     47                                                                  * >>
-     48                                                                  * >>
-     49                                                                  * >>
-     50                                                                  * >>
-     51                                                                  * >>
-     52                                                                  * >>
-     53                                                                  * >>
-     54                                                                  * >>
-     55                                                                  * >>
-     56                                                                  * >>
-     57                                                                  *+>>
+     40  2     0002 86   00               lda   #$00
+     41  5     0004 B7   005A             sta   gotp_player_is_left      * >>
+     42  5     0007 B7   005B             sta   gotp_player_is_above     * >>
+     43  6     000A 109E 00               ldy   MainCharacter            * >>
+     44  5+1   000D EC   02               ldd   x_pos,x                  * >>
+     45  6+1   000F A3   22               subd  x_pos,y                  * >>
+     46                                                                  * >>
+     47  6     0011 FD   005C             std   gotp_player_h_distance
+     48  3     0014 2A   05               bpl   gotp_skip1
+     49  2     0016 43                    coma
+     50  2     0017 53                    comb
+     51  4     0018 C3   0001             addd  #$0001
+     52        001B               gotp_skip1
+     53  6     001B FD   0060             std   gotp_abs_h_distance_mainc
+     54  6     001E 109E 00               ldy   Sidekick                 * >>
+     55  5+1   0021 EC   02               ldd   x_pos,x                  * >>
+     56  6+1   0023 A3   22               subd  x_pos,y                  * >>
+     57  6     0025 FD   0062             std   gotp_h_distance_sidek
      58                                                                  * >>
-     59                                                                  * >>
-     60                                                                  * >>
-     61                                                                  *+>>
-     62                                                                  * >>
-     63                                                                  * >>
-     64                                                                  * >>
+     59  3     0028 2A   05               bpl   gotp_skip2
+     60  2     002A 43                    coma
+     61  2     002B 53                    comb
+     62  4     002C C3   0001             addd  #$0001
+     63        002F               gotp_skip2
+     64  8     002F 10B3 0060             cmpd  gotp_abs_h_distance_mainc
      65                                                                  * >>
-     66                                                                  *+>>
-     67  5+6   0013 35   A6               puls  d,y,pc
-     68                                                                  * >>
-     69                                                                  *
-     70                                                                  *;>>
-     71                                                                  *m>>
-     72                                                                  * >>
-     73                                                                  * >>
-     74                                                                  * >>
-     75                                                                  *+>>
-     76                                                                  *e>>
-     77
-     78        0015 0000          gotp_closest_player    fdb   $0000     * >>
-     79        0017 00            gotp_player_is_left    fcb   $00       * >>
-     80        0018 00            gotp_player_is_above   fcb   $00       * >>
-     81        0019 0000          gotp_player_h_distance fdb   $0000     * >>
-     82        001B 0000          gotp_player_v_distance fdb   $0000     * >>
-     83
+     66  3     0033 22   0A               bhi   MainCharacterIsCloser    * >>
+     67                                                                  * >>
+     68  7     0035 10BF 0058             sty   gotp_closest_player      * >>
+     69  6     0039 FC   0062             ldd   gotp_h_distance_sidek
+     70  6     003C FD   005C             std   gotp_player_h_distance   * >>
+     71        003F               MainCharacterIsCloser                  *+>>
+     72  5     003F B6   005C             lda   gotp_player_h_distance
+     73  2     0042 85   80               bita  #$80                     * >>
+     74  3     0044 27   05               beq   PlayerToEnemysLeft       * >>
+     75  2     0046 86   02               lda   #$02
+     76  5     0048 B7   005A             sta   gotp_player_is_left      * >>
+     77        004B               PlayerToEnemysLeft                     *+>>
+     78  5+1   004B EC   07               ldd   y_pos,x                  * >>
+     79  6+1   004D A3   27               subd  y_pos,y                  * >>
+     80  3     004F 24   05               bhs   PlayerToEnemysAbove      * >>
+     81  2     0051 86   02               lda   #$02
+     82  5     0053 B7   005B             sta   gotp_player_is_above     * >>
+     83        0056               PlayerToEnemysAbove                    *+>>
+     84  5+6   0056 35   A6               puls  d,y,pc
+     85                                                                  * >>
+     86
+     87        0058 0000          gotp_closest_player        fdb   $0000   >>
+     88        005A 00            gotp_player_is_left        fcb   $00     >>
+     89        005B 00            gotp_player_is_above       fcb   $00     >>
+     90        005C 0000          gotp_player_h_distance     fdb   $0000   >>
+     91        005E 0000          gotp_player_v_distance     fdb   $0000   >>
+     92        0060 0000          gotp_abs_h_distance_mainc  fdb   $0000   >>
+     93        0062 0000          gotp_h_distance_sidek      fdb   $0000   >>
+     94
 
 000000 Total Errors
 
-000055 Total Symbols
+000062 Total Symbols
      0x          Equ   0016 anim
      0x          Equ   0015 anim_frame
      0x          Equ   0018 anim_frame_duration
      0x          Equ   0021 collision_flags
-     1x          Label 0015 gotp_closest_player
-     2x          Label 0019 gotp_player_h_distance
-     0x          Label 0018 gotp_player_is_above
-     0x          Label 0017 gotp_player_is_left
-     0x          Label 001B gotp_player_v_distance
+     2x          Label 0060 gotp_abs_h_distance_mainc
+     1x          Label 0058 gotp_closest_player
+     2x          Label 0062 gotp_h_distance_sidek
+     3x          Label 005C gotp_player_h_distance
+     2x          Label 005B gotp_player_is_above
+     2x          Label 005A gotp_player_is_left
+     0x          Label 005E gotp_player_v_distance
+     1x          Label 001B gotp_skip1
+     1x          Label 002F gotp_skip2
      0x          Equ   0000 id
      1x          Equ   0000 MainCharacter
+     1x          Label 003F MainCharacterIsCloser
      0x          Equ   000E mapping_frame
      0x          Equ   0022 next_object
      1x          Equ   0022 object_size
@@ -166,6 +182,8 @@ Pass2
      0x          Equ   001F objoff_04
      0x          Equ   0020 objoff_05
      0x          Label 0000 Obj_GetOrientationToPlayer
+     1x          Label 0056 PlayerToEnemysAbove
+     1x          Label 004B PlayerToEnemysLeft
      0x          Equ   0017 prev_anim
      0x          Equ   000C priority
      0x          Equ   0008 render_7_mask
@@ -179,7 +197,7 @@ Pass2
      0x          Equ   0002 render_ymirror_mask
      0x          Equ   001A routine
      0x          Equ   001B routine_secondary
-     0x          Equ   0000 Sidekick
+     1x          Equ   0000 Sidekick
      0x          Equ   0019 status
      0x          Equ   0080 status_7_mask
      0x          Equ   0002 status_inair_mask
@@ -192,12 +210,12 @@ Pass2
      0x          Equ   0022 subtype
      0x          Equ   000D width_pixels
      0x          Equ   0004 x_pixel
-     2x          Equ   0002 x_pos
+     4x          Equ   0002 x_pos
      0x          Equ   0014 x_radius
      0x          Equ   0005 x_sub
      0x          Equ   000F x_vel
      0x          Equ   0009 y_pixel
-     0x          Equ   0007 y_pos
+     2x          Equ   0007 y_pos
      0x          Equ   0013 y_radius
      0x          Equ   000A y_sub
      0x          Equ   0011 y_vel

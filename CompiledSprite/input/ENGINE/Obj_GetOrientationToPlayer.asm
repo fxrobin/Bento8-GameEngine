@@ -37,11 +37,11 @@
                                        *;loc_366D6:
 Obj_GetOrientationToPlayer             *Obj_GetOrientationToPlayer:
         pshs  d,y
-                                       *    moveq   #0,d0
-        ldy   MainCharacter            *    moveq   #0,d1
-                                       *    lea (MainCharacter).w,a1 ; a1=character
-        ldd   x_pos,x
-                                       *    move.w  x_pos(a0),d2
+        lda   #$00
+        sta   gotp_player_is_left      *    moveq   #0,d0
+        sta   gotp_player_is_above     *    moveq   #0,d1
+        ldy   MainCharacter            *    lea (MainCharacter).w,a1 ; a1=character
+        ldd   x_pos,x                  *    move.w  x_pos(a0),d2
         subd  x_pos,y                  *    sub.w   x_pos(a1),d2
                                        *    mvabs.w d2,d4   ; absolute horizontal distance to main character
         std   gotp_player_h_distance
@@ -51,10 +51,8 @@ Obj_GetOrientationToPlayer             *Obj_GetOrientationToPlayer:
         addd  #$0001
 gotp_skip1
         std   gotp_abs_h_distance_mainc
-        ldy   Sidekick
-                                       *    lea (Sidekick).w,a1 ; a1=character
-        ldd   x_pos,x
-                                       *    move.w  x_pos(a0),d3
+        ldy   Sidekick                 *    lea (Sidekick).w,a1 ; a1=character
+        ldd   x_pos,x                  *    move.w  x_pos(a0),d3
         subd  x_pos,y                  *    sub.w   x_pos(a2),d3
         std   gotp_h_distance_sidek
                                        *    mvabs.w d3,d5   ; absolute horizontal distance to sidekick
@@ -71,25 +69,20 @@ gotp_skip2
         ldd   gotp_h_distance_sidek
         std   gotp_player_h_distance   *    move.w  d3,d2
 MainCharacterIsCloser                  *+
-                                       *    tst.w   d2  ; is player to enemy's left?
-                                       *    bpl.s   +   ; if not, branch
-                                       *    addq.w  #2,d0
-                                       *+
-                                       *    move.w  y_pos(a0),d3
-                                       *    sub.w   y_pos(a1),d3    ; vertical distance to closest character
-                                       *    bhs.s   +   ; branch, if enemy is under
-                                       *    addq.w  #2,d1
-                                       *+
+        lda   gotp_player_h_distance
+        bita  #$80                     *    tst.w   d2  ; is player to enemy's left?
+        beq   PlayerToEnemysLeft       *    bpl.s   +   ; if not, branch
+        lda   #$02
+        sta   gotp_player_is_left      *    addq.w  #2,d0
+PlayerToEnemysLeft                     *+
+        ldd   y_pos,x                  *    move.w  y_pos(a0),d3
+        subd  y_pos,y                  *    sub.w   y_pos(a1),d3    ; vertical distance to closest character
+        bhs   PlayerToEnemysAbove      *    bhs.s   +   ; branch, if enemy is under
+        lda   #$02
+        sta   gotp_player_is_above     *    addq.w  #2,d1
+PlayerToEnemysAbove                    *+
         puls  d,y,pc
                                        *    rts
-                                       *
-                                       *; macro to move the absolute value of the source in the destination
-                                       *mvabs macro source,destination
-                                       *    move.ATTRIBUTE  source,destination
-                                       *    bpl.s   +
-                                       *    neg.ATTRIBUTE   destination
-                                       *+
-                                       *endm
 
 gotp_closest_player        fdb   $0000     * ptr objet de MainCharacter ou Sidekick
 gotp_player_is_left        fcb   $00       * 0: player left from object, 2: right
