@@ -1,11 +1,30 @@
-MainCharacter                 equ $0000
-Sidekick                      equ $0000
-
 * ---------------------------------------------------------------------------
 * Physics Constants
 * ---------------------------------------------------------------------------
 
 gravity                       equ $38 ; Gravité: 56 sub-pixels par frame
+
+* ===========================================================================
+* Object Constants
+* ===========================================================================
+
+NumberOfReservedObjects       equ 2
+NumberOfDynamicObjects        equ 45
+NumberOfLevelObjects          equ 3
+
+* ---------------------------------------------------------------------------
+* Sprite Table Input
+* ---------------------------------------------------------------------------
+
+SpriteTableNbEl               equ NumberOfReservedObjects+NumberOfDynamicObjects+NumberOfLevelObjects
+PriorityLevel0                equ Sprite_Table_Input
+PriorityLevel1                equ Sprite_Table_Input+SpriteTableNbEl*2+2
+PriorityLevel2                equ Sprite_Table_Input+SpriteTableNbEl*2*2+4
+PriorityLevel3                equ Sprite_Table_Input+SpriteTableNbEl*2*3+6
+PriorityLevel4                equ Sprite_Table_Input+SpriteTableNbEl*2*4+8
+PriorityLevel5                equ Sprite_Table_Input+SpriteTableNbEl*2*5+10
+PriorityLevel6                equ Sprite_Table_Input+SpriteTableNbEl*2*6+12
+PriorityLevel7                equ Sprite_Table_Input+SpriteTableNbEl*2*7+14
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -22,9 +41,9 @@ y_pos                         equ $05 ; and $06 ... some objects use subpixel as
 y_sub                         equ $07 ; subpixel ; doit suivre y_pos, second octet supprimé car inutile en 6809
 x_pixel                       equ x_pos
 y_pixel                       equ x_pos+2
-priority                      equ $08 ; 0 equ front
-width_pixels                  equ $09
-mapping_frame                 equ $0A
+priority                      equ $08 ; $09 ; $00 priority 0 (front), $80 priority 1, ..., $380 priority 7
+width_pixels                  equ $0A
+mapping_frame                 equ $0B
 x_vel                         equ $0B ; and $0C ; horizontal velocity
 y_vel                         equ $0D ; and $0E ; vertical velocity
 y_radius                      equ $0F ; collision height / 2

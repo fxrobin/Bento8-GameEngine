@@ -19,7 +19,6 @@ WAIT_VBL_SWAP_PAGE equ $61BF
 ********************************************************************************  
 * Boucle principale
 ********************************************************************************
-
 LevelMainLoop
         jsr   WaitVBL
         jsr   ReadJoypads
@@ -29,11 +28,61 @@ LevelMainLoop
         bra   LevelMainLoop
 
 
+* Les données de fond de sprite sont sauvegardées dans l'espace écran 4000 à 5FFF (page 0)
+* le bit D0 de E7C3 permet de switcher entre RAMA et RAMB
+* ça permet de gérer deux espaces tampon pour la sauvegarde du fond de sprite pour les pages 2 et 3
+
+* La page de scratch pour l'exomizer doit donc être une autre page que la 2 et montée en zone cartouche pour 
+* pouvoir copier des données dans la zone données ou 6100+
 
 
 
+* ==============================================================================
+* Données globales
+* ==============================================================================
 
+********************************************************************************
+* SST - Table des variables de chaque Objet
+********************************************************************************
 
+gotp_closest_player        fdb   $0000     * ptr objet de MainCharacter ou Sidekick
+gotp_player_is_left        fcb   $00       * 0: player left from object, 2: right
+gotp_player_is_above       fcb   $00       * 0: player above object, 2: below
+gotp_player_h_distance     fdb   $0000     * closest character's h distance to obj
+gotp_player_v_distance     fdb   $0000     * closest character's v distance to obj 
+gotp_abs_h_distance_mainc  fdb   $0000     * absolute horizontal distance to main character
+gotp_h_distance_sidek      fdb   $0000     * horizontal distance to sidekick
+
+********************************************************************************
+* SST - Table des variables de chaque Objet
+********************************************************************************
+
+Sprite_Table_Input
+        rmb   SpriteTableNbEl*2*8+8
+
+********************************************************************************
+* SST - Table des variables de chaque Objet
+********************************************************************************
+        
+Object_RAM
+Reserved_Object_RAM
+MainCharacter
+        rmb   object_size
+Sidekick
+        rmb   object_size
+Reserved_Object_RAM_End
+Dynamic_Object_RAM
+        rmb   NumberOfDynObjects*object_size
+Dynamic_Object_RAM_End
+LevelOnly_Object_RAM
+Tails_Tails
+        rmb   object_size
+Sonic_Dust
+        rmb   object_size
+Tails_Dust
+        rmb   object_size
+LevelOnly_Object_RAM_End
+Object_RAM_End
 
 
 
@@ -54,29 +103,12 @@ LEVEL_ORDER                 * level.order=AIZ:0;AIZ:1;MZ:0
    FDB    $0100
 
 ********************************************************************************
-* Sprite table
-********************************************************************************
-$AC00-$AFFF	Sprite table input. Consists of 8 different priority levels, each level taking up $80 bytes. The first word of each level is the number of objects currently in that priority level multiplied by 2, and the next $3F words are the addresses in RAM (inside the object RAM space) of the objects on that priority level. The information in this table is processed by BuildSprites to create the actual sprite table
-
-********************************************************************************
 * Sprite loading adress
 ********************************************************************************
 * déclarer un tableau qui liste les infos ci dessous pour chaque sprite
 obAniPage (ajout):  HERO_ANIMATION_PAG		FCB $00		* Animation courante - Pointeur Page actif
 obAniDraw (ajout):  HERO_ANIMATION_DRW		FDB $0000	* Animation courante - Pointeur Dessin
 obAniDel  (ajout):  HERO_ANIMATION_DEL		FDB $0000	* Animation courante - Pointeur Effacement
-
-********************************************************************************
-* SST - Table des variables de chaque Objet
-********************************************************************************
-* déclarer un tableau de $40 octets pour chaque instance d'objets
-The first object is always player 1, the second is always player 2. Each object is allocated a block of 
-$B000-$CFCB	Object attribute table
-   $B000-$B049 - Reserved object SST for Player 1 in levels, miscellaneous purpose otherwise.
-   $B04A-$B093 - Reserved object SST for Player 2 in levels, miscellaneous purpose otherwise.
-   $B094-$B0DC - Reserved object SST for an object, which clears the number of objects in collision response list ($E380).
-   $B0DE-$CAE1 - Dynamic object SST (Level objects are loaded here). 90 objects total.
-   $CAE2-$CFCB - Reserved object SST (Various important objects, such as Sonic, shields, invincibility stars, and title cards, are loaded here).
 
 ********************************************************************************
 * collision response list
@@ -104,9 +136,28 @@ Obj_respawn_index:		rmb 2		; respawn table indices of the next objects when movi
 Obj_respawn_data:		rmb $100	; Maximum possible number of respawn entries that S2 can handle; for stock S2, $80 is enough
 Obj_respawn_data_End:
 
+; Gestion camera et taille des niveaux :
 
+; The origin point (0,0) of a level is at its top left corner, so Camera_min_X_pos and Camera_max_X_pos correspond to the left and right level boundaries, where as Camera_min_Y_pos and Camera_max_Y_pos correspond to the top and bottom level boundaries, respectively. When a level is first loaded, these addresses are initialized to the values in the LevelSizes data structure:
 
+;                       xstart  xend    ystart  yend    ; Level
+LevelSizes:     dc.w    $1308,  $6000,  $0,     $390    ; AIZ1
+;                dc.w    $0,     $4640,  $0,     $590    ; AIZ2
+;                dc.w    $0,     $6000,  $0,     $1000   ; HCZ1
+;                dc.w    $0,     $6000,  $0,     $1000   ; HCZ2
+;                dc.w    $0,     $6000,  -$100,  $1000   ; MGZ1
+;                dc.w    $0,     $6000,  $0,     $1000   ; MGZ2
+;                dc.w    $0,     $6000,  $0,     $B20    ; CNZ1
+;                dc.w    $0,     $6000,  $580,   $1000   ; CNZ2
+;                dc.w    $0,     $2E60,  $0,     $B00    ; FBZ1
+;                dc.w    $0,     $6000,  $0,     $B00    ; FBZ2
 
+; It should be noted that all the camera positions stored in these addresses correspond to the pixel displayed at the top left corner of the screen. That means in order to figure out the actual level dimensions, you need to add the screen's width (320 pixels) to the max X position, and the screen's height (224 pixels) to the max Y position.
+;                dc.w    $60,    $60,    $0,     $240    ; Gumball
+;                dc.w    $60,    $60,    $0,     $240    ; Gumball
+;                dc.w    $0,     $140,   $0,     $F00    ; Pachinko
+;                dc.w    $0,     $140,   $0,     $F00    ; Pachinko
+; For instance, in the pachinko/glowing spheres stage, although Camera_max_X_pos is set to $140 (320 pixels), since there are already 320 pixels horizontally on screen when Camera_X_pos is zero, scrolling to the right reveals another 320 pixels, for a total level width of 640 pixels. On the flipside, despite Camera_min_X_pos and Camera_max_X_pos both being set to $60, the gumball stage's width isn't actually zero. It just can't scroll horizontally. However, at the very least it's still as wide as the screen, so the actual level width is 320 pixels.
 	
 	
 

@@ -4,14 +4,10 @@
 ;   this function also change render flags to match orientation given by
 ;   the status byte;
 ;
-; input REG : [x] pointeur sur l'objet
-;             [y] pointeur sur le script d'animation de l'objet
+; input REG : [u] pointeur sur l'objet
+;             [x] pointeur sur le script d'animation de l'objet
 ; ---------------------------------------------------------------------------
 
-(main)MAIN
-	ORG $0000
-	
-	INCLUD Constant
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine to animate a sprite using an animation script
                                        *; ---------------------------------------------------------------------------
@@ -21,39 +17,39 @@
                                        *; sub_16544:
 AnimateSprite                          *AnimateSprite:
                                        *    moveq   #0,d0
-        lda   anim,x                   *    move.b  anim(a0),d0      ; move animation number to d0
-        cmpa  prev_anim,x              *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
+        lda   anim,u                   *    move.b  anim(a0),d0      ; move animation number to d0
+        cmpa  prev_anim,u              *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
         beq   Anim_Run                 *    beq.s   Anim_Run         ; if not, branch
-        sta   prev_anim,x              *    move.b  d0,prev_anim(a0) ; set prev anim to current current
+        sta   prev_anim,u              *    move.b  d0,prev_anim(a0) ; set prev anim to current current
 		ldb   #0
-        stb   anim_frame,x             *    move.b  #0,anim_frame(a0)          ; reset animation
-        stb   anim_frame_duration,x    *    move.b  #0,anim_frame_duration(a0) ; reset frame duration
+        stb   anim_frame,u             *    move.b  #0,anim_frame(a0)          ; reset animation
+        stb   anim_frame_duration,u    *    move.b  #0,anim_frame_duration(a0) ; reset frame duration
                                        *; loc_16560:
 Anim_Run                               *Anim_Run:
-        dec   anim_frame_duration,x    *    subq.b  #1,anim_frame_duration(a0)   ; subtract 1 from frame duration
+        dec   anim_frame_duration,u    *    subq.b  #1,anim_frame_duration(a0)   ; subtract 1 from frame duration
         bpl   Anim_Wait                *    bpl.s   Anim_Wait                    ; if time remains, branch
-        adda  anim,x                   *    add.w   d0,d0                        ; i*2 position de l'adresse 
-        leay  [a,y]                    *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
-        ldb   ,y
-		stb   anim_frame_duration,x    *    move.b  (a1),anim_frame_duration(a0) ; load frame duration
+        adda  anim,u                   *    add.w   d0,d0                        ; i*2 position de l'adresse 
+        leax  [a,x]                    *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
+        ldb   ,x
+		stb   anim_frame_duration,u    *    move.b  (a1),anim_frame_duration(a0) ; load frame duration
                                        *    moveq   #0,d1
-        ldb   anim_frame,x             *    move.b  anim_frame(a0),d1 ; load current frame number
+        ldb   anim_frame,u             *    move.b  anim_frame(a0),d1 ; load current frame number
         incb
-        lda   b,y                      *    move.b  1(a1,d1.w),d0 ; read sprite number from script
+        lda   b,x                      *    move.b  1(a1,d1.w),d0 ; read sprite number from script
         * bmi   Anim_End_FF            *    bmi.s   Anim_End_FF   ; if animation is complete, branch
 		cmpa  #$FA                     *    cmp.b   #$FA,d0       ; MJ: is it a flag from FA to FF?
 		bhs   Anim_End_FF              *    bhs     Anim_End_FF   ; MJ: if so, branch to flag routines
                                        *; loc_1657C:
 Anim_Next                              *Anim_Next:
 	    * ne pas utiliser              *    andi.b  #$7F,d0               ; clear sign bit
-        sta   mapping_frame,x          *    move.b  d0,mapping_frame(a0)  ; load sprite number
-        ldb   status,x                 *    move.b  status(a0),d1         ; match the orientaion dictated by the object
+        sta   mapping_frame,u          *    move.b  d0,mapping_frame(a0)  ; load sprite number
+        ldb   status,u                 *    move.b  status(a0),d1         ; match the orientaion dictated by the object
         andb  #3                       *    andi.b  #3,d1                 ; with the orientation used by the object engine
-        lda   render_flags,x           *    andi.b  #$FC,render_flags(a0)
+        lda   render_flags,u           *    andi.b  #$FC,render_flags(a0)
         anda  #$FC
-        sta   render_flags,x       
-        orb   render_flags,x           *    or.b    d1,render_flags(a0)
-        inc   anim_frame,x             *    addq.b  #1,anim_frame(a0)     ; next frame number
+        sta   render_flags,u       
+        orb   render_flags,u           *    or.b    d1,render_flags(a0)
+        inc   anim_frame,u             *    addq.b  #1,anim_frame(a0)     ; next frame number
                                        *; return_1659A:
 Anim_Wait                              *Anim_Wait:
         rts                            *    rts 
@@ -63,8 +59,8 @@ Anim_End_FF                            *Anim_End_FF:
         inca                           *    addq.b  #1,d0       ; is the end flag = $FF ?
         bne   Anim_End_FE              *    bne.s   Anim_End_FE ; if not, branch
 		ldb   #0
-        stb   anim_frame,x             *    move.b  #0,anim_frame(a0) ; restart the animation
-        lda   1,y                      *    move.b  1(a1),d0          ; read sprite number
+        stb   anim_frame,u             *    move.b  #0,anim_frame(a0) ; restart the animation
+        lda   1,x                      *    move.b  1(a1),d0          ; read sprite number
         bra   Anim_Next                *    bra.s   Anim_Next
                                        *; ===========================================================================
                                        *; loc_165AC:
@@ -72,12 +68,12 @@ Anim_End_FE                            *Anim_End_FE:
         inca                           *    addq.b  #1,d0             ; is the end flag = $FE ?
         bne   Anim_End_FD              *    bne.s   Anim_End_FD       ; if not, branch
         incb
-        lda   anim_frame,x             *    move.b  2(a1,d1.w),d0     ; read the next byte in the script
-        suba  b,y                      *    sub.b   d0,anim_frame(a0) ; jump back d0 bytes in the script
-        sta   anim_frame,x
+        lda   anim_frame,u             *    move.b  2(a1,d1.w),d0     ; read the next byte in the script
+        suba  b,x                      *    sub.b   d0,anim_frame(a0) ; jump back d0 bytes in the script
+        sta   anim_frame,u
         tfr   a,b                      *    sub.b   d0,d1
         incb
-        lda   b,y                      *    move.b  1(a1,d1.w),d0     ; read sprite number
+        lda   b,x                      *    move.b  1(a1,d1.w),d0     ; read sprite number
         bra   Anim_Next                *    bra.s   Anim_Next
                                        *; ===========================================================================
                                        *; loc_165C0:
@@ -85,19 +81,19 @@ Anim_End_FD                            *Anim_End_FD:
         inca                           *    addq.b  #1,d0               ; is the end flag = $FD ?
         bne   Anim_End_FC              *    bne.s   Anim_End_FC         ; if not, branch
         incb
-        lda   b,y
-        sta   anim,x                   *    move.b  2(a1,d1.w),anim(a0) ; read next byte, run that animation
+        lda   b,x
+        sta   anim,u                   *    move.b  2(a1,d1.w),anim(a0) ; read next byte, run that animation
         rts                            *    rts
                                        *; ===========================================================================
                                        *; loc_165CC:
 Anim_End_FC                            *Anim_End_FC:
         inca                           *    addq.b  #1,d0          ; is the end flag = $FC ?
         bne   Anim_End_FB              *    bne.s   Anim_End_FB    ; if not, branch
-        inc   routine,x
-        inc   routine,x                *    addq.b  #2,routine(a0) ; jump to next routine
+        inc   routine,u
+        inc   routine,u                *    addq.b  #2,routine(a0) ; jump to next routine
         lda   #0
-        sta   anim_frame_duration,x    *    move.b  #0,anim_frame_duration(a0)
-        inc   anim_frame,x             *    addq.b  #1,anim_frame(a0)
+        sta   anim_frame_duration,u    *    move.b  #0,anim_frame_duration(a0)
+        inc   anim_frame,u             *    addq.b  #1,anim_frame(a0)
         rts                            *    rts
                                        *; ===========================================================================
                                        *; loc_165E0:
@@ -105,16 +101,16 @@ Anim_End_FB                            *Anim_End_FB:
         inca                           *    addq.b  #1,d0                 ; is the end flag = $FB ?
         bne   Anim_End_FA              *    bne.s   Anim_End_FA           ; if not, branch
         lda   #0
-        sta   anim_frame,x             *    move.b  #0,anim_frame(a0)     ; reset animation
-        sta   routine_secondary,x      *    clr.b   routine_secondary(a0) ; reset 2nd routine counter
+        sta   anim_frame,u             *    move.b  #0,anim_frame(a0)     ; reset animation
+        sta   routine_secondary,u      *    clr.b   routine_secondary(a0) ; reset 2nd routine counter
     rts                                *    rts
                                        *; ===========================================================================
                                        *; loc_165F0:
 Anim_End_FA                            *Anim_End_FA:
         inca                           *    addq.b  #1,d0                    ; is the end flag = $FA ?
         bne   Anim_End                 *    bne.s   Anim_End_F9              ; if not, branch
-        inc   routine_secondary,x      *    addq.b  #2,routine_secondary(a0) ; jump to next routine
-        inc   routine_secondary,x
+        inc   routine_secondary,u      *    addq.b  #2,routine_secondary(a0) ; jump to next routine
+        inc   routine_secondary,u
         rts                            *    rts
                                        *; ===========================================================================
                                        *; loc_165FA:
@@ -126,72 +122,3 @@ Anim_End_FA                            *Anim_End_FA:
 Anim_End                               *Anim_End:
     rts                                *    rts
                                        *; End of function AnimateSprite
-                                       
-(include)Constant
-MainCharacter                 equ $0000
-Sidekick                      equ $0000
-
-* ---------------------------------------------------------------------------
-* Physics Constants
-* ---------------------------------------------------------------------------
-
-gravity                       equ $38 ; Gravité: 56 sub-pixels par frame
-
-* ---------------------------------------------------------------------------
-* Object Status Table offsets
-* ---------------------------------------------------------------------------
-
-object_size                   equ $1F ; the size of an object
-next_object                   equ object_size
-			                  
-id                            equ $00 ; object ID (00: free slot, 01: Object1, ...)
-render_flags                  equ $01 ; bitfield
-x_pos                         equ $02 ; and $03 ... some objects use subpixel as well when extra precision is required (see ObjectMove)
-x_sub                         equ $04 ; subpixel ; doit suivre x_pos, second octet supprimé car inutile en 6809
-y_pos                         equ $05 ; and $06 ... some objects use subpixel as well when extra precision is required
-y_sub                         equ $07 ; subpixel ; doit suivre y_pos, second octet supprimé car inutile en 6809
-x_pixel                       equ x_pos
-y_pixel                       equ x_pos+2
-priority                      equ $08 ; 0 equ front
-width_pixels                  equ $09
-mapping_frame                 equ $0A
-x_vel                         equ $0B ; and $0C ; horizontal velocity
-y_vel                         equ $0D ; and $0E ; vertical velocity
-y_radius                      equ $0F ; collision height / 2
-x_radius                      equ $10 ; collision width / 2
-anim_frame                    equ $11
-anim                          equ $12
-prev_anim                     equ $13
-anim_frame_duration           equ $14 ; range: 00-7F (0-127)
-status                        equ $15 ; note: exact meaning depends on the object...
-routine                       equ $16
-routine_secondary             equ $17
-objoff_01                     equ $18 ; variables spécifiques aux objets
-objoff_02                     equ $19
-objoff_03                     equ $1A
-objoff_04                     equ $1B
-objoff_05                     equ $1C
-collision_flags               equ $1D
-subtype                       equ $1E
-
-* ---------------------------------------------------------------------------
-* render_flags bitfield variables
-render_xmirror_mask           equ $01 ; bit 0
-render_ymirror_mask           equ $02 ; bit 1
-render_coordinate_mask        equ $04 ; bit 2
-render_7_mask                 equ $08 : bit 3
-render_ycheckonscreen_mask    equ $10 : bit 4
-render_staticmappings_mask    equ $20 : bit 5
-render_subobjects_mask        equ $40 ; bit 6
-render_onscreen_mask          equ $80 ; bit 7
-
-* ---------------------------------------------------------------------------
-* status bitfield variables
-status_leftfacing_mask        equ $01 ; bit 0
-status_inair_mask             equ $02 ; bit 1
-status_spinning_mask          equ $04 ; bit 2
-status_onobject_mask          equ $08 ; bit 3
-status_rolljumping_mask       equ $10 ; bit 4
-status_pushing_mask           equ $20 ; bit 5
-status_underwater_mask        equ $40 ; bit 6
-status_7_mask                 equ $80 ; bit 7

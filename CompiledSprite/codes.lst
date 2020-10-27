@@ -1,222 +1,70 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\input\ENGINE\Obj_GetOrientationToPlayer.asm
- * Fichier destination : Obj_GetOrientationToPlayer.BIN
+ * Fichier source      : .\input\ENGINE\DisplaySprite.asm
+ * Fichier destination : DisplaySprite.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     1366
- *     Include  0:Constant.ASM 1541
+ *     Main     0:MAIN.ASM     604
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-     14        0000                      ORG $0000
-     15
-     95                                  INCLUD Constant
-     96                  0000     MainCharacter                 equ $0000
-     97                  0000     Sidekick                      equ $0000
-     98
-     99                           * --------------------------------------->>
-    100                           * Object Status Table offsets
-    101                           * --------------------------------------->>
-    102
-    103                  0022     object_size                   equ $22 ; t>>
-    104                  0022     next_object                   equ object_>>
-    105                            
-    106                  0000     id                            equ $00 ; o>>
-    107                  0001     render_flags                  equ $01 ; b>>
-    108                  0002     x_pos                         equ $02 ; a>>
-    109                  0004     x_pixel                       equ $04 ;
-    110                  0005     x_sub                         equ $05 ; a>>
-    111                  0007     y_pos                         equ $07 ; a>>
-    112                  0009     y_pixel                       equ $09 ;
-    113                  000A     y_sub                         equ $0A ; a>>
-    114                  000C     priority                      equ $0C ; 0>>
-    115                  000D     width_pixels                  equ $0D
-    116                  000E     mapping_frame                 equ $0E
-    117                  000F     x_vel                         equ $0F ; a>>
-    118                  0011     y_vel                         equ $11 ; a>>
-    119                  0013     y_radius                      equ $13 ; c>>
-    120                  0014     x_radius                      equ $14 ; c>>
-    121                  0015     anim_frame                    equ $15
-    122                  0016     anim                          equ $16
-    123                  0017     prev_anim                     equ $17
-    124                  0018     anim_frame_duration           equ $18 ; r>>
-    125                  0019     status                        equ $19 ; n>>
-    126                  001A     routine                       equ $1A
-    127                  001B     routine_secondary             equ $1B
-    128                  001C     objoff_01                     equ $1C ; v>>
-    129                  001D     objoff_02                     equ $1D
-    130                  001E     objoff_03                     equ $1E
-    131                  001F     objoff_04                     equ $1F
-    132                  0020     objoff_05                     equ $20
-    133                  0021     collision_flags               equ $21
-    134                  0022     subtype                       equ $22
-    135
-    136                           * --------------------------------------->>
-    137                           * render_flags bitfield variables
-    138                  0001     render_xmirror_mask           equ $01 ; b>>
-    139                  0002     render_ymirror_mask           equ $02 ; b>>
-    140                  0004     render_coordinate_mask        equ $04 ; b>>
-    141                  0008     render_7_mask                 equ $08 : b>>
-    142                  0010     render_ycheckonscreen_mask    equ $10 : b>>
-    143                  0020     render_staticmappings_mask    equ $20 : b>>
-    144                  0040     render_subobjects_mask        equ $40 ; b>>
-    145                  0080     render_onscreen_mask          equ $80 ; b>>
-    146
-    147                           * --------------------------------------->>
-    148                           * status bitfield variables
-    149                  0001     status_leftfacing_mask        equ $01 ; b>>
-    150                  0002     status_inair_mask             equ $02 ; b>>
-    151                  0004     status_spinning_mask          equ $04 ; b>>
-    152                  0008     status_onobject_mask          equ $08 ; b>>
-    153                  0010     status_rolljumping_mask       equ $10 ; b>>
-    154                  0020     status_pushing_mask           equ $20 ; b>>
-    155                  0040     status_underwater_mask        equ $40 ; b>>
-    156                  0080     status_7_mask                 equ $80 ; b>>
-     17                            
-     18                                                                  *;>>
-     19                                                                  *;>>
-     20                                                                  *;>>
-     21                                                                  *;>>
+      8        6300                      org $6300
+      9                            
+     10                  003F     SpriteTableNbEl               equ 63
+     11        6300               Sprite_Table_Input
+     12        6300                       rmb   SpriteTableNbEl*2*8+8
+     13                  6300     PriorityLevel0                equ Sprite_>>
+     14                  6380     PriorityLevel1                equ Sprite_>>
+     15                  6400     PriorityLevel2                equ Sprite_>>
+     16                  6480     PriorityLevel3                equ Sprite_>>
+     17                  6500     PriorityLevel4                equ Sprite_>>
+     18                  6577     PriorityLevel5                equ Sprite_>>
+     19                  65F5     PriorityLevel6                equ Sprite_>>
+     20                  6673     PriorityLevel7                equ Sprite_>>
+     21
      22                                                                  *;>>
      23                                                                  *;>>
      24                                                                  *;>>
-     25                                                                  *;>>
+     25                                                                  *
      26                                                                  *;>>
-     27                                                                  *;>>
+     27                                                                  *
      28                                                                  *;>>
-     29                                                                  *;>>
-     30                                                                  *;>>
-     31                                                                  *;>>
-     32                                                                  *;>>
-     33                                                                  *;>>
-     34                                                                  *;>>
-     35                                                                  *;>>
-     36                                                                  *;>>
-     37                                                                  *;>>
-     38        0000               Obj_GetOrientationToPlayer             *O>>
-     39  5+4   0000 34   26               pshs  d,y
-     40  2     0002 86   00               lda   #$00
-     41  5     0004 B7   005A             sta   gotp_player_is_left      * >>
-     42  5     0007 B7   005B             sta   gotp_player_is_above     * >>
-     43  6     000A 109E 00               ldy   MainCharacter            * >>
-     44  5+1   000D EC   02               ldd   x_pos,x                  * >>
-     45  6+1   000F A3   22               subd  x_pos,y                  * >>
-     46                                                                  * >>
-     47  6     0011 FD   005C             std   gotp_player_h_distance
-     48  3     0014 2A   05               bpl   gotp_skip1
-     49  2     0016 43                    coma
-     50  2     0017 53                    comb
-     51  4     0018 C3   0001             addd  #$0001
-     52        001B               gotp_skip1
-     53  6     001B FD   0060             std   gotp_abs_h_distance_mainc
-     54  6     001E 109E 00               ldy   Sidekick                 * >>
-     55  5+1   0021 EC   02               ldd   x_pos,x                  * >>
-     56  6+1   0023 A3   22               subd  x_pos,y                  * >>
-     57  6     0025 FD   0062             std   gotp_h_distance_sidek
-     58                                                                  * >>
-     59  3     0028 2A   05               bpl   gotp_skip2
-     60  2     002A 43                    coma
-     61  2     002B 53                    comb
-     62  4     002C C3   0001             addd  #$0001
-     63        002F               gotp_skip2
-     64  8     002F 10B3 0060             cmpd  gotp_abs_h_distance_mainc
-     65                                                                  * >>
-     66  3     0033 22   0A               bhi   MainCharacterIsCloser    * >>
-     67                                                                  * >>
-     68  7     0035 10BF 0058             sty   gotp_closest_player      * >>
-     69  6     0039 FC   0062             ldd   gotp_h_distance_sidek
-     70  6     003C FD   005C             std   gotp_player_h_distance   * >>
-     71        003F               MainCharacterIsCloser                  *+>>
-     72  5     003F B6   005C             lda   gotp_player_h_distance
-     73  2     0042 85   80               bita  #$80                     * >>
-     74  3     0044 27   05               beq   PlayerToEnemysLeft       * >>
-     75  2     0046 86   02               lda   #$02
-     76  5     0048 B7   005A             sta   gotp_player_is_left      * >>
-     77        004B               PlayerToEnemysLeft                     *+>>
-     78  5+1   004B EC   07               ldd   y_pos,x                  * >>
-     79  6+1   004D A3   27               subd  y_pos,y                  * >>
-     80  3     004F 24   05               bhs   PlayerToEnemysAbove      * >>
-     81  2     0051 86   02               lda   #$02
-     82  5     0053 B7   005B             sta   gotp_player_is_above     * >>
-     83        0056               PlayerToEnemysAbove                    *+>>
-     84  5+6   0056 35   A6               puls  d,y,pc
-     85                                                                  * >>
-     86
-     87        0058 0000          gotp_closest_player        fdb   $0000   >>
-     88        005A 00            gotp_player_is_left        fcb   $00     >>
-     89        005B 00            gotp_player_is_above       fcb   $00     >>
-     90        005C 0000          gotp_player_h_distance     fdb   $0000   >>
-     91        005E 0000          gotp_player_v_distance     fdb   $0000   >>
-     92        0060 0000          gotp_abs_h_distance_mainc  fdb   $0000   >>
-     93        0062 0000          gotp_h_distance_sidek      fdb   $0000   >>
-     94
+     29        66F8               DisplaySprite                          *D>>
+     30                                                                  * >>
+(31) Expression Error
+     31         ldx   priority,u               *    move.w  priority(a0),d0>>
+     32                                                                  * >>
+     33                                                                  * >>
+     34                                                                  * >>
+     35  4+0   66F8 A6   84               lda   ,x
+     36  4     66FA 91   7E               cmpa  SpriteTableNbEl*2        * >>
+     37  3     66FC 24   0C               bhs   DisplaySprite_01         * >>
+     38  2     66FE 8B   02               adda  #2                       * >>
+     39  4+0   6700 A7   84               sta   ,x
+     40  4+1   6702 30   86               leax  a,x                      * >>
+     41  5+0   6704 EF   84               stu   ,x                       * >>
+     42                                                                  *
+     43        6706               DisplaySprite_01                       *r>>
+     44  5     6706 39                    rts                            * >>
+     45                                                                  *;>>
 
-000000 Total Errors
+000001 Total Errors
+        Expression Error      31         ldx   priority,u               *  >>
 
-000062 Total Symbols
-     0x          Equ   0016 anim
-     0x          Equ   0015 anim_frame
-     0x          Equ   0018 anim_frame_duration
-     0x          Equ   0021 collision_flags
-     2x          Label 0060 gotp_abs_h_distance_mainc
-     1x          Label 0058 gotp_closest_player
-     2x          Label 0062 gotp_h_distance_sidek
-     3x          Label 005C gotp_player_h_distance
-     2x          Label 005B gotp_player_is_above
-     2x          Label 005A gotp_player_is_left
-     0x          Label 005E gotp_player_v_distance
-     1x          Label 001B gotp_skip1
-     1x          Label 002F gotp_skip2
-     0x          Equ   0000 id
-     1x          Equ   0000 MainCharacter
-     1x          Label 003F MainCharacterIsCloser
-     0x          Equ   000E mapping_frame
-     0x          Equ   0022 next_object
-     1x          Equ   0022 object_size
-     0x          Equ   001C objoff_01
-     0x          Equ   001D objoff_02
-     0x          Equ   001E objoff_03
-     0x          Equ   001F objoff_04
-     0x          Equ   0020 objoff_05
-     0x          Label 0000 Obj_GetOrientationToPlayer
-     1x          Label 0056 PlayerToEnemysAbove
-     1x          Label 004B PlayerToEnemysLeft
-     0x          Equ   0017 prev_anim
-     0x          Equ   000C priority
-     0x          Equ   0008 render_7_mask
-     0x          Equ   0004 render_coordinate_mask
-     0x          Equ   0001 render_flags
-     0x          Equ   0080 render_onscreen_mask
-     0x          Equ   0020 render_staticmappings_mask
-     0x          Equ   0040 render_subobjects_mask
-     0x          Equ   0001 render_xmirror_mask
-     0x          Equ   0010 render_ycheckonscreen_mask
-     0x          Equ   0002 render_ymirror_mask
-     0x          Equ   001A routine
-     0x          Equ   001B routine_secondary
-     1x          Equ   0000 Sidekick
-     0x          Equ   0019 status
-     0x          Equ   0080 status_7_mask
-     0x          Equ   0002 status_inair_mask
-     0x          Equ   0001 status_leftfacing_mask
-     0x          Equ   0008 status_onobject_mask
-     0x          Equ   0020 status_pushing_mask
-     0x          Equ   0010 status_rolljumping_mask
-     0x          Equ   0004 status_spinning_mask
-     0x          Equ   0040 status_underwater_mask
-     0x          Equ   0022 subtype
-     0x          Equ   000D width_pixels
-     0x          Equ   0004 x_pixel
-     4x          Equ   0002 x_pos
-     0x          Equ   0014 x_radius
-     0x          Equ   0005 x_sub
-     0x          Equ   000F x_vel
-     0x          Equ   0009 y_pixel
-     2x          Equ   0007 y_pos
-     0x          Equ   0013 y_radius
-     0x          Equ   000A y_sub
-     0x          Equ   0011 y_vel
+000013 Total Symbols
+     0x          Label 66F8 DisplaySprite
+     1x          Label 670A DisplaySprite_01
+     1x Unknown  Equ   0000 priority
+     0x          Equ   6300 PriorityLevel0
+     0x          Equ   6380 PriorityLevel1
+     0x          Equ   6400 PriorityLevel2
+     0x          Equ   6480 PriorityLevel3
+     0x          Equ   6500 PriorityLevel4
+     0x          Equ   6577 PriorityLevel5
+     0x          Equ   65F5 PriorityLevel6
+     0x          Equ   6673 PriorityLevel7
+     9x          Equ   003F SpriteTableNbEl
+     8x          Label 6300 Sprite_Table_Input
 
