@@ -1,70 +1,125 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\input\ENGINE\DisplaySprite.asm
- * Fichier destination : DisplaySprite.BIN
+ * Fichier source      : .\input\ENGINE\SingleObjLoad.asm
+ * Fichier destination : SingleObjLoad.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     604
+ *     Main     0:MAIN.ASM     954
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-      8        6300                      org $6300
-      9                            
-     10                  003F     SpriteTableNbEl               equ 63
-     11        6300               Sprite_Table_Input
-     12        6300                       rmb   SpriteTableNbEl*2*8+8
-     13                  6300     PriorityLevel0                equ Sprite_>>
-     14                  6380     PriorityLevel1                equ Sprite_>>
-     15                  6400     PriorityLevel2                equ Sprite_>>
-     16                  6480     PriorityLevel3                equ Sprite_>>
-     17                  6500     PriorityLevel4                equ Sprite_>>
-     18                  6577     PriorityLevel5                equ Sprite_>>
-     19                  65F5     PriorityLevel6                equ Sprite_>>
-     20                  6673     PriorityLevel7                equ Sprite_>>
-     21
-     22                                                                  *;>>
-     23                                                                  *;>>
-     24                                                                  *;>>
-     25                                                                  *
-     26                                                                  *;>>
-     27                                                                  *
-     28                                                                  *;>>
-     29        66F8               DisplaySprite                          *D>>
+      9        6300                      org $6300
+     10                  001F     object_size                   equ $1F ; t>>
+     11                  001F     next_object                   equ object_>>
+     12        6300               Dynamic_Object_RAM_End
+     13                                                                  *;>>
+     14                                                                  *;>>
+     15                                                                  *;>>
+     16                                                                  *;>>
+     17                                                                  *;>>
+     18                                                                  *
+     19                                                                  *;>>
+     20                                                                  *S>>
+     21                                                                  * >>
+     22                                                                  * >>
+     23                                                                  * >>
+     24                                                                  * >>
+     25                                                                  * >>
+     26                                                                  *
+     27                                                                  */>>
+     28                                                                  * >>
+     29                                                                  * >>
      30                                                                  * >>
-(31) Expression Error
-     31         ldx   priority,u               *    move.w  priority(a0),d0>>
-     32                                                                  * >>
-     33                                                                  * >>
+     31                                                                  * >>
+     32                                                                  *
+     33                                                                  *r>>
      34                                                                  * >>
-     35  4+0   66F8 A6   84               lda   ,x
-     36  4     66FA 91   7E               cmpa  SpriteTableNbEl*2        * >>
-     37  3     66FC 24   0C               bhs   DisplaySprite_01         * >>
-     38  2     66FE 8B   02               adda  #2                       * >>
-     39  4+0   6700 A7   84               sta   ,x
-     40  4+1   6702 30   86               leax  a,x                      * >>
-     41  5+0   6704 EF   84               stu   ,x                       * >>
+     35                                                                  *;>>
+     36                                                                  *;>>
+     37                                                                  *;>>
+     38                                                                  *;>>
+     39                                                                  *;>>
+     40                                                                  *
+     41                                                                  *;>>
      42                                                                  *
-     43        6706               DisplaySprite_01                       *r>>
-     44  5     6706 39                    rts                            * >>
-     45                                                                  *;>>
+     43                                                                  *;>>
+     44        6300               SingleObjLoad2                         *S>>
+     45  6     6300 1F   31               tfr   u,x                      * >>
+     46  4+1   6302 30   88 1F            leax  next_object,x            * >>
+     47  4     6305 8C   6300             cmpx  #Dynamic_Object_RAM_End  * >>
+     48  3     6308 27   0C               beq   SingleObjLoad2_02        * >>
+     49                                                                  * >>
+     50                                                                  * >>
+     51                                                                  * >>
+     52                                                                  * >>
+     53                                                                  * >>
+     54                                                                  * >>
+     55                                                                  * >>
+     56                                                                  * >>
+     57                                                                  *
+     58        630A               SingleObjLoad2_01                      *->>
+     59  6+0   630A 6D   84               tst   ,x                       * >>
+     60  3     630C 27   08               beq   SingleObjLoad2_02        * >>
+     61  4+1   630E 30   88 1F            leax  next_object,x            * >>
+     62  4     6311 8C   6300             cmpx  #Dynamic_Object_RAM_End
+     63  3     6314 26   F4               bne   SingleObjLoad2_01        * >>
+     64                                                                  *
+     65        6316               SingleObjLoad2_02                      *r>>
+     66  5     6316 39                    rts                            * >>
+     67                                                                  *
+     68                                                                  * >>
+     69                                                                  *+>>
+     70                                                                  *.>>
+     71                                                                  *.>>
+     72                                                                  *
+     73                                                                  * >>
+     74                                                                  * >>
+     75                                                                  * >>
+     76                                                                  * >>
+     77                                                                  * >>
+     78                                                                  * >>
+     79                                                                  *
+     80                                                                  *.>>
+     81                                                                  *.>>
+     82                                                                  * >>
+     83                                                                  * >>
+     84                                                                  * >>
+     85                                                                  *;>>
+     86                                                                  *;>>
+     87                                                                  *;>>
+     88                                                                  *;>>
+     89                                                                  *;>>
+     90                                                                  *
+     91                                                                  *;>>
+     92                                                                  *
+     93                                                                  *;>>
+     94                                                                  *S>>
+     95                                                                  * >>
+     96                                                                  * >>
+     97                                                                  *
+     98                                                                  *->>
+     99                                                                  * >>
+    100                                                                  * >>
+    101                                                                  * >>
+    102                                                                  * >>
+    103                                                                  *
+    104                                                                  *r>>
+    105                                                                  * >>
+    106                                                                  *;>>
+----------------
+44 cycle(s)
+23 byte(s)
+----------------
 
-000001 Total Errors
-        Expression Error      31         ldx   priority,u               *  >>
+000000 Total Errors
 
-000013 Total Symbols
-     0x          Label 66F8 DisplaySprite
-     1x          Label 670A DisplaySprite_01
-     1x Unknown  Equ   0000 priority
-     0x          Equ   6300 PriorityLevel0
-     0x          Equ   6380 PriorityLevel1
-     0x          Equ   6400 PriorityLevel2
-     0x          Equ   6480 PriorityLevel3
-     0x          Equ   6500 PriorityLevel4
-     0x          Equ   6577 PriorityLevel5
-     0x          Equ   65F5 PriorityLevel6
-     0x          Equ   6673 PriorityLevel7
-     9x          Equ   003F SpriteTableNbEl
-     8x          Label 6300 Sprite_Table_Input
+000006 Total Symbols
+     2x          Label 6300 Dynamic_Object_RAM_End
+     2x          Equ   001F next_object
+     1x          Equ   001F object_size
+     0x          Label 6300 SingleObjLoad2
+     1x          Label 630A SingleObjLoad2_01
+     2x          Label 6316 SingleObjLoad2_02
 

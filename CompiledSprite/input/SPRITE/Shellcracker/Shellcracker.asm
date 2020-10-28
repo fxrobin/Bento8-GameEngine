@@ -432,7 +432,7 @@ ShellcrackerClaw_instantiate           *loc_38292:
                                        *
 ShellcrackerClaw_instantiate_01        *loc_38296:
         jsr   SingleObjLoad2           *    jsrto   (SingleObjLoad2).l, JmpTo25_SingleObjLoad2
-        lbne   ShellcrackerClaw_instantiate_04
+        lbeq  ShellcrackerClaw_instantiate_04
                                        *    bne.s   return_382EE       
         lda   #ObjID_ShellcrackerClaw
         sta   ,x                       *    _move.b #ObjID_ShellcrackerClaw,id(a1) ; load objA0
