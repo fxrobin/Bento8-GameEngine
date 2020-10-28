@@ -1,125 +1,329 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\input\ENGINE\SingleObjLoad.asm
- * Fichier destination : SingleObjLoad.BIN
+ * Fichier source      : .\input\ENGINE\RunObjects.asm
+ * Fichier destination : RunObjects.BIN
  * Contenu :
- *     Main     0:MAIN.ASM     954
+ *     Main     0:MAIN.ASM     4520
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
       9        6300                      org $6300
-     10                  001F     object_size                   equ $1F ; t>>
-     11                  001F     next_object                   equ object_>>
-     12        6300               Dynamic_Object_RAM_End
-     13                                                                  *;>>
-     14                                                                  *;>>
-     15                                                                  *;>>
-     16                                                                  *;>>
-     17                                                                  *;>>
-     18                                                                  *
-     19                                                                  *;>>
-     20                                                                  *S>>
-     21                                                                  * >>
-     22                                                                  * >>
-     23                                                                  * >>
-     24                                                                  * >>
-     25                                                                  * >>
-     26                                                                  *
-     27                                                                  */>>
-     28                                                                  * >>
-     29                                                                  * >>
-     30                                                                  * >>
-     31                                                                  * >>
-     32                                                                  *
-     33                                                                  *r>>
-     34                                                                  * >>
-     35                                                                  *;>>
-     36                                                                  *;>>
-     37                                                                  *;>>
-     38                                                                  *;>>
-     39                                                                  *;>>
-     40                                                                  *
-     41                                                                  *;>>
-     42                                                                  *
-     43                                                                  *;>>
-     44        6300               SingleObjLoad2                         *S>>
-     45  6     6300 1F   31               tfr   u,x                      * >>
-     46  4+1   6302 30   88 1F            leax  next_object,x            * >>
-     47  4     6305 8C   6300             cmpx  #Dynamic_Object_RAM_End  * >>
-     48  3     6308 27   0C               beq   SingleObjLoad2_02        * >>
-     49                                                                  * >>
-     50                                                                  * >>
-     51                                                                  * >>
-     52                                                                  * >>
-     53                                                                  * >>
-     54                                                                  * >>
-     55                                                                  * >>
-     56                                                                  * >>
-     57                                                                  *
-     58        630A               SingleObjLoad2_01                      *->>
-     59  6+0   630A 6D   84               tst   ,x                       * >>
-     60  3     630C 27   08               beq   SingleObjLoad2_02        * >>
-     61  4+1   630E 30   88 1F            leax  next_object,x            * >>
-     62  4     6311 8C   6300             cmpx  #Dynamic_Object_RAM_End
-     63  3     6314 26   F4               bne   SingleObjLoad2_01        * >>
-     64                                                                  *
-     65        6316               SingleObjLoad2_02                      *r>>
-     66  5     6316 39                    rts                            * >>
-     67                                                                  *
-     68                                                                  * >>
-     69                                                                  *+>>
-     70                                                                  *.>>
-     71                                                                  *.>>
-     72                                                                  *
-     73                                                                  * >>
-     74                                                                  * >>
-     75                                                                  * >>
-     76                                                                  * >>
-     77                                                                  * >>
-     78                                                                  * >>
-     79                                                                  *
-     80                                                                  *.>>
-     81                                                                  *.>>
-     82                                                                  * >>
-     83                                                                  * >>
-     84                                                                  * >>
-     85                                                                  *;>>
-     86                                                                  *;>>
-     87                                                                  *;>>
-     88                                                                  *;>>
-     89                                                                  *;>>
-     90                                                                  *
-     91                                                                  *;>>
-     92                                                                  *
-     93                                                                  *;>>
-     94                                                                  *S>>
-     95                                                                  * >>
-     96                                                                  * >>
-     97                                                                  *
-     98                                                                  *->>
-     99                                                                  * >>
-    100                                                                  * >>
-    101                                                                  * >>
-    102                                                                  * >>
-    103                                                                  *
-    104                                                                  *r>>
-    105                                                                  * >>
-    106                                                                  *;>>
+     10                            
+     11                            
+     12                           * --------------------------------------->>
+     13                           * Physics Constants
+     14                           * --------------------------------------->>
+     15
+     16                  0038     gravity                       equ $38 ; G>>
+     17
+     18                           * =======================================>>
+     19                           * Object Constants
+     20                           * =======================================>>
+     21
+     22                  0002     NumberOfReservedObjects       equ 2
+     23                  002D     NumberOfDynamicObjects        equ 45
+     24                  0003     NumberOfLevelObjects          equ 3
+     25
+     26                           * --------------------------------------->>
+     27                           * Sprite Table Input
+     28                           * --------------------------------------->>
+     29
+     30
+     31
+     32                           * --------------------------------------->>
+     33                           * Object Status Table offsets
+     34                           * --------------------------------------->>
+     35
+     36                  001F     object_size                   equ $1F ; t>>
+     37                  001F     next_object                   equ object_>>
+     38                            
+     39                  0000     id                            equ $00 ; a>>
+     40                  0002     render_flags                  equ $02 ; b>>
+     41                  0003     x_pos                         equ $03 ; a>>
+     42                  0005     x_sub                         equ $05 ; s>>
+     43                  0005     y_pos                         equ $05 ; a>>
+     44                  0007     y_sub                         equ $07 ; s>>
+     45                  0003     x_pixel                       equ x_pos
+     46                  0005     y_pixel                       equ x_pos+2>>
+     47                  0008     priority                      equ $08 ; $>>
+     48                  000A     width_pixels                  equ $0A
+     49                  000B     mapping_frame                 equ $0B
+     50                  000B     x_vel                         equ $0B ; a>>
+     51                  000D     y_vel                         equ $0D ; a>>
+     52                  000F     y_radius                      equ $0F ; c>>
+     53                  0010     x_radius                      equ $10 ; c>>
+     54                  0011     anim_frame                    equ $11
+     55                  0012     anim                          equ $12
+     56                  0013     prev_anim                     equ $13
+     57                  0014     anim_frame_duration           equ $14 ; r>>
+     58                  0015     status                        equ $15 ; n>>
+     59                  0016     routine                       equ $16
+     60                  0017     routine_secondary             equ $17
+     61                  0018     objoff_01                     equ $18 ; v>>
+     62                  0019     objoff_02                     equ $19
+     63                  001A     objoff_03                     equ $1A
+     64                  001B     objoff_04                     equ $1B
+     65                  001C     objoff_05                     equ $1C
+     66                  001D     collision_flags               equ $1D
+     67                  001E     subtype                       equ $1E
+     68
+     69                           * --------------------------------------->>
+     70                           * render_flags bitfield variables
+     71                  0001     render_xmirror_mask           equ $01 ; b>>
+     72                  0002     render_ymirror_mask           equ $02 ; b>>
+     73                  0004     render_coordinate_mask        equ $04 ; b>>
+     74                  0008     render_7_mask                 equ $08 : b>>
+     75                  0010     render_ycheckonscreen_mask    equ $10 : b>>
+     76                  0020     render_staticmappings_mask    equ $20 : b>>
+     77                  0040     render_subobjects_mask        equ $40 ; b>>
+     78                  0080     render_onscreen_mask          equ $80 ; b>>
+     79
+     80                           * --------------------------------------->>
+     81                           * status bitfield variables
+     82                  0001     status_leftfacing_mask        equ $01 ; b>>
+     83                  0002     status_inair_mask             equ $02 ; b>>
+     84                  0004     status_spinning_mask          equ $04 ; b>>
+     85                  0008     status_onobject_mask          equ $08 ; b>>
+     86                  0010     status_rolljumping_mask       equ $10 ; b>>
+     87                  0020     status_pushing_mask           equ $20 ; b>>
+     88                  0040     status_underwater_mask        equ $40 ; b>>
+     89                  0080     status_7_mask                 equ $80 ; b>>
+     90
+     91                           * =======================================>>
+     92                           * Données globales
+     93                           * =======================================>>
+     94
+     95        6300 00            MainCharacter_is_dead          fcb   $00
+     96
+     97                           *****************************************>>
+     98                           * SST - Table des variables de chaque Obj>>
+     99                           *****************************************>>
+    100
+    101        6301 0000          gotp_closest_player          fdb   $0000 >>
+    102        6303 00            gotp_player_is_left          fcb   $00   >>
+    103        6304 00            gotp_player_is_above         fcb   $00   >>
+    104        6305 0000          gotp_player_h_distance       fdb   $0000 >>
+    105        6307 0000          gotp_player_v_distance       fdb   $0000 >>
+    106        6309 0000          gotp_abs_h_distance_mainc    fdb   $0000 >>
+    107        630B 0000          gotp_h_distance_sidek        fdb   $0000 >>
+    108
+    109                           *****************************************>>
+    110                           * SST - Table des variables de chaque Obj>>
+    111                           *****************************************>>
+    112
+    113
+    114
+    115                           *****************************************>>
+    116                           * SST - Table des variables de chaque Obj>>
+    117                           *****************************************>>
+    118                            
+    119        630D               Object_RAM
+    120
+    121        630D               Reserved_Object_RAM
+    122        630D               MainCharacter                rmb   object>>
+    123        632C               Sidekick                     rmb   object>>
+    124        634B               Reserved_Object_RAM_End
+    125
+    126        634B               Dynamic_Object_RAM           rmb   Number>>
+    127        68BE               Dynamic_Object_RAM_End
+    128
+    129        68BE               LevelOnly_Object_RAM
+    130        68BE               Tails_Tails                  rmb   object>>
+    131        68DD               Sonic_Dust                   rmb   object>>
+    132        68FC               Tails_Dust                   rmb   object>>
+    133        691B               LevelOnly_Object_RAM_End
+    134
+    135        691B               Object_RAM_End
+    136
+    137                                                                  *;>>
+    138                                                                  *;>>
+    139                                                                  *;>>
+    140                                                                  *
+    141                                                                  *;>>
+    142                                                                  *
+    143                                                                  *;>>
+    144        691B               RunObjects                             *R>>
+    145                                                                  * >>
+    146                                                                  * >>
+    147  4     691B 108E 630D             ldy   #Object_RAM              * >>
+    148                                                                  *
+    149                                                                  * >>
+    150                                                                  * >>
+    151                                                                  * >>
+    152                                                                  * >>
+    153                                                                  * >>
+    154                                                                  * >>
+    155        691F               RunObjects_01                          *+>>
+    156                                                                  * >>
+    157                                                                  * >>
+    158                                                                  * >>
+    159                                                                  *
+    160  7     691F 7D   6300             tst   MainCharacter_is_dead    * >>
+    161  3     6922 27   10               beq   RunObjectsWhenPlayerIsDead
+    162                                                                  * >>
+    163                                                                  * >>
+    164                                                                  *;>>
+    165                                                                  *
+    166                                                                  *;>>
+    167                                                                  *;>>
+    168                                                                  *;>>
+    169                                                                  *
+    170                                                                  *;>>
+    171                                                                  *
+    172                                                                  *;>>
+    173        6924               RunObject                              *R>>
+    174  5+0   6924 EE   A4               ldu   ,y                       * >>
+    175  3     6926 27   02               beq   RunNextObject            * >>
+    176                                                                  *
+    177                                                                  * >>
+    178                                                                  * >>
+    179                                                                  * >>
+    180  7+0   6928 AD   C4               jsr   ,u                       * >>
+    181                                                                  * >>
+    182                                                                  *
+    183                                                                  *;>>
+    184        692A               RunNextObject                          *R>>
+    185  4+1   692A 31   A8 1F            leay  next_object,y            * >>
+    186        692D               am_RunNextObject
+    187  5     692D 108C 691B             cmpy  #Object_RAM_End          * >>
+    188  3     6931 26   F1               bne   RunObject                *;>>
+    189        6933               RunObjects_End                         *R>>
+    190  5     6933 39                    rts                            * >>
+    191                                                                  *
+    192                                                                  *;>>
+    193                                                                  *;>>
+    194                                                                  *;>>
+    195        6934               RunObjectsWhenPlayerIsDead             *R>>
+    196                                                                  * >>
+    197                                                                  * >>
+    198  4     6934 108E 630D             ldy   #Reserved_Object_RAM
+    199  3     6938 8E   634B             ldx   #Reserved_Object_RAM_End
+    200  6     693B BF   692F             stx   am_RunNextObject+2
+    201  7     693E 8D   E4               bsr   RunObject
+    202                                                                  * >>
+    203                                                                  * >>
+    204  4     6940 108E 634B             ldy   #Dynamic_Object_RAM
+    205  7     6944 8D   12               bsr   RunObjectDisplayOnly
+    206                                                                  * >>
+    207                                                                  * >>
+    208  4     6946 108E 68BE             ldy   #LevelOnly_Object_RAM
+    209  3     694A 8E   691B             ldx   #LevelOnly_Object_RAM_End
+    210  6     694D BF   692F             stx   am_RunNextObject+2
+    211  3     6950 20   D2               bra   RunObject
+    212                                                                  *
+    213  3     6952 8E   691B             ldx   #Object_RAM_End          * >>
+    214  6     6955 BF   692F             stx   am_RunNextObject+2
+    215                                                                  *;>>
+    216                                                                  *
+    217                                                                  *;>>
+    218        6958               RunObjectDisplayOnly                   *R>>
+    219                                                                  * >>
+    220  5+0   6958 EE   A4               ldu   ,y                       * >>
+    221  3     695A 27   0A               beq   RunNextObjectDisplayOnly * >>
+    222  4+1   695C A6   22               lda   render_flags,y
+    223  2     695E 85   80               bita  #render_onscreen_mask    * >>
+    224  3     6960 27   04               beq   RunNextObjectDisplayOnly * >>
+    225  6+1   6962 6D   22               tst   render_flags,y
+    226  3     6964 2A   00               bpl   RunNextObjectDisplayOnly
+    227                                   *bsr   DisplaySprite            *>>
+    228        6966               RunNextObjectDisplayOnly               *+>>
+    229  4+1   6966 31   A8 1F            leay  next_object,y            * >>
+    230  5     6969 108C 68BE             cmpy  #Dynamic_Object_RAM_End  * >>
+    231  3     696D 26   E9               bne   RunObjectDisplayOnly
+    232  5     696F 39                    rts                            * >>
+    233                                                                  *;>>
+    234                                                                  *
+    235                                                                  *;>>
 ----------------
-44 cycle(s)
-23 byte(s)
+149 cycle(s)
+98 byte(s)
 ----------------
 
 000000 Total Errors
 
-000006 Total Symbols
-     2x          Label 6300 Dynamic_Object_RAM_End
+000081 Total Symbols
+     3x          Label 692D am_RunNextObject
+     0x          Equ   0012 anim
+     0x          Equ   0011 anim_frame
+     0x          Equ   0014 anim_frame_duration
+     0x          Equ   001D collision_flags
+     1x          Label 634B Dynamic_Object_RAM
+     1x          Label 68BE Dynamic_Object_RAM_End
+     0x          Label 6309 gotp_abs_h_distance_mainc
+     0x          Label 6301 gotp_closest_player
+     0x          Label 630B gotp_h_distance_sidek
+     0x          Label 6305 gotp_player_h_distance
+     0x          Label 6304 gotp_player_is_above
+     0x          Label 6303 gotp_player_is_left
+     0x          Label 6307 gotp_player_v_distance
+     0x          Equ   0038 gravity
+     0x          Equ   0000 id
+     1x          Label 68BE LevelOnly_Object_RAM
+     1x          Label 691B LevelOnly_Object_RAM_End
+     0x          Label 630D MainCharacter
+     1x          Label 6300 MainCharacter_is_dead
+     0x          Equ   000B mapping_frame
      2x          Equ   001F next_object
-     1x          Equ   001F object_size
-     0x          Label 6300 SingleObjLoad2
-     1x          Label 630A SingleObjLoad2_01
-     2x          Label 6316 SingleObjLoad2_02
+     1x          Equ   002D NumberOfDynamicObjects
+     0x          Equ   0003 NumberOfLevelObjects
+     0x          Equ   0002 NumberOfReservedObjects
+     1x          Label 630D Object_RAM
+     2x          Label 691B Object_RAM_End
+     7x          Equ   001F object_size
+     0x          Equ   0018 objoff_01
+     0x          Equ   0019 objoff_02
+     0x          Equ   001A objoff_03
+     0x          Equ   001B objoff_04
+     0x          Equ   001C objoff_05
+     0x          Equ   0013 prev_anim
+     0x          Equ   0008 priority
+     0x          Equ   0008 render_7_mask
+     0x          Equ   0004 render_coordinate_mask
+     2x          Equ   0002 render_flags
+     1x          Equ   0080 render_onscreen_mask
+     0x          Equ   0020 render_staticmappings_mask
+     0x          Equ   0040 render_subobjects_mask
+     0x          Equ   0001 render_xmirror_mask
+     0x          Equ   0010 render_ycheckonscreen_mask
+     0x          Equ   0002 render_ymirror_mask
+     1x          Label 630D Reserved_Object_RAM
+     1x          Label 634B Reserved_Object_RAM_End
+     0x          Equ   0016 routine
+     0x          Equ   0017 routine_secondary
+     1x          Label 692A RunNextObject
+     3x          Label 6966 RunNextObjectDisplayOnly
+     3x          Label 6924 RunObject
+     2x          Label 6958 RunObjectDisplayOnly
+     0x          Label 691B RunObjects
+     1x          Label 6934 RunObjectsWhenPlayerIsDead
+     0x          Label 691F RunObjects_01
+     0x          Label 6933 RunObjects_End
+     0x          Label 632C Sidekick
+     0x          Label 68DD Sonic_Dust
+     0x          Equ   0015 status
+     0x          Equ   0080 status_7_mask
+     0x          Equ   0002 status_inair_mask
+     0x          Equ   0001 status_leftfacing_mask
+     0x          Equ   0008 status_onobject_mask
+     0x          Equ   0020 status_pushing_mask
+     0x          Equ   0010 status_rolljumping_mask
+     0x          Equ   0004 status_spinning_mask
+     0x          Equ   0040 status_underwater_mask
+     0x          Equ   001E subtype
+     0x          Label 68FC Tails_Dust
+     0x          Label 68BE Tails_Tails
+     0x          Equ   000A width_pixels
+     0x          Equ   0003 x_pixel
+     2x          Equ   0003 x_pos
+     0x          Equ   0010 x_radius
+     0x          Equ   0005 x_sub
+     0x          Equ   000B x_vel
+     0x          Equ   0005 y_pixel
+     0x          Equ   0005 y_pos
+     0x          Equ   000F y_radius
+     0x          Equ   0007 y_sub
+     0x          Equ   000D y_vel
 

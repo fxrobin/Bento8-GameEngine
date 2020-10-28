@@ -8,23 +8,23 @@ gravity                       equ $38 ; Gravité: 56 sub-pixels par frame
 * Object Constants
 * ===========================================================================
 
-NumberOfReservedObjects       equ 2
-NumberOfDynamicObjects        equ 45
-NumberOfLevelObjects          equ 3
+number_of_reserved_objects       equ 2
+number_of_dynamic_objects        equ 45
+number_of_level_objects          equ 3
 
 * ---------------------------------------------------------------------------
 * Sprite Table Input
 * ---------------------------------------------------------------------------
 
-SpriteTableNbEl               equ NumberOfReservedObjects+NumberOfDynamicObjects+NumberOfLevelObjects
-PriorityLevel0                equ Sprite_Table_Input
-PriorityLevel1                equ Sprite_Table_Input+SpriteTableNbEl*2+2
-PriorityLevel2                equ Sprite_Table_Input+SpriteTableNbEl*2*2+4
-PriorityLevel3                equ Sprite_Table_Input+SpriteTableNbEl*2*3+6
-PriorityLevel4                equ Sprite_Table_Input+SpriteTableNbEl*2*4+8
-PriorityLevel5                equ Sprite_Table_Input+SpriteTableNbEl*2*5+10
-PriorityLevel6                equ Sprite_Table_Input+SpriteTableNbEl*2*6+12
-PriorityLevel7                equ Sprite_Table_Input+SpriteTableNbEl*2*7+14
+sprite_table_nb_el               equ number_of_reserved_objects+number_of_dynamic_objects+number_of_level_objects
+priority_0                       equ Sprite_Table_Input
+priority_1                       equ Sprite_Table_Input+sprite_table_nb_el*2+2
+priority_2                       equ Sprite_Table_Input+sprite_table_nb_el*2*2+4
+priority_3                       equ Sprite_Table_Input+sprite_table_nb_el*2*3+6
+priority_4                       equ Sprite_Table_Input+sprite_table_nb_el*2*4+8
+priority_5                       equ Sprite_Table_Input+sprite_table_nb_el*2*5+10
+priority_6                       equ Sprite_Table_Input+sprite_table_nb_el*2*6+12
+priority_7                       equ Sprite_Table_Input+sprite_table_nb_el*2*7+14
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -33,10 +33,10 @@ PriorityLevel7                equ Sprite_Table_Input+SpriteTableNbEl*2*7+14
 object_size                   equ $1F ; the size of an object
 next_object                   equ object_size
 			                  
-id                            equ $00 ; object ID (00: free slot, 01: Object1, ...)
-render_flags                  equ $01 ; bitfield
-x_pos                         equ $02 ; and $03 ... some objects use subpixel as well when extra precision is required (see ObjectMove)
-x_sub                         equ $04 ; subpixel ; doit suivre x_pos, second octet supprimé car inutile en 6809
+id                            equ $00 ; and $01 object ID (00: free slot, 01: Object1, ...)
+render_flags                  equ $02 ; bitfield
+x_pos                         equ $03 ; and $04 ... some objects use subpixel as well when extra precision is required (see ObjectMove)
+x_sub                         equ $05 ; subpixel ; doit suivre x_pos, second octet supprimé car inutile en 6809
 y_pos                         equ $05 ; and $06 ... some objects use subpixel as well when extra precision is required
 y_sub                         equ $07 ; subpixel ; doit suivre y_pos, second octet supprimé car inutile en 6809
 x_pixel                       equ x_pos

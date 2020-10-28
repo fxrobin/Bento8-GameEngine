@@ -11,10 +11,10 @@
 ********************************************************************************  
 * Référence des variables globales
 ********************************************************************************
-EXO_SRC            equ $6101
-EXO_DST            equ $6105 
-DK_DST             equ $6222
-WAIT_VBL_SWAP_PAGE equ $61BF
+EXO_SRC                      equ $6101
+EXO_DST                      equ $6105 
+DK_DST                       equ $6222
+WAIT_VBL_SWAP_PAGE           equ $61BF
 
 ********************************************************************************  
 * Boucle principale
@@ -40,57 +40,48 @@ LevelMainLoop
 * Données globales
 * ==============================================================================
 
-********************************************************************************
-* SST - Table des variables de chaque Objet
-********************************************************************************
-
-gotp_closest_player        fdb   $0000     * ptr objet de MainCharacter ou Sidekick
-gotp_player_is_left        fcb   $00       * 0: player left from object, 2: right
-gotp_player_is_above       fcb   $00       * 0: player above object, 2: below
-gotp_player_h_distance     fdb   $0000     * closest character's h distance to obj
-gotp_player_v_distance     fdb   $0000     * closest character's v distance to obj 
-gotp_abs_h_distance_mainc  fdb   $0000     * absolute horizontal distance to main character
-gotp_h_distance_sidek      fdb   $0000     * horizontal distance to sidekick
+MainCharacter_Is_Dead        fcb   $00
 
 ********************************************************************************
 * SST - Table des variables de chaque Objet
 ********************************************************************************
 
-Sprite_Table_Input
-        rmb   SpriteTableNbEl*2*8+8
+Gotp_Closest_Player          fdb   $0000     * ptr objet de MainCharacter ou Sidekick
+Gotp_Player_Is_Left          fcb   $00       * 0: player left from object, 2: right
+Gotp_Player_Is_Above         fcb   $00       * 0: player above object, 2: below
+Gotp_Player_H_Distance       fdb   $0000     * closest character's h distance to obj
+Gotp_Player_V_Distance       fdb   $0000     * closest character's v distance to obj 
+Gotp_Abs_H_Distance_Mainc    fdb   $0000     * absolute horizontal distance to main character
+Gotp_H_Distance_Sidek        fdb   $0000     * horizontal distance to sidekick
+
+********************************************************************************
+* SST - Table des variables de chaque Objet
+********************************************************************************
+
+Sprite_Table_Input           rmb   sprite_table_nb_el*2*8+8
 
 ********************************************************************************
 * SST - Table des variables de chaque Objet
 ********************************************************************************
         
 Object_RAM
+
 Reserved_Object_RAM
-MainCharacter
-        rmb   object_size
-Sidekick
-        rmb   object_size
+MainCharacter                rmb   object_size
+Sidekick                     rmb   object_size
 Reserved_Object_RAM_End
-Dynamic_Object_RAM
-        rmb   NumberOfDynObjects*object_size
+
+Dynamic_Object_RAM           rmb   number_of_dynamic_objects*object_size
 Dynamic_Object_RAM_End
+
 LevelOnly_Object_RAM
-Tails_Tails
-        rmb   object_size
-Sonic_Dust
-        rmb   object_size
-Tails_Dust
-        rmb   object_size
+Tails_Tails                  rmb   object_size
+Sonic_Dust                   rmb   object_size
+Tails_Dust                   rmb   object_size
 LevelOnly_Object_RAM_End
+
 Object_RAM_End
-
-
-
-
-
-
-
-
-
+        
 ********************************************************************************  
 * Ordre des niveaux de jeu
 * Octet 1: Zone (niveau de jeu qui nécessite un chargement disquette)
