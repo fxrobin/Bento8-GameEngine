@@ -29,7 +29,7 @@ Anim_Run                               *Anim_Run:
         dec   anim_frame_duration,u    *    subq.b  #1,anim_frame_duration(a0)   ; subtract 1 from frame duration
         bpl   Anim_Wait                *    bpl.s   Anim_Wait                    ; if time remains, branch
         adda  anim,u                   *    add.w   d0,d0                        ; i*2 position de l'adresse 
-        leax  [a,x]                    *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
+        leax  a,x                      *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
         ldb   ,x
 		stb   anim_frame_duration,u    *    move.b  (a1),anim_frame_duration(a0) ; load frame duration
                                        *    moveq   #0,d1

@@ -20,7 +20,7 @@ Shellcracker                           *Obj9F:
                                        *    moveq   #0,d0
         lda   routine,u                *    move.b  routine(a0),d0
         ldx   Shellcracker_Routines    *    move.w  Obj9F_Index(pc,d0.w),d1
-        jmp   [a,x]                    *    jmp Obj9F_Index(pc,d1.w)
+        jmp   a,x                      *    jmp Obj9F_Index(pc,d1.w)
                                        *; ===========================================================================
                                        *; off_3801A:
 Shellcracker_Routines                  *Obj9F_Index:    offsetTable
@@ -151,7 +151,7 @@ Shellcracker_Punch                     *loc_380FC:
                                        *    moveq   #0,d0
         lda   routine_secondary,u      *    move.b  routine_secondary(a0),d0
         ldx   Shellcracker_SubRoutines *    move.w  off_3810E(pc,d0.w),d1
-        jsr   [a,x]                    *    jsr off_3810E(pc,d1.w)
+        jsr   a,x                      *    jsr off_3810E(pc,d1.w)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
 Shellcracker_SubRoutines               *off_3810E:  offsetTable
@@ -219,7 +219,7 @@ ShellcrackerClaw                       *ObjA0:
         lda   routine,u                *    move.b  routine(a0),d0
         ldx   ShellcrackerClaw_Routines
                                        *    move.w  ObjA0_Index(pc,d0.w),d1
-        jmp   [a,x]                    *    jmp ObjA0_Index(pc,d1.w)
+        jmp   a,x                      *    jmp ObjA0_Index(pc,d1.w)
                                        *; ===========================================================================
                                        *; off_3816A:
 ShellcrackerClaw_Routines              *ObjA0_Index:    offsetTable
@@ -258,7 +258,7 @@ ShellcrackerClaw_Init                  *ObjA0_Init:
 ShellcrackerClaw_Init_01               *loc_38198:
         lsra                           *    lsr.w   #1,d0
         ldx   Cal_ShellcrackerClaw_Extend
-        ldb   [a,x]                    
+        ldb   a,x                    
         stb   delay,u                  *    move.b  byte_381A4(pc,d0.w),objoff_2A(a0)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
@@ -283,7 +283,7 @@ ShellcrackerClaw_Type                  *loc_381AC:
         lda   routine_secondary,u      *    move.b  routine_secondary(a0),d0
         ldx   ShellcrackerClaw_SubRoutines
                                        *    move.w  off_381C8(pc,d0.w),d1
-        jsr   [a,x]                    *    jsr off_381C8(pc,d1.w)
+        jsr   a,x                      *    jsr off_381C8(pc,d1.w)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
 ShellcrackerClaw_SubRoutines           *off_381C8:  offsetTable
@@ -327,7 +327,7 @@ ShellcrackerClaw_ExtInit_02            *loc_38206:
         stx   x_vel,u                  *    move.w  d2,u_vel(a0)
         lsra                           *    lsr.w   #1,d0
         ldx   Cal_ShellcrackerClaw_Retract
-        ldb   [a,x]                    *    move.b  byte_38222(pc,d0.w),d1
+        ldb   a,x                      *    move.b  byte_38222(pc,d0.w),d1
         stb   delay                    *    move.b  d1,objoff_2A(a0)
         stb   delay+1                  *    move.b  d1,objoff_2B(a0)
         rts                            *    rts
