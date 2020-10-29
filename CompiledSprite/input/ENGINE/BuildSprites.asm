@@ -1,0 +1,1 @@
+8192 octets de la RAMA + 192 octets invisibles dans la page 2 ou 3 = 8384 octets dispo pour les données d'effacement

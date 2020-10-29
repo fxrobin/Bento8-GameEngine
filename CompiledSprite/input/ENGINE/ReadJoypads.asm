@@ -81,16 +81,16 @@ ReadJoypads                            *ReadJoypads:
                                        *    move.b  (a1),d1           ; Get controller port data (B/C/Dpad)
                                        *    andi.b  #$3F,d1
         ldd   #$E7CC                   *    or.b    d1,d0             ; Fuse together into one controller bit array
-        eora  #$FF                     *    not.b   d0
-        eorb  #$FF
+        coma                           *    not.b   d0
+        comb
                                        *    move.b  (a0),d1           ; Get held button data
                                        *    eor.b   d0,d1             ; Toggle off buttons that are being held                               
                                        *    move.b  d0,(a0)+          ; Put raw controller input (for held buttons) in F604/F606
         std   Joypads_Held
-        eora  >Dpad_Held
-        eorb  >Fire_Held
-        anda  >Dpad_Held               *    and.b   d0,d1
-        andb  >Fire_Held
+        eora  Dpad_Held
+        eorb  Fire_Held
+        anda  Dpad_Held                *    and.b   d0,d1
+        andb  Fire_Held
         std   Joypads_Press            *    move.b  d1,(a0)+          ; Put pressed controller input in F605/F607
         rts                            *    rts
                                        *; End of function Joypad_Read
