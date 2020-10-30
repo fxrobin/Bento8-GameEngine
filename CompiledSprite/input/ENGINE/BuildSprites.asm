@@ -1,7 +1,9 @@
+; TODO Gérer les sprites onscreen_flag a effacer mais qui doivent être delete
+;
 ; rétablissemet du fond pour chaque sprite
 ; Traiter Sprite_Table_Input du plus prioritaire au moins prioritaire (0 à 7 dans l'ordre de la liste)
 ; Rétablir le fond en effaçant les sprites qui ont (et/ou)
-;    - flag fond sauvegardé à oui pour ce sprite
+;    - flag fond sauvegardé à oui pour ce sprite => onscreen_flag
 ;    et
 ;    - changé de flag render_onscreen_mask
 ;    ou - changé de position x ou y (écran pas subpixel)
@@ -9,7 +11,7 @@
 ;    ou - changé de flag mirror (x ou y)
 ; Effacement du sprite par appel à la méthode
 ; si render_onscreen_mask à vrai et objet dans zone camera (strictement) alors:
-;    - ajout de la référence du sprite a redessiner dans une liste Sprite_Table_Refresh (et purge flag fond sauvegardé pour ce sprite)
+;    - ajout de la référence du sprite a redessiner dans une liste Sprite_Table_Refresh (et purge flag fond sauvegardé pour ce sprite =>  onscreen_flag)
 ;    - gérer le cas ou un sprite moins prioritaire (qui bouge) est en colision avec sprite plus prioritaire (qui est fixe et n'a donc pas rétabli son fond)
 ;      parcourir la liste des sprites immobiles de priorité plus hautes et tester colission (pas besoin de rétablir le fond du sprite plus prioritaire qui ne bouge pas, par contre on devra le redessiner)
 ;      - si colision:
@@ -24,7 +26,7 @@
 ;    calcul position mémoire à partir des coordonnées x y 
 ;    calcul page, adresse de la méthode de dessin en fonction du x_mirror et y_miror et de l'animation en cours
 ;    appel à la méthode de dessin avec: position mémoire dessin, position mémoire sauvegarde fond, page et adresse méthode dessin
-;    + positionner flag fond sauvegardé pour ce sprite
+;    + positionner flag fond sauvegardé pour ce sprite => onscreen_flag
 ; boucle
 
 

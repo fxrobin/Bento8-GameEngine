@@ -1,7 +1,12 @@
 ; ---------------------------------------------------------------------------
-; Routines to mark an enemy/monitor/ring/platform as destroyed
+; Détermine si un objet doit être conservé en mémoire ou supprimé
+; dans le cas d'une suppression, certaines données de l'objet sont
+; sauvegardées pour permettre de restaurer son état lors de l'éventuelle
+; réapparition de l'objet
 ;
-; input REG : [x] pointeur sur l'objet 
+; TODO A mettre en place avec la gestion du déplacement camera
+;
+; input REG : [u] pointeur sur l'objet 
 ; ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------

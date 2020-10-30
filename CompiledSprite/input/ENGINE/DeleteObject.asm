@@ -4,6 +4,13 @@
 ; écart par rapport au code d'origine :
 ; Les données a effacées impérativement doivent être placées en début de SST
 ; ne pas effacer toutes les données mais seulement celles nécessaires 
+;
+; TODO si onscreen_flag => doit déclencher l'effacement du sprite lors du
+; prochain BuildSprites, mais pas l'affichage du sprite
+; Doit etre compatible avec suppression des données objet => Liste des
+; routines d'effacement à jouer ? comment les séquencées dans l'ordre avec les autres ?
+; flag to be deleted dans render ?
+;
 ; ---------------------------------------------------------------------------
 (main)MAIN
 	org $6300

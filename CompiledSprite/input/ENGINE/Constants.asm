@@ -67,22 +67,22 @@ subtype                       equ $1E
 
 * ---------------------------------------------------------------------------
 * render_flags bitfield variables
-render_xmirror_mask           equ $01 ; bit 0
-render_ymirror_mask           equ $02 ; bit 1
-render_coordinate_mask        equ $04 ; bit 2
-render_7_mask                 equ $08 : bit 3
-render_ycheckonscreen_mask    equ $10 : bit 4
-render_staticmappings_mask    equ $20 : bit 5
-render_subobjects_mask        equ $40 ; bit 6
-render_onscreen_mask          equ $80 ; bit 7
+render_xmirror_mask           equ $01 ; bit 0 This is the horizontal mirror flag. If set, the object will be flipped on its horizontal axis.
+render_ymirror_mask           equ $02 ; bit 1 This is the vertical mirror flag.
+render_coordinate1_mask       equ $04 ; bit 2,3 These are the coordinate system. If 0, the object will be positioned by absolute screen coordinates. This is used for things like the HUD and menu options. If 1, the object will be positioned by the playfield coordinates, i.e. where it is in a level. If 2 or 3, the object will be aligned to the background somehow (perhaps this was used for those MZ UFOs).
+render_coordinate2_mask       equ $08 ;
+render_ycheckonscreen_mask    equ $10 ; bit 4 This is the assume height flag. The object will be drawn if it is vertically within x pixels of the screen where x is #$20 if this flag is clear or $16(a0) if it is set.
+render_staticmappings_mask    equ $20 ; bit 5 This is the raw mappings flag. If set, just 5 bytes will be read from the object's mappings offset when the BuildSprites routine draws the object, and these will be interpreted in the normal manner to display a single Mega Drive sprite. This format is used for objects such as breakable wall fragments.
+render_subobjects_mask        equ $40 ; bit 6 Set if Sonic is behind a loop, clear if above. This is used to change loop collision, based on the chunk Sonic is standing in. (Unused for any other object.)
+render_onscreen_mask          equ $80 ; bit 7 This is the on-screen flag. It will be set if the object is on-screen, and clear otherwise.
 
 * ---------------------------------------------------------------------------
 * status bitfield variables
-status_leftfacing_mask        equ $01 ; bit 0
-status_inair_mask             equ $02 ; bit 1
-status_spinning_mask          equ $04 ; bit 2
-status_onobject_mask          equ $08 ; bit 3
-status_rolljumping_mask       equ $10 ; bit 4
-status_pushing_mask           equ $20 ; bit 5
-status_underwater_mask        equ $40 ; bit 6
-status_7_mask                 equ $80 ; bit 7
+status_leftfacing_mask        equ $01 ; bit 0 Object: X Orientation. Clear is right and set is left.                | Sonic: Orientation. Set is left and clear is right.
+status_inair_mask             equ $02 ; bit 1 Object: Y Orientation. Clear is right-side up, and set is upside-down | Sonic: Set if Sonic is in the air
+status_spinning_mask          equ $04 ; bit 2 Object: unused                                                        | Sonic: Set if jumping or rolling.
+status_onobject_mask          equ $08 ; bit 3 Object: Set if Sonic is standing on this object.                      | Sonic: Set if Sonic isn't on the ground but shouldn't fall. (Usually when he is on a object that should stop him falling, like a platform or a bridge.)
+status_rolljumping_mask       equ $10 ; bit 4 Object: unused                                                        | Sonic: Set if Sonic is jumping after rolling on the ground. (Used mainly to lock horizontal controls.)
+status_pushing_mask           equ $20 ; bit 5 Object: Set if Sonic is pushing on this object.                       | Sonic: Set if pushing something.
+status_underwater_mask        equ $40 ; bit 6 Object: unused                                                        | Sonic: Set if underwater.
+status_specific_mask          equ $80 ; bit 7 Object: Object specific flag                                          | Sonic: unused
