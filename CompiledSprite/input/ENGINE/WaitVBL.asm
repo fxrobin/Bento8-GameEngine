@@ -35,7 +35,8 @@
 *   bit0=1 : 8ko RAMB
 *
 ********************************************************************************
-
+(main)MAIN
+	org $6300
 WaitVBL
         tst   $E7E7              * le faisceau n'est pas dans l'écran
         bpl   WaitVBL            * tant que le bit est à 0 on boucle
@@ -61,3 +62,4 @@ am_SwapVideoPage
 SwapVideoPage_01
         dec   $E7C3              * bit0=0 changement demi-page RAMA de la page 0 visible dans l'espace écran
         rts
+(info)
