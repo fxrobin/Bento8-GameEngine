@@ -34,4 +34,4 @@ MarkObjGone                            *MarkObjGone:
                                        *    beq.s   +
                                        *    bclr    #7,2(a2,d0.w)
                                        *+
-                                       *    bra.w   DeleteObject
+                                       *    bra.w   MarkObjToBeDeleted

@@ -20,15 +20,9 @@
 * be located anywhere in RAM.
 * biba    rmb     156                     * Bits and base are interleaved
 
-(main)MAIN
-        setdp $61
-        org $6100       
-
-*- AJOUT PAR RAPPORT AU CODE D'ORIGINE -----------------------------------------        
-init
-        ldu     #$<SOURCE>              * BENTO8 ajout param source (fin)
-        ldy     #$<DESTINATION>         * BENTO8 ajout param destination (fin)
-*-------------------------------------------------------------------------------  
+(main)EXOMIZER
+        setdp $A0
+        org $A000       
 
 exo2    pshs    u,y,x,dp,d,cc           * Save context
         tfr     pc,d                    * Set direct page
@@ -142,5 +136,3 @@ cook    leax    $6264,pcr
 * Values used in the switch (index)   
 tab1    fcb     4,2,4
         fcb     16,48,32
-
-(info)

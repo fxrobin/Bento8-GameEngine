@@ -5,7 +5,7 @@
 ; Rétablir le fond en effaçant les sprites qui ont (et/ou)
 ;    - flag fond sauvegardé à oui pour ce sprite => onscreen_flag
 ;    et
-;    - changé de flag render_onscreen_mask
+;    - status to be deleted à oui
 ;    ou - changé de position x ou y (écran pas subpixel)
 ;    ou - changé d'animation depuis le dernier affichage
 ;    ou - changé de flag mirror (x ou y)

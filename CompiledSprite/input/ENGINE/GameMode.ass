@@ -1,0 +1,113 @@
+********************************************************************************
+* Gestion des modes de jeu (TO8 Thomson) - Benoit Rousseau 07/10/2020
+* ------------------------------------------------------------------------------
+*
+* Permet de gerer les differents etats/modes d'un jeu
+* - introduction
+* - ecran de titre
+* - ecran d'options
+* - niveaux de jeu
+* - animation de fin
+* - ...
+* 
+* A pour role de charger un etat memoire par rapport à une configuration
+* Les donnees sont chargees depuis la disquette puis decompressees par exomizer
+* ------------------------------------------------------------------------------
+* 
+* Chargement de la page 3 a l'ecran
+* Chargement de la page 2 en zone 0000-3FFF
+* Chargement de la page 0a en zone 4000-5FFF
+* Copie en page 0a du moteur Game Mode et des donnees du mode a charger
+* Execution du moteur Game Mode en page 0a
+* Chargement des donnees du Mode depuis la disquette vers 0000-3FFF (buffer)
+* Decompression et ecriture de la RAM en A000-DFFF (pages 5-31)
+* Chargement du programme principal du nouveau Mode en page 1 a 6000
+* (effectue en dernier car ecrase les registres moniteurs necessaires a la
+* gestion disque)
+* Re-initialisation du pointeur S à 9FFF
+* Branchement en 6000
+*
+********************************************************************************
+
+(main)GAMEMODE
+	org $A000
+	
+        INCLUD CONSTANT
+
+* ==============================================================================
+* Boucle principale
+* ==============================================================================
+GameModeEngineLoader
+
+* Chargement de la page 3 a l'ecran
+***********************************************************
+WaitVBL
+        tst   $E7E7                    * le faisceau n'est pas dans l'ecran
+        bpl   WaitVBL                  * tant que le bit est a 0 on boucle
+WaitVBL_01
+        tst   $E7E7                    * le faisceau est dans l'ecran
+        bmi   WaitVBL_01               * tant que le bit est a 1 on boucle
+SwapVideoPage
+        ldb   #$C0                     * page 3, couleur de cadre 0
+        stb   $E7DD                    * affiche la page a l'ecran
+        
+* Chargement de la page 2 en zone 0000-3FFF
+***********************************************************
+        ldb   #$62                     * changement page 2
+        stb   $E7E6                    * visible dans l'espace cartouche
+        
+* Chargement de la page 0a en zone 4000-5FFF
+***********************************************************
+        ldb   $E7C3                    * charge l'id de la demi-Page 0 en espace ecran
+        andb  #$FE                     * positionne bit0=0 pour page 0 RAMA
+        stb   $E7C3                    * dans l'espace ecran
+
+* Copie en page 0a du moteur Game Mode et des donnees du mode a charger
+************************************************************     
+        ldx   #$                       * source
+        ldy   #$4000                   * destination   
+        jsr   COPY8k                   * copie
+        
+        bra   $4000        
+        
+GameModeEngine
+        * fin engine a recopier       
+
+        lda   game_mode
+        ldx   GameModesArray
+        ldu   a,x
+        
+GameModesArray
+        fdb   gm_data_intro
+        fdb   gm_data_title_screen
+        fdb   gm_data_level
+        fdb   gm_data_ending_sequence 
+        
+game_mode          fdb $00      
+gm_intro           equ $00
+gm_title_screen    equ $02
+gm_level           equ $04
+gm_ending_sequence equ $06
+        
+gm_data_intro
+        fdb   $0000
+        
+gm_data_title_screen
+        fdb   $0000
+        
+gm_data_level
+        fdb   $0000
+        
+gm_data_ending_sequence
+        fdb   $0000         
+        
+
+
+* ==============================================================================
+* Routines
+* ==============================================================================
+        INCLUD EXOMIZER
+        INCLUD READDISK
+XXX
+        rts
+

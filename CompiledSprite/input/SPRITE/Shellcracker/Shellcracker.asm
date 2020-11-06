@@ -1,7 +1,7 @@
 ; ---------------------------------------------------------------------------
 ; Object - Shellcraker (crab badnik) from MTZ
 ;
-; input REG : [u] pointeur sur l'objet 
+; input REG : [u] pointeur sur l'objet (SST)
 ; ---------------------------------------------------------------------------
 
 * ---------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 * ---------------------------------------------------------------------------
 delay    equ $1A ; and $1B (nombre de frames+1)
 parent   equ $1C ; and $1D (adresse OST de l'objet parent)
-instance equ $1E (numéro d'instance du sous objet, w dans code 68k, b dans le code 6809)
+instance equ $1E (numï¿½ro d'instance du sous objet, w dans code 68k, b dans le code 6809)
 
                                        *; ===========================================================================
                                        *; ----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ Shellcracker                           *Obj9F:
                                        *    moveq   #0,d0
         lda   routine,u                *    move.b  routine(a0),d0
         ldx   Shellcracker_Routines    *    move.w  Obj9F_Index(pc,d0.w),d1
-        jmp   a,x                      *    jmp Obj9F_Index(pc,d1.w)
+        jmp   [a,x]                    *    jmp Obj9F_Index(pc,d1.w)
                                        *; ===========================================================================
                                        *; off_3801A:
 Shellcracker_Routines                  *Obj9F_Index:    offsetTable
@@ -31,7 +31,7 @@ Shellcracker_Routines                  *Obj9F_Index:    offsetTable
                                        *; ===========================================================================
                                        *; loc_38022:
 Shellcracker_Init                      *Obj9F_Init:
-        ldd   #$180A                   *    bsr.w   LoadSubObject ; insertion du code équivalent à LoadSubObject ici
+        ldd   #$180A                   *    bsr.w   LoadSubObject ; insertion du code ï¿½quivalent ï¿½ LoadSubObject ici
         sta   width_pixels,u
         stb   collision_flags,u
         lda   #$04                   
@@ -76,7 +76,7 @@ Shellcracker_Walk_02                   *loc_38068:
         jsr   ObjectMove               *    jsrto   (ObjectMove).l, JmpTo26_ObjectMove
         *                              *    jsr (ObjCheckFloorDist).l
         * Attente                      *    cmpi.w  #-8,d1
-        * Implémentation               *    blt.s   loc_38096
+        * Implï¿½mentation               *    blt.s   loc_38096
         * Terrain                      *    cmpi.w  #$C,d1
         *                              *    bge.s   loc_38096
         *                              *    add.w   d1,x_pos(a0)
@@ -151,7 +151,7 @@ Shellcracker_Punch                     *loc_380FC:
                                        *    moveq   #0,d0
         lda   routine_secondary,u      *    move.b  routine_secondary(a0),d0
         ldx   Shellcracker_SubRoutines *    move.w  off_3810E(pc,d0.w),d1
-        jsr   a,x                      *    jsr off_3810E(pc,d1.w)
+        jsr   [a,x]                    *    jsr off_3810E(pc,d1.w)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
 Shellcracker_SubRoutines               *off_3810E:  offsetTable
@@ -219,7 +219,7 @@ ShellcrackerClaw                       *ObjA0:
         lda   routine,u                *    move.b  routine(a0),d0
         ldx   ShellcrackerClaw_Routines
                                        *    move.w  ObjA0_Index(pc,d0.w),d1
-        jmp   a,x                      *    jmp ObjA0_Index(pc,d1.w)
+        jmp   [a,x]                    *    jmp ObjA0_Index(pc,d1.w)
                                        *; ===========================================================================
                                        *; off_3816A:
 ShellcrackerClaw_Routines              *ObjA0_Index:    offsetTable
@@ -229,7 +229,7 @@ ShellcrackerClaw_Routines              *ObjA0_Index:    offsetTable
                                        *; ===========================================================================
                                        *; loc_38170:
 ShellcrackerClaw_Init                  *ObjA0_Init:
-        ldd   #$0C9A                   *    bsr.w   LoadSubObject ; insertion du code équivalent à LoadSubObject ici
+        ldd   #$0C9A                   *    bsr.w   LoadSubObject ; insertion du code ï¿½quivalent ï¿½ LoadSubObject ici
         sta   width_pixels,u
         stb   collision_flags,u
         lda   #$04                   
@@ -283,7 +283,7 @@ ShellcrackerClaw_Type                  *loc_381AC:
         lda   routine_secondary,u      *    move.b  routine_secondary(a0),d0
         ldx   ShellcrackerClaw_SubRoutines
                                        *    move.w  off_381C8(pc,d0.w),d1
-        jsr   a,x                      *    jsr off_381C8(pc,d1.w)
+        jsr   [a,x]                    *    jsr off_381C8(pc,d1.w)
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
 ShellcrackerClaw_SubRoutines           *off_381C8:  offsetTable
@@ -405,18 +405,18 @@ ShellcrackerClaw_Retract_01            *loc_38266:
                                        *
 ShellcrackerClaw_Retract_02            *loc_3827A:
         leas  2,s                      *    addq.w  #4,sp ; evite un double rts
-        jmp   DeleteObject             *    bra.w   JmpTo65_DeleteObject
+        jmp   MarkObjToBeDeleted       *    bra.w   JmpTo65_DeleteObject
                                        *; ===========================================================================
                                        *
 ShellcrackerClaw_Proj                  *loc_38280:
         jsr   ObjectMove               *    jsrto   (ObjectMoveAndFall).l, JmpTo8_ObjectMoveAndFall
-        ldd   y_vel,u                  ; ce code complète ObjectMove pour faire l'équivalent de ObjectMoveAndFall
+        ldd   y_vel,u                  ; ce code complï¿½te ObjectMove pour faire l'ï¿½quivalent de ObjectMoveAndFall
         addd  gravity                  ; ...
         std   y_vel,u                  ; fin
         ldd   delay,u
         subd  #$0001
         std   delay,u                  *    subq.w  #1,objoff_2A(a0)
-        jmp   DeleteObject             *    bmi.w   JmpTo65_DeleteObject
+        bmi   MarkObjToBeDeleted       *    bmi.w   JmpTo65_DeleteObject
         jmp   MarkObjGone              *    jmpto   (MarkObjGone).l, JmpTo39_MarkObjGone
                                        *; ===========================================================================
                                        *  

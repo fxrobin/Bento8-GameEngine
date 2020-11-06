@@ -1,16 +1,16 @@
 ; ---------------------------------------------------------------------------
 ; Subroutine to delete an object
 ;
-; écart par rapport au code d'origine :
+; écarts par rapport au code d'origine :
 ; Les données a effacées impérativement doivent être placées en début de SST
-; ne pas effacer toutes les données mais seulement celles nécessaires 
+; pour permettre un effacement ciblé et efficient contrairement au code
+; d'origine qui met à blanc toutes les données d'un objet 
 ;
-; TODO si onscreen_flag => doit déclencher l'effacement du sprite lors du
-; prochain BuildSprites, mais pas l'affichage du sprite
-; Doit etre compatible avec suppression des données objet => Liste des
-; routines d'effacement à jouer ? comment les séquencées dans l'ordre avec les autres ?
-; flag to be deleted dans render ?
+; DeleteObject
+; input REG : [u] pointeur sur l'objet (SST)
 ;
+; DeleteObject2
+; input REG : [x] pointeur sur l'objet (SST)
 ; ---------------------------------------------------------------------------
 (main)MAIN
 	org $6300
