@@ -31,11 +31,17 @@
 
 (main)GAMEMODE
         org $A000
-        INCLUD CONSTANT
+        
+dk_lecteur           equ   $6049
+dk_piste             equ   $604A
+dk_secteur           equ   $604C
+dk_destination       equ   $604F
+dk_destination_fin   equ   DK_Dernier_Bloc+2
 
 * ==============================================================================
-* Boucle principale
+* GameModeEngineLoader
 * ==============================================================================
+
 GameModeEngineLoader
 
 * Chargement de la page 3 a l'ecran
@@ -66,43 +72,74 @@ SwapVideoPage
         ldx   #GameModeEngine          * source
         ldy   #$4000                   * destination   
         jsr   COPY8k                   * copie
-        
+
+* Execution du moteur Game Mode en page 0a
+************************************************************         
         jmp   $4000        
-        
+
+* ==============================================================================
+* GameModeEngine
+* ==============================================================================
+
 GameModeEngine
+        
+* Chargement des donnees du Mode depuis la disquette vers 0000-3FFF (buffer)
+************************************************************
+        setdp $60
+        lda   #$60
+        tfr   a,dp                     * positionne la direct page a 60
+        
+        sts   GME_01+2,pcr
+        lds   [current_game_mode]
+        puls  a,b,x,y,u
+        sta   dk_lecteur
+        stx   dk_piste
+        stb   dk_secteur
+        sty   dk_destination
+        stu   dk_destination_fin
+
+DK_Lecture                             * point d'entree 
+        lda   #$02
+        sta   $6048                    * DK.OPC $02 Operation - lecture d'un secteur
+DKCO
+        jsr   $E82A                    * DKCO Appel Moniteur - lecture d'un secteur
+        inc   $604C                    * increment du registre Moniteur DK.SEC
+        lda   $604C                    * chargement de DK.SEC
+        cmpa  #$10                     * si DK.SEC est inferieur ou egal a 16
+        bls   DK_Continue,pcr          * on continue le traitement
+        lda   #$01                     * sinon on a depasse le secteur 16
+        sta   $604C                    * positionnement du secteur a 1
+        inc   $604B                    * increment du registre Moniteur DK.TRK
+DK_Continue                            
+        inc   $604F                    * increment de 256 octets de la zone a ecrire DK.BUF
+        ldd   $604F                    * chargement de la zone a ecrire DK.BUF
+DK_Dernier_Bloc                        
+        cmpd  #$A000                   * test debut du dernier bloc de 256 octets a ecrire
+        bls   DKCO,pcr                 * si DK.BUF inferieur ou egal a la limite alors DKCO
+        
+GME_01
+        lds   #$0000
+        jmp   $6000
 
 GameModeEngine_End
         rmb   $2000-(GameModeEngine_End-GameModeEngine),0
-   
-*        lda   game_mode
-*        ldx   GameModesArray
-*        ldu   a,x
-        
-*GameModesArray
-*        fdb   gm_data_intro
-*        fdb   gm_data_title_screen
-*        fdb   gm_data_level
-*        fdb   gm_data_ending_sequence 
-        
-*game_mode          fdb $00      
-*gm_intro           equ $00
-*gm_title_screen    equ $02
-*gm_level           equ $04
-*gm_ending_sequence equ $06
-        
-*gm_data_intro
-*        fdb   $0000
-        
-*gm_data_title_screen
-*        fdb   $0000
-        
-*gm_data_level
-*        fdb   $0000
-        
-*gm_data_ending_sequence
-*        fdb   $0000         
-        
 
+* ==============================================================================
+* Donnees de chargement pour chaque etat du jeu
+* ==============================================================================
+
+current_game_mode
+        fdb   $0000
+
+* au build : recuperer l'adresse des modes pour la positionner comme equ dans constants
+
+gm_data
+        fdb   $0000 * lecteur, secteur, piste, dest, dest_fin : 8 octets + prevoir page
+gm_data_title_screen
+        fdb   $0000
+gm_data_level_AIZ
+        fdb   $0000
+gm_data_ending_sequence    
 
 * ==============================================================================
 * Routines
