@@ -133,17 +133,36 @@ public class BuildDisk
 
 			// Initialisation de l'image de disquette en sortie
 			FdUtil fd = new FdUtil();
+			
+			// Compilation du code de Game Mode Engine
+			// *****************************************************************
 
+			String gameModeTmpFile = duplicateFile(engineAsmGameMode);
+			compileRAW(gameModeTmpFile);
+			byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
+			int mainBINSize = mainBINBytes.length;
+			
+			if (mainBINSize > 16128) {
+				throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+mainBINSize+" octets (max:16128 va jusqu'en 9F00, avec une pile de 256 octets 9F00-9FFF)");
+			}
+			int dernierBloc = 40960 + mainBINSize; //A000
+
+			// Ecriture sur disquette
+			fd.setIndex(0, 0, 2);
+			fd.write(mainBINBytes);
+			
 			// Compilation du code de boot
 			// *****************************************************************
 
 			String bootTmpFile = duplicateFile(engineAsmBoot);
+			replaceTag(bootTmpFile, "boot_dernier_bloc equ $A000", "boot_dernier_bloc equ $"+String.format("%1$02X", dernierBloc >> 8)+"00");
 			compileRAW(bootTmpFile);
 
 			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
 			Bootloader bootLoader = new Bootloader();
 			byte[] bootLoaderBytes = bootLoader.encodeBootLoader(getBINFileName(bootTmpFile));
 
+			// Ecriture sur disquette
 			fd.setIndex(0, 0, 1);
 			fd.write(bootLoaderBytes);
 
@@ -234,75 +253,15 @@ public class BuildDisk
 		}
 		memoryExtension = (prop.getProperty("builder.to8.memoryExtension").contentEquals("Y")?true:false);		
 
-		if (prop.getProperty("compilatedsprite.maxtries") == null) {
-			throw new Exception("Paramètre compilatedsprite.maxtries manquant dans le fichier "+file);
+		if (prop.getProperty("builder.compilatedSprite.useCache") == null) {
+			throw new Exception("Paramètre builder.compilatedSprite.useCache manquant dans le fichier "+file);
 		}
-		maxTries = Integer.parseInt(prop.getProperty("compilatedsprite.maxtries"));
-
-		if (prop.getProperty("compilatedsprite.usecache") == null) {
-			throw new Exception("Paramètre compilatedsprite.usecache manquant dans le fichier "+file);
+		useCache = (prop.getProperty("builder.compilatedSprite.useCache").contentEquals("Y")?true:false);
+		
+		if (prop.getProperty("builder.compilatedSprite.maxTries") == null) {
+			throw new Exception("Paramètre builder.compilatedSprite.maxTries manquant dans le fichier "+file);
 		}
-		useCache = (prop.getProperty("compilatedsprite.usecache").contentEquals("Y")?true:false);
-	}
-
-	/**
-	 * Effectue la compilation du code assembleur
-	 * 
-	 * @param asmFile fichier contenant le code assembleur a compiler
-	 * @return
-	 */
-	private static int compileRAW(String asmFile) {
-		try {
-			// Purge des fichiers temporaires
-			Files.deleteIfExists(Paths.get(binTmpFile));
-			Files.deleteIfExists(Paths.get(lstTmpFile));
-
-			// Lancement de la compilation du fichier contenant le code de boot
-			logger.debug("**************** COMPILE "+asmFile+" ****************");
-			Process p = new ProcessBuilder(c6809, "-bd", Paths.get(asmFile).toString(), Paths.get(binTmpFile).toString()).start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line;
-
-			while((line=br.readLine())!=null){
-				logger.debug(line);
-			}
-
-			// c6809.exe bugfix: retour du processus vaut 0 méme en cas d'erreur
-			// de compilation, on lit le lst pour compter les erreurs
-			p.waitFor();
-			int result = C6809Util.countErrors(lstTmpFile);
-
-			if (result == 0) {
-				// Purge et remplacement de l'ancien fichier lst
-				File lstFile = new File(lstTmpFile); 
-				String basename = FileUtil.removeExtension(Paths.get(asmFile).getFileName().toString());
-				String destFileName = generatedCodeDirName+"/"+basename+".lst";
-				Path lstFilePath = Paths.get(destFileName);
-				Files.deleteIfExists(lstFilePath);
-				File newLstFile = new File(destFileName);
-				lstFile.renameTo(newLstFile);
-
-				// Purge et remplacement de l'ancien fichier lst
-				File binFile = new File(binTmpFile); 
-				basename = FileUtil.removeExtension(Paths.get(asmFile).getFileName().toString());
-				destFileName = generatedCodeDirName+"/"+basename+".BIN";
-				Path binFilePath = Paths.get(destFileName);
-				Files.deleteIfExists(binFilePath);
-				File newBinFile = new File(destFileName);
-				binFile.renameTo(newBinFile);
-
-				logger.debug(destFileName + " cycles: " + C6809Util.countCycles(newLstFile.getAbsoluteFile().toString()) + " BIN size: " + newBinFile.length());
-			} else {
-				throw new Exception ("Erreur de compilation "+asmFile);
-			}
-
-			return result;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.debug(e); 
-			return -1;
-		}
+		maxTries = Integer.parseInt(prop.getProperty("builder.compilatedSprite.maxTries"));
 	}
 
 	/**
@@ -312,7 +271,17 @@ public class BuildDisk
 	 * @return
 	 */
 	private static int compileLIN(String asmFile) {
+		return compile(asmFile, "-bl");
+	}
+	
+	private static int compileRAW(String asmFile) {
+		return compile(asmFile, "-bd");
+	}
+	
+	private static int compile(String asmFile, String option) {
 		try {
+			logger.debug("**************** Process "+asmFile+" ****************");
+			
 			// Purge des fichiers temporaires
 			Files.deleteIfExists(Paths.get(binTmpFile));
 			Files.deleteIfExists(Paths.get(lstTmpFile));
@@ -329,9 +298,13 @@ public class BuildDisk
 			// Recherche de tous les TAG INCLUD dans le fichier ASM
 			while (m.find()) {
 				System.out.println("Include: " + m.group(1));
+				if (engineAsmIncludes.get(m.group(1)) == null) {
+					throw new Exception (m.group(1) + " not found in include declaration.");
+				} else {
 				System.out.println(engineAsmIncludes.get(m.group(1))[0]);
 				pathInc = Paths.get(engineAsmIncludes.get(m.group(1))[0]);
 				content += "\n\n(include)" + m.group(1) + "\n" + new String(Files.readAllBytes(pathInc), charset);
+				}
 			}
 			// Pour chaque TAG, ajout en fin de fichier a compiler du contenu du fichier inclus		
 			Path pathTmp = Paths.get(generatedCodeDirName+"/"+path.getFileName().toString());
@@ -339,8 +312,8 @@ public class BuildDisk
 			// ---------------------------------------------------------------------------
 
 			// Lancement de la compilation du fichier contenant le code de boot
-			logger.debug("**************** COMPILE "+pathTmp.toString()+" ****************");
-			Process p = new ProcessBuilder(c6809, "-bl", pathTmp.toString(), Paths.get(binTmpFile).toString()).start();
+			logger.debug("**************** Compile "+pathTmp.toString()+" ****************");
+			Process p = new ProcessBuilder(c6809, option, pathTmp.toString(), Paths.get(binTmpFile).toString()).start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 

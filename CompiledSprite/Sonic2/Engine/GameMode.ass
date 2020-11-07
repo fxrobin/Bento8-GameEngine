@@ -10,7 +10,7 @@
 * - animation de fin
 * - ...
 * 
-* A pour role de charger un etat memoire par rapport à une configuration
+* A pour role de charger un etat memoire par rapport a une configuration
 * Les donnees sont chargees depuis la disquette puis decompressees par exomizer
 * ------------------------------------------------------------------------------
 * 
@@ -24,14 +24,13 @@
 * Chargement du programme principal du nouveau Mode en page 1 a 6000
 * (effectue en dernier car ecrase les registres moniteurs necessaires a la
 * gestion disque)
-* Re-initialisation du pointeur S à 9FFF
+* Re-initialisation du pointeur S a 9FFF
 * Branchement en 6000
 *
 ********************************************************************************
 
 (main)GAMEMODE
-	org $A000
-	
+        org $A000
         INCLUD CONSTANT
 
 * ==============================================================================
@@ -64,50 +63,48 @@ SwapVideoPage
 
 * Copie en page 0a du moteur Game Mode et des donnees du mode a charger
 ************************************************************     
-        ldx   #$                       * source
+        ldx   #GameModeEngine          * source
         ldy   #$4000                   * destination   
         jsr   COPY8k                   * copie
         
-        bra   $4000        
+        jmp   $4000        
         
 GameModeEngine
-        * fin engine a recopier       
 
-        lda   game_mode
-        ldx   GameModesArray
-        ldu   a,x
+GameModeEngine_End
+        rmb   $2000-(GameModeEngine_End-GameModeEngine),0
+   
+*        lda   game_mode
+*        ldx   GameModesArray
+*        ldu   a,x
         
-GameModesArray
-        fdb   gm_data_intro
-        fdb   gm_data_title_screen
-        fdb   gm_data_level
-        fdb   gm_data_ending_sequence 
+*GameModesArray
+*        fdb   gm_data_intro
+*        fdb   gm_data_title_screen
+*        fdb   gm_data_level
+*        fdb   gm_data_ending_sequence 
         
-game_mode          fdb $00      
-gm_intro           equ $00
-gm_title_screen    equ $02
-gm_level           equ $04
-gm_ending_sequence equ $06
+*game_mode          fdb $00      
+*gm_intro           equ $00
+*gm_title_screen    equ $02
+*gm_level           equ $04
+*gm_ending_sequence equ $06
         
-gm_data_intro
-        fdb   $0000
+*gm_data_intro
+*        fdb   $0000
         
-gm_data_title_screen
-        fdb   $0000
+*gm_data_title_screen
+*        fdb   $0000
         
-gm_data_level
-        fdb   $0000
+*gm_data_level
+*        fdb   $0000
         
-gm_data_ending_sequence
-        fdb   $0000         
+*gm_data_ending_sequence
+*        fdb   $0000         
         
 
 
 * ==============================================================================
 * Routines
 * ==============================================================================
-        INCLUD EXOMIZER
-        INCLUD READDISK
-XXX
-        rts
-
+        INCLUD COPY8K
