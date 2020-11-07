@@ -32,7 +32,7 @@ public class AssemblyGenerator{
 	public String eraseAddress;
 	private int cyclesFrameCode;
 	private int sizeFrameCode;
-	private String heroPosition = "9F00"; // identique à HERO_POS dans MAIN.ASM TODO A modifier : stocker les positions avec les données d'effacement (multisprite)
+	private String heroPosition = "9F00"; // identique ï¿½ HERO_POS dans MAIN.ASM TODO A modifier : stocker les positions avec les donnï¿½es d'effacement (multisprite)
 
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
@@ -55,18 +55,18 @@ public class AssemblyGenerator{
 		spriteName = spriteSheet.getName().toUpperCase().replaceAll("[^A-Za-z0-9]", "")+imageNum;
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
-		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
+		logger.debug("RAM 0 (val hex 0 ï¿½ f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
-		String asmFileName = BuildDisk.genDirName+"/"+spriteName+".ASM";
+		String asmFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".ASM";
 		Path asmFile = Paths.get(asmFileName);
-		String lstFileName = BuildDisk.genDirName+"/"+spriteName+".lst";
+		String lstFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".lst";
 		Path lstFile = Paths.get(lstFileName);
-		String binFileName = BuildDisk.genDirName+"/"+spriteName+".BIN";
+		String binFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".BIN";
 		Path binFile = Paths.get(binFileName);
 
-		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
-		// on passe la génération du code de sprite compilé
+		// Si l'option d'utilisation du cache est activï¿½e et qu'on trouve les fichiers .BIN et .ASM
+		// on passe la gï¿½nï¿½ration du code de sprite compilï¿½
 		if (!(BuildDisk.useCache && Files.exists(binFile) && Files.exists(asmFile) && Files.exists(lstFile))) {
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
@@ -90,7 +90,7 @@ public class AssemblyGenerator{
 			sizeSpriteEData1 = regOpt.getDataSize();
 
 			logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
-			logger.debug("RAM 1 (val hex 0 à f par pixel, . Transparent):");
+			logger.debug("RAM 1 (val hex 0 ï¿½ f par pixel, . Transparent):");
 			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
@@ -138,9 +138,9 @@ public class AssemblyGenerator{
 
 	public byte[] getCompiledCode(String org) {
 		byte[]  content = {};
-		String asmFileName = BuildDisk.genDirName+"/"+spriteName+".ASM";
-		String binFileName = BuildDisk.genDirName+"/"+spriteName+".BIN";
-		String lstFileName = BuildDisk.genDirName+"/"+spriteName+".lst";
+		String asmFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".ASM";
+		String binFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".BIN";
+		String lstFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".lst";
 
 		Path asmFile = Paths.get(asmFileName);
 		Path lstFile = Paths.get(lstFileName);
@@ -175,7 +175,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binFile);
 
 			// Generate binary code from assembly code
-			Process p = new ProcessBuilder(BuildDisk.compiler, "-bd", asmFileName, binFileName).start();
+			Process p = new ProcessBuilder(BuildDisk.c6809, "-bd", asmFileName, binFileName).start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while((line=br.readLine())!=null){
@@ -199,10 +199,10 @@ public class AssemblyGenerator{
 			logger.debug(lstFileName + " c6809.exe size: " + content.length + " computed size: " + computedSize);
 
 			if (computedCycles != compilerCycles || content.length != computedSize) {
-				logger.fatal(lstFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+				logger.fatal(lstFileName + " Ecart de cycles ou de taille entre la version compilï¿½e par c6809 et la valeur calculï¿½e par le gï¿½nï¿½rateur de code.", new Exception("Prï¿½requis."));
 			}
 
-			// Récupère l'adresse de la routine d'effacement
+			// Rï¿½cupï¿½re l'adresse de la routine d'effacement
 			Pattern pattern = Pattern.compile(".*Label (.*) ERASE_"+spriteName);
 			try (Stream<String> lines = Files.lines(lstFile, Charset.forName("ISO-8859-1"))) {
 				lines.map(pattern::matcher)
@@ -351,7 +351,7 @@ public class AssemblyGenerator{
 	public void generateDataFDB(int size, List<String> spriteData) {
 
 		// **************************************************************
-		// Construit un tableau de données vide en assembleur
+		// Construit un tableau de donnï¿½es vide en assembleur
 		// **************************************************************
 		int i = 0;
 
