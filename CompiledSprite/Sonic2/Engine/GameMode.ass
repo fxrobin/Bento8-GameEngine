@@ -64,7 +64,8 @@ SwapVideoPage
         stb   $E7C3                    * dans l'espace ecran
 
 * Copie en page 0a des donnees du mode a charger (adaptation du code COPY8k de __sam__)
-* les groupes de 7 octets sont recopiees a l'envers, leur ordre n'a pas d'importance
+* les groupes de 7 octets sont recopiees a l'envers, on termine par l'ecriture
+* en page 1 des donees 0000-0100 puis derniere ligne 7x$FF
 ************************************************************            
         sts   CopyCode3+2              ; sauve s
         lda   current_game_mode
@@ -99,7 +100,7 @@ CopyCode3
         
 * Execution du Game Mode Engine en page 0a
 ************************************************************         
-        jmp   #$4000      
+        jmp   $4000      
 
 * ==============================================================================
 * GameModeEngine

@@ -1,0 +1,130 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : .\Sonic2\Engine\GameMode.ass
+ * Fichier destination : GameMode.BIN
+ * Contenu :
+ *     Main     0:GAMEMODE.ASM 1756
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+(34) File Not Found
+     34         INCLUD CONSTANT
+(109) File Not Found
+    109         INCBIN GMENGINE
+Pass2
+(33) Expression Error
+     33         INCGLB
+(34) File Not Found
+     34         INCLUD CONSTANT
+     35        A000                       org $A000
+     36
+     37                           * =======================================>>
+     38                           * GameModeEngineLoader
+     39                           * =======================================>>
+     40
+     41        A000               GameModeEngineLoader
+     42
+     43                           * Chargement de la page 3 a l'ecran
+     44                           *****************************************>>
+     45        A000               WaitVBL
+     46  7     A000 7D   E7E7             tst   $E7E7                    * >>
+     47  3     A003 2A   FB               bpl   WaitVBL                  * >>
+     48        A005               WaitVBL_01
+     49  7     A005 7D   E7E7             tst   $E7E7                    * >>
+     50  3     A008 2B   FB               bmi   WaitVBL_01               * >>
+     51        A00A               SwapVideoPage
+     52  2     A00A C6   C0               ldb   #$C0                     * >>
+     53  5     A00C F7   E7DD             stb   $E7DD                    * >>
+     54                            
+     55                           * Chargement de la page 2 en zone 0000-3F>>
+     56                           *****************************************>>
+     57  2     A00F C6   62               ldb   #$62                     * >>
+     58  5     A011 F7   E7E6             stb   $E7E6                    * >>
+     59                            
+     60                           * Chargement de la page 0a en zone 4000-5>>
+     61                           *****************************************>>
+     62  5     A014 F6   E7C3             ldb   $E7C3                    * >>
+     63  2     A017 C4   FE               andb  #$FE                     * >>
+     64  5     A019 F7   E7C3             stb   $E7C3                    * >>
+     65
+     66                           * Copie en page 0a des donnees du mode a >>
+     67                           * les groupes de 7 octets sont recopiees >>
+     68                           * en page 1 des donees 0000-0100 puis der>>
+     69                           *****************************************>>
+     70  7     A01C 10FF A04F             sts   CopyCode3+2              ; >>
+(71) Expression Error
+     71         lda   current_game_mode
+(72) Expression Error
+     72         ldx   GameModesArray
+     73  5+1   A020 EE   86               ldu   a,x++                    ; >>
+     74  6+1   A022 10EE 86               lds   a,x++                    ; >>
+     75  6+1   A025 10AE 86               ldy   a,x                      ; >>
+     76  7     A028 10BF A03C             sty   CopyData2+2              ; >>
+(77) Expression Error
+     77         leas  current_game_mode_data,s ; s=dest
+     78        A02C               CopyData1
+     79  5+7   A02C 37   3E               pulu  d,x,y,dp                 ; >>
+     80  5+7   A02E 34   3E               pshs  d,x,y,dp                 ; >>
+     81        A030               CopyData2
+     82  5     A030 1183 0000             cmpu  #0                       ; >>
+     83  3     A034 26   00               bne   CopyData1                ; >>
+     84
+     85                           * Copie en page 0a du code Game Mode Engi>>
+     86                           * les groupes de 7 octets sont recopiees >>
+     87                           * les donnees a l'avance on gagne un leas>>
+     88                           * le builder ajoute des donnees pour que >>
+     89                           *****************************************>>
+     90  3     A036 CE   A056             ldu   #GameModeEngineBin       * >>
+     91        A039               CopyCode1
+     92  5+7   A039 37   3E               pulu  d,x,y,dp                 ; >>
+     93  5+7   A03B 34   3E               pshs  d,x,y,dp                 ; >>
+     94        A03D               CopyCode2
+     95  5     A03D 118C 4000             cmps  #$4000                   ; >>
+     96  3     A041 26   00               bne   CopyCode1                ; >>
+     97        A043               CopyCode3
+     98  4     A043 10CE 0000             lds   #0                       ; >>
+     99  5+1   A047 35   08               puls  dp
+    100                            
+    101                           * Execution du Game Mode Engine en page 0>>
+    102                           *****************************************>>
+    103  4     A049 7E   4000             jmp   $4000
+    104
+    105                           * =======================================>>
+    106                           * GameModeEngine
+    107                           * =======================================>>
+    108        A04C               GameModeEngineBin
+(109) File Not Found
+    109         INCBIN GMENGINE
+(110) Expression Error
+    110         INCCOD GMEDATA
+
+000009 Total Errors
+        Expression Error      33         INCGLB
+          File Not Found      34         INCLUD CONSTANT
+          File Not Found      34         INCLUD CONSTANT
+        Expression Error      71         lda   current_game_mode
+        Expression Error      72         ldx   GameModesArray
+        Expression Error      77         leas  current_game_mode_data,s ; s>>
+          File Not Found     109         INCBIN GMENGINE
+          File Not Found     109         INCBIN GMENGINE
+        Expression Error     110         INCCOD GMEDATA
+
+000015 Total Symbols
+     1x          Label A043 CopyCode1
+     0x          Label A047 CopyCode2
+     1x          Label A04D CopyCode3
+     1x          Label A036 CopyData1
+     1x          Label A03A CopyData2
+     1x Unknown  Equ   0000 current_game_mode
+     1x Unknown  Equ   0000 current_game_mode_data
+     1x          Label A056 GameModeEngineBin
+     0x          Label A000 GameModeEngineLoader
+     1x Unknown  Equ   0000 GameModesArray
+     1x Unknown  Equ   0000 INCCOD
+     1x Unknown  Equ   0000 INCGLB
+     0x          Label A00A SwapVideoPage
+     1x          Label A000 WaitVBL
+     1x          Label A005 WaitVBL_01
+
