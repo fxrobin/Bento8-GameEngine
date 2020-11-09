@@ -100,29 +100,35 @@ GameModeEngine
 
 DK_Lecture                             * point d'entree 
         lda   #$02
-        sta   $6048                    * DK.OPC $02 Operation - lecture d'un secteur
+        sta   <$6048                   * DK.OPC $02 Operation - lecture d'un secteur
 DKCO
         jsr   $E82A                    * DKCO Appel Moniteur - lecture d'un secteur
-        inc   $604C                    * increment du registre Moniteur DK.SEC
-        lda   $604C                    * chargement de DK.SEC
+        inc   <$604C                   * increment du registre Moniteur DK.SEC
+        lda   <$604C                   * chargement de DK.SEC
         cmpa  #$10                     * si DK.SEC est inferieur ou egal a 16
         bls   DK_Continue,pcr          * on continue le traitement
         lda   #$01                     * sinon on a depasse le secteur 16
-        sta   $604C                    * positionnement du secteur a 1
-        inc   $604B                    * increment du registre Moniteur DK.TRK
+        sta   <$604C                   * positionnement du secteur a 1
+        inc   <$604B                   * increment du registre Moniteur DK.TRK
 DK_Continue                            
-        inc   $604F                    * increment de 256 octets de la zone a ecrire DK.BUF
-        ldd   $604F                    * chargement de la zone a ecrire DK.BUF
+        inc   <$604F                   * increment de 256 octets de la zone a ecrire DK.BUF
+        ldd   <$604F                   * chargement de la zone a ecrire DK.BUF
 DK_Dernier_Bloc                        
         cmpd  #$A000                   * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO,pcr                 * si DK.BUF inferieur ou egal a la limite alors DKCO
         
 GME_01
         lds   #$0000
+        
+        
+        
+
+        
         jmp   $6000
 
 GameModeEngine_End
-        rmb   $2000-(GameModeEngine_End-GameModeEngine),0
+        rmb   $1E00-(GameModeEngine_End-GameModeEngine),0
+        *INCBIN EXOMIZER
 
 * ==============================================================================
 * Donnees de chargement pour chaque etat du jeu
@@ -134,7 +140,7 @@ current_game_mode
 * au build : recuperer l'adresse des modes pour la positionner comme equ dans constants
 
 gm_data
-        fdb   $0000
+        fdb   $0000 * lecteur, secteur, piste, dest, dest_fin : 8 octets + prevoir page
 gm_data_title_screen
         fdb   $0000
 gm_data_level_AIZ

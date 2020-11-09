@@ -30,13 +30,9 @@
 ********************************************************************************
 
 (main)GAMEMODE
+        INCGLB
+        INCLUD CONSTANT
         org $A000
-        
-dk_lecteur           equ   $6049
-dk_piste             equ   $604A
-dk_secteur           equ   $604C
-dk_destination       equ   $604F
-dk_destination_fin   equ   DK_Dernier_Bloc+2
 
 * ==============================================================================
 * GameModeEngineLoader
@@ -67,81 +63,47 @@ SwapVideoPage
         andb  #$FE                     * positionne bit0=0 pour page 0 RAMA
         stb   $E7C3                    * dans l'espace ecran
 
-* Copie en page 0a du moteur Game Mode et des donnees du mode a charger
-************************************************************     
-        ldx   #GameModeEngine          * source
-        ldy   #$4000                   * destination   
-        jsr   COPY8k                   * copie
+* Copie en page 0a des donnees du mode a charger (adaptation du code COPY8k de __sam__)
+* les groupes de 7 octets sont recopiees a l'envers, leur ordre n'a pas d'importance
+************************************************************            
+        sts   CopyCode3+2              ; sauve s
+        lda   current_game_mode
+        ldx   GameModesArray
+        ldu   a,x++                    ; u=source
+        lds   a,x++                    ; s=longueur des donnees
+        ldy   a,x                      ; adresse de fin de lecture de la source
+        sty   CopyData2+2              ; met a jour test de fin
+        leas  current_game_mode_data,s ; s=dest
+CopyData1
+        pulu  d,x,y,dp                 ; on lit 7 octets
+        pshs  d,x,y,dp                 ; on ecrit 7 octets
+CopyData2
+        cmpu  #0                       ; fin ?
+        bne   CopyData1                ; non => boucle 5 + 3 cycles
 
-* Execution du moteur Game Mode en page 0a
+* Copie en page 0a du code Game Mode Engine
+* les groupes de 7 octets sont recopiees a l'envers, le builder va inverser
+* les donnees a l'avance on gagne un leas dans la boucle.
+* le builder ajoute des donnees pour que le code soit un multiple de 7 octets
+************************************************************     
+        ldu   #GameModeEngineBin       * source
+CopyCode1
+        pulu  d,x,y,dp                 ; on lit 7 octets
+        pshs  d,x,y,dp                 ; on ecrit 7 octets
+CopyCode2
+        cmps  #$4000                   ; fin ?
+        bne   CopyCode1                ; non => boucle 5 + 3 cycles
+CopyCode3
+        lds   #0                       ; recup s d'entree
+        puls  dp
+        
+* Execution du Game Mode Engine en page 0a
 ************************************************************         
-        jmp   $4000        
+        jmp   #$4000      
 
 * ==============================================================================
 * GameModeEngine
 * ==============================================================================
-
-GameModeEngine
-        
-* Chargement des donnees du Mode depuis la disquette vers 0000-3FFF (buffer)
-************************************************************
-        setdp $60
-        lda   #$60
-        tfr   a,dp                     * positionne la direct page a 60
-        
-        sts   GME_01+2,pcr
-        lds   [current_game_mode]
-        puls  a,b,x,y,u
-        sta   dk_lecteur
-        stx   dk_piste
-        stb   dk_secteur
-        sty   dk_destination
-        stu   dk_destination_fin
-
-DK_Lecture                             * point d'entree 
-        lda   #$02
-        sta   $6048                    * DK.OPC $02 Operation - lecture d'un secteur
-DKCO
-        jsr   $E82A                    * DKCO Appel Moniteur - lecture d'un secteur
-        inc   $604C                    * increment du registre Moniteur DK.SEC
-        lda   $604C                    * chargement de DK.SEC
-        cmpa  #$10                     * si DK.SEC est inferieur ou egal a 16
-        bls   DK_Continue,pcr          * on continue le traitement
-        lda   #$01                     * sinon on a depasse le secteur 16
-        sta   $604C                    * positionnement du secteur a 1
-        inc   $604B                    * increment du registre Moniteur DK.TRK
-DK_Continue                            
-        inc   $604F                    * increment de 256 octets de la zone a ecrire DK.BUF
-        ldd   $604F                    * chargement de la zone a ecrire DK.BUF
-DK_Dernier_Bloc                        
-        cmpd  #$A000                   * test debut du dernier bloc de 256 octets a ecrire
-        bls   DKCO,pcr                 * si DK.BUF inferieur ou egal a la limite alors DKCO
-        
-GME_01
-        lds   #$0000
-        jmp   $6000
-
-GameModeEngine_End
-        rmb   $2000-(GameModeEngine_End-GameModeEngine),0
-
-* ==============================================================================
-* Donnees de chargement pour chaque etat du jeu
-* ==============================================================================
-
-current_game_mode
-        fdb   $0000
-
-* au build : recuperer l'adresse des modes pour la positionner comme equ dans constants
-
-gm_data
-        fdb   $0000 * lecteur, secteur, piste, dest, dest_fin : 8 octets + prevoir page
-gm_data_title_screen
-        fdb   $0000
-gm_data_level_AIZ
-        fdb   $0000
-gm_data_ending_sequence    
-
-* ==============================================================================
-* Routines
-* ==============================================================================
-        INCLUD COPY8K
+GameModeEngineBin
+        INCBIN GMENGINE
+        INCCOD GMEDATA

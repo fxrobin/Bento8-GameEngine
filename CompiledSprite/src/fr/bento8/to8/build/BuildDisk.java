@@ -151,6 +151,57 @@ public class BuildDisk
 			fd.setIndex(0, 0, 2);
 			fd.write(mainBINBytes);
 			
+//			        * ===========================================================================
+//					* Game Mode Constants (Generated)
+//					* ===========================================================================
+//
+//					gm_TITLESCR equ $00
+//					gm_AIZ      equ $04
+//					gm_MZ       equ $08			
+			
+			
+			
+//	GameModesArray
+//	        fdb   gm_data_TITLESCR, gm_data_AIZ-gm_data_TITLESCR
+//	        fdb   gm_data_AIZ, gm_data_MZ-gm_data_AIZ
+//	        fdb   gm_data_MZ, gm_dataEnd-gm_data_MZ
+//	        fdb   gm_dataEnd
+//
+//	current_game_mode fdb gm_TITLESCR @global
+//
+//	* Structure de donnees des elements a charger en memoire pour chaque mode
+//	* -----------------------------------------------------------------------
+//	* b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
+//	********************************************************************************
+//
+//	gm_data_TITLESCR
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//
+//	gm_data_AIZ
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//
+//	gm_data_MZ
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	        fcb   $00, $00, $00, $00, $00, $00, $00
+//	gm_dataEnd
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			// Compilation du code de boot
 			// *****************************************************************
 
@@ -276,6 +327,10 @@ public class BuildDisk
 	
 	private static int compileRAW(String asmFile) {
 		return compile(asmFile, "-bd");
+	}
+	
+	private static int compileHYB(String asmFile) {
+		return compile(asmFile, "-bh");
 	}
 	
 	private static int compile(String asmFile, String option) {

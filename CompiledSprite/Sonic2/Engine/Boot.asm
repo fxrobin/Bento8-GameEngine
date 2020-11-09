@@ -12,8 +12,7 @@
 ********************************************************************************
 (main)BOOT
 
-boot_dernier_bloc equ $A000
-
+        INCGLB
         org   $6200
 
 ********************************************************************************
@@ -133,7 +132,7 @@ InitVideo
         lds   #$9FFF                   * repositionnement pile systeme
         lda   #$7B                     * passage en mode 160x200x16c
         sta   $E7DC
-(info)   
+  
 ********************************************************************************
 * Initialisation de la commutation de page pour l espace Donnees (Mode registre)
 ********************************************************************************
@@ -143,7 +142,7 @@ InitVideo
         stb   $E7E7                    * bit d4 a 1 pour pages donnees en mode registre
         lda   #$04
         sta   $E7E5                    * selection de la page 04 en RAM Donnees (A000-DFFF)
-(info)   
+ 
 ********************************************************************************
 * Lecture des donnees depuis la disquette et decompression par exomizer
 ********************************************************************************
@@ -176,7 +175,7 @@ dk_dernier_bloc
         cmpd  #boot_dernier_bloc       * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO                     * si DK.BUF inferieur ou egal a la limite alors DKCO
         jmp   $A000
-(info)
+
 * donnees pour le fondu de palette
 ********************************************************************************
 

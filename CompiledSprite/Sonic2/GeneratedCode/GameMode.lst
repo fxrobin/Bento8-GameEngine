@@ -4,7 +4,7 @@
  * Fichier source      : .\Sonic2\GeneratedCode\GameMode.ASM
  * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
  * Contenu :
- *     Main     0:GAMEMODE.ASM 2285
+ *     Main     0:GAMEMODE.ASM 2377
  *     Include  0:COPY8K.ASM   652
  *--------------------------------------------------------------*/
 
@@ -52,7 +52,7 @@ Pass2
      71                           *****************************************>>
      72  3     A01C 8E   A029             ldx   #GameModeEngine          * >>
      73  4     A01F 108E 4000             ldy   #$4000                   * >>
-     74  8     A023 BD   C031             jsr   COPY8k                   * >>
+     74  8     A023 BD   BE31             jsr   COPY8k                   * >>
      75
      76                           * Execution du moteur Game Mode en page 0>>
      77                           *****************************************>>
@@ -71,7 +71,7 @@ Pass2
      90  6     A02B 1F   8B               tfr   a,dp                     * >>
      91                            
      92  6+5   A02D 10EF 8D 0035          sts   GME_01+2,pcr
-     93  6+3   A032 10EE 9F C029          lds   [current_game_mode]
+     93  6+3   A032 10EE 9F BE29          lds   [current_game_mode]
      94  5+8   A037 35   76               puls  a,b,x,y,u
      95  4     A039 97   49               sta   dk_lecteur
      96  5     A03B 9F   4A               stx   dk_piste
@@ -81,92 +81,98 @@ Pass2
     100
     101        A045               DK_Lecture                             * >>
     102  2     A045 86   02               lda   #$02
-    103  4     A047 97   48               sta   $6048                    * >>
+    103  4     A047 97   48               sta   <$6048                   * >>
     104        A049               DKCO
     105  8     A049 BD   E82A             jsr   $E82A                    * >>
-    106  6     A04C 0C   4C               inc   $604C                    * >>
-    107  4     A04E 96   4C               lda   $604C                    * >>
+    106  6     A04C 0C   4C               inc   <$604C                   * >>
+    107  4     A04E 96   4C               lda   <$604C                   * >>
     108  2     A050 81   10               cmpa  #$10                     * >>
     109  3     A052 23   06               bls   DK_Continue,pcr          * >>
     110  2     A054 86   01               lda   #$01                     * >>
-    111  4     A056 97   4C               sta   $604C                    * >>
-    112  6     A058 0C   4B               inc   $604B                    * >>
+    111  4     A056 97   4C               sta   <$604C                   * >>
+    112  6     A058 0C   4B               inc   <$604B                   * >>
     113        A05A               DK_Continue
-    114  6     A05A 0C   4F               inc   $604F                    * >>
-    115  5     A05C DC   4F               ldd   $604F                    * >>
+    114  6     A05A 0C   4F               inc   <$604F                   * >>
+    115  5     A05C DC   4F               ldd   <$604F                   * >>
     116        A05E               DK_Dernier_Bloc
     117  5     A05E 1083 A000             cmpd  #$A000                   * >>
     118  3     A062 23   E5               bls   DKCO,pcr                 * >>
     119                            
     120        A064               GME_01
     121  4     A064 10CE 0000             lds   #$0000
-    122  3     A068 0E   00               jmp   $6000
-    123
-    124        A06A               GameModeEngine_End
-    125        A06A                       rmb   $2000-(GameModeEngine_End-G>>
-    126
-    127                           * =======================================>>
-    128                           * Donnees de chargement pour chaque etat >>
-    129                           * =======================================>>
-    130
-    131        C029               current_game_mode
-    132        C029 0000                  fdb   $0000
-    133
-    134                           * au build : recuperer l'adresse des mode>>
-    135
-    136        C02B               gm_data
-    137        C02B 0000                  fdb   $0000
-    138        C02D               gm_data_title_screen
-    139        C02D 0000                  fdb   $0000
-    140        C02F               gm_data_level_AIZ
-    141        C02F 0000                  fdb   $0000
-    142        C031               gm_data_ending_sequence
-    143
-    144                           * =======================================>>
-    145                           * Routines
-    146                           * =======================================>>
-    150                                   INCLUD COPY8K
-    151                           * Recopie 8 ko entre X et Y
-    152        C031               COPY8k
-    153  5+10  C031 34   7F          PSHS D,X,Y,U,DP,CC
-    154  6+5   C033 10EF 8D 002B     STS  COPY8k3+2,PCR ; sauve S
-    155
-    156  4+4   C038 33   89 2000     LEAU 8192,X        ; adresse de fin de>>
-    157  5+5   C03C EF   8D 001C     STU  COPY8k2+2,PCR ; met a jour test d>>
-    158                            
-    159  5+3   C040 EC   81          LDD  ,X++          ; 8192 = 21*390 + 2>>
-    160  5+3   C042 ED   A1          STD  ,Y++          ; on s'occupe des 2>>
-    161                            
-    162  4+1   C044 32   27          LEAS 7,Y           ; mets a jour les p>>
-    163  4+0   C046 33   84          LEAU ,X            ; U=source S=dest
-    164        C048               COPY8k1
-    165  5+7   C048 37   3E          PULU D,X,Y,DP      ; on lit 7 octets
-    166  5+7   C04A 34   3E          PSHS D,X,Y,DP      ; on ecrit 7 octets>>
-    167  4+1   C04C 32   6E          LEAS 14,S          ; reajuste S => 12 >>
-    168  5+7   C04E 37   3E          PULU D,X,Y,DP      ;
-    169  5+7   C050 34   3E          PSHS D,X,Y,DP      ;
-    170  4+1   C052 32   6E          LEAS 14,S          ;
-    171  5+7   C054 37   3E          PULU D,X,Y,DP      ;
-    172  5+7   C056 34   3E          PSHS D,X,Y,DP      ;
-    173  4+1   C058 32   6E          LEAS 14,S          ; repete 3 fois = 2>>
-    174        C05A               COPY8k2
-    175  5     C05A 1183 0000        CMPU #0            ; fin ?
-    176  3     C05E 26   E8          BNE  COPY8k1       ; non => boucle 5 +>>
-    177        C060               COPY8k3
-    178  4     C060 10CE 0000        LDS  #0            ; recup S d'entree
-    179  5+10  C064 35   BF          PULS D,X,Y,DP,CC,PC
-    180                            
-    148
+    122                            
+    123                            
+    124                            
+    125
+    126                            
+    127  3     A068 0E   00               jmp   $6000
+    128
+    129        A06A               GameModeEngine_End
+    130        A06A                       rmb   $1E00-(GameModeEngine_End-G>>
+    131                                   *INCBIN EXOMIZER
+    132
+    133                           * =======================================>>
+    134                           * Donnees de chargement pour chaque etat >>
+    135                           * =======================================>>
+    136
+    137        BE29               current_game_mode
+    138        BE29 0000                  fdb   $0000
+    139
+    140                           * au build : recuperer l'adresse des mode>>
+    141
+    142        BE2B               gm_data
+    143        BE2B 0000                  fdb   $0000 * lecteur, secteur, p>>
+    144        BE2D               gm_data_title_screen
+    145        BE2D 0000                  fdb   $0000
+    146        BE2F               gm_data_level_AIZ
+    147        BE2F 0000                  fdb   $0000
+    148        BE31               gm_data_ending_sequence
     149
+    150                           * =======================================>>
+    151                           * Routines
+    152                           * =======================================>>
+    156                                   INCLUD COPY8K
+    157                           * Recopie 8 ko entre X et Y
+    158        BE31               COPY8k
+    159  5+10  BE31 34   7F          PSHS D,X,Y,U,DP,CC
+    160  6+5   BE33 10EF 8D 002B     STS  COPY8k3+2,PCR ; sauve S
+    161
+    162  4+4   BE38 33   89 2000     LEAU 8192,X        ; adresse de fin de>>
+    163  5+5   BE3C EF   8D 001C     STU  COPY8k2+2,PCR ; met a jour test d>>
+    164                            
+    165  5+3   BE40 EC   81          LDD  ,X++          ; 8192 = 21*390 + 2>>
+    166  5+3   BE42 ED   A1          STD  ,Y++          ; on s'occupe des 2>>
+    167                            
+    168  4+1   BE44 32   27          LEAS 7,Y           ; mets a jour les p>>
+    169  4+0   BE46 33   84          LEAU ,X            ; U=source S=dest
+    170        BE48               COPY8k1
+    171  5+7   BE48 37   3E          PULU D,X,Y,DP      ; on lit 7 octets
+    172  5+7   BE4A 34   3E          PSHS D,X,Y,DP      ; on ecrit 7 octets>>
+    173  4+1   BE4C 32   6E          LEAS 14,S          ; reajuste S => 12 >>
+    174  5+7   BE4E 37   3E          PULU D,X,Y,DP      ;
+    175  5+7   BE50 34   3E          PSHS D,X,Y,DP      ;
+    176  4+1   BE52 32   6E          LEAS 14,S          ;
+    177  5+7   BE54 37   3E          PULU D,X,Y,DP      ;
+    178  5+7   BE56 34   3E          PSHS D,X,Y,DP      ;
+    179  4+1   BE58 32   6E          LEAS 14,S          ; repete 3 fois = 2>>
+    180        BE5A               COPY8k2
+    181  5     BE5A 1183 0000        CMPU #0            ; fin ?
+    182  3     BE5E 26   E8          BNE  COPY8k1       ; non => boucle 5 +>>
+    183        BE60               COPY8k3
+    184  4     BE60 10CE 0000        LDS  #0            ; recup S d'entree
+    185  5+10  BE64 35   BF          PULS D,X,Y,DP,CC,PC
+    186                            
+    154
+    155
 
 000000 Total Errors
 
 000025 Total Symbols
-     1x          Label C031 COPY8k
-     1x          Label C048 COPY8k1
-     1x          Label C05A COPY8k2
-     1x          Label C060 COPY8k3
-     1x          Label C029 current_game_mode
+     1x          Label BE31 COPY8k
+     1x          Label BE48 COPY8k1
+     1x          Label BE5A COPY8k2
+     1x          Label BE60 COPY8k3
+     1x          Label BE29 current_game_mode
      1x          Label A049 DKCO
      1x          Label A05A DK_Continue
      1x          Label A05E DK_Dernier_Bloc
@@ -180,10 +186,10 @@ Pass2
      0x          Label A000 GameModeEngineLoader
      1x          Label A06A GameModeEngine_End
      1x          Label A064 GME_01
-     0x          Label C02B gm_data
-     0x          Label C031 gm_data_ending_sequence
-     0x          Label C02F gm_data_level_AIZ
-     0x          Label C02D gm_data_title_screen
+     0x          Label BE2B gm_data
+     0x          Label BE31 gm_data_ending_sequence
+     0x          Label BE2F gm_data_level_AIZ
+     0x          Label BE2D gm_data_title_screen
      0x          Label A00A SwapVideoPage
      1x          Label A000 WaitVBL
      1x          Label A005 WaitVBL_01

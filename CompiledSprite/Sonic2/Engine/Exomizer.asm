@@ -4,8 +4,8 @@
 * This routine decrunches data compressed with Exomizer2 in raw mode,
 * backward with litterals.
 * This routine was developed and tested on a Thomson MO5 in July 2011.
-*
-*  
+
+   
 * The Exomizer2 decruncher starts here.
 * call with a JSR exo2 or equivalent.
 *
@@ -18,16 +18,11 @@
 * This code self modifies and cannot be run in ROM.
 * This code must be contained within a single page (makes use of DP), but may
 * be located anywhere in RAM.
-* biba    rmb     156                     * Bits and base are interleaved
-
-(main)EXOMIZER
-        setdp $A0
-        org $A000       
 
 exo2    pshs    u,y,x,dp,d,cc           * Save context
         tfr     pc,d                    * Set direct page
         tfr     a,dp
-        leay    $6264,pcr               * Set ptr to bits and base table
+        leay    biba,pcr                * Set ptr to bits and base table
         clrb
         stb     <bitbuf+1               * Init bit buffer
 
@@ -53,7 +48,7 @@ roll    rol     ,s
         bne     nxt
    
 go      ldy     6,s                     * Y = ptr to output
-mloop   ldb     #1                      * for(;;)
+mloop   ldb     #1                      * for(**)
         bsr     getbits                 * Fetch 1 bit
         bne     cpy                     * is 1 ?
         stb     <idx+1                  * B always 0 here
@@ -125,7 +120,7 @@ get3    decb
 * Output   : D = base[index] + readbits(&in, bits[index])
 * Modifies : D,X,U.
 
-cook    leax    $6264,pcr
+cook    leax    biba,pcr
         abx                             * bits+base = 3 bytes
         aslb                            * times 2
         abx
@@ -136,3 +131,5 @@ cook    leax    $6264,pcr
 * Values used in the switch (index)   
 tab1    fcb     4,2,4
         fcb     16,48,32
+
+biba    rmb     156                     * Bits and base are interleaved
