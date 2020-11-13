@@ -275,8 +275,8 @@ Cal_ShellcrackerClaw_Extend            *byte_381A4:
                                        *
 ShellcrackerClaw_Type                  *loc_381AC:
         ldx   parent,u                 *    movea.w objoff_2C(a0),a1 ; a1=object
-        ldd   #Shellcracker
-        cmpd  id,x                     *    cmpi.b  #ObjID_Shellcracker,id(a1)
+        lda   #Shellcracker_id
+        cmpa  id,x                     *    cmpi.b  #ObjID_Shellcracker,id(a1)
         bne   ShellcrackerClaw_Projectile
                                        *    bne.s   loc_381D0
                                        *    moveq   #0,d0
@@ -431,8 +431,8 @@ ShellcrackerClaw_instantiate_01        *loc_38296:
         jsr   SingleObjLoad2           *    jsrto   (SingleObjLoad2).l, JmpTo25_SingleObjLoad2
         lbeq  ShellcrackerClaw_instantiate_04
                                        *    bne.s   return_382EE       
-        ldd   #ShellcrackerClaw
-        std   ,x                       *    _move.b #ObjID_ShellcrackerClaw,id(a1) ; load objA0
+        lda   #ShellcrackerClaw_id
+        sta   ,x                       *    _move.b #ObjID_ShellcrackerClaw,id(a1) ; load objA0
         ldd   #$2605
         sta   subtype,x                *    move.b  #$26,subtype(a1) ; <== ObjA0_SubObjData
         stb   mapping_frame,x          *    move.b  #5,mapping_frame(a1)

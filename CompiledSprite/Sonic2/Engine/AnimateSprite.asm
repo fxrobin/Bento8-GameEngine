@@ -20,7 +20,7 @@ AnimateSprite                          *AnimateSprite:
         lda   anim,u                   *    move.b  anim(a0),d0      ; move animation number to d0
         cmpa  prev_anim,u              *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
         beq   Anim_Run                 *    beq.s   Anim_Run         ; if not, branch
-        sta   prev_anim,u              *    move.b  d0,prev_anim(a0) ; set prev anim to current current
+        sta   prev_anim,u              *    move.b  d0,prev_anim(a0) ; set prev anim to current animation
 		ldb   #0
         stb   anim_frame,u             *    move.b  #0,anim_frame(a0)          ; reset animation
         stb   anim_frame_duration,u    *    move.b  #0,anim_frame_duration(a0) ; reset frame duration
@@ -107,7 +107,7 @@ Anim_End_FB                            *Anim_End_FB:
                                        *; ===========================================================================
                                        *; loc_165F0:
 Anim_End_FA                            *Anim_End_FA:
-        inca                           *    addq.b  #1,d0                    ; is the end flag = $FA ?
+        * inca                         *    addq.b  #1,d0                    ; is the end flag = $FA ?
         bne   Anim_End                 *    bne.s   Anim_End_F9              ; if not, branch
         inc   routine_secondary,u      *    addq.b  #2,routine_secondary(a0) ; jump to next routine
         inc   routine_secondary,u

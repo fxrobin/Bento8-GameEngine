@@ -134,10 +134,85 @@ public class BuildDisk
 			// Initialisation de l'image de disquette en sortie
 			FdUtil fd = new FdUtil();
 			
+			// Initialisation des fichiers source générés
+			Globals glb = new Globals(engineAsmIncludes);
+			GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
+			
 			// Compilation du code de Game Mode Engine
 			// *****************************************************************
 
 			String gameModeTmpFile = duplicateFile(engineAsmGameMode);
+			String
+			List<Byte[]>
+			Boolean
+			
+			for ()
+			gmeData.addMode(gm_TITLESCR, List<Byte[]>, true);
+			gmeData.addMode(gm_AIZ, List<Byte[]>, false);
+			gmeData.addMode(gm_MZ, List<Byte[]>, false);
+			
+			gmeData.addConstant("gm_TITLESCR", String.format("$%1$02X", 0));
+			gmeData.addConstant("gm_AIZ", String.format("$%1$02X", 4));
+			gmeData.addConstant("gm_MZ", String.format("$%1$02X", 8));
+			
+			gmeData.addLabel("GameModesArray");
+			gmeData.addFdb(new String[] {"gm_data_TITLESCR", "gm_data_AIZ-gm_data_TITLESCR"});
+			gmeData.addFdb(new String[] {"gm_data_AIZ", "gm_data_MZ-gm_data_AIZ"});
+			gmeData.addFdb(new String[] {"gm_data_MZ", "gm_dataEnd-gm_data_MZ"});
+			gmeData.addFdb(new String[] {"gm_dataEnd"});	
+			
+			gmeData.addConstant("current_game_mode", "gm_TITLESCR");
+			// 			glb.addConstant("current_game_mode", "gm_TITLESCR"); => veut dire qu'il faudra set la page 4 pour positionner la valeur ??? bof
+			
+			// Donnees b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
+			gmeData.addLabel("gm_data_TITLESCR");
+			gmeData.addFdb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			
+			gmeData.addLabel("gm_data_AIZ");
+			gmeData.addFdb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			
+			gmeData.addLabel("gm_data_MZ");
+			gmeData.addFdb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
+			gmeData.addLabel("gm_dataEnd");
+			
+			// TitleScreen_id equ $01
+			
+			// ObjectCodeRef
+			// 05A000
+			// 05A502
+			// ...
+			
+			// Scripts d'animation
+			// -------------------
+			
+			//LargeStar
+			//fcb   $01         ; frame duration
+			//fcb   $06,$C5,$40 ; image 1: page address
+			//fcb   $07,$B0,$20 ; image 2
+			//fcb   $05,$A0,$10 ; image 3
+			//fcb   $07,$B0,$20 ; image 2
+			//fcb   $06,$C5,$40 ; image 1
+			//fcb   $FA         ; next subroutine
+			
+			//$FF _resetAnim
+			//$FE _goBackNFrames
+			//$FD _goToAnimation
+			//$FC _nextRoutine
+			//$FB _resetAnimAndSubRoutine
+			//$FA _nextSubRoutine
+			
+			
+			
+			
 			compileRAW(gameModeTmpFile);
 			byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
 			int mainBINSize = mainBINBytes.length;
@@ -150,63 +225,12 @@ public class BuildDisk
 			// Ecriture sur disquette
 			fd.setIndex(0, 0, 2);
 			fd.write(mainBINBytes);
-			
-//			        * ===========================================================================
-//					* Game Mode Constants (Generated)
-//					* ===========================================================================
-//
-//					gm_TITLESCR equ $00
-//					gm_AIZ      equ $04
-//					gm_MZ       equ $08			
-			
-			
-			
-//	GameModesArray
-//	        fdb   gm_data_TITLESCR, gm_data_AIZ-gm_data_TITLESCR
-//	        fdb   gm_data_AIZ, gm_data_MZ-gm_data_AIZ
-//	        fdb   gm_data_MZ, gm_dataEnd-gm_data_MZ
-//	        fdb   gm_dataEnd
-//
-//	current_game_mode fdb gm_TITLESCR @global
-//
-//	* Structure de donnees des elements a charger en memoire pour chaque mode
-//	* -----------------------------------------------------------------------
-//	* b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
-//	********************************************************************************
-//
-//	gm_data_TITLESCR
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//
-//	gm_data_AIZ
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//
-//	gm_data_MZ
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	        fcb   $00, $00, $00, $00, $00, $00, $00
-//	gm_dataEnd
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+
 			// Compilation du code de boot
 			// *****************************************************************
 
 			String bootTmpFile = duplicateFile(engineAsmBoot);
-			replaceTag(bootTmpFile, "boot_dernier_bloc equ $A000", "boot_dernier_bloc equ $"+String.format("%1$02X", dernierBloc >> 8)+"00");
+			glb.addConstant("boot_dernier_bloc", String.format("%1$02X", dernierBloc >> 8)+"00");
 			compileRAW(bootTmpFile);
 
 			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage

@@ -1,5 +1,5 @@
 ********************************************************************************
-* Gestion des modes de jeu (TO8 Thomson) - Benoit Rousseau 07/10/2020
+* Gestion des modes de jeu (TO8 Thomson) - Benoit Rousseau 07/11/2020
 * ------------------------------------------------------------------------------
 *
 * Permet de gerer les differents etats/modes d'un jeu
@@ -30,7 +30,6 @@
 ********************************************************************************
 
 (main)GAMEMODE
-        INCGLB
         INCLUD CONSTANT
         org $A000
 
@@ -107,4 +106,4 @@ CopyCode3
 * ==============================================================================
 GameModeEngineBin
         INCBIN GMENGINE
-        INCCOD GMEDATA
+        INCLUD GMEDATA

@@ -1,4 +1,13 @@
 * ===========================================================================
+* TO8 Registers
+* ===========================================================================
+
+dk_lecteur           equ   $6049
+dk_piste             equ   $604A
+dk_secteur           equ   $604C
+dk_destination       equ   $604F
+
+* ===========================================================================
 * Physics Constants
 * ===========================================================================
 
@@ -19,7 +28,7 @@ number_of_level_objects          equ 3
 object_size                   equ $1F ; the size of an object
 next_object                   equ object_size
 			                  
-id                            equ $00 ; and $01 object ID ($0000: free slot, $A000: Object1 code Adress, $B000: Object2 code Adress, ...).
+id                            equ $00 ; object ID ($00: free slot, $01: Object1, ...).
 render_flags                  equ $02 ; bitfield
 x_pos                         equ $03 ; and $04 ... some objects use subpixel as well when extra precision is required (see ObjectMove)
 x_sub                         equ $05 ; subpixel ; doit suivre x_pos, second octet supprime car inutile en 6809
@@ -34,9 +43,9 @@ x_vel                         equ $0B ; and $0C ; horizontal velocity
 y_vel                         equ $0D ; and $0E ; vertical velocity
 y_radius                      equ $0F ; collision height / 2
 x_radius                      equ $10 ; collision width / 2
-anim_frame                    equ $11
-anim                          equ $12
-prev_anim                     equ $13
+anim_frame                    equ $11 ; frame index of current image in animation
+anim                          equ $12 ; equ $13 ; address of animation script
+prev_anim                     equ $13 ; equ $14 ; address of animation script
 anim_frame_duration           equ $14 ; range: 00-7F (0-127)
 status                        equ $15 ; note: exact meaning depends on the object...
 routine                       equ $16
