@@ -1,10 +1,10 @@
 ; ---------------------------------------------------------------------------
 ; Subroutine to display a sprite/object, when a0 is the object RAM
 ;
-; Difference avec la méthode d'origine: on stocke la priorité par pas de $80
-; à la maniere de s3k au lieu d'une priorité de 0 à 7.
-; La priorité est l'adresse mémoire de l'entrée du tableau Sprite_Table_Input
-; directement à l'index de la priorité concernée.
+; Difference avec la methode d'origine: on stocke la priorite par pas de $80
+; ï¿½ la maniere de s3k au lieu d'une priorite de 0 a 7.
+; La priorite est l'adresse memoire de l'entree du tableau Sprite_Table_Input
+; directement a l'index de la priorite concernee.
 ;
 ; input REG : [u] pointeur sur l'objet 
 ; ---------------------------------------------------------------------------

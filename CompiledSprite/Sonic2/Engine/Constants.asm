@@ -38,15 +38,15 @@ x_pixel                       equ x_pos
 y_pixel                       equ x_pos+2
 priority                      equ $08 ; $09 ; $00 priority 0 (front), $80 priority 1, ..., $380 priority 7
 width_pixels                  equ $0A
-mapping_frame                 equ $0B
 x_vel                         equ $0B ; and $0C ; horizontal velocity
 y_vel                         equ $0D ; and $0E ; vertical velocity
 y_radius                      equ $0F ; collision height / 2
 x_radius                      equ $10 ; collision width / 2
-anim_frame                    equ $11 ; frame index of current image in animation
-anim                          equ $12 ; equ $13 ; address of animation script
-prev_anim                     equ $13 ; equ $14 ; address of animation script
-anim_frame_duration           equ $14 ; range: 00-7F (0-127)
+anim                          equ $12 ; equ $13 ; address of the current animation script
+prev_anim                     equ $13 ; equ $14 ; address of the previous animation script. This is used to detect external changes to the current animation.
+anim_frame_duration           equ $14 ; duration of each image in animation script (anim), range: 00-7F (0-127), 0 means display only during one frame
+anim_frame                    equ $11 ; index of current image in animation script (anim)
+mapping_frame                 equ $0B ; $0C ; value read at current animation script index (anim_frame), is an address that point to sprite compiled draw and erase code
 status                        equ $15 ; note: exact meaning depends on the object...
 routine                       equ $16
 routine_secondary             equ $17

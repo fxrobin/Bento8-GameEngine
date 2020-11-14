@@ -184,34 +184,61 @@ public class BuildDisk
 			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
 			gmeData.addLabel("gm_dataEnd");
 			
-			// TitleScreen_id equ $01
+// CONSTANT
+// ********
 			
-			// ObjectCodeRef
-			// 05A000
-			// 05A502
-			// ...
+			//* Reference des identifiants d'objets
+			//* -----------------------------------
+			//TitleScreen_id equ $01
 			
-			// Scripts d'animation
-			// -------------------
+			//* Référence des mots reserves pour les scripts d'animation
+			//* --------------------------------------------------------
+			//_resetAnim              equ $FF
+			//_goBackNFrames          equ $FE
+			//_goToAnimation          equ $FD
+			//_nextRoutine            equ $FC
+			//_resetAnimAndSubRoutine equ $FB
+			//_nextSubRoutine         equ $FA
 			
+// MAIN
+// ****
+			
+			//* Adresse du code des objets
+			//* --------------------------
+			//ObjectCodeRef
+			//        fcb   $05,$A0,$00 ; Objet $01 main code
+			//        fcb   $05,$A5,$02 ; Objet $02 main code
+			//...
+			
+			//* Scripts d'animation
+			//* -------------------
 			//LargeStar
-			//fcb   $01         ; frame duration
-			//fcb   $06,$C5,$40 ; image 1: page address
-			//fcb   $07,$B0,$20 ; image 2
-			//fcb   $05,$A0,$10 ; image 3
-			//fcb   $07,$B0,$20 ; image 2
-			//fcb   $06,$C5,$40 ; image 1
-			//fcb   $FA         ; next subroutine
+			//fcb   $01 ; frame duration
+			//fdb   ImgrefStar_2
+			//fdb   ImgrefStar_3
+			//fdb   ImgrefStar_4
+			//fdb   ImgrefStar_3
+			//fdb   ImgrefStar_2
+			//fcb   _nextSubRoutine
 			
-			//$FF _resetAnim
-			//$FE _goBackNFrames
-			//$FD _goToAnimation
-			//$FC _nextRoutine
-			//$FB _resetAnimAndSubRoutine
-			//$FA _nextSubRoutine
+			//SmallStar
+			//fcb   $03 ; frame duration
+			//fdb   ImgrefStar_1
+			//fdb   ImgrefStar_2
+			//fcb   _resetAnim
+
+			//* Adresse des images de l'objet
+			//* -----------------------------
 			
-			
-			
+			//ImgrefEmblem        
+            //        fcb   $07,$B0,$20,$08,$27,$32 ; compiled sprite draw routine (page,address) and erase routine (page,address)					
+			//ImgrefEmblemFront    
+            //        fcb   $07,$B0,$20,$08,$27,$32		
+			//ImgrefIslandLand      
+            //        fcb   $07,$B0,$20,$08,$27,$32		
+			//ImgrefIslandWater     
+            //        fcb   $07,$B0,$20,$08,$27,$32		
+			//...			
 			
 			compileRAW(gameModeTmpFile);
 			byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
