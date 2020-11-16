@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 
@@ -17,7 +18,8 @@ public class Globals
 			throw new Exception (key + " not found in include declaration.");
 		}
 
-		new AsmFile(includes.get(key)[0], key);
+		globals = Paths.get(includes.get(key)[0]);
+		new AsmFile(globals);
 	}
 
 	public void addConstant(String name, String value) {

@@ -105,5 +105,5 @@ CopyCode3
 * GameModeEngine
 * ==============================================================================
 GameModeEngineBin
-        INCBIN GMENGINE
+        INCLUD GMENGINE
         INCLUD GMEDATA

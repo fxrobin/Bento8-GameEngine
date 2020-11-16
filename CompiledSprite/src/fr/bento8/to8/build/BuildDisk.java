@@ -12,10 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -34,6 +36,7 @@ import fr.bento8.to8.compiledSprite.AssemblyGenerator;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.SpriteSheet;
+import fr.bento8.to8.util.ByteUtil;
 import fr.bento8.to8.util.C6809Util;
 import fr.bento8.to8.util.FileUtil;
 import fr.bento8.to8.util.knapsack.Item;
@@ -43,16 +46,18 @@ import fr.bento8.to8.util.knapsack.Solution;
 public class BuildDisk
 {
 	private static final Logger logger = LogManager.getLogger("log");
-	
+
 	// Engine
 	private static String engineAsmBoot;
 	private static String engineAsmGameMode;
 	private static HashMap<String, String[]> engineAsmIncludes;
-	
+
 	// Game Mode
 	private static String gameModeBoot;
 	private static HashMap<String, String[]> gameMode;
-	
+	private static HashMap<String, HashMap<String, String[]>> GameModeObjectProperties = new HashMap<String, HashMap<String, String[]>>();
+	private static HashMap<String, HashMap<String, HashMap<String, String[]>>> GameModeActProperties = new HashMap<String, HashMap<String, HashMap<String, String[]>>>();
+
 	// Build
 	public  static String c6809;
 	public  static String exobin;
@@ -113,9 +118,15 @@ public class BuildDisk
 			// Initialisation
 			// *****************************************************************
 
-			// Chargement du fichier de configuration
+			// Chargement du fichier de configuration principal
 			logger.info("Lecture du fichier de configuration: "+args[0]);
 			readProperties(args[0]);
+
+			// Chargement des fichiers de configuration secondaires
+			for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
+				logger.info("Lecture du fichier de configuration "+curGameMode.getKey()+" : "+curGameMode.getValue()[0]);
+				readGameModeProperties(curGameMode);
+			}
 
 			// Initialisation du logger
 			if (debug) {
@@ -133,117 +144,44 @@ public class BuildDisk
 
 			// Initialisation de l'image de disquette en sortie
 			FdUtil fd = new FdUtil();
-			
-			// Initialisation des fichiers source générés
+
+			// Gestion des variables globales
 			Globals glb = new Globals(engineAsmIncludes);
-			GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
-			
-			// Compilation du code de Game Mode Engine
+
+			// Compilation des includes binaires
+			// *****************************************************************
+			System.out.println("Compilation des includes binaires:");
+			for (Map.Entry<String,String[]> engineAsmInclude : engineAsmIncludes.entrySet()) {
+				if (engineAsmInclude.getValue().length > 1) {
+					System.out.println(engineAsmInclude.getKey());
+					String engineAsmIncludeTmpFile = duplicateFile(engineAsmInclude.getValue()[1]);
+					compileRAW(engineAsmIncludeTmpFile);
+					byte[] BINBytes = Files.readAllBytes(Paths.get(getBINFileName(engineAsmIncludeTmpFile)));
+					String HEXValues = ByteUtil.bytesToHex(BINBytes);
+					String content = "";
+					for (int i = 0; i < HEXValues.length(); i++ ) {
+						content += "\n        fcb   " +  HEXValues.charAt(i);
+						i += 2;
+					}
+		            try {
+		                Files.write(Paths.get(engineAsmIncludeTmpFile), content.getBytes(), StandardOpenOption.APPEND);
+		            } catch (IOException ioExceptionObj) {
+		                System.out.println("Problème à l'écriture du fichier "+engineAsmIncludeTmpFile+": " + ioExceptionObj.getMessage());
+		            }
+				}
+			}
+
+			// Compilation du code de Game Mode Engine et des Game Modes
 			// *****************************************************************
 
 			String gameModeTmpFile = duplicateFile(engineAsmGameMode);
-			String
-			List<Byte[]>
-			Boolean
-			
-			for ()
-			gmeData.addMode(gm_TITLESCR, List<Byte[]>, true);
-			gmeData.addMode(gm_AIZ, List<Byte[]>, false);
-			gmeData.addMode(gm_MZ, List<Byte[]>, false);
-			
-			gmeData.addConstant("gm_TITLESCR", String.format("$%1$02X", 0));
-			gmeData.addConstant("gm_AIZ", String.format("$%1$02X", 4));
-			gmeData.addConstant("gm_MZ", String.format("$%1$02X", 8));
-			
-			gmeData.addLabel("GameModesArray");
-			gmeData.addFdb(new String[] {"gm_data_TITLESCR", "gm_data_AIZ-gm_data_TITLESCR"});
-			gmeData.addFdb(new String[] {"gm_data_AIZ", "gm_data_MZ-gm_data_AIZ"});
-			gmeData.addFdb(new String[] {"gm_data_MZ", "gm_dataEnd-gm_data_MZ"});
-			gmeData.addFdb(new String[] {"gm_dataEnd"});	
-			
-			gmeData.addConstant("current_game_mode", "gm_TITLESCR");
-			// 			glb.addConstant("current_game_mode", "gm_TITLESCR"); => veut dire qu'il faudra set la page 4 pour positionner la valeur ??? bof
-			
-			// Donnees b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
-			gmeData.addLabel("gm_data_TITLESCR");
-			gmeData.addFdb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			
-			gmeData.addLabel("gm_data_AIZ");
-			gmeData.addFdb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			
-			gmeData.addLabel("gm_data_MZ");
-			gmeData.addFdb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addFdb(new String[] {"$00", "$00", "$00", "$00", "$00", "$00", "$00"});
-			gmeData.addLabel("gm_dataEnd");
-			
-// CONSTANT
-// ********
-			
-			//* Reference des identifiants d'objets
-			//* -----------------------------------
-			//TitleScreen_id equ $01
-			
-			//* Référence des mots reserves pour les scripts d'animation
-			//* --------------------------------------------------------
-			//_resetAnim              equ $FF
-			//_goBackNFrames          equ $FE
-			//_goToAnimation          equ $FD
-			//_nextRoutine            equ $FC
-			//_resetAnimAndSubRoutine equ $FB
-			//_nextSubRoutine         equ $FA
-			
-// MAIN
-// ****
-			
-			//* Adresse du code des objets
-			//* --------------------------
-			//ObjectCodeRef
-			//        fcb   $05,$A0,$00 ; Objet $01 main code
-			//        fcb   $05,$A5,$02 ; Objet $02 main code
-			//...
-			
-			//* Scripts d'animation
-			//* -------------------
-			//LargeStar
-			//fcb   $01 ; frame duration
-			//fdb   ImgrefStar_2
-			//fdb   ImgrefStar_3
-			//fdb   ImgrefStar_4
-			//fdb   ImgrefStar_3
-			//fdb   ImgrefStar_2
-			//fcb   _nextSubRoutine
-			
-			//SmallStar
-			//fcb   $03 ; frame duration
-			//fdb   ImgrefStar_1
-			//fdb   ImgrefStar_2
-			//fcb   _resetAnim
 
-			//* Adresse des images de l'objet
-			//* -----------------------------
-			
-			//ImgrefEmblem        
-            //        fcb   $07,$B0,$20,$08,$27,$32 ; compiled sprite draw routine (page,address) and erase routine (page,address)					
-			//ImgrefEmblemFront    
-            //        fcb   $07,$B0,$20,$08,$27,$32		
-			//ImgrefIslandLand      
-            //        fcb   $07,$B0,$20,$08,$27,$32		
-			//ImgrefIslandWater     
-            //        fcb   $07,$B0,$20,$08,$27,$32		
-			//...			
-			
+			processGameModes();		
+
 			compileRAW(gameModeTmpFile);
 			byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
 			int mainBINSize = mainBINBytes.length;
-			
+
 			if (mainBINSize > 16128) {
 				throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+mainBINSize+" octets (max:16128 va jusqu'en 9F00, avec une pile de 256 octets 9F00-9FFF)");
 			}
@@ -279,6 +217,118 @@ public class BuildDisk
 		}
 	}
 
+	private static void processGameModes() throws Exception {
+		// Initialisation des fichiers source générés
+		GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
+
+		// Boot Game Mode
+		int index = 0;
+		logger.info("Traitement du Game Mode (Boot) : "+gameModeBoot);
+		gmeData.addConstant("gm_"+gameModeBoot, String.format("$%1$02X", index));
+		index += 2;
+
+		// Other Game Modes
+		for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
+			if (!curGameMode.getKey().contentEquals(gameModeBoot)) {
+				logger.info("Traitement du Game Mode : "+curGameMode.getKey());
+				gmeData.addConstant("gm_"+curGameMode.getKey(), String.format("$%1$02X", index));
+				index += 2;
+			}
+		}
+
+		gmeData.addLabel("current_game_mode");
+		gmeData.addFcb(new String[] {"gm_"+gameModeBoot});
+		// Il faut ajouter dans GameMode deux fonctions : changement de Game Mode et changement d'act
+		// Pour faire l'appel il faudra pouvoir set la page mémoire et set le PC pour que l'execution branche au bon endroit 
+		// Donc passer par la page 1 pour faire la transition
+
+
+		// *******************************************************************************
+
+		// CONSTANT
+		// ********
+
+		//* Reference des identifiants d'objets
+		//* -----------------------------------
+		//TitleScreen_id equ $01
+
+		//* Référence des mots reserves pour les scripts d'animation
+		//* --------------------------------------------------------
+		//_resetAnim              equ $FF
+		//_goBackNFrames          equ $FE
+		//_goToAnimation          equ $FD
+		//_nextRoutine            equ $FC
+		//_resetAnimAndSubRoutine equ $FB
+		//_nextSubRoutine         equ $FA
+
+		// MAIN
+		// ****
+
+		//* Adresse du code des objets
+		//* --------------------------
+		//ObjectCodeRef
+		//        fcb   $05,$A0,$00 ; Objet $01 main code
+		//        fcb   $05,$A5,$02 ; Objet $02 main code
+		//...
+
+		//* Scripts d'animation
+		//* -------------------
+		//LargeStar
+		//fcb   $01 ; frame duration
+		//fdb   ImgrefStar_2
+		//fdb   ImgrefStar_3
+		//fdb   ImgrefStar_4
+		//fdb   ImgrefStar_3
+		//fdb   ImgrefStar_2
+		//fcb   _nextSubRoutine
+
+		//SmallStar
+		//fcb   $03 ; frame duration
+		//fdb   ImgrefStar_1
+		//fdb   ImgrefStar_2
+		//fcb   _resetAnim
+
+		//* Adresse des images de l'objet
+		//* -----------------------------
+
+		//ImgrefEmblem        
+		//        fcb   $07,$B0,$20,$08,$27,$32 ; compiled sprite draw routine (page,address) and erase routine (page,address)					
+		//ImgrefEmblemFront    
+		//        fcb   $07,$B0,$20,$08,$27,$32		
+		//ImgrefIslandLand      
+		//        fcb   $07,$B0,$20,$08,$27,$32		
+		//ImgrefIslandWater     
+		//        fcb   $07,$B0,$20,$08,$27,$32		
+		//...
+
+		// *******************************************************************************
+
+		// Game Modes Data
+		for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
+			logger.info("Traitement du Game Mode : "+curGameMode.getKey());
+			gmeData.addLabel("gm_data_"+curGameMode.getKey());
+
+			// Boucle à implémenter
+			// Donnees b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
+			gmeData.addFcb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
+		}
+		gmeData.addLabel("gm_dataEnd");
+
+		// Game Modes Data Array
+		logger.info("Traitement du GameModesArray");
+		gmeData.addLabel("GameModesArray");
+		String entry = null;
+		for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
+			if (entry != null) {
+				gmeData.addFdb(new String[] {"gm_data_"+entry, "gm_data_AIZ-gm_data_"+entry});
+			}
+			entry=curGameMode.getKey();
+		}
+		gmeData.addFdb(new String[] {"gm_data_"+entry, "gm_dataEnd-gm_data_"+entry});	
+
+		gmeData.flush();
+	}
+
 	private static void readProperties(String file) throws Exception {
 		Properties prop = new Properties();
 		try {
@@ -301,7 +351,7 @@ public class BuildDisk
 			throw new Exception("Paramètre engine.asm.gameMode manquant dans le fichier "+file);
 		}
 
-		engineAsmIncludes = getPropertyList(prop, "engine.asm.include");		
+		engineAsmIncludes = getPropertyList(prop, "engine.asm.includ");		
 
 		// Game Definition
 		// ********************************************************************		
@@ -359,11 +409,43 @@ public class BuildDisk
 			throw new Exception("Paramètre builder.compilatedSprite.useCache manquant dans le fichier "+file);
 		}
 		useCache = (prop.getProperty("builder.compilatedSprite.useCache").contentEquals("Y")?true:false);
-		
+
 		if (prop.getProperty("builder.compilatedSprite.maxTries") == null) {
 			throw new Exception("Paramètre builder.compilatedSprite.maxTries manquant dans le fichier "+file);
 		}
 		maxTries = Integer.parseInt(prop.getProperty("builder.compilatedSprite.maxTries"));
+	}
+
+	private static void readGameModeProperties(Map.Entry<String,String[]> gameMode) throws Exception {
+		Properties prop = new Properties();
+		try {
+			InputStream input = new FileInputStream(gameMode.getValue()[0]);
+			prop.load(input);
+		} catch (Exception e) {
+			logger.fatal("Impossible de charger le fichier de configuration: "+gameMode.getValue()[0], e); 
+		}
+
+		// Objects
+		// ********************************************************************
+
+		GameModeObjectProperties.put(gameMode.getKey(), getPropertyList(prop, "object"));
+
+		// Act Sequence
+		// ********************************************************************
+
+		String[] gameModeActSequence = (prop.getProperty("gameModeActSequence")).split(";");
+		if (gameModeActSequence == null) {
+			throw new Exception("Paramètre gameModeActSequence manquant dans le fichier "+gameMode.getValue()[0]);
+		}
+
+		// Act Definition
+		// ********************************************************************		
+
+		HashMap<String, HashMap<String, String[]>> ActProperties = new HashMap<String, HashMap<String, String[]>>();
+		for (int i = 0; i < gameModeActSequence.length; i++) {
+			ActProperties.put(gameModeActSequence[i], getPropertyList(prop, gameModeActSequence[i]));
+		}
+		GameModeActProperties.put(gameMode.getKey(), ActProperties);
 	}
 
 	/**
@@ -375,19 +457,19 @@ public class BuildDisk
 	private static int compileLIN(String asmFile) {
 		return compile(asmFile, "-bl");
 	}
-	
+
 	private static int compileRAW(String asmFile) {
 		return compile(asmFile, "-bd");
 	}
-	
+
 	private static int compileHYB(String asmFile) {
 		return compile(asmFile, "-bh");
 	}
-	
+
 	private static int compile(String asmFile, String option) {
 		try {
 			logger.debug("**************** Process "+asmFile+" ****************");
-			
+
 			// Purge des fichiers temporaires
 			Files.deleteIfExists(Paths.get(binTmpFile));
 			Files.deleteIfExists(Paths.get(lstTmpFile));
@@ -398,7 +480,7 @@ public class BuildDisk
 
 			Path pathInc;
 
-			Pattern pn = Pattern.compile("INCLUD\\s(.*)\\s") ;  
+			Pattern pn = Pattern.compile("INCLUD\\s([0-9a-zA-Z]*)\\s") ;  
 			Matcher m = pn.matcher(content) ;  
 
 			// Recherche de tous les TAG INCLUD dans le fichier ASM
@@ -407,9 +489,9 @@ public class BuildDisk
 				if (engineAsmIncludes.get(m.group(1)) == null) {
 					throw new Exception (m.group(1) + " not found in include declaration.");
 				} else {
-				System.out.println(engineAsmIncludes.get(m.group(1))[0]);
-				pathInc = Paths.get(engineAsmIncludes.get(m.group(1))[0]);
-				content += "\n\n(include)" + m.group(1) + "\n" + new String(Files.readAllBytes(pathInc), charset);
+					System.out.println(engineAsmIncludes.get(m.group(1))[0]);
+					pathInc = Paths.get(engineAsmIncludes.get(m.group(1))[0]);
+					content += "\n\n(include)" + m.group(1) + "\n" + new String(Files.readAllBytes(pathInc), charset);
 				}
 			}
 			// Pour chaque TAG, ajout en fin de fichier a compiler du contenu du fichier inclus		
@@ -512,7 +594,7 @@ public class BuildDisk
 
 	public static String duplicateFile(String fileName) throws IOException {
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
-		String destFileName = generatedCodeDirName+"/"+basename+".ASM";
+		String destFileName = generatedCodeDirName+"/"+basename+".asm";
 
 		Path original = Paths.get(fileName);        
 		Path copied = Paths.get(destFileName);

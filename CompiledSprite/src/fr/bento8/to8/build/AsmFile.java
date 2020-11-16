@@ -8,9 +8,8 @@ import java.nio.file.Paths;
 
 public class AsmFile
 {
-	public AsmFile(String fileName, String tag) throws Exception {
-		Path path = Paths.get(fileName);
-		String content = "* Generated Code\\n(main)" + tag + "\\n";
+	public AsmFile(Path path) throws Exception {
+		String content = "* Generated Code\n";
 		Files.write(path, content.getBytes(StandardCharsets.ISO_8859_1));
 	}
 }

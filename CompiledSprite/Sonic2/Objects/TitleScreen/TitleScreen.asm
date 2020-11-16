@@ -868,3 +868,16 @@ JmpTo4_PlayMusic ; JmpTo
 
 	align 4
     endif
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+* changement d'un nouveau game mode
+
+* chargement d'un nouvel act, du suivant ou du precedent

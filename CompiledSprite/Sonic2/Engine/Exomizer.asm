@@ -132,4 +132,4 @@ cook    leax    biba,pcr
 tab1    fcb     4,2,4
         fcb     16,48,32
 
-biba    rmb     156                     * Bits and base are interleaved
+biba    rmb     156,0                   * Bits and base are interleaved
