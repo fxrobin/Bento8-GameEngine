@@ -16,7 +16,7 @@
 
 (main)GMENGINE
         INCLUD CONSTANT
-        org $4000
+        org   $4000
         setdp $40
         INCLUD EXOMIZER  
 
@@ -79,6 +79,6 @@ Page
         puls  u
         bra   GameModeEngine
 fill        
-        rmb   (fill-exo2)+((fill-exo2)%7),0 * le code est un multilpe de 7 octets (pour la copie)
+        rmb   7-((fill-exo2)%7),0      * le code est un multilpe de 7 octets (pour la copie)
         
-current_game_mode_data
+current_game_mode_data                 * @globals

@@ -6,16 +6,8 @@
 ********************************************************************************
 
 (main)MAIN
-	org $6300
-	
         INCLUD CONSTANT
-
-********************************************************************************  
-* Reference des variables globales
-********************************************************************************
-EXO_SRC                      equ $6101
-EXO_DST                      equ $6105 
-DK_DST                       equ $6222
+        org   $6000
 
 ********************************************************************************  
 * Boucle principale
@@ -27,23 +19,13 @@ LevelMainLoop
         jsr   BuildSprites
         bra   LevelMainLoop
 
-* Les donnees de fond de sprite sont sauvegardees dans l'espace ecran 4000 a 5FFF (page 0)
-* le bit D0 de E7C3 permet de switcher entre RAMA et RAMB
-* ca permet de gerer deux espaces tampon pour la sauvegarde du fond de sprite pour les pages 2 et 3
-
-* La page de scratch pour l'exomizer doit donc etre une autre page que la 2 et montee en zone cartouche pour 
-* pouvoir copier des donnees dans la zone donnees ou 6100+
-
 * ==============================================================================
 * Routines
 * ==============================================================================
-
         INCLUD WAITVBL
-
-ReadJoypads
-RunObjects
-BuildSprites
-        rts
+        INCLUD READJPDS
+        INCLUD RUNOBJTS
+        INCLUD BUILDSPR
 
 * ==============================================================================
 * Donnees globales

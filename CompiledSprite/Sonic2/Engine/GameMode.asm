@@ -31,6 +31,7 @@
 
 (main)GAMEMODE
         INCLUD CONSTANT
+        INCLUD GLOBALS
         org $A000
 
 * ==============================================================================
@@ -64,7 +65,7 @@ SwapVideoPage
 
 * Copie en page 0a des donnees du mode a charger (adaptation du code COPY8k de __sam__)
 * les groupes de 7 octets sont recopiees a l'envers, on termine par l'ecriture
-* en page 1 des donees 0000-0100 puis derniere ligne 7x$FF
+* en page 1 des donnees 0000-0100 puis derniere ligne 7x$FF
 ************************************************************            
         sts   CopyCode3+2              ; sauve s
         lda   current_game_mode

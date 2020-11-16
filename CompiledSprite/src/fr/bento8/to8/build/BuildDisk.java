@@ -73,6 +73,8 @@ public class BuildDisk
 	private static String lstTmpFile = "codes.lst";
 
 	private static Charset charset = StandardCharsets.UTF_8;
+	
+	public static Globals glb;
 
 	//	private static String animationPalette;
 	//	private static double animationPaletteGamma;
@@ -146,7 +148,7 @@ public class BuildDisk
 			FdUtil fd = new FdUtil();
 
 			// Gestion des variables globales
-			Globals glb = new Globals(engineAsmIncludes);
+			glb = new Globals(engineAsmIncludes);
 
 			// Compilation des includes binaires
 			// *****************************************************************
@@ -159,12 +161,11 @@ public class BuildDisk
 					byte[] BINBytes = Files.readAllBytes(Paths.get(getBINFileName(engineAsmIncludeTmpFile)));
 					String HEXValues = ByteUtil.bytesToHex(BINBytes);
 					String content = "";
-					for (int i = 0; i < HEXValues.length(); i++ ) {
-						content += "\n        fcb   " +  HEXValues.charAt(i);
-						i += 2;
+					for (int i = 0; i < HEXValues.length(); i += 2) {
+						content += "\n        fcb   $" +  HEXValues.charAt(i) +  HEXValues.charAt(i+1);
 					}
 		            try {
-		                Files.write(Paths.get(engineAsmIncludeTmpFile), content.getBytes(), StandardOpenOption.APPEND);
+		                Files.write(Paths.get(engineAsmIncludeTmpFile), content.getBytes());
 		            } catch (IOException ioExceptionObj) {
 		                System.out.println("Problème à l'écriture du fichier "+engineAsmIncludeTmpFile+": " + ioExceptionObj.getMessage());
 		            }
@@ -179,23 +180,23 @@ public class BuildDisk
 			processGameModes();		
 
 			compileRAW(gameModeTmpFile);
-			byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
-			int mainBINSize = mainBINBytes.length;
+			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
+			int binBytesSize = binBytes.length;
 
-			if (mainBINSize > 16128) {
-				throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+mainBINSize+" octets (max:16128 va jusqu'en 9F00, avec une pile de 256 octets 9F00-9FFF)");
+			if (binBytesSize > 16384) {
+				throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
 			}
-			int dernierBloc = 40960 + mainBINSize; //A000
+			int dernierBloc = 40960 + binBytesSize; //A000
 
 			// Ecriture sur disquette
 			fd.setIndex(0, 0, 2);
-			fd.write(mainBINBytes);
+			fd.write(binBytes);
 
 			// Compilation du code de boot
 			// *****************************************************************
 
 			String bootTmpFile = duplicateFile(engineAsmBoot);
-			glb.addConstant("boot_dernier_bloc", String.format("%1$02X", dernierBloc >> 8)+"00");
+			glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", dernierBloc >> 8)+"00"); // On tronque l'octet de poids faible
 			compileRAW(bootTmpFile);
 
 			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
@@ -300,6 +301,26 @@ public class BuildDisk
 		//ImgrefIslandWater     
 		//        fcb   $07,$B0,$20,$08,$27,$32		
 		//...
+		
+//		// Compilation du code de Game Mode Engine et des Game Modes
+//		// *****************************************************************
+//
+//		String gameModeTmpFile = duplicateFile(engineAsmGameMode);
+//
+//		processGameModes();		
+//
+//		compileRAW(gameModeTmpFile);
+//		byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
+//		int mainBINSize = mainBINBytes.length;
+//
+//		if (mainBINSize > 16128) {
+//			throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+mainBINSize+" octets (max:16128 va jusqu'en 9F00, avec une pile de 256 octets 9F00-9FFF)");
+//		}
+//		int dernierBloc = 40960 + mainBINSize; //A000
+//
+//		// Ecriture sur disquette
+//		fd.setIndex(0, 0, 2);
+//		fd.write(mainBINBytes);
 
 		// *******************************************************************************
 
@@ -480,8 +501,8 @@ public class BuildDisk
 
 			Path pathInc;
 
-			Pattern pn = Pattern.compile("INCLUD\\s([0-9a-zA-Z]*)\\s") ;  
-			Matcher m = pn.matcher(content) ;  
+			Pattern pn = Pattern.compile("INCLUD\\s([0-9a-zA-Z]*)\\s");  
+			Matcher m = pn.matcher(content);  
 
 			// Recherche de tous les TAG INCLUD dans le fichier ASM
 			while (m.find()) {
@@ -523,8 +544,28 @@ public class BuildDisk
 				Files.deleteIfExists(lstFilePath);
 				File newLstFile = new File(destFileName);
 				lstFile.renameTo(newLstFile);
+				
+				// Sauvegarde des variables globales
+				String contentLst = new String(Files.readAllBytes(Paths.get(destFileName)), charset);
+				pn = Pattern.compile("([0-9a-zA-Z_]*).*@globals.*") ;  
+				m = pn.matcher(content);
+				Pattern pn2;
+				Matcher m2;
 
-				// Purge et remplacement de l'ancien fichier lst
+				// Recherche de tous les TAG INCLUD dans le fichier ASM
+				while (m.find()) {
+					System.out.println("@globals: " + m.group(1));
+					pn2 = Pattern.compile("Label\\s([0-9a-fA-F]*)\\s"+m.group(1));
+					m2 = pn2.matcher(contentLst);  
+					if (m2.find() == false) {
+						throw new Exception (m.group(1) + " not found in Symbols.");
+					} else {
+						System.out.println("value: " + m2.group(1));
+						glb.addConstant(m.group(1), "$"+m2.group(1));
+					}
+				}
+
+				// Purge et remplacement de l'ancien fichier bin
 				File binFile = new File(binTmpFile); 
 				basename = FileUtil.removeExtension(pathTmp.getFileName().toString());
 				destFileName = generatedCodeDirName+"/"+basename+".BIN";

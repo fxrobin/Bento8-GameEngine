@@ -23,7 +23,7 @@ public class Globals
 	}
 
 	public void addConstant(String name, String value) {
-		String content = name+" equ "+value;
+		String content = name+" equ "+value+"\n";
         if(Files.exists(globals)) {
             try {
                 Files.write(globals, content.getBytes(StandardCharsets.ISO_8859_1), StandardOpenOption.APPEND);
