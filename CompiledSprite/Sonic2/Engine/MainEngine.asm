@@ -49,7 +49,7 @@ Gotp_H_Distance_Sidek        fdb   $0000     * horizontal distance to sidekick
 * OST - Table des variables de chaque Objet
 ********************************************************************************
         
-Object_RAM
+Object_RAM * @globals
 
 Reserved_Object_RAM
 MainCharacter                rmb   object_size

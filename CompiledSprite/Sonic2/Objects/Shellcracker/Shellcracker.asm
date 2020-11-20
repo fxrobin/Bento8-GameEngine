@@ -9,7 +9,7 @@
 * ---------------------------------------------------------------------------
 delay    equ $1A ; and $1B (nombre de frames+1)
 parent   equ $1C ; and $1D (adresse OST de l'objet parent)
-instance equ $1E (num�ro d'instance du sous objet, w dans code 68k, b dans le code 6809)
+instance equ $1E (numero d'instance du sous objet, w dans code 68k, b dans le code 6809)
 
                                        *; ===========================================================================
                                        *; ----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ Shellcracker_Punch_Init                *loc_38114:
 Shellcracker_Punch_Init_01             *loc_3811C:
         inc   routine_secondary,u
         inc   routine_secondary,u      *    addq.b  #2,routine_secondary(a0)
-        lda   #$03
+        lda   #3
         sta   mapping_frame,u          *    move.b  #3,mapping_frame(a0)
         lbra   ShellcrackerClaw_instantiate
                                        *    bra.w   loc_38292

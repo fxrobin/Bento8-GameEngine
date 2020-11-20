@@ -249,7 +249,7 @@ public class BuildDisk
 		// CONSTANT
 		// ********
 
-		//* Reference des identifiants d'objets
+		//* Reference des identifiants d'objets (ObjID_IntroStars, ...)
 		//* -----------------------------------
 		//TitleScreen_id equ $01
 
@@ -265,7 +265,7 @@ public class BuildDisk
 		// MAIN
 		// ****
 
-		//* Adresse du code des objets
+		//* Adresse du code des objets (Obj_Index: ObjPtr_Sonic, ...)
 		//* --------------------------
 		//ObjectCodeRef
 		//        fcb   $05,$A0,$00 ; Objet $01 main code
