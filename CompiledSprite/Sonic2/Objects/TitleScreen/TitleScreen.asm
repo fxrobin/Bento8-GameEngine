@@ -5,11 +5,12 @@
 ; ---------------------------------------------------------------------------
 
         INCLUD GLOBALS
+        INCLUD CONSTANT
 
 * ---------------------------------------------------------------------------
 * Object Status Table index
 * ---------------------------------------------------------------------------
-IntroLargeStar             equ Object_RAM+(object_size*1)
+TtlScr_Object_RAM          equ Object_RAM+(object_size*1)
 IntroSonic                 equ Object_RAM+(object_size*2)
 IntroTails                 equ Object_RAM+(object_size*3)
 IntroLargeStar             equ Object_RAM+(object_size*4)
@@ -26,6 +27,7 @@ IntroSmallStar2            equ Object_RAM+(object_size*13)
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
+* forcer l'initialisation a 0 des variables objet: routine, frame_count, routine_secondary
 frame_count equ $1A ; and $1B (compteur de nombre de frames)
 
                                        *; ----------------------------------------------------------------------------
@@ -95,44 +97,50 @@ TitleScreen_Sonic_Init                 *Obj0E_Sonic_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
         lda   #5	
-        sta   mapping_frame,u          *        move.b  #5,mapping_frame(a0)
+        sta   mapping_frame,u          *        move.b  #5,mapping_frame(a0) ;sonic-1.png
         ldd   #$0110
         std   x_pixel,u                *        move.w  #$110,x_pixel(a0)
 	ldd   #$00E0
         std   y_pixel,u                *        move.w  #$E0,y_pixel(a0)
 	ldx   #IntroLargeStar          *        lea     (IntroLargeStar).w,a1
-                                       *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFB0C0
-                                       *        move.b  #8,subtype(a1)                          ; large star
-                                       *        lea     (IntroEmblemTop).w,a1
-                                       *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
-                                       *        move.b  #6,subtype(a1)                          ; logo top
+	lda   #ObjID_TitleScreen
+        sta   id,x                     *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFB0C0
+	ldb   #8
+        stb   subtype,x                *        move.b  #8,subtype(a1)                          ; large star
+        ldx   #IntroEmblemTop          *        lea     (IntroEmblemTop).w,a1
+        sta   id,x                     *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
+	ldb   #6
+        stb   subtype,x                *        move.b  #6,subtype(a1)                          ; logo top
                                        *        moveq   #SndID_Sparkle,d0
-                                       *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        rts                            *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                        *; ===========================================================================
                                        *
 TitleScreen_loc_12EC2                  *loc_12EC2:
         ldd   frame_count,u
-        cmpd  #$120                    *        cmpi.w  #$38,objoff_34(a0)
-        bhs   loc_12EC2                *        bhs.s   +
+        cmpd  #$38                     *        cmpi.w  #$38,objoff_34(a0)
+        bhs   TitleScreen_loc_12EC2_01 *        bhs.s   +
         rts                            *        rts
                                        *; ===========================================================================
 TitleScreen_loc_12EC2_01               *+
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        lea     (TitleScreenPaletteChanger3).w,a1
                                        *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
                                        *        move.b  #0,subtype(a1)
                                        *        st.b    objoff_30(a0)
                                        *        moveq   #MusID_Title,d0 ; title music
-                                       *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
+        rts                            *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
                                        *; ===========================================================================
                                        *
-                                       *loc_12EE8:
-                                       *        cmpi.w  #$80,objoff_34(a0)
-                                       *        bhs.s   +
-                                       *        rts
+TitleScreen_loc_12EE8                  *loc_12EE8:
+        ldd   frame_count,u
+        cmpd  #$80                     *        cmpi.w  #$80,objoff_34(a0)
+        bhs   TitleScreen_loc_12EE8_01 *        bhs.s   +
+        rts                            *        rts
                                        *; ===========================================================================
-                                       *+
-                                       *        addq.b  #2,routine_secondary(a0)
+TitleScreen_loc_12EE8_01               *+
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        lea     (Pal_133EC).l,a1
                                        *        lea     (Normal_palette).w,a2
                                        *
@@ -143,16 +151,17 @@ TitleScreen_loc_12EC2_01               *+
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *
                                        *
-                                       *sub_12F08:
-                                       *        lea     (IntroSmallStar1).w,a1
-                                       *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB180
-                                       *        move.b  #$E,subtype(a1)                         ; piece of sky
-                                       *        rts
+sub_12F08                              *sub_12F08:
+        ldx   #IntroSmallStar1         *        lea     (IntroSmallStar1).w,a1
+        sta   id,x                     *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB180
+	ldb   #$E	
+        stb   subtype,x                *        move.b  #$E,subtype(a1)                         ; piece of sky
+        rts                            *        rts
                                        *; End of function sub_12F08
                                        *
                                        *; ===========================================================================
                                        *
-                                       *loc_12F18:
+TitleScreen_loc_12F18                  *loc_12F18:
                                        *        moveq   #word_13046_end-word_13046+4,d2
                                        *        lea     (word_13046).l,a1
                                        *
@@ -172,39 +181,42 @@ TitleScreen_loc_12EC2_01               *+
                                        *        swap    d0
                                        *        move.w  d0,x_pixel(a0)
                                        *+
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
-                                       *loc_12F52:
+TitleScreen_loc_12F52                  *loc_12F52:
                                        *        lea     (Ani_obj0E).l,a1
-                                       *        bsr.w   AnimateSprite
-                                       *        bra.w   DisplaySprite
+        bsr   AnimateSprite            *        bsr.w   AnimateSprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
 TitleScreen_Sonic_LastFrame            *Obj0E_Sonic_LastFrame:
-                                       *        addq.b  #2,routine_secondary(a0)
-                                       *        move.b  #$12,mapping_frame(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
+                                       *        move.b  #$12,mapping_frame(a0) ;sonic-5.png
                                        *        lea     (IntroSonicHand).w,a1
                                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
                                        *        move.b  #$A,subtype(a1)                         ; Sonic's hand
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_12F7C:
                                        *        cmpi.w  #$C0,objoff_34(a0)
                                        *        blo.s   +
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        lea     (IntroTails).w,a1
                                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB080
                                        *        move.b  #4,subtype(a1)                          ; Tails
                                        *+
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_12F9A:
                                        *        cmpi.w  #$120,objoff_34(a0)
                                        *        blo.s   +
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        clr.w   objoff_2C(a0)
                                        *        st      objoff_2F(a0)
                                        *        lea     (Normal_palette_line3).w,a1
@@ -219,7 +231,7 @@ TitleScreen_Sonic_LastFrame            *Obj0E_Sonic_LastFrame:
                                        *        move.b  #2,subtype(a1)
                                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
                                        *+
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_12FD6:
@@ -227,21 +239,22 @@ TitleScreen_Sonic_LastFrame            *Obj0E_Sonic_LastFrame:
                                        *        beq.s   +
                                        *        cmpi.w  #$190,objoff_34(a0)
                                        *        beq.s   ++
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *+
                                        *        cmpi.w  #$1D0,objoff_34(a0)
                                        *        beq.s   +
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *+
                                        *        lea     (IntroSmallStar2).w,a1
                                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB440
                                        *        move.b  #$C,subtype(a1)                         ; small star
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        lea     (IntroSmallStar1).w,a1
                                        *        bsr.w   DeleteObject2 ; delete object at $FFFFB180
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_13014:
@@ -257,7 +270,7 @@ TitleScreen_Sonic_LastFrame            *Obj0E_Sonic_LastFrame:
                                        *        move.w  d0,objoff_2C(a0)
                                        *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
                                        *+
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *; word_1303A:
                                        *CyclingPal_TitleStar:
@@ -278,7 +291,8 @@ TitleScreen_Sonic_LastFrame            *Obj0E_Sonic_LastFrame:
                                        *
 TitleScreen_Tails                      *Obj0E_Tails:
                                        *        moveq   #0,d0
-                                       *        move.b  routine_secondary(a0),d0
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        move.w  off_13074(pc,d0.w),d1
                                        *        jmp     off_13074(pc,d1.w)
                                        *; ===========================================================================
@@ -291,11 +305,12 @@ TitleScreen_Tails                      *Obj0E_Tails:
                                        *; ===========================================================================
                                        *
                                        *Obj0E_Tails_Init:
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        move.w  #$D8,x_pixel(a0)
                                        *        move.w  #$D8,y_pixel(a0)
                                        *        move.b  #1,anim(a0)
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *
                                        *loc_13096:
@@ -305,13 +320,14 @@ TitleScreen_Tails                      *Obj0E_Tails:
                                        *; ===========================================================================
                                        *
                                        *loc_130A2:
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        lea     (IntroTailsHand).w,a1
                                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB200
                                        *        move.b  #$10,subtype(a1)                        ; Tails' hand
                                        *
                                        *BranchTo10_DisplaySprite
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *word_130B8:
                                        *        dc.w   $D7,$C8
@@ -326,7 +342,8 @@ TitleScreen_Tails                      *Obj0E_Tails:
                                        *
 TitleScreen_LogoTop                    *Obj0E_LogoTop:
                                        *        moveq   #0,d0
-                                       *        move.b  routine_secondary(a0),d0
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        move.w  off_130E2(pc,d0.w),d1
                                        *        jmp     off_130E2(pc,d1.w)
                                        *; ===========================================================================
@@ -336,20 +353,21 @@ TitleScreen_LogoTop                    *Obj0E_LogoTop:
                                        *; ===========================================================================
                                        *
                                        *Obj0E_LogoTop_Init:
-                                       *        move.b  #$B,mapping_frame(a0)
+                                       *        move.b  #$B,mapping_frame(a0) ;emblem-front.png
                                        *        tst.b   (Graphics_Flags).w
                                        *        bmi.s   +
-                                       *        move.b  #$A,mapping_frame(a0)
+                                       *        move.b  #$A,mapping_frame(a0) ;emblem-front.png
                                        *+
                                        *        move.b  #2,priority(a0)
                                        *        move.w  #$120,x_pixel(a0)
                                        *        move.w  #$E8,y_pixel(a0)
                                        *
                                        *loc_1310A:
-                                       *        addq.b  #2,routine_secondary(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *
                                        *BranchTo11_DisplaySprite
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
 TitleScreen_SkyPiece                   *Obj0E_SkyPiece:
@@ -363,8 +381,9 @@ TitleScreen_SkyPiece                   *Obj0E_SkyPiece:
                                        *                offsetTableEntry.w BranchTo12_DisplaySprite     ; 2
                                        *; ===========================================================================
                                        *
-                                       *Obj0E_SkyPiece_Init:
-                                       *        addq.b  #2,routine_secondary(a0)
+                                       *Obj0E_SkyPiece_Init: ;Masque sonic et tails en affichant l'embleme
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
                                        *        move.w  #make_art_tile(ArtTile_ArtKos_LevelArt,0,0),art_tile(a0)
                                        *        move.b  #$11,mapping_frame(a0)
                                        *        move.b  #2,priority(a0)
@@ -372,7 +391,7 @@ TitleScreen_SkyPiece                   *Obj0E_SkyPiece:
                                        *        move.w  #$F0,y_pixel(a0)
                                        *
                                        *BranchTo12_DisplaySprite
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
 TitleScreen_LargeStar                  *Obj0E_LargeStar:
@@ -389,25 +408,27 @@ TitleScreen_LargeStar                  *Obj0E_LargeStar:
                                        *; ===========================================================================
                                        *
                                        *Obj0E_LargeStar_Init:
-                                       *        addq.b  #2,routine_secondary(a0)
-                                       *        move.b  #$C,mapping_frame(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
+                                       *        move.b  #$C,mapping_frame(a0) ;star.png (1)
                                        *        ori.w   #high_priority,art_tile(a0)
                                        *        move.b  #2,anim(a0)
                                        *        move.b  #1,priority(a0)
                                        *        move.w  #$100,x_pixel(a0)
                                        *        move.w  #$A8,y_pixel(a0)
                                        *        move.w  #4,objoff_2A(a0)
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *
                                        *loc_13190:
                                        *        subq.w  #1,objoff_2A(a0)
                                        *        bmi.s   +
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *+
-                                       *        addq.b  #2,routine_secondary(a0)
-                                       *        rts
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
+        rts                            *        rts
                                        *; ===========================================================================
                                        *
                                        *loc_1319E:
@@ -425,7 +446,7 @@ TitleScreen_LargeStar                  *Obj0E_LargeStar:
                                        *        swap    d0
                                        *        move.w  d0,x_pixel(a0)
                                        *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
-                                       *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        rts                            *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                        *; ===========================================================================
                                        *; unknown
                                        *word_131DC:
@@ -454,14 +475,15 @@ TitleScreen_SonicHand                  *Obj0E_SonicHand:
                                        *; ===========================================================================
                                        *
                                        *Obj0E_SonicHand_Init:
-                                       *        addq.b  #2,routine_secondary(a0)
-                                       *        move.b  #9,mapping_frame(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
+                                       *        move.b  #9,mapping_frame(a0) ;sonic-6.png
                                        *        move.b  #3,priority(a0)
                                        *        move.w  #$145,x_pixel(a0)
                                        *        move.w  #$BF,y_pixel(a0)
                                        *
                                        *BranchTo13_DisplaySprite
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_13234:
@@ -480,7 +502,7 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *        moveq   #0,d0
                                        *        move.b  routine_secondary(a0),d0
                                        *        move.w  off_1325A(pc,d0.w),d1
-                                       *        jmp     off_1325A(pc,d1.w)
+        rts                            *        jmp     off_1325A(pc,d1.w)
                                        *; ===========================================================================
                                        *off_1325A:      offsetTable
                                        *                offsetTableEntry.w Obj0E_TailsHand_Init                 ; 0
@@ -489,14 +511,15 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *; ===========================================================================
                                        *
                                        *Obj0E_TailsHand_Init:
-                                       *        addq.b  #2,routine_secondary(a0)
-                                       *        move.b  #$13,mapping_frame(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
+                                       *        move.b  #$13,mapping_frame(a0) ;tails-6.png (tails hand)
                                        *        move.b  #3,priority(a0)
                                        *        move.w  #$10F,x_pixel(a0)
                                        *        move.w  #$D5,y_pixel(a0)
                                        *
                                        *BranchTo14_DisplaySprite
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_13280:
@@ -522,14 +545,15 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *; ===========================================================================
                                        *
                                        *Obj0E_SmallStar_Init:
-                                       *        addq.b  #2,routine_secondary(a0)
-                                       *        move.b  #$C,mapping_frame(a0)
+        inc   routine_secondary,u
+        inc   routine_secondary,u      *        addq.b  #2,routine_secondary(a0)
+                                       *        move.b  #$C,mapping_frame(a0) ;star.png (1)
                                        *        move.b  #5,priority(a0)
                                        *        move.w  #$170,x_pixel(a0)
                                        *        move.w  #$80,y_pixel(a0)
                                        *        move.b  #3,anim(a0)
                                        *        move.w  #$8C,objoff_2A(a0)
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *
                                        *loc_132D2:
@@ -538,8 +562,8 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *        subq.w  #2,x_pixel(a0)
                                        *        addq.w  #1,y_pixel(a0)
                                        *        lea     (Ani_obj0E).l,a1
-                                       *        bsr.w   AnimateSprite
-                                       *        bra.w   DisplaySprite
+        bsr   AnimateSprite            *        bsr.w   AnimateSprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *; ----------------------------------------------------------------------------
                                        *; Object C9 - "Palette changing handler" from title screen
@@ -585,7 +609,7 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *        move.b  d0,ttlscrpalchanger_fadein_time_left(a0)
                                        *        move.b  d0,ttlscrpalchanger_fadein_time(a0)
                                        *        move.b  (a1)+,ttlscrpalchanger_fadein_amount(a0)
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *
                                        *ObjC9_Main:
@@ -608,7 +632,7 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *
                                        *        movea.l a3,a0
                                        *+
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *; off_1337C:
                                        *PaletteChangerDataIndex: offsetTable
@@ -673,7 +697,7 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *loc_13484:
                                        *        or.b    d4,d5
                                        *        move.b  d5,(a0)+
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *
                                        *loc_1348A:
@@ -703,7 +727,7 @@ TitleScreen_TailsHand                  *Obj0E_TailsHand:
                                        *loc_134B6:
                                        *        or.b    d3,d4
                                        *        move.b  d4,(a0)+
-                                       *        rts
+        rts                            *        rts
                                        *
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *
@@ -727,7 +751,7 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
                                        *        move.b  #$A,routine(a1)                         ; Sonic's hand
                                        *        move.b  #2,priority(a1)
-                                       *        move.b  #9,mapping_frame(a1)
+                                       *        move.b  #9,mapping_frame(a1) ;sonic-6.png
                                        *        move.b  #4,routine_secondary(a1)
                                        *        move.w  #$141,x_pixel(a1)
                                        *        move.w  #$C1,y_pixel(a1)
@@ -735,7 +759,7 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *        bsr.w   TitleScreen_InitSprite
                                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
                                        *        move.b  #4,routine(a1)                          ; Tails
-                                       *        move.b  #4,mapping_frame(a1)
+                                       *        move.b  #4,mapping_frame(a1) ;tails-5.png
                                        *        move.b  #6,routine_secondary(a1)
                                        *        move.b  #3,priority(a1)
                                        *        move.w  #$C8,x_pixel(a1)
@@ -782,7 +806,7 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *        moveq   #MusID_Title,d0 ; title music
                                        *        jsrto   (PlayMusic).l, JmpTo4_PlayMusic
                                        *+
-                                       *        rts
+        rts                            *        rts
                                        *; End of function sub_134BC
                                        *
                                        *
@@ -795,7 +819,7 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *        move.l  #Obj0E_MapUnc_136A8,mappings(a1)
                                        *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a1)
                                        *        move.b  #4,priority(a1)
-                                       *        rts
+        rts                            *        rts
                                        *; End of function TitleScreen_InitSprite
                                        *
                                        *; ===========================================================================
@@ -808,7 +832,7 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *        move.b  routine(a0),d0
                                        *        move.w  Obj0F_Index(pc,d0.w),d1
                                        *        jsr     Obj0F_Index(pc,d1.w)
-                                       *        bra.w   DisplaySprite
+        bra   DisplaySprite            *        bra.w   DisplaySprite
                                        *; ===========================================================================
                                        *; off_13612: Obj0F_States:
                                        *Obj0F_Index:    offsetTable
@@ -852,7 +876,7 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *        moveq   #SndID_Blip,d0 ; selection blip sound
                                        *        jsrto   (PlaySound).l, JmpTo4_PlaySound
                                        *+
-                                       *        rts
+        rts                            *        rts
                                        *; ===========================================================================
                                        *; animation script
                                        *; off_13686:
@@ -863,34 +887,34 @@ TitleScreen_SetFinalState              *TitleScreen_SetFinalState:
                                        *                offsetTableEntry.w byte_136A4   ; 3
                                        *byte_1368E:
                                        *        dc.b   1
-                                       *        dc.b   5        ; 1
-                                       *        dc.b   6        ; 2
-                                       *        dc.b   7        ; 3
-                                       *        dc.b   8        ; 4
+                                       *        dc.b   5        ; 1 sonic-1.png
+                                       *        dc.b   6        ; 2 sonic-2.png
+                                       *        dc.b   7        ; 3 sonic-3.png
+                                       *        dc.b   8        ; 4 sonic-4.png
                                        *        dc.b $FA        ; 5
                                        *        even
                                        *byte_13694:
                                        *        dc.b   1
-                                       *        dc.b   0        ; 1
-                                       *        dc.b   1        ; 2
-                                       *        dc.b   2        ; 3
-                                       *        dc.b   3        ; 4
-                                       *        dc.b   4        ; 5
+                                       *        dc.b   0        ; 1 tails-1.png
+                                       *        dc.b   1        ; 2 tails-2.png
+                                       *        dc.b   2        ; 3 tails-3.png
+                                       *        dc.b   3        ; 4 tails-4.png
+                                       *        dc.b   4        ; 5 tails-5.png
                                        *        dc.b $FA        ; 6
                                        *        even
                                        *byte_1369C:
                                        *        dc.b   1
-                                       *        dc.b  $C        ; 1
-                                       *        dc.b  $D        ; 2
-                                       *        dc.b  $E        ; 3
-                                       *        dc.b  $D        ; 4
-                                       *        dc.b  $C        ; 5
+                                       *        dc.b  $C        ; 1 star.png (1)
+                                       *        dc.b  $D        ; 2 star.png (2)
+                                       *        dc.b  $E        ; 3 star.png (3)
+                                       *        dc.b  $D        ; 4 star.png (2)
+                                       *        dc.b  $C        ; 5 star.png (1)
                                        *        dc.b $FA        ; 6
                                        *        even
                                        *byte_136A4:
                                        *        dc.b   3
-                                       *        dc.b  $C        ; 1
-                                       *        dc.b  $F        ; 2
+                                       *        dc.b  $C        ; 1 star.png (1)
+                                       *        dc.b  $F        ; 2 star.png (0)
                                        *        dc.b $FF        ; 3
                                        *        even
                                        *; -----------------------------------------------------------------------------

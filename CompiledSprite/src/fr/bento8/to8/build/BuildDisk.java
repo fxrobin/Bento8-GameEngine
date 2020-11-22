@@ -251,7 +251,10 @@ public class BuildDisk
 
 		//* Reference des identifiants d'objets (ObjID_IntroStars, ...)
 		//* -----------------------------------
-		//TitleScreen_id equ $01
+		//ObjID_TitleScreen equ $01
+		//ObjID_Shellcracker
+		//ObjID_ShellcrackerClaw
+		// numerotation automatique (commun pour tout le programme)
 
 		//* Référence des mots reserves pour les scripts d'animation
 		//* --------------------------------------------------------
