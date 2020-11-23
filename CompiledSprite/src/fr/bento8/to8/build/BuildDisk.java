@@ -277,31 +277,39 @@ public class BuildDisk
 
 		//* Scripts d'animation
 		//* -------------------
-		//LargeStar
+		//Ani_TitleScreen
+		//fdb   Ani_TitleScreen_Sonic
+		//fdb   Ani_TitleScreen_Tails
+		//fdb   Ani_TitleScreen_LargeStar
+		//fdb   Ani_TitleScreen_SmallStar
+		//
+		// ...
+		//
+		//Ani_TitleScreen_LargeStar
 		//fcb   $01 ; frame duration
-		//fdb   ImgrefStar_2
-		//fdb   ImgrefStar_3
-		//fdb   ImgrefStar_4
-		//fdb   ImgrefStar_3
-		//fdb   ImgrefStar_2
+		//fdb   Imgref_2_star
+		//fdb   Imgref_3_star
+		//fdb   Imgref_4_star
+		//fdb   Imgref_3_star
+		//fdb   Imgref_2_star
 		//fcb   _nextSubRoutine
 
-		//SmallStar
+		//Ani_TitleScreen_SmallStar
 		//fcb   $03 ; frame duration
-		//fdb   ImgrefStar_1
-		//fdb   ImgrefStar_2
+		//fdb   Imgref_1_star
+		//fdb   Imgref_2_star
 		//fcb   _resetAnim
 
 		//* Adresse des images de l'objet
 		//* -----------------------------
 
-		//ImgrefEmblem        
+		//Imgref_Emblem        
 		//        fcb   $07,$B0,$20,$08,$27,$32 ; compiled sprite draw routine (page,address) and erase routine (page,address)					
-		//ImgrefEmblemFront    
+		//Imgref_EmblemFront    
 		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//ImgrefIslandLand      
+		//Imgref_IslandLand      
 		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//ImgrefIslandWater     
+		//Imgref_IslandWater     
 		//        fcb   $07,$B0,$20,$08,$27,$32		
 		//...
 		
