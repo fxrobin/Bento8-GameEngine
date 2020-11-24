@@ -60,9 +60,9 @@ TitleScreen_Routines                             *Obj0E_Index:    offsetTable
                                                  *; ===========================================================================
                                                  *; loc_12E38:
 Init                                             *Obj0E_Init:
-                                                 *        addq.b  #2,routine(a0)  ; useless, because it's overwritten with the subtype below
-                                                 *        move.l  #Obj0E_MapUnc_136A8,mappings(a0)
-                                                 *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a0)
+        * vdp unused                             *        addq.b  #2,routine(a0)  ; useless, because it's overwritten with the subtype below
+        * vdp unused                             *        move.l  #Obj0E_MapUnc_136A8,mappings(a0)
+        * vdp unused                             *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a0)
         lda   #4                                 *        move.b  #4,priority(a0)
         sta   priority,u                         
         lda   subtype,u                          *        move.b  subtype(a0),routine(a0)
@@ -91,10 +91,10 @@ Sonic_NotFinalState                              *+
                                                  *; ===========================================================================
 Sonic_Routines                                   *off_12E76:      offsetTable
         fdb   Sonic_Init                         *                offsetTableEntry.w Obj0E_Sonic_Init     ;   0
-        fdb   loc_12EC2                          *                offsetTableEntry.w loc_12EC2    ;   2
-        fdb   loc_12EE8                          *                offsetTableEntry.w loc_12EE8    ;   4
+        fdb   Sonic_PaletteFade                  *                offsetTableEntry.w loc_12EC2    ;   2
+        fdb   Sonic_SetPal_TitleScreen           *                offsetTableEntry.w loc_12EE8    ;   4
         fdb   Sonic_Move                         *                offsetTableEntry.w loc_12F18    ;   6
-        fdb   Animate                            *                offsetTableEntry.w loc_12F52    ;   8
+        fdb   TitleScreen_Animate                *                offsetTableEntry.w loc_12F52    ;   8
         fdb   Sonic_LastFrame                    *                offsetTableEntry.w Obj0E_Sonic_LastFrame        ;  $A
         fdb   loc_12F7C                          *                offsetTableEntry.w loc_12F7C    ;  $C
         fdb   loc_12F9A                          *                offsetTableEntry.w loc_12F9A    ;  $E
@@ -120,42 +120,67 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
 	ldb   #6                                 
         stb   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
-                                                 *        moveq   #SndID_Sparkle,d0
+        * sound unused                           *        moveq   #SndID_Sparkle,d0
         rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
                                                  *
-TitleScreen_loc_12EC2                            *loc_12EC2:
+Sonic_PaletteFade                                    *loc_12EC2:
         ldd   frame_count,u                      
         cmpd  #$38                               *        cmpi.w  #$38,objoff_34(a0)
-        bhs   TitleScreen_loc_12EC2_01           *        bhs.s   +
+        bhs   Sonic_PaletteAfterWait             *        bhs.s   +
         rts                                      *        rts
                                                  *; ===========================================================================
-TitleScreen_loc_12EC2_01                         *+
+Sonic_PaletteFadeAfterWait                       *+
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldx   TitleScreenPaletteChanger3         *        lea     (TitleScreenPaletteChanger3).w,a1
-                                                 *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
-                                                 *        move.b  #0,subtype(a1)
-                                                 *        st.b    objoff_30(a0)
-                                                 *        moveq   #MusID_Title,d0 ; title music
+	lda   #ObjID_TtlScrPalChanger
+        sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
+        clr   subtype,x                          *        move.b  #0,subtype(a1)
+        * music unused (flag)                    *        st.b    objoff_30(a0)
+        * music unused                           *        moveq   #MusID_Title,d0 ; title music
         rts                                      *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
                                                  *; ===========================================================================
                                                  *
-TitleScreen_loc_12EE8                            *loc_12EE8:
+Sonic_SetPal_TitleScreen                         *loc_12EE8:
         ldd   frame_count,u                      
         cmpd  #$80                               *        cmpi.w  #$80,objoff_34(a0)
-        bhs   TitleScreen_loc_12EE8_01           *        bhs.s   +
+        bhs   Sonic_SetPal_TitleScreenAfterWait  *        bhs.s   +
         rts                                      *        rts
                                                  *; ===========================================================================
-TitleScreen_loc_12EE8_01                         *+
+Sonic_SetPal_TitleScreenAfterWait                *+
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-                                                 *        lea     (Pal_133EC).l,a1
-                                                 *        lea     (Normal_palette).w,a2
+	sts   dyn_00+2
+	stu   dyn_00+6
+        lds   Pal_TitleScreen                    *        lea     (Pal_133EC).l,a1
+        ldy   Normal_palette                     *        lea     (Normal_palette).w,a2
                                                  *
-                                                 *        moveq   #$F,d6
-                                                 *-       move.w  (a1)+,(a2)+
-                                                 *        dbf     d6,-
+	puls  d,x,u                              *        moveq   #$F,d6
+        std   -128,y                             *-       move.w  (a1)+,(a2)+
+	stx   -126,y                             *        dbf     d6,-
+	stu   -124,y
+	puls  d,x,u
+        std   -122,y
+	stx   -120,y
+	stu   -118,y
+	puls  d,x,u
+        std   -116,y
+	stx   -114,y
+	stu   -112,y
+	puls  d,x,u
+        std   -110,y
+	stx   -108,y
+	stu   -106,y
+	puls  d,x,u
+        std   -104,y
+	stx   -102,y
+	stu   -100,y
+	ldd   ,s
+        std   -98,y
+dyn_00
+	lds   #$0000
+	ldu   #$0000
                                                  *
                                                  *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                                  *
@@ -394,6 +419,11 @@ TitleScreen_NxSRoutineAndDisplay                 *loc_1310A:
                                                  *BranchTo11_DisplaySprite
         bra   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
+						 
+* ---------------------------------------------------------------------------
+* Sky Piece
+* ---------------------------------------------------------------------------						 
+						 
                                                  *
 TitleScreen_SkyPiece                             *Obj0E_SkyPiece:
                                                  *        moveq   #0,d0
@@ -406,7 +436,7 @@ TitleScreen_SkyPiece                             *Obj0E_SkyPiece:
                                                  *                offsetTableEntry.w BranchTo12_DisplaySprite     ; 2
                                                  *; ===========================================================================
                                                  *
-                                                 *Obj0E_SkyPiece_Init: ;Masque sonic et tails en affichant l'embleme
+                                                 *Obj0E_SkyPiece_Init:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
                                                  *        move.w  #make_art_tile(ArtTile_ArtKos_LevelArt,0,0),art_tile(a0)
@@ -419,6 +449,11 @@ TitleScreen_SkyPiece                             *Obj0E_SkyPiece:
                                                  *BranchTo12_DisplaySprite
         bra   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
+						 
+* ---------------------------------------------------------------------------
+* Large Star
+* ---------------------------------------------------------------------------						 
+						 
                                                  *
 TitleScreen_LargeStar                            *Obj0E_LargeStar:
                                                  *        moveq   #0,d0
@@ -488,6 +523,11 @@ LargeStar_xy_data                                *word_131DC:
         fdb   $165,$107                          *        dc.w  $165, $107        ; $10
 LargeStar_xy_data_end                            *word_131DC_end
                                                  *; ===========================================================================
+						 
+* ---------------------------------------------------------------------------
+* Sonic Hand
+* ---------------------------------------------------------------------------						 
+						 						 
                                                  *
 TitleScreen_SonicHand                            *Obj0E_SonicHand:
                                                  *        moveq   #0,d0
@@ -780,6 +820,11 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
                                                  *        move.b  d4,(a0)+
         rts                                      *        rts
                                                  *
+						 
+* ---------------------------------------------------------------------------
+* Subroutines
+* ---------------------------------------------------------------------------						 
+						 						 
                                                  *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                                  *
                                                  *

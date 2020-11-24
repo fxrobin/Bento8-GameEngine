@@ -267,6 +267,12 @@ public class BuildDisk
 
 		// MAIN
 		// ****
+		
+		//* Données de palette
+		//* ------------------
+		//Pal_TitleScreen:
+		//fdb   $0000
+		//...
 
 		//* Adresse du code des objets (Obj_Index: ObjPtr_Sonic, ...)
 		//* --------------------------
