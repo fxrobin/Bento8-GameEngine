@@ -31,8 +31,8 @@ LevelMainLoop
 * Donnees globales
 * ==============================================================================
 
-Normal_palette               rmb   $20
-
+blank_pul_data               rmb   $9,0 *@globals
+Normal_palette               rmb   $20,0
 MainCharacter_Is_Dead        fcb   $00
 
 ********************************************************************************
