@@ -14,6 +14,7 @@
 ********************************************************************************
 LevelMainLoop
         jsr   WaitVBL
+        jsr   UpdatePalette
         jsr   ReadJoypads
         jsr   RunObjects
         jsr   BuildSprites
@@ -23,6 +24,7 @@ LevelMainLoop
 * Routines
 * ==============================================================================
         INCLUD WAITVBL
+        INCLUD UPDTPAL
         INCLUD READJPDS
         INCLUD RUNOBJTS
         INCLUD BUILDSPR
@@ -31,9 +33,6 @@ LevelMainLoop
 * Donnees globales
 * ==============================================================================
 
-Vint_runcount                rmb   $2,0  *@globals
-blank_pul_data               rmb   $9,0  *@globals
-Normal_palette               rmb   $20,0
 MainCharacter_Is_Dead        rmb   $1,0
 
 ********************************************************************************

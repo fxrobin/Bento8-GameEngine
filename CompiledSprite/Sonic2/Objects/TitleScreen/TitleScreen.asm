@@ -194,34 +194,12 @@ Sonic_SetPal_TitleScreenAfterWait                *+
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         sts   dyn_00+2
         stu   dyn_00+6
-        lds   Pal_TitleScreen                    *        lea     (Pal_133EC).l,a1
-        ldy   Normal_palette                     *        lea     (Normal_palette).w,a2
+        ldd   #Pal_TitleScreen                   *        lea     (Pal_133EC).l,a1
+        std   Ptr_palette                        *        lea     (Normal_palette).w,a2
                                                  *
-        puls  d,x,u                              *        moveq   #$F,d6
-        std   -128,y                             *-       move.w  (a1)+,(a2)+
-        stx   -126,y                             *        dbf     d6,-
-        stu   -124,y
-        puls  d,x,u
-        std   -122,y
-        stx   -120,y
-        stu   -118,y
-        puls  d,x,u
-        std   -116,y
-        stx   -114,y
-        stu   -112,y
-        puls  d,x,u
-        std   -110,y
-        stx   -108,y
-        stu   -106,y
-        puls  d,x,u
-        std   -104,y
-        stx   -102,y
-        stu   -100,y
-        ldd   ,s
-        std   -98,y
-dyn_00
-        lds   #$0000
-        ldu   #$0000
+                                                 *        moveq   #$F,d6
+                                                 *-       move.w  (a1)+,(a2)+
+                                                 *        dbf     d6,-
                                                  *
                                                  *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                                  *
@@ -307,17 +285,17 @@ Sonic_FadeInBackground                           *loc_12F9A:
         std   xy_data_index,u                    *        clr.w   objoff_2C(a0)
         ldd   #$FF
         std   final_state                        *        st      objoff_2F(a0)
-        sts   dyn_02+2                           *        lea     (Normal_palette_line3).w,a1
-        pshs  d,dp,x,y,u                         *        move.w  #$EEE,d0
-        lds   blank_pul_data                     *
-        puls  d,dp,x,y,u                         *        moveq   #$F,d6
-        lds   Normal_palette                     *-       move.w  d0,(a1)+
-        puls  d,dp,x,y,u                         *        dbf     d6,-
-        puls  d,dp,x,y,u                         *
-        puls  d,dp,x,y,u
-        puls  d,dp,x
-        lds   #$0000
-        puls  d,dp,x,y,u
+        ldd   #White_palette                     *        lea     (Normal_palette_line3).w,a1
+        std   Ptr_palette                        *        move.w  #$EEE,d0
+                                                 *
+                                                 *        moveq   #$F,d6
+                                                 *-       move.w  d0,(a1)+
+                                                 *        dbf     d6,-
+                                                 *
+                            
+                            
+                            
+                            
 
         ldx   TitleScreenPaletteChanger2         *        lea     (TitleScreenPaletteChanger2).w,a1
         lda   #ObjID_TtlScrPalChanger
@@ -369,19 +347,19 @@ CyclingPal_Continue                              *+
         stx   color_data_index,u                 *        move.w  d0,objoff_2C(a0)
         leax  CyclingPal_TitleScreen,pcr         *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
 	ldd   ,x
-	std   Normal_palette+$A
+	std   Normal_palette+$E
 CyclingPal_NotYet                                *+
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *; word_1303A:
 CyclingPal_TitleScreen                           *CyclingPal_TitleStar:
                                                  *        binclude "art/palettes/Title Star Cycle.bin"
-        fdb   $011F			         * ;$0E64
-        fdb   $013E                              * ;$0E86
-        fdb   $011F                              * ;$0E64
-        fdb   $036E                              * ;$0EA8
-        fdb   $011F                              * ;$0E64
-        fdb   $069E                              * ;$0ECA
+        fdb   $0F11			         * ;$0E64
+        fdb   $0E31                              * ;$0E86
+        fdb   $0F11                              * ;$0E64
+        fdb   $0E63                              * ;$0EA8
+        fdb   $0F11                              * ;$0E64
+        fdb   $0E96                              * ;$0ECA
 CyclingPal_TitleScreen_end                       *CyclingPal_TitleStar_End
                                                  *
 Sonic_xy_data                                    *word_13046:

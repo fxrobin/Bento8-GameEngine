@@ -64,3 +64,5 @@ am_SwapVideoPage
 SwapVideoPage_01
         dec   $E7C3              * bit0=0 changement demi-page RAMA de la page 0 visible dans l'espace ecran
         rts
+        
+Vint_runcount rmb   $2,0 *@globals
