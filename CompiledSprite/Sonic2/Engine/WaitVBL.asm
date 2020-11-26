@@ -41,6 +41,10 @@ WaitVBL
 WaitVBL_01
         tst   $E7E7              * le faisceau est dans l'ecran
         bmi   WaitVBL_01         * tant que le bit est a 1 on boucle
+        
+        ldd   Vint_runcount
+        addd  #1
+        std   Vint_runcount      * incremente le compteur de frame        
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage
         andb  #$40               * alterne bit6=0 et bit6=1 (suivant la valeur B $00 ou $FF)
