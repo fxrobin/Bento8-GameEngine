@@ -45,7 +45,7 @@
 (main)MAIN
         INCLUD GLOBALS
         INCLUD CONSTANT
-        org   $0000	
+        org   $0000     
 
 * ---------------------------------------------------------------------------
 * Object Status Table index
@@ -91,7 +91,7 @@ TitleScreen                                      *Obj0E:
 TitleScreen_Routines                             *Obj0E_Index:    offsetTable
         fdb   Init                               *                offsetTableEntry.w Obj0E_Init   ;   0
         fdb   Sonic                              *                offsetTableEntry.w Obj0E_Sonic  ;   2
-        fdb   TitleScreen_Tails                  *                offsetTableEntry.w Obj0E_Tails  ;   4
+        fdb   Tails                              *                offsetTableEntry.w Obj0E_Tails  ;   4
         fdb   TitleScreen_LogoTop                *                offsetTableEntry.w Obj0E_LogoTop        ;   6
         fdb   TitleScreen_LargeStar              *                offsetTableEntry.w Obj0E_LargeStar      ;   8
         fdb   TitleScreen_SonicHand              *                offsetTableEntry.w Obj0E_SonicHand      ;  $A
@@ -174,7 +174,7 @@ Sonic_PaletteFade                                    *loc_12EC2:
 Sonic_PaletteFadeAfterWait                       *+
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldx   TitleScreenPaletteChanger3         *        lea     (TitleScreenPaletteChanger3).w,a1
+        ldx   #TitleScreenPaletteChanger3        *        lea     (TitleScreenPaletteChanger3).w,a1
         lda   #ObjID_TtlScrPalChanger
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
         clr   subtype,x                          *        move.b  #0,subtype(a1)
@@ -218,7 +218,7 @@ EmblemOverlay                                    *sub_12F08:
 Sonic_Move                                       *loc_12F18:
         ldx   Sonic_xy_data_end-Sonic_xy_data+4
         stx   dyn_01+1                           *        moveq   #word_13046_end-word_13046+4,d2
-        ldx   Sonic_xy_data                      *        lea     (word_13046).l,a1
+        ldx   #Sonic_xy_data,pcr                 *        lea     (word_13046).l,a1
                                                  *
 TitleScreen_MoveObjects                          *loc_12F20:
         ldd   position_frame_count               *        move.w  objoff_2A(a0),d0
@@ -252,7 +252,7 @@ Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         lda   #Imgref_sonic_5                    
         sta   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
-        ldx   IntroSonicHand                     *        lea     (IntroSonicHand).w,a1
+        ldx   #IntroSonicHand                    *        lea     (IntroSonicHand).w,a1
         lda   #ObjID_TitleScreen
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
         lda   #$A                                
@@ -266,7 +266,7 @@ Sonic_CreateTails                                *loc_12F7C:
         blo   Sonic_CreateTails_BeforeWait       *        blo.s   +
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldx   IntroTails                         *        lea     (IntroTails).w,a1
+        ldx   #IntroTails                        *        lea     (IntroTails).w,a1
         lda   #ObjID_TitleScreen
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB080
         lda   #4        
@@ -297,7 +297,7 @@ Sonic_FadeInBackground                           *loc_12F9A:
                             
                             
 
-        ldx   TitleScreenPaletteChanger2         *        lea     (TitleScreenPaletteChanger2).w,a1
+        ldx   #TitleScreenPaletteChanger2        *        lea     (TitleScreenPaletteChanger2).w,a1
         lda   #ObjID_TtlScrPalChanger
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change handler) at $FFFFB240
         lda   #2
@@ -321,14 +321,14 @@ Sonic_CreateSmallStar                            *loc_12FD6:
         * not implemented                        *        bra.w   DisplaySprite
                                                  *; ===========================================================================
 Sonic_CreateSmallStar_AfterWait                  *+
-        ldx   IntroSmallStar2                    *        lea     (IntroSmallStar2).w,a1
+        ldx   #IntroSmallStar2                   *        lea     (IntroSmallStar2).w,a1
         lda   #ObjID_IntroStars
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB440
         lda   #$C
         sta   subtype,x                          *        move.b  #$C,subtype(a1)                         ; small star
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldx   IntroSmallStar1                    *        lea     (IntroSmallStar1).w,a1
+        ldx   #IntroSmallStar1                   *        lea     (IntroSmallStar1).w,a1
         bsr   DeleteObject2                      *        bsr.w   DeleteObject2 ; delete object at $FFFFB180
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
@@ -346,15 +346,15 @@ CyclingPal                                       *loc_13014:
 CyclingPal_Continue                              *+
         stx   color_data_index,u                 *        move.w  d0,objoff_2C(a0)
         leax  CyclingPal_TitleScreen,pcr         *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
-	ldd   ,x
-	std   Normal_palette+$E
+        ldd   ,x
+        std   Normal_palette+$E
 CyclingPal_NotYet                                *+
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *; word_1303A:
 CyclingPal_TitleScreen                           *CyclingPal_TitleStar:
                                                  *        binclude "art/palettes/Title Star Cycle.bin"
-        fdb   $0F11			         * ;$0E64
+        fdb   $0F11                              * ;$0E64
         fdb   $0E31                              * ;$0E86
         fdb   $0F11                              * ;$0E64
         fdb   $0E63                              * ;$0EA8
@@ -379,44 +379,48 @@ Sonic_xy_data_end                                *word_13046_end
 * ---------------------------------------------------------------------------                                            
                                                  
                                                  *
-TitleScreen_Tails                                *Obj0E_Tails:
+Tails                                            *Obj0E_Tails:
                                                  *        moveq   #0,d0
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-                                                 *        move.w  off_13074(pc,d0.w),d1
-                                                 *        jmp     off_13074(pc,d1.w)
+        lda   routine_secondary,u                          
+        ldx   Tails_Routines,pcr                 *        move.w  off_13074(pc,d0.w),d1
+        jmp   [a,x]                              *        jmp     off_13074(pc,d1.w)                            
                                                  *; ===========================================================================
-                                                 *off_13074:      offsetTable
-                                                 *                offsetTableEntry.w Obj0E_Tails_Init                     ; 0
-                                                 *                offsetTableEntry.w loc_13096                    ; 2
+Tails_Routines                                   *off_13074:      offsetTable
+        fdb   Tails_Init                         *                offsetTableEntry.w Obj0E_Tails_Init                     ; 0
+        fdb                                      *                offsetTableEntry.w loc_13096                    ; 2
         fdb   TitleScreen_Animate                *                offsetTableEntry.w loc_12F52                    ; 4
-                                                 *                offsetTableEntry.w loc_130A2                    ; 6
-                                                 *                offsetTableEntry.w BranchTo10_DisplaySprite     ; 8
+        fdb                                      *                offsetTableEntry.w loc_130A2                    ; 6
+        fdb   Tails_DisplaySprite                *                offsetTableEntry.w BranchTo10_DisplaySprite     ; 8
                                                  *; ===========================================================================
                                                  *
-                                                 *Obj0E_Tails_Init:
+Tails_Init                                       *Obj0E_Tails_Init:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-                                                 *        move.w  #$D8,x_pixel(a0)
-                                                 *        move.w  #$D8,y_pixel(a0)
-                                                 *        move.b  #1,anim(a0)
+        ldd   #$D8
+        std   x_pixel,u                          *        move.w  #$D8,x_pixel(a0)
+        std   y_pixel,u                          *        move.w  #$D8,y_pixel(a0)
+        lda   #1
+        sta   anim,u                             *        move.b  #1,anim(a0)
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
-                                                 *loc_13096:
+Tails_Move                                       *loc_13096:
+        ldy   #Tails_xy_data_end-Tails_xy_data+4                                                 
                                                  *        moveq   #word_130B8_end-word_130B8+4,d2
-                                                 *        lea     (word_130B8).l,a1
+        ldx   #Tails_xy_data,pcr                 *        lea     (word_130B8).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
                                                  *
-                                                 *loc_130A2:
+Tails_CreateHand                                 *loc_130A2:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-                                                 *        lea     (IntroTailsHand).w,a1
+        ldx   #IntroTailsHand                    *        lea     (IntroTailsHand).w,a1
                                                  *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB200
                                                  *        move.b  #$10,subtype(a1)                        ; Tails' hand
                                                  *
-                                                 *BranchTo10_DisplaySprite
+Tails_DisplaySprite                              *BranchTo10_DisplaySprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
 Tails_xy_data                                    *word_130B8:
@@ -651,7 +655,7 @@ TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite
 TailsHand_Move                                   *loc_13280:
         ldy   #TailsHand_xy_data_end-TailsHand_xy_data+4
                                                  *        moveq   #word_1328C_end-word_1328C+4,d2
-        ldx   TailsHand_xy_data                  *        lea     (word_1328C).l,a1
+        ldx   #TailsHand_xy_data,pcr             *        lea     (word_1328C).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 TailsHand_xy_data                                *word_1328C:
