@@ -5,6 +5,12 @@
 ;
 ; --------------------------------------
 ;
+; Implantation memoire
+; --------------------
+; Appel a une routine du main (6100 - 9FFF) : utiliser un saut (jmp, jsr, rts), ne pas utiliser les branchements.
+; Appel a une routine interne de l'objet : utiliser les branchements ((l)b__), ne pas utiliser les sauts.
+; Utilisation de l'adressage indexe pour acceder a des donnees internes de l'objet : utilisation de "mon_tableau,pcr" pour charger l'adresse du tableau dans un registre
+;
 ; Commentaires sur le code original de Sonic 2
 ; Palettes
 ; --------
@@ -69,6 +75,7 @@ IntroSmallStar2            equ Object_RAM+(object_size*12)
 * forcer l'initialisation a 0 des variables objet: routine, frame_count, routine_secondary
 frame_count equ $34 ; and $35
 position_frame_count equ $2A ; and $2B
+life_countdown equ $2A ; and $2B
 xy_data_index equ $2C ; and $2D
 color_data_index equ $2C ; and $2D
 final_state equ $2F
@@ -218,24 +225,25 @@ EmblemOverlay                                    *sub_12F08:
 Sonic_Move                                       *loc_12F18:
         ldx   Sonic_xy_data_end-Sonic_xy_data+4
         stx   dyn_01+1                           *        moveq   #word_13046_end-word_13046+4,d2
-        ldx   #Sonic_xy_data,pcr                 *        lea     (word_13046).l,a1
+        ldx   #Sonic_xy_data-2,pcr               *        lea     (word_13046).l,a1
                                                  *
 TitleScreen_MoveObjects                          *loc_12F20:
-        ldd   position_frame_count               *        move.w  objoff_2A(a0),d0
+        ldd   position_frame_count,u             *        move.w  objoff_2A(a0),d0
         addd  #1                                 *        addq.w  #1,d0
-        std   position_frame_count               *        move.w  d0,objoff_2A(a0)
+        std   position_frame_count,u             *        move.w  d0,objoff_2A(a0)
         andb  #3 * one frame on four             *        andi.w  #3,d0
         bne   MoveObjects_KeepPosition           *        bne.s   +
         ldd   xy_data_index,u                    *        move.w  objoff_2C(a0),d1
         addd  #4                                 *        addq.w  #4,d1
 dyn_01                                           
         cmpd  #$0000                             *        cmp.w   d2,d1
-        bhs   TitleScreen_NxSRoutineAndDisplay   *        bhs.w   loc_1310A
+        bhs   TitleScreen_NextSubRoutineAndDisplay
+                                                 *        bhs.w   loc_1310A
         std   xy_data_index,u                    *        move.w  d1,objoff_2C(a0)
         leax  d,x                                *        move.l  -4(a1,d1.w),d0
-        ldd   -2,x                               *        move.w  d0,y_pixel(a0)
+        ldd   ,x                                 *        move.w  d0,y_pixel(a0)
         std   y_pixel,u                          
-        ldd   -4,x                               *        swap    d0
+        ldd   -2,x                               *        swap    d0
         std   x_pixel,u                          *        move.w  d0,x_pixel(a0)
 MoveObjects_KeepPosition                         *+
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -288,15 +296,10 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldd   #White_palette                     *        lea     (Normal_palette_line3).w,a1
         std   Ptr_palette                        *        move.w  #$EEE,d0
                                                  *
-                                                 *        moveq   #$F,d6
-                                                 *-       move.w  d0,(a1)+
-                                                 *        dbf     d6,-
+        * not implemented                        *        moveq   #$F,d6
+        * switch pointer to                      *-       move.w  d0,(a1)+
+        * fixed palette instead of copying data  *        dbf     d6,-
                                                  *
-                            
-                            
-                            
-                            
-
         ldx   #TitleScreenPaletteChanger2        *        lea     (TitleScreenPaletteChanger2).w,a1
         lda   #ObjID_TtlScrPalChanger
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change handler) at $FFFFB240
@@ -329,7 +332,7 @@ Sonic_CreateSmallStar_AfterWait                  *+
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldx   #IntroSmallStar1                   *        lea     (IntroSmallStar1).w,a1
-        bsr   DeleteObject2                      *        bsr.w   DeleteObject2 ; delete object at $FFFFB180
+        jsr   DeleteObject2                      *        bsr.w   DeleteObject2 ; delete object at $FFFFB180
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *
@@ -389,9 +392,9 @@ Tails                                            *Obj0E_Tails:
                                                  *; ===========================================================================
 Tails_Routines                                   *off_13074:      offsetTable
         fdb   Tails_Init                         *                offsetTableEntry.w Obj0E_Tails_Init                     ; 0
-        fdb                                      *                offsetTableEntry.w loc_13096                    ; 2
+        fdb   Tails_Move                         *                offsetTableEntry.w loc_13096                    ; 2
         fdb   TitleScreen_Animate                *                offsetTableEntry.w loc_12F52                    ; 4
-        fdb                                      *                offsetTableEntry.w loc_130A2                    ; 6
+        fdb   Tails_CreateHand                   *                offsetTableEntry.w loc_130A2                    ; 6
         fdb   Tails_DisplaySprite                *                offsetTableEntry.w BranchTo10_DisplaySprite     ; 8
                                                  *; ===========================================================================
                                                  *
@@ -407,9 +410,9 @@ Tails_Init                                       *Obj0E_Tails_Init:
                                                  *; ===========================================================================
                                                  *
 Tails_Move                                       *loc_13096:
-        ldy   #Tails_xy_data_end-Tails_xy_data+4                                                 
-                                                 *        moveq   #word_130B8_end-word_130B8+4,d2
-        ldx   #Tails_xy_data,pcr                 *        lea     (word_130B8).l,a1
+        ldx   #Tails_xy_data_end-Tails_xy_data+4                                                 
+        stx   dyn_01+1                           *        moveq   #word_130B8_end-word_130B8+4,d2
+        ldx   #Tails_xy_data-2,pcr               *        lea     (word_130B8).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
                                                  *
@@ -439,35 +442,37 @@ Tails_xy_data_end                                *word_130B8_end
 * ---------------------------------------------------------------------------                                            
                                                  
                                                  *
-TitleScreen_LogoTop                              *Obj0E_LogoTop:
+LogoTop                                          *Obj0E_LogoTop:
                                                  *        moveq   #0,d0
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-                                                 *        move.w  off_130E2(pc,d0.w),d1
-                                                 *        jmp     off_130E2(pc,d1.w)
+        lda   routine_secondary,u       
+        ldx   LogoTop_Routines,pcr               *        move.w  off_130E2(pc,d0.w),d1
+        jmp   [a,x]                              *        jmp     off_130E2(pc,d1.w)
                                                  *; ===========================================================================
-                                                 *off_130E2:      offsetTable
-                                                 *                offsetTableEntry.w Obj0E_LogoTop_Init                   ; 0
-                                                 *                offsetTableEntry.w BranchTo11_DisplaySprite     ; 2
+LogoTop_Routines                                 *off_130E2:      offsetTable
+        fdb   LogoTop_Init                       *                offsetTableEntry.w Obj0E_LogoTop_Init                   ; 0
+        fdb   LogoTop_DisplaySprite              *                offsetTableEntry.w BranchTo11_DisplaySprite     ; 2
                                                  *; ===========================================================================
                                                  *
-                                                 *Obj0E_LogoTop_Init:
-        lda   #$B ;emblem-front.png               
-        sta   mapping_frame,u                    *        move.b  #$B,mapping_frame(a0)
-                                                 *        tst.b   (Graphics_Flags).w
-                                                 *        bmi.s   +
-        lda   #$A ;emblem-front.png               
-        sta   mapping_frame,u                    *        move.b  #$A,mapping_frame(a0)
-                                                 *+
-                                                 *        move.b  #2,priority(a0)
-                                                 *        move.w  #$120,x_pixel(a0)
-                                                 *        move.w  #$E8,y_pixel(a0)
+LogoTop_Init                                     *Obj0E_LogoTop_Init:
+        * not implemented                        *        move.b  #$B,mapping_frame(a0)
+        * trademark logo for PAL                 *        tst.b   (Graphics_Flags).w
+        * game version                           *        bmi.s   +
+        lda   #Imgref_EmblemFront                *        move.b  #$A,mapping_frame(a0)
+        sta   mapping_frame,u                    *+
+        lda   #2                                                 
+        sta   priority,u                         *        move.b  #2,priority(a0)
+        ldd   #$120                                              
+        std   x_pixel,u                          *        move.w  #$120,x_pixel(a0)
+        ldd   #$E8
+        std   y_pixel,u                          *        move.w  #$E8,y_pixel(a0)
                                                  *
-TitleScreen_NxSRoutineAndDisplay                 *loc_1310A:
+TitleScreen_NextSubRoutineAndDisplay             *loc_1310A:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
                                                  *
-                                                 *BranchTo11_DisplaySprite
+LogoTop_DisplaySprite                            *BranchTo11_DisplaySprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  
@@ -477,88 +482,101 @@ TitleScreen_NxSRoutineAndDisplay                 *loc_1310A:
                                                  
                                                  *
 TitleScreen_SkyPiece                             *Obj0E_SkyPiece:
-                                                 *        moveq   #0,d0
-                                                 *        move.b  routine_secondary(a0),d0
-                                                 *        move.w  off_13120(pc,d0.w),d1
-                                                 *        jmp     off_13120(pc,d1.w)
-                                                 *; ===========================================================================
-                                                 *off_13120:      offsetTable
-                                                 *                offsetTableEntry.w Obj0E_SkyPiece_Init                  ; 0
-                                                 *                offsetTableEntry.w BranchTo12_DisplaySprite     ; 2
-                                                 *; ===========================================================================
-                                                 *
-                                                 *Obj0E_SkyPiece_Init:
-        inc   routine_secondary,u                
-        inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-                                                 *        move.w  #make_art_tile(ArtTile_ArtKos_LevelArt,0,0),art_tile(a0)
-        lda   #$11!!!!!!!!!!!!!!!                 
-        sta   mapping_frame,u                    *        move.b  #$11,mapping_frame(a0)
-                                                 *        move.b  #2,priority(a0)
-                                                 *        move.w  #$100,x_pixel(a0)
-                                                 *        move.w  #$F0,y_pixel(a0)
-                                                 *
-                                                 *BranchTo12_DisplaySprite
-        jmp   DisplaySprite                      *        bra.w   DisplaySprite
-                                                 *; ===========================================================================
+        * not implemented                        *        moveq   #0,d0
+        * use a VDP functionality                *        move.b  routine_secondary(a0),d0
+        * that hide lines of lower priority      *        move.w  off_13120(pc,d0.w),d1
+        * sprites, when a higher priority sprite *        jmp     off_13120(pc,d1.w)
+        * is at x=0 position                     *; ===========================================================================
+        * not implemented                        *off_13120:      offsetTable
+        * not implemented                        *                offsetTableEntry.w Obj0E_SkyPiece_Init                  ; 0
+        * not implemented                        *                offsetTableEntry.w BranchTo12_DisplaySprite     ; 2
+        * not implemented                        *; ===========================================================================
+        * not implemented                        *
+        * not implemented                        *Obj0E_SkyPiece_Init:
+        * not implemented                        
+        * not implemented                        *        addq.b  #2,routine_secondary(a0)
+        * not implemented                        *        move.w  #make_art_tile(ArtTile_ArtKos_LevelArt,0,0),art_tile(a0)
+        * not implemented                         
+        * not implemented                        *        move.b  #$11,mapping_frame(a0)
+        * not implemented                        *        move.b  #2,priority(a0)
+        * not implemented                        *        move.w  #$100,x_pixel(a0)
+        * not implemented                        *        move.w  #$F0,y_pixel(a0)
+        * not implemented                        *
+        * not implemented                        *BranchTo12_DisplaySprite
+        * not implemented                        *        bra.w   DisplaySprite
+        rts                                      *; ===========================================================================
                                                  
 * ---------------------------------------------------------------------------
 * Large Star
 * ---------------------------------------------------------------------------                                            
                                                  
                                                  *
-TitleScreen_LargeStar                            *Obj0E_LargeStar:
+LargeStar                                        *Obj0E_LargeStar:
                                                  *        moveq   #0,d0
-                                                 *        move.b  routine_secondary(a0),d0
-                                                 *        move.w  off_13158(pc,d0.w),d1
-                                                 *        jmp     off_13158(pc,d1.w)
+        lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
+        ldx   LargeStar_Routines,pcr             *        move.w  off_13158(pc,d0.w),d1
+        jmp   [a,x]                              *        jmp     off_13158(pc,d1.w)
                                                  *; ===========================================================================
-                                                 *off_13158:      offsetTable
-                                                 *                offsetTableEntry.w Obj0E_LargeStar_Init ; 0
+LargeStar_Routines                               *off_13158:      offsetTable
+        fdb   LargeStar_Init                     *                offsetTableEntry.w Obj0E_LargeStar_Init ; 0
         fdb   TitleScreen_Animate                *                offsetTableEntry.w loc_12F52    ; 2
-                                                 *                offsetTableEntry.w loc_13190    ; 4
-                                                 *                offsetTableEntry.w loc_1319E    ; 6
+        fdb   LargeStar_Wait                     *                offsetTableEntry.w loc_13190    ; 4
+        fdb   LargeStar_Move                     *                offsetTableEntry.w loc_1319E    ; 6
                                                  *; ===========================================================================
                                                  *
-                                                 *Obj0E_LargeStar_Init:
+LargeStar_Init                                   *Obj0E_LargeStar_Init:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #$C ;star.png (1)                  
+        lda   #Imgref_2_star
         sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
-                                                 *        ori.w   #high_priority,art_tile(a0)
-                                                 *        move.b  #2,anim(a0)
-                                                 *        move.b  #1,priority(a0)
-                                                 *        move.w  #$100,x_pixel(a0)
-                                                 *        move.w  #$A8,y_pixel(a0)
-                                                 *        move.w  #4,objoff_2A(a0)
+        * not implemented                        *        ori.w   #high_priority,art_tile(a0)
+        ldd   #$21
+        stb   anim,u                             *        move.b  #2,anim(a0)
+        sta   priority,u                         *        move.b  #1,priority(a0)
+        ldd   #$100
+        std   x_pixel,u                          *        move.w  #$100,x_pixel(a0)
+        ldd   #$A8      
+        std   y_pixel,u                          *        move.w  #$A8,y_pixel(a0)
+        ldd   #4
+        std   position_frame_count,u             *        move.w  #4,objoff_2A(a0)
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
-                                                 *loc_13190:
-                                                 *        subq.w  #1,objoff_2A(a0)
-                                                 *        bmi.s   +
+LargeStar_Wait                                   *loc_13190:
+        ldd   position_frame_count,u
+        subd  #1                                 *        subq.w  #1,objoff_2A(a0)
+        std   position_frame_count,u
+        bmi   LargeStar_AfterWait                *        bmi.s   +
         rts                                      *        rts
                                                  *; ===========================================================================
-                                                 *+
+LargeStar_AfterWait                              *+
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
-                                                 *loc_1319E:
-                                                 *        move.b  #2,routine_secondary(a0)
-                                                 *        move.b  #0,anim_frame(a0)
-                                                 *        move.b  #0,anim_frame_duration(a0)
-                                                 *        move.w  #6,objoff_2A(a0)
-                                                 *        move.w  objoff_2C(a0),d0
-                                                 *        addq.w  #4,d0
+LargeStar_Move                                   *loc_1319E:
+        ldd   #$20
+        stb   routine_secondary,u                *        move.b  #2,routine_secondary(a0)
+        sta   anim_frame,u                       *        move.b  #0,anim_frame(a0)
+        sta   anim_frame_duration,u              *        move.b  #0,anim_frame_duration(a0)
+        ldd   #6
+        std   position_frame_count,u             *        move.w  #6,objoff_2A(a0)
+        ldd   xy_data_index,u                    *        move.w  objoff_2C(a0),d0
+        addd  #4                                 *        addq.w  #4,d0
+        cmpd  LargeStar_xy_data_end-LargeStar_xy_data+4
                                                  *        cmpi.w  #word_131DC_end-word_131DC+4,d0
-                                                 *        bhs.w   DeleteObject
-                                                 *        move.w  d0,objoff_2C(a0)
-                                                 *        move.l  word_131DC-4(pc,d0.w),d0
-                                                 *        move.w  d0,y_pixel(a0)
-                                                 *        swap    d0
-                                                 *        move.w  d0,x_pixel(a0)
-                                                 *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
+        blo   LargeStar_MoveContinue                                     
+        jmp   DeleteObject                       *        bhs.w   DeleteObject
+LargeStar_MoveContinue  
+        std   xy_data_index,u                    *        move.w  d0,objoff_2C(a0)
+        ldx   LargeStar_xy_data-2,pcr
+        leax  d,x                                *        move.l  word_131DC-4(pc,d0.w),d0
+        ldd   ,x
+        std   y_pixel,u                          *        move.w  d0,y_pixel(a0)
+        ldd   -2,x                               *        swap    d0
+        std   x_pixel,u                          *        move.w  d0,x_pixel(a0)
+        * sound unused                           *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
         rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
                                                  *; unknown
@@ -580,34 +598,38 @@ LargeStar_xy_data_end                            *word_131DC_end
 * ---------------------------------------------------------------------------                                            
                                                                                                  
                                                  *
-TitleScreen_SonicHand                            *Obj0E_SonicHand:
+SonicHand                                        *Obj0E_SonicHand:
                                                  *        moveq   #0,d0
-                                                 *        move.b  routine_secondary(a0),d0
-                                                 *        move.w  off_1320E(pc,d0.w),d1
-                                                 *        jmp     off_1320E(pc,d1.w)
+        lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
+        ldx   SonicHand_Routines,pcr             *        move.w  off_1320E(pc,d0.w),d1
+        jmp   [a,x]                              *        jmp     off_1320E(pc,d1.w)
                                                  *; ===========================================================================
-                                                 *off_1320E:      offsetTable
-                                                 *                offsetTableEntry.w Obj0E_SonicHand_Init                 ; 0
-                                                 *                offsetTableEntry.w loc_13234                    ; 2
-                                                 *                offsetTableEntry.w BranchTo13_DisplaySprite     ; 4
+SonicHand_Routines                               *off_1320E:      offsetTable
+        fdb   SonicHand_Init                     *                offsetTableEntry.w Obj0E_SonicHand_Init                 ; 0
+        fdb   SonicHand_Move                     *                offsetTableEntry.w loc_13234                    ; 2
+        fdb   SonicHand_DisplaySprite            *                offsetTableEntry.w BranchTo13_DisplaySprite     ; 4
                                                  *; ===========================================================================
                                                  *
-                                                 *Obj0E_SonicHand_Init:
+SonicHand_Init                                   *Obj0E_SonicHand_Init:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #9 ;sonic-6.png                    
-        sta   mapping_frame,u                    *        move.b  #9,mapping_frame(a0) ;sonic-6.png
-                                                 *        move.b  #3,priority(a0)
-                                                 *        move.w  #$145,x_pixel(a0)
-                                                 *        move.w  #$BF,y_pixel(a0)
+        lda   #Imgref_sonicHand                    
+        sta   mapping_frame,u                    *        move.b  #9,mapping_frame(a0)
+        lda   #3
+        sta   priority,u                         *        move.b  #3,priority(a0)
+        ldd   #$145
+        std   x_pixel,u                          *        move.w  #$145,x_pixel(a0)
+        ldd   #$BF
+        std   y_pixel,u                          *        move.w  #$BF,y_pixel(a0)
                                                  *
-                                                 *BranchTo13_DisplaySprite
+SonicHand_DisplaySprite                          *BranchTo13_DisplaySprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *
-                                                 *loc_13234:
-                                                 *        moveq   #word_13240_end-word_13240+4,d2
-                                                 *        lea     (word_13240).l,a1
+SonicHand_Move                                   *loc_13234:
+        ldx   SonicHand_xy_data_end-SonicHand_xy_data+4
+        stx   dyn_01+1                           *        moveq   #word_13240_end-word_13240+4,d2
+        ldx   #SonicHand_xy_data-2,pcr           *        lea     (word_13240).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 SonicHand_xy_data                                *word_13240:
@@ -625,15 +647,13 @@ SonicHand_xy_data_end                            *word_13240_end
 TailsHand                                        *Obj0E_TailsHand:
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        ldx   TailsHand_Routines
-                                                 *        move.w  off_1325A(pc,d0.w),d1
+        ldx   TailsHand_Routines,pcr             *        move.w  off_1325A(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_1325A(pc,d1.w)
                                                  *; ===========================================================================
 TailsHand_Routines                               *off_1325A:      offsetTable
         fdb   TailsHand_Init                     *                offsetTableEntry.w Obj0E_TailsHand_Init                 ; 0
         fdb   TailsHand_Move                     *                offsetTableEntry.w loc_13280                    ; 2
-        fdb   TailsHand_DisplaySprite                          
-                                                 *                offsetTableEntry.w BranchTo14_DisplaySprite     ; 4
+        fdb   TailsHand_DisplaySprite            *                offsetTableEntry.w BranchTo14_DisplaySprite     ; 4
                                                  *; ===========================================================================
                                                  *
 TailsHand_Init                                   *Obj0E_TailsHand_Init:
@@ -653,9 +673,9 @@ TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite
                                                  *; ===========================================================================
                                                  *
 TailsHand_Move                                   *loc_13280:
-        ldy   #TailsHand_xy_data_end-TailsHand_xy_data+4
-                                                 *        moveq   #word_1328C_end-word_1328C+4,d2
-        ldx   #TailsHand_xy_data,pcr             *        lea     (word_1328C).l,a1
+        ldx   #TailsHand_xy_data_end-TailsHand_xy_data+4
+        stx   dyn_01+1                           *        moveq   #word_1328C_end-word_1328C+4,d2
+        ldx   #TailsHand_xy_data-2,pcr           *        lea     (word_1328C).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 TailsHand_xy_data                                *word_1328C:
@@ -671,34 +691,47 @@ TailsHand_xy_data_end                            *word_1328C_end
                                                  *
 SmallStar                                        *Obj0E_SmallStar:
                                                  *        moveq   #0,d0
-                                                 *        move.b  routine_secondary(a0),d0
-                                                 *        move.w  off_132A2(pc,d0.w),d1
-                                                 *        jmp     off_132A2(pc,d1.w)
+        lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
+        ldx   SmallStar_Routines,pcr             *        move.w  off_132A2(pc,d0.w),d1
+        jmp   [a,x]                              *        jmp     off_132A2(pc,d1.w)
                                                  *; ===========================================================================
-                                                 *off_132A2:      offsetTable
-                                                 *                offsetTableEntry.w Obj0E_SmallStar_Init ; 0
-                                                 *                offsetTableEntry.w loc_132D2    ; 2
+SmallStar_Routines                               *off_132A2:      offsetTable
+        fdb   SmallStar_Init                     *                offsetTableEntry.w Obj0E_SmallStar_Init ; 0
+        fdb   SmallStar_Move                     *                offsetTableEntry.w loc_132D2    ; 2
                                                  *; ===========================================================================
                                                  *
 SmallStar_Init                                   *Obj0E_SmallStar_Init:
         inc   routine_secondary,u                
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #$C ;star.png (1)                  
+        lda   #Imgref_2_star
         sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
-                                                 *        move.b  #5,priority(a0)
-                                                 *        move.w  #$170,x_pixel(a0)
-                                                 *        move.w  #$80,y_pixel(a0)
-                                                 *        move.b  #3,anim(a0)
-                                                 *        move.w  #$8C,objoff_2A(a0)
+        lda   #5
+        sta   priority,u                         *        move.b  #5,priority(a0)
+        ldd   #$170
+        std   x_pixel,u                          *        move.w  #$170,x_pixel(a0)
+        ldd   #$80
+        std   y_pixel,u                          *        move.w  #$80,y_pixel(a0)
+        lda   #3
+        sta   anim,u                             *        move.b  #3,anim(a0)
+        ldd   #$8C
+        std   life_countdown,u                   *        move.w  #$8C,objoff_2A(a0)
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *
-                                                 *loc_132D2:
-                                                 *        subq.w  #1,objoff_2A(a0)
-                                                 *        bmi.w   DeleteObject
-                                                 *        subq.w  #2,x_pixel(a0)
-                                                 *        addq.w  #1,y_pixel(a0)
-                                                 *        lea     (Ani_obj0E).l,a1
+SmallStar_Move                                   *loc_132D2:
+        ldd   life_countdown,u
+        subd   #1                                *        subq.w  #1,objoff_2A(a0)
+        std   life_countdown,u
+        bpl   SmallStar_MoveContinue
+        jmp   DeleteObject                       *        bmi.w   DeleteObject
+SmallStar_MoveContinue  
+        ldd   x_pixel,u
+        subd  #1                                 *        subq.w  #2,x_pixel(a0)
+        std   x_pixel,u
+        ldd   y_pixel,u
+        subd   #1                                *        addq.w  #1,y_pixel(a0)
+        std   y_pixel,u
+        ldx   #Ani_TitleScreen                   *        lea     (Ani_obj0E).l,a1
         bsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
@@ -720,9 +753,9 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
                                                  *; Sprite_132F0:
                                                  *ObjC9:
                                                  *        moveq   #0,d0
-                                                 *        move.b  routine(a0),d0
-                                                 *        move.w  ObjC9_Index(pc,d0.w),d1
-                                                 *        jmp     ObjC9_Index(pc,d1.w)
+        lda   routine,u                          *        move.b  routine(a0),d0
+        ldx   Tails_Routines,pcr                 *        move.w  ObjC9_Index(pc,d0.w),d1
+        jmp   [a,x]                              *        jmp     ObjC9_Index(pc,d1.w)
                                                  *; ===========================================================================
                                                  *ObjC9_Index:    offsetTable
                                                  *                offsetTableEntry.w ObjC9_Init   ; 0
