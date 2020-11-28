@@ -27,7 +27,7 @@ number_of_level_objects          equ 3
 
 object_size                   equ $1F ; the size of an object
 next_object                   equ object_size
-			                  
+
 id                            equ $00 ; object ID ($00: free slot, $01: Object1, ...).
 render_flags                  equ $02 ; bitfield
 x_pos                         equ $03 ; and $04 ... some objects use subpixel as well when extra precision is required (see ObjectMove)
@@ -57,6 +57,7 @@ objoff_04                     equ $1B
 objoff_05                     equ $1C
 collision_flags               equ $1D
 subtype                       equ $1E
+ext_variables                 equ $20
 
 * ---------------------------------------------------------------------------
 * render_flags bitfield variables

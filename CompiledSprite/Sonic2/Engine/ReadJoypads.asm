@@ -1,16 +1,16 @@
 ; ---------------------------------------------------------------------------
 ; Controller Buttons
 ;
-c1_button_up_mask            equ   $01
-c1_button_down_mask          equ   $02
-c1_button_left_mask          equ   $04
-c1_button_right_mask         equ   $08
-c2_button_up_mask            equ   $10
-c2_button_down_mask          equ   $20
-c2_button_left_mask          equ   $40
-c2_button_right_mask         equ   $80
-c1_button_A_mask             equ   $40
-c2_button_A_mask             equ   $80
+c1_button_up_mask            equ   $01 *@globals
+c1_button_down_mask          equ   $02 *@globals
+c1_button_left_mask          equ   $04 *@globals
+c1_button_right_mask         equ   $08 *@globals
+c2_button_up_mask            equ   $10 *@globals
+c2_button_down_mask          equ   $20 *@globals
+c2_button_left_mask          equ   $40 *@globals
+c2_button_right_mask         equ   $80 *@globals
+c1_button_A_mask             equ   $40 *@globals
+c2_button_A_mask             equ   $80 *@globals
 
 Joypads
 Joypads_Held
@@ -28,7 +28,7 @@ Fire_Press                   fcb   $00
 * Registre: $E7CC (8bits)
 *
 * Joypad2     Joypad1
-* 1111        1111 (0: appuyé | 1: relaché)  
+* 1111        1111 (0: appuyï¿½ | 1: relachï¿½)  
 * ||||_Haut   ||||_Haut
 * |||__Bas    |||__Bas
 * ||___Gauche ||___Gauche
@@ -38,8 +38,8 @@ Fire_Press                   fcb   $00
 * -------------------
 * Registre: $E7CD (8bits)
 *
-* 11 000000 (0: appuyé | 1: relaché) 
-* ||[------] 6 bits convertisseur numérique-analogique
+* 11 000000 (0: appuyï¿½ | 1: relachï¿½) 
+* ||[------] 6 bits convertisseur numï¿½rique-analogique
 * ||_Fire Joypad1
 * |__Fire Joypad2
 *
@@ -47,8 +47,8 @@ Fire_Press                   fcb   $00
 * -----------------------------------------------
 * (16 bits)
 * Joypad2     Joypad1                                                          
-* 0000        0000 (0: relaché | 1: appuyé) 00 000000 (0: relaché | 1: appuyé)  
-* ||||_Haut   ||||_Haut                     ||[------] Non utilisé             
+* 0000        0000 (0: relachï¿½ | 1: appuyï¿½) 00 000000 (0: relachï¿½ | 1: appuyï¿½)  
+* ||||_Haut   ||||_Haut                     ||[------] Non utilisï¿½             
 * |||__Bas    |||__Bas                      ||_Fire Joypad1                    
 * ||___Gauche ||___Gauche                   |__Fire Joypad2                    
 * |____Droite |____Droite                                                      
