@@ -775,12 +775,10 @@ SmallStar_MoveContinue
                                                  *
 TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         tst   b_TitleScr_final_state,u           *        tst.b   objoff_2F(a0)
-        bne  TitleScreen_SetFinalState_rts       *        bne.w   +       ; rts
-                                                 *        move.b  (Ctrl_1_Press).w,d0
+        bne   TitleScreen_SetFinalState_rts      *        bne.w   +       ; rts
+        lda   Fire_Press                         *        move.b  (Ctrl_1_Press).w,d0
                                                  *        or.b    (Ctrl_2_Press).w,d0
-        anda  #c1_button_up_mask|c1_button_down_mask|c1_button_left_mask|c1_button_right_mask|c1_button_A_mask
-                                                 *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
-	andb  #c1_button_up_mask|c1_button_down_mask|c1_button_left_mask|c1_button_right_mask|c1_button_A_mask
+        anda  #c1_button_A_mask|c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
                                                  *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_2_Press).w
                                                  *        andi.b  #button_start_mask,d0
         beq  TitleScreen_SetFinalState_rts       *        beq.w   +       ; rts
@@ -789,46 +787,63 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
                                                  *        move.b  #$10,routine_secondary(a0)
         lda   #Imgref_sonic_5                   
         sta   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
-                                                 *        move.w  #$108,x_pixel(a0)
-                                                 *        move.w  #$98,y_pixel(a0)
-                                                 *        lea     (IntroSonicHand).w,a1
-        bsr   TitleScreen_InitSprite             *        bsr.w   TitleScreen_InitSprite
-                                                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
-                                                 *        move.b  #$A,routine(a1)                         ; Sonic's hand
-                                                 *        move.b  #2,priority(a1)
+	ldd   #$108
+        std   x_pixels,u                         *        move.w  #$108,x_pixel(a0)
+	ldd   #$98
+        std   y_pixels,u                         *        move.w  #$98,y_pixel(a0)
+        ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
+        * not implemented                        *        bsr.w   TitleScreen_InitSprite
+        ldy   #ObjID_TitleScreen                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
+	sty   id,x
+        lda   #Rtn_SonicHand
+        sta   routine,x                          *        move.b  #$A,routine(a1)                         ; Sonic's hand
+	lda   #2
+        sta   priority,x                         *        move.b  #2,priority(a1)
         lda   #Imgref_sonicHand                  
         sta   mapping_frame,x                    *        move.b  #9,mapping_frame(a1)
-                                                 *        move.b  #4,routine_secondary(a1)
-                                                 *        move.w  #$141,x_pixel(a1)
-                                                 *        move.w  #$C1,y_pixel(a1)
-                                                 *        lea     (IntroTails).w,a1
-        bsr   TitleScreen_InitSprite             *        bsr.w   TitleScreen_InitSprite
-                                                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
-                                                 *        move.b  #4,routine(a1)                          ; Tails
+	lda   #4
+        sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
+	ldd   #$141
+        std   x_pixel,x                          *        move.w  #$141,x_pixel(a1)
+	ldd   #$C1
+        std   y_pixel,x                          *        move.w  #$C1,y_pixel(a1)
+        ldx   #Obj_Tails                         *        lea     (IntroTails).w,a1
+        * not implemented                        *        bsr.w   TitleScreen_InitSprite
+	sty   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        lda   #4
+	sta   routine,x                          *        move.b  #4,routine(a1)                          ; Tails
         lda   #Imgref_tails_5                    
         sta   mapping_frame,x                    *        move.b  #4,mapping_frame(a1)
-                                                 *        move.b  #6,routine_secondary(a1)
-                                                 *        move.b  #3,priority(a1)
-                                                 *        move.w  #$C8,x_pixel(a1)
-                                                 *        move.w  #$A0,y_pixel(a1)
-                                                 *        lea     (IntroTailsHand).w,a1
-        bsr   TitleScreen_InitSprite             *        bsr.w   TitleScreen_InitSprite
-                                                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
-                                                 *        move.b  #$10,routine(a1)                        ; Tails' hand
-                                                 *        move.b  #2,priority(a1)
+        lda   #6
+	sta   routine_secondary,x                *        move.b  #6,routine_secondary(a1)
+        lda   #3
+	sta   priority,x                         *        move.b  #3,priority(a1)
+	ldd   #$C8
+        std   x_pixel,x                          *        move.w  #$C8,x_pixel(a1)
+	ldd   #$A0
+        std   y_pixel,x                          *        move.w  #$A0,y_pixel(a1)
+        ldx   #Obj_TailsHand                     *        lea     (IntroTailsHand).w,a1
+        * not implemented                        *        bsr.w   TitleScreen_InitSprite
+        sty   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+	ldd   #$1002
+        sta   routine,x                          *        move.b  #$10,routine(a1)                        ; Tails' hand
+        stb   priority,x                         *        move.b  #2,priority(a1)
         lda   #Imgref_tailsHand                  
         sta   mapping_frame,x                    *        move.b  #$13,mapping_frame(a1)
-                                                 *        move.b  #4,routine_secondary(a1)
-                                                 *        move.w  #$10D,x_pixel(a1)
-                                                 *        move.w  #$D1,y_pixel(a1)
-                                                 *        lea     (IntroEmblemTop).w,a1
-                                                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+	lda   #4
+        sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
+	ldd   #$10D
+        std   x_pixel,x                          *        move.w  #$10D,x_pixel(a1)
+	ldd   #$D1
+        std   y_pixel,x                          *        move.w  #$D1,y_pixel(a1)
+        ldx   Obj_EmblemTop                      *        lea     (IntroEmblemTop).w,a1
+        sty   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
         lda   #Rtn_EmblemTop						 
         sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
-                                                 *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
-                                                 *        lea     (TitleScreenPaletteChanger).w,a1
-                                                 *        bsr.w   DeleteObject2
+        * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
+        ldx   #Obj_PaletteHandler                *        lea     (TitleScreenPaletteChanger).w,a1
+        jsr   DeleteObject2                      *        bsr.w   DeleteObject2
                                                  *        lea_    Pal_1342C,a1
                                                  *        lea     (Normal_palette_line4).w,a2
                                                  *
@@ -849,7 +864,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
                                                  *        moveq   #7,d6
                                                  *-       move.l  (a1)+,(a2)+
                                                  *        dbf     d6,-
-	clr   TitleScreenPaletteChanger+paletteHander_fadein_amount
+	clr   Obj_PaletteHandler3+paletteHander_fadein_amount
                                                  *        sf.b    (TitleScreenPaletteChanger+paletteHander_fadein_amount).w ; MJ: set fade counter to 00 (finish)
                                                  *
         * music unused                           *        tst.b   objoff_30(a0)
@@ -867,10 +882,9 @@ TitleScreen_SetFinalState_rts                    *+
                                                  *;sub_135EA:
 TitleScreen_InitSprite                           *TitleScreen_InitSprite:
                                                  *
-        * not implemented                        *        move.l  #Obj0E_MapUnc_136A8,mappings(a1)
-        * not implemented                        *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a1)
-        lda   #4                                 *        move.b  #4,priority(a1)
-        sta   priority,x						 
+        * vdp unused                             *        move.l  #Obj0E_MapUnc_136A8,mappings(a1)
+        * vdp unused                             *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a1)
+        * not implemented is override later      *        move.b  #4,priority(a1)
         rts                                      *        rts
                                                  *; End of function TitleScreen_InitSprite
                                                  *

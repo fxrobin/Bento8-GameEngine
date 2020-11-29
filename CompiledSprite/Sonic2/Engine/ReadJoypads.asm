@@ -28,7 +28,7 @@ Fire_Press                   fcb   $00
 * Registre: $E7CC (8bits)
 *
 * Joypad2     Joypad1
-* 1111        1111 (0: appuy� | 1: relach�)  
+* 1111        1111 (0: appuye | 1: relache)  
 * ||||_Haut   ||||_Haut
 * |||__Bas    |||__Bas
 * ||___Gauche ||___Gauche
@@ -38,8 +38,8 @@ Fire_Press                   fcb   $00
 * -------------------
 * Registre: $E7CD (8bits)
 *
-* 11 000000 (0: appuy� | 1: relach�) 
-* ||[------] 6 bits convertisseur num�rique-analogique
+* 11 000000 (0: appuye | 1: relache) 
+* ||[------] 6 bits convertisseur numerique-analogique
 * ||_Fire Joypad1
 * |__Fire Joypad2
 *
@@ -47,8 +47,8 @@ Fire_Press                   fcb   $00
 * -----------------------------------------------
 * (16 bits)
 * Joypad2     Joypad1                                                          
-* 0000        0000 (0: relach� | 1: appuy�) 00 000000 (0: relach� | 1: appuy�)  
-* ||||_Haut   ||||_Haut                     ||[------] Non utilis�             
+* 0000        0000 (0: relache | 1: appuye) 00 000000 (0: relache | 1: appuye)  
+* ||||_Haut   ||||_Haut                     ||[------] Non utilise             
 * |||__Bas    |||__Bas                      ||_Fire Joypad1                    
 * ||___Gauche ||___Gauche                   |__Fire Joypad2                    
 * |____Droite |____Droite                                                      
