@@ -559,9 +559,9 @@ LargeStar_Init                                   *Obj0E_LargeStar_Init:
         lda   #Img_2_star
         sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         * not implemented                        *        ori.w   #high_priority,art_tile(a0)
-        ldd   #$21
-        stb   anim,u                             *        move.b  #2,anim(a0)
-        sta   priority,u                         *        move.b  #1,priority(a0)
+        ldd   #$0201
+        sta   anim,u                             *        move.b  #2,anim(a0)
+        stb   priority,u                         *        move.b  #1,priority(a0)
         ldd   #$100
         std   x_pixel,u                          *        move.w  #$100,x_pixel(a0)
         ldd   #$A8
@@ -585,10 +585,10 @@ LargeStar_AfterWait                              *+
                                                  *; ===========================================================================
                                                  *
 LargeStar_Move                                   *loc_1319E:
-        ldd   #$20
-        stb   routine_secondary,u                *        move.b  #2,routine_secondary(a0)
-        sta   anim_frame,u                       *        move.b  #0,anim_frame(a0)
-        sta   anim_frame_duration,u              *        move.b  #0,anim_frame_duration(a0)
+        ldd   #$0200
+        sta   routine_secondary,u                *        move.b  #2,routine_secondary(a0)
+        stb   anim_frame,u                       *        move.b  #0,anim_frame(a0)
+        stb   anim_frame_duration,u              *        move.b  #0,anim_frame_duration(a0)
         ldd   #6
         std   w_TitleScr_move_frame_count,u      *        move.w  #6,objoff_2A(a0)
         ldd   w_TitleScr_xy_data_index,u         *        move.w  objoff_2C(a0),d0

@@ -293,29 +293,29 @@ public class BuildDisk
 		//
 		//Ani_TitleScreen_LargeStar
 		//fcb   $01 ; frame duration
-		//fdb   Imgref_2_star
-		//fdb   Imgref_3_star
-		//fdb   Imgref_4_star
-		//fdb   Imgref_3_star
-		//fdb   Imgref_2_star
+		//fdb   Img_2_star
+		//fdb   Img_3_star
+		//fdb   Img_4_star
+		//fdb   Img_3_star
+		//fdb   Img_2_star
 		//fcb   _nextSubRoutine
 
 		//Ani_TitleScreen_SmallStar
 		//fcb   $03 ; frame duration
-		//fdb   Imgref_1_star
-		//fdb   Imgref_2_star
+		//fdb   Img_1_star
+		//fdb   Img_2_star
 		//fcb   _resetAnim
 
 		//* Adresse des images de l'objet
 		//* -----------------------------
 
-		//Imgref_Emblem        
+		//Img_Emblem        
 		//        fcb   $07,$B0,$20,$08,$27,$32 ; compiled sprite draw routine (page,address) and erase routine (page,address)					
-		//Imgref_EmblemFront    
+		//Img_EmblemFront    
 		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//Imgref_IslandLand      
+		//Img_IslandLand      
 		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//Imgref_IslandWater     
+		//Img_IslandWater     
 		//        fcb   $07,$B0,$20,$08,$27,$32		
 		//...
 		

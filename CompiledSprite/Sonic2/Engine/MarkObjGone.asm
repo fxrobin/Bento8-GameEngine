@@ -1,12 +1,12 @@
 ; ---------------------------------------------------------------------------
-; Détermine si un objet doit être conservé en mémoire ou supprimé
-; dans le cas d'une suppression, certaines données de l'objet sont
-; sauvegardées pour permettre de restaurer son état lors de l'éventuelle
-; réapparition de l'objet
+; MarkObjGone
+; -----------
+; Subroutine to destroy an object that is outside of destroy/respawn limit
+; -- TODO --
+; waiting for camera implementation
 ;
-; TODO A mettre en place avec la gestion du déplacement camera
-;
-; input REG : [u] pointeur sur l'objet 
+; input REG : none
+; clear REG : none
 ; ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------

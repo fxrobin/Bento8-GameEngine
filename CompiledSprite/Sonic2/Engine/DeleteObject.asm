@@ -1,10 +1,9 @@
 ; ---------------------------------------------------------------------------
-; Subroutine to delete an object
-;
-; écarts par rapport au code d'origine :
-; Les données a effacées impérativement doivent être placées en début de SST
-; pour permettre un effacement ciblé et efficient contrairement au code
-; d'origine qui met à blanc toutes les données d'un objet 
+; DeleteObject
+; ------------
+; Subroutine to delete an object.
+; If the object is rendered as a sprite it will be deleted by EraseSprites
+; routine
 ;
 ; DeleteObject
 ; input REG : [u] pointeur sur l'objet (SST)
@@ -12,8 +11,7 @@
 ; DeleteObject2
 ; input REG : [x] pointeur sur l'objet (SST)
 ; ---------------------------------------------------------------------------
-(main)MAIN
-	org $6300
+
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine to delete an object
                                        *; ---------------------------------------------------------------------------
@@ -21,20 +19,14 @@
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *
                                        *; freeObject:
-DeleteObject                           *DeleteObject:
-    ldd   #$0000                       *    movea.l a0,a1
-    std   14,u
-    std   12,u
-    std   10,u
-    std   8,u
-    std   6,u
-    std   4,u
-    std   2,u
-    std   ,u
-    rts                                       
-                                       *; sub_164E8:
-DeleteObject2                          *DeleteObject2:
-    ldd   #$0000                       *    moveq   #0,d1
+DeleteObject2                          *DeleteObject:
+        stu   DeleteObject_dyn_01+1    *    movea.l a0,a1
+        tfr x,u                        *; sub_164E8:
+DeleteObject                           *DeleteObject2:
+        lda   priority,u
+        bne   DeleteObject_AddPUnset
+        jsr   ClearObj                 ; priority is 0, object is not referenced in display engine, clear this object now
+                                       *    moveq   #0,d1
                                        *
                                        *    moveq   #bytesToLcnt(next_object),d0 ; we want to clear up to the next object
                                        *    ; delete the object by setting all of its bytes to 0
@@ -44,13 +36,16 @@ DeleteObject2                          *DeleteObject2:
                                        *    move.w  d1,(a1)+
                                        *    endif
                                        *
-    std   14,x
-    std   12,x
-    std   10,x
-    std   8,x
-    std   6,x
-    std   4,x
-    std   2,x
-    std   ,x
-    rts                                *    rts
+        bra   DeleteObject_dyn_01
+DeleteObject_AddPUnset                                       
+        ldy   Lst_Priority_Unset       ; priority is set: object will be deleted in Display engine                       
+        stu   ,y
+        leay  2,y
+        sty   Lst_Priority_Unset
+        lda   render_flags,u           ; set todelete flag to 1
+        ora   render_todelete_mask
+        sta   render_flags,u
+DeleteObject_dyn_01                                       
+        ldu   #0000                                 
+        rts                            *    rts
                                        *; End of function DeleteObject2

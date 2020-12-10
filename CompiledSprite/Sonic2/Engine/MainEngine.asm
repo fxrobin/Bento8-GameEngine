@@ -1,5 +1,5 @@
 ********************************************************************************
-* Moteur de jeu (TO8 Thomson) - Benoit Rousseau 07/10/2020
+* Game Engine (TO8 Thomson) - Benoit Rousseau 07/10/2020
 * ------------------------------------------------------------------------------
 *
 *
@@ -10,7 +10,7 @@
         org   $6000
 
 ********************************************************************************  
-* Boucle principale
+* Main Loop
 ********************************************************************************
 LevelMainLoop
         jsr   WaitVBL
@@ -30,41 +30,74 @@ LevelMainLoop
         INCLUD BUILDSPR
 
 * ==============================================================================
-* Donnees globales
+* Global Data
+*
+* Naming convention
+* -----------------
+* - underscore-separated names
+* - first letter of each word in upper case, the others in lower case
+*
+* Templates
+* ---------
+* - Glb_*        : global variable
+* - Tbl_*        : data table
+* - Lst_*        : list is a data table with variable size, first word is the adress of last element in list, next words are data
+* - Obj_*        : address of an object in Object_RAM
+*
+* - *_Object_RAM : sub group of objects
+* - *_end        : data end label
+*
 * ==============================================================================
 
-MainCharacter_Is_Dead        rmb   $1,0
+* ---------------------------------------------------------------------------
+* Display
+* ---------------------------------------------------------------------------
+                             
+Glb_Cur_Wrk_Screen_Id         fcb   $00                     ; screen buffer set to write operations (0 or 1)
+Glb_Cur_Wrk_Screen_Id_x2      fcb   Glb_Cur_Wrk_Screen_Id*2 ; precalculated value
+Glb_Camera_X_Pos              fdb   $0000                   ; camera x position in palyfield coordinates
+Glb_Camera_Y_Pos              fdb   $0000                   ; camera y position in palyfield coordinates     
 
-********************************************************************************
-* SST - Table des variables de chaque Objet
-********************************************************************************
+* ---------------------------------------------------------------------------
+* Display Priority Structure - DPS
+* ---------------------------------------------------------------------------
 
-Gotp_Closest_Player          rmb   $2,0  * ptr objet de MainCharacter ou Sidekick
-Gotp_Player_Is_Left          rmb   $1,0  * 0: player left from object, 2: right
-Gotp_Player_Is_Above         rmb   $1,0  * 0: player above object, 2: below
-Gotp_Player_H_Distance       rmb   $2,0  * closest character's h distance to obj
-Gotp_Player_V_Distance       rmb   $2,0  * closest character's v distance to obj 
-Gotp_Abs_H_Distance_Mainc    rmb   $2,0  * absolute horizontal distance to main character
-Gotp_H_Distance_Sidek        rmb   $2,0  * horizontal distance to sidekick
-
-********************************************************************************
-* OST - Table des variables de chaque Objet
-********************************************************************************
+Tbl_Priority_First_Entry      rmb   nb_priority_levels*2,0 ; first address of object in linked list for each priority index
+Tbl_Priority_Last_Entry       rmb   nb_priority_levels*2,0 ; last address of object in linked list for each priority index
+Lst_Priority_Unset            fdb   Lst_PriorityUnset+2    ; pointer to end of list (initialized to its own address)
+                              rmb   (nb_objects*2),0       ; objects to delete from priority list
+* ---------------------------------------------------------------------------
+* Object Status Table - OST
+* ---------------------------------------------------------------------------
         
 Object_RAM * @globals
-
 Reserved_Object_RAM
-MainCharacter                rmb   object_size,0
-Sidekick                     rmb   object_size,0
+Obj_MainCharacter             rmb   object_size,0
+Obj_Sidekick                  rmb   object_size,0
 Reserved_Object_RAM_End
-
-Dynamic_Object_RAM           rmb   number_of_dynamic_objects*object_size,0
+Dynamic_Object_RAM            rmb   nb_dynamic_objects*object_size,0
 Dynamic_Object_RAM_End
-
 LevelOnly_Object_RAM
-Tails_Tails                  rmb   object_size,0
-Sonic_Dust                   rmb   object_size,0
-Tails_Dust                   rmb   object_size,0
+Obj_TailsTails                rmb   object_size,0
+Obj_SonicDust                 rmb   object_size,0
+Obj_TailsDust                 rmb   object_size,0
 LevelOnly_Object_RAM_End
-
 Object_RAM_End
+
+* ---------------------------------------------------------------------------
+* Lifecycle
+* ---------------------------------------------------------------------------
+
+Glb_MainCharacter_Is_Dead     rmb   $1,0
+
+* ---------------------------------------------------------------------------
+* Get Orientation To Player
+* ---------------------------------------------------------------------------
+
+Glb_Closest_Player            rmb   $2,0  ; ptr objet de MainCharacter ou Sidekick
+Glb_Player_Is_Left            rmb   $1,0  ; 0: player left from object, 2: right
+Glb_Player_Is_Above           rmb   $1,0  ; 0: player above object, 2: below
+Glb_Player_H_Distance         rmb   $2,0  ; closest character's h distance to obj
+Glb_Player_V_Distance         rmb   $2,0  ; closest character's v distance to obj 
+Glb_Abs_H_Distance_Mainc      rmb   $2,0  ; absolute horizontal distance to main character
+Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
