@@ -9,7 +9,7 @@
 ; clear REG : [d]
 ; ---------------------------------------------------------------------------
 
-ClearObj
+ClearObj @globals
         ldd   #$0000
         sta   id,u
         sta   subtype,u
@@ -19,12 +19,12 @@ ClearObj
         sta   anim_frame,u
         sta   anim_frame_duration,u
         std   mapping_frame,u
-        std   x_pos,u
-        sta   x_sub,u
-        std   y_pos,u
-        sta   y_sub,u
-        sta   x_pixel,u
-        sta   y_pixel,u
+*        std   x_pos,u
+*        sta   x_sub,u
+*        std   y_pos,u
+*        sta   y_sub,u
+*        sta   x_pixel,u
+*        sta   y_pixel,u
         sta   routine,u
         sta   routine_secondary,u
         std   ext_variables,u
@@ -38,9 +38,12 @@ ClearObj
         std   ext_variables+16,u
         std   ext_variables+18,u        
         sta   rsv_render_flags,u
-        sta   rsv_new_priority,u
-        std   rsv_priority_prev_obj,u
-        std   rsv_priority_next_obj,u
+        sta   rsv_priority_0,u
+        sta   rsv_priority_1,u        
+        std   rsv_priority_prev_obj_0,u
+        std   rsv_priority_prev_obj_1,u        
+        std   rsv_priority_next_obj_0,u
+        std   rsv_priority_next_obj_1,u        
         std   rsv_prev_anim,u
         std   rsv_curr_mapping_frame,u
         std   rsv_prev_mapping_frame_0,u

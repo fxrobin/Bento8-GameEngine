@@ -1,39 +1,9 @@
-; TODO Gérer les sprites onscreen_flag a effacer mais qui doivent être delete
+; ---------------------------------------------------------------------------
+; BuildSprites
+; ------------
+; Subroutine to  
 ;
-; rétablissemet du fond pour chaque sprite
-; Traiter Sprite_Table_Input du plus prioritaire au moins prioritaire (0 à 7 dans l'ordre de la liste)
-; Rétablir le fond en effaçant les sprites qui ont (et/ou)
-;    - flag fond sauvegardé à oui pour ce sprite => onscreen_flag
-;    et
-;    - status to be deleted à oui
-;    ou - changé de position x ou y (écran pas subpixel)
-;    ou - changé d'animation depuis le dernier affichage
-;    ou - changé de flag mirror (x ou y)
-; Effacement du sprite par appel à la méthode
-; si render_onscreen_mask à vrai et objet dans zone camera (strictement) alors:
-;    - ajout de la référence du sprite a redessiner dans une liste Sprite_Table_Refresh (et purge flag fond sauvegardé pour ce sprite =>  onscreen_flag)
-;    - gérer le cas ou un sprite moins prioritaire (qui bouge) est en colision avec sprite plus prioritaire (qui est fixe et n'a donc pas rétabli son fond)
-;      parcourir la liste des sprites immobiles de priorité plus hautes et tester colission (pas besoin de rétablir le fond du sprite plus prioritaire qui ne bouge pas, par contre on devra le redessiner)
-;      - si colision:
-;         - ajout AU BON ENDROIT dans Sprite_Table_Refresh des références de sprites impactés (et retrait des sprites impactés de la liste des sprites non rafraichis)
-; sinon ajout de la référence sprite dans liste des sprites non rafraichists
-; OPTIONEL: si cout cumulé des méthodes de dessin > max_paramétré on ne rend pas les autres sprites moins prioritaires => sortie
-; boucle
-;sortie: Sprite_Table_Refresh (copie de Sprite_Table_Input init a vide et remplie au fur et à mesure ?), Sprite_Table_No_Refresh
-
-; Dessin des sprites
-; Parcours des objets dans Sprite_Table_Refresh par ordre de priorité de la plus basse à la plus haute
-;    calcul position mémoire à partir des coordonnées x y 
-;    calcul page, adresse de la méthode de dessin en fonction du x_mirror et y_miror et de l'animation en cours
-;    appel à la méthode de dessin avec: position mémoire dessin, position mémoire sauvegarde fond, page et adresse méthode dessin
-;    + positionner flag fond sauvegardé pour ce sprite => onscreen_flag
-; boucle
-
-
-
-
-
-; 8192 octets de la RAMA + 192 octets invisibles dans la page 2 ou 3 = 8384 octets dispo pour les données d'effacement
+; ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine to convert mappings (etc) to proper Megadrive sprites

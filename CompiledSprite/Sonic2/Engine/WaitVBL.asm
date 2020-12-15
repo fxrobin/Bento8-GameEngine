@@ -44,7 +44,14 @@ WaitVBL_01
         
         ldd   Vint_runcount
         addd  #1
-        std   Vint_runcount      * incremente le compteur de frame        
+        std   Vint_runcount
+        
+        lda   Glb_Cur_Wrk_Screen_Id
+        ora   1
+        sta   Glb_Cur_Wrk_Screen_Id
+        lsla
+        sta   Glb_Cur_Wrk_Screen_Id_x2
+                
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage
         andb  #$40               * alterne bit6=0 et bit6=1 (suivant la valeur B $00 ou $FF)

@@ -6,10 +6,10 @@
 ; routine
 ;
 ; DeleteObject
-; input REG : [u] pointeur sur l'objet (SST)
+; input REG : [u] object pointer (OST)
 ;
-; DeleteObject2
-; input REG : [x] pointeur sur l'objet (SST)
+; DeleteObject_x
+; input REG : [x] object pointer (OST)
 ; ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
@@ -19,13 +19,42 @@
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *
                                        *; freeObject:
-DeleteObject2                          *DeleteObject:
-        stu   DeleteObject_dyn_01+1    *    movea.l a0,a1
-        tfr x,u                        *; sub_164E8:
-DeleteObject                           *DeleteObject2:
-        lda   priority,u
-        bne   DeleteObject_AddPUnset
-        jsr   ClearObj                 ; priority is 0, object is not referenced in display engine, clear this object now
+DeleteObject_x @globals                *DeleteObject:
+        pshs  d,x,u                    *    movea.l a0,a1
+        tfr   x,u                      *; sub_164E8:
+        bra   DOB_Start
+DeleteObject @globals                  *DeleteObject2:
+        pshs  d,x,u
+DOB_Start
+        lda   rsv_render_flags,u
+        anda  #rsv_render_onscreen_0_mask
+        beq   DOB_TestOnscreen1Delete  ; branch if not onscreen on buffer 0
+        
+DOB_Unset0        
+        ldx   Lst_Priority_Unset_0     ; add object to unset list on buffer 0
+        stu   ,x
+        leax  2,x
+        stx   Lst_Priority_Unset_0
+        
+DOB_TestOnscreen1
+        lda   rsv_render_flags,u
+        anda  #rsv_render_onscreen_1_mask
+        beq   DOB_ToDeleteFlag         ; branch if not onscreen on buffer 1
+        
+DOB_Unset1
+        ldx   Lst_Priority_Unset_1     ; add object to unset list on buffer 1                       
+        stu   ,x
+        leax  2,x
+        stx   Lst_Priority_Unset_1
+        bra  DOB_ToDeleteFlag 
+        
+DOB_TestOnscreen1Delete
+        lda   rsv_render_flags,u
+        anda  #rsv_render_onscreen_1_mask
+        bne   DOB_Unset1               ; branch if onscreen on buffer 1        
+
+        jsr   ClearObj                 ; this object is not onscreen anymore, clear this object rightnow
+        bra   DOB_rts
                                        *    moveq   #0,d1
                                        *
                                        *    moveq   #bytesToLcnt(next_object),d0 ; we want to clear up to the next object
@@ -36,16 +65,11 @@ DeleteObject                           *DeleteObject2:
                                        *    move.w  d1,(a1)+
                                        *    endif
                                        *
-        bra   DeleteObject_dyn_01
-DeleteObject_AddPUnset                                       
-        ldy   Lst_Priority_Unset       ; priority is set: object will be deleted in Display engine                       
-        stu   ,y
-        leay  2,y
-        sty   Lst_Priority_Unset
-        lda   render_flags,u           ; set todelete flag to 1
+DOB_ToDeleteFlag                                       
+        lda   render_flags,u
         ora   render_todelete_mask
-        sta   render_flags,u
-DeleteObject_dyn_01                                       
-        ldu   #0000                                 
-        rts                            *    rts
+        sta   render_flags,u           ; set todelete flag, object will be deleted after sprite erase on all screen buffers
+                                               
+DOB_rts
+        puls  d,x,u,pc                 *    rts
                                        *; End of function DeleteObject2

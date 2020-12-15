@@ -45,7 +45,7 @@ nb_objects                    equ nb_reserved_objects+nb_dynamic_objects+nb_leve
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ 63 ; the size of an object
+object_size                   equ 67 ; the size of an object
 next_object                   equ object_size
 
 id                            equ 0           ; reference to object model id (ObjID_) (0: free slot)
@@ -90,17 +90,34 @@ rsv_render_erasesprite_mask   equ $00 ; (bit 2) if a sprite need to be cleared o
 rsv_render_displaysprite_mask equ $00 ; (bit 3) if a sprite need to be rendered on screen
 rsv_render_outofrange_mask    equ $00 ; (bit 4) if a sprite is out of range for full rendering in screen
 
-rsv_new_priority              equ 42 ; internal value that hold new priority until it is set
-rsv_priority_prev_obj         equ 43 ; and 44 ; previous object (OST address) in display priority list (0000 if none) w
-rsv_priority_next_obj         equ 45 ; and 46 ; next object (OST address) in display priority list (0000 if none) w
-rsv_prev_anim                 equ 47 ; and 48 ; reference to previous animation (Ani_) w
-rsv_curr_mapping_frame        equ 49 ; and 50 ; reference to current image regarding mirror flags (0000 if no image) w
-rsv_prev_mapping_frame_0      equ 51 ; and 52 ; reference to previous image in video buffer 0 (Img_) (0000 if no image) w
-rsv_prev_mapping_frame_1      equ 53 ; and 54 ; reference to previous image in video buffer 1 (Img_) (0000 if no image) w
-rsv_bgdata_0                  equ 55 ; and 56 ; address of background data in screen 0 w
-rsv_bgdata_1                  equ 57 ; and 58 ; address of background data in screen 1 w
-rsv_prev_x_pixel_0            equ 59 ; previous x screen coordinate b
-rsv_prev_x_pixel_1            equ 60 ; previous x screen coordinate b
-rsv_prev_y_pixel_0            equ 61 ; previous y screen coordinate b
-rsv_prev_y_pixel_1            equ 62 ; previous y screen coordinate b
+rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w
+rsv_curr_mapping_frame        equ 44 ; and 45 ; reference to current image regarding mirror flags (0000 if no image) w
 
+* ---------------------------------------------------------------------------
+* reserved variables (engine) - buffer specific
+
+rsv_buffer_0                  equ 46 ; Start index of buffer 0 variables
+rsv_priority_0                equ 46 ; internal value that hold priority in video buffer 0
+rsv_priority_prev_obj_0       equ 47 ; and 48 ; previous object (OST address) in display priority list for video buffer 0 (0000 if none) w
+rsv_priority_next_obj_0       equ 49 ; and 50 ; next object (OST address) in display priority list for video buffer 0 (0000 if none) w
+rsv_prev_mapping_frame_0      equ 51 ; and 52 ; reference to previous image in video buffer 0 (Img_) (0000 if no image) w
+rsv_bgdata_0                  equ 53 ; and 54 ; address of background data in screen 0 w
+rsv_prev_x_pixel_0            equ 55 ; previous x screen coordinate b
+rsv_prev_y_pixel_0            equ 56 ; previous y screen coordinate b
+
+rsv_buffer_1                  equ 46 ; Start index of buffer 1 variables
+rsv_priority_1                equ 57 ; internal value that hold priority in video buffer 1
+rsv_priority_prev_obj_1       equ 58 ; and 59 ; previous object (OST address) in display priority list for video buffer 1 (0000 if none) w
+rsv_priority_next_obj_1       equ 60 ; and 61 ; next object (OST address) in display priority list for video buffer 1 (0000 if none) w
+rsv_prev_mapping_frame_1      equ 62 ; and 63 ; reference to previous image in video buffer 1 (Img_) (0000 if no image) w
+rsv_bgdata_1                  equ 64 ; and 65 ; address of background data in screen 1 w
+rsv_prev_x_pixel_1            equ 66 ; previous x screen coordinate b
+rsv_prev_y_pixel_1            equ 67 ; previous y screen coordinate b
+
+buf_priority                  equ 0  ; offset for each rsv_buffer variables
+buf_priority_prev_obj         equ 1  ;
+buf_priority_next_obj         equ 3  ;
+buf_prev_mapping_frame        equ 5  ;
+buf_bgdata                    equ 7  ;
+buf_prev_x_pixel              equ 9  ;
+buf_prev_y_pixel              equ 10 ;
