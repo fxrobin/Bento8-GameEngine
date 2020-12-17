@@ -17,7 +17,10 @@ LevelMainLoop
         jsr   UpdatePalette
         jsr   ReadJoypads
         jsr   RunObjects
-        jsr   BuildSprites
+        jsr   CheckSpritesRefresh
+        jsr   EraseSprites
+        jsr   UnsetDisplayPriority
+        jsr   DrawSprites
         bra   LevelMainLoop
 
 * ==============================================================================
@@ -31,7 +34,12 @@ LevelMainLoop
         INCLUD DISPLSPR
         INCLUD MRKOBJGN
         INCLUD CLEAROBJ
-        INCLUD BUILDSPR
+        INCLUD CHECKSPR
+        INCLUD ERASESPR
+        INCLUD UNSETDSP
+        INCLUD DRAWSPR
+        INCLUD BGBALLOC
+        INCLUD BGBFREE
 
 * ==============================================================================
 * Global Data
@@ -61,6 +69,26 @@ Glb_Cur_Wrk_Screen_Id         fcb   $00   ; screen buffer set to write operation
 Glb_Cur_Wrk_Screen_Id_x2      fcb   $00   ; precalculated value
 Glb_Camera_X_Pos              fdb   $0000 ; camera x position in palyfield coordinates
 Glb_Camera_Y_Pos              fdb   $0000 ; camera y position in palyfield coordinates     
+
+* ---------------------------------------------------------------------------
+* Background Backup Cells - BBC
+* ---------------------------------------------------------------------------
+
+nb_free_cells                 equ   64
+nb_cell_bytes                 equ   ($6000-$3F40)/nb_free_cells
+
+Lst_FreeCellFirstEntry_0      fdb   $0000  ; Pointer to first entry in free cell list (buffer 0)
+Lst_FreeCell_0                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 0)
+
+Lst_FreeCellFirstEntry_1      fdb   $0000  ; Pointer to first entry in free cell list (buffer 1)
+Lst_FreeCell_1                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 1)
+
+* ----- Cells variables
+nb_cells                      equ   0
+cell_start                    equ   1
+cell_end                      equ   3
+next_cell                     equ   5
+cell_size                     equ   7
 
 * ---------------------------------------------------------------------------
 * Display Priority Structure - DPS
