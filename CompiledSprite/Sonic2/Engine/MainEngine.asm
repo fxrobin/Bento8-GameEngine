@@ -75,7 +75,7 @@ Glb_Camera_Y_Pos              fdb   $0000 ; camera y position in palyfield coord
 * ---------------------------------------------------------------------------
 
 nb_free_cells                 equ   64
-nb_cell_bytes                 equ   ($6000-$3F40)/nb_free_cells
+cell_size                     equ   ($6000-$3F40)/nb_free_cells
 
 Lst_FreeCellFirstEntry_0      fdb   $0000  ; Pointer to first entry in free cell list (buffer 0)
 Lst_FreeCell_0                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 0)
@@ -87,8 +87,8 @@ Lst_FreeCell_1                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 1)
 nb_cells                      equ   0
 cell_start                    equ   1
 cell_end                      equ   3
-next_cell                     equ   5
-cell_size                     equ   7
+next_entry                    equ   5
+entry_size                    equ   7
 
 * ---------------------------------------------------------------------------
 * Display Priority Structure - DPS

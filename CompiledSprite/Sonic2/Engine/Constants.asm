@@ -24,13 +24,29 @@ dk_destination                equ $604F
 screen_width                  equ 160 ; screen width in pixel
 screen_height                 equ 200 ; screen height in pixel
 nb_priority_levels            equ 8   ; number of priority levels
-imgMeta_size                  equ 13  ; number of bytes for each image reference
 
 * ===========================================================================
 * Physics Constants
 * ===========================================================================
 
 gravity                       equ $38 ; Gravite: 56 sub-pixels par frame
+
+* ===========================================================================
+* Images Constants
+* ===========================================================================
+
+page_bckdraw_routine          equ 0
+bckdraw_routine               equ 1
+page_draw_routine             equ 3
+draw_routine                  equ 4
+page_erase_routine            equ 6
+erase_routine                 equ 7
+erase_nb_cell                 equ 9
+image_x_offset                equ 10
+image_y_offset                equ 11
+image_x_size                  equ 12
+image_y_size                  equ 13
+image_meta_size               equ 14 ; number of bytes for each image reference
 
 * ===========================================================================
 * Object Constants
