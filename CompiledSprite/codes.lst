@@ -4,7 +4,7 @@
  * Fichier source      : .\tmp\test.asm
  * Fichier destination : test.BIN
  * Contenu :
- *     Main     0:TEST.ASM     119
+ *     Main     0:TEST.ASM     164
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -14,14 +14,17 @@ Pass2
       3                            
       4                  001A     constant1 equ $1A
       5                  00E9     constant2 equ $E9
-      6
-      7  3     0000 CC   1AE9             ldd   #(constant1*256)+constant2
-      8  5     0003 B7   A000             sta   $A000
-      9  5     0006 F7   B000             stb   $B000
+      6                  0001     render_xmirror_mask           equ $01 ; (>>
+      7                  0002     render_ymirror_mask           equ $02 ; (>>
+      8
+      9
+     10  2     0000 84   03               anda  #render_xmirror_mask!render>>
 
 000000 Total Errors
 
-000002 Total Symbols
-     1x          Equ   001A constant1
-     1x          Equ   00E9 constant2
+000004 Total Symbols
+     0x          Equ   001A constant1
+     0x          Equ   00E9 constant2
+     1x          Equ   0001 render_xmirror_mask
+     1x          Equ   0002 render_ymirror_mask
 
