@@ -1,12 +1,12 @@
-; ---------------------------------------------------------------------------
-; Constants
-;
-; Naming convention
-; -----------------
-; - lower case
-; - underscore-separated names
-;
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Constants
+*
+* Naming convention
+* -----------------
+* - lower case
+* - underscore-separated names
+*
+* ---------------------------------------------------------------------------
 
 * ===========================================================================
 * TO8 Registers
@@ -23,7 +23,7 @@ dk_destination                equ $604F
 
 screen_width                  equ 160 ; screen width in pixel
 screen_height                 equ 200 ; screen height in pixel
-nb_priority_levels            equ 8   ; number of priority levels
+nb_priority_levels            equ 8   ; number of priority levels (need code change if modified)
 
 * ===========================================================================
 * Physics Constants
@@ -55,7 +55,7 @@ image_meta_size               equ 18 ; number of bytes for each image reference
 nb_reserved_objects           equ 2
 nb_dynamic_objects            equ 59
 nb_level_objects              equ 3
-nb_objects                    equ nb_reserved_objects+nb_dynamic_objects+nb_level_objects
+nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_level_objects
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets

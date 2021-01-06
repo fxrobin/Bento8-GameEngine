@@ -97,22 +97,22 @@ entry_size                    equ   7
 DPS_buffer_0
 Tbl_Priority_First_Entry_0    rmb   2+(nb_priority_levels*2),0 ; first address of object in linked list for each priority index (buffer 0) index 0 unused
 Tbl_Priority_Last_Entry_0     rmb   2+(nb_priority_levels*2),0 ; last address of object in linked list for each priority index (buffer 0) index 0 unused
-Lst_Priority_Unset_0          fdb   Lst_PriorityUnset+2        ; pointer to end of list (initialized to its own address) (buffer 0)
+Lst_Priority_Unset_0          fdb   Lst_Priority_Unset_0+2     ; pointer to end of list (initialized to its own address+2) (buffer 0)
                               rmb   (nb_objects*2),0           ; objects to delete from priority list
 DPS_buffer_1                              
 Tbl_Priority_First_Entry_1    rmb   2+(nb_priority_levels*2),0 ; first address of object in linked list for each priority index (buffer 1) index 0 unused
 Tbl_Priority_Last_Entry_1     rmb   2+(nb_priority_levels*2),0 ; last address of object in linked list for each priority index (buffer 1) index 0 unused
-Lst_Priority_Unset_1          fdb   Lst_PriorityUnset+2        ; pointer to end of list (initialized to its own address) (buffer 1)
+Lst_Priority_Unset_1          fdb   Lst_Priority_Unset_1+2     ; pointer to end of list (initialized to its own address+2) (buffer 1)
                               rmb   (nb_objects*2),0           ; objects to delete from priority list
                               
-buf_Tbl_Priority_First_Entry  equ   Tbl_Priority_First_Entry_0-DPS_buffer_0                                                            
+buf_Tbl_Priority_First_Entry  equ   0                                                            
 buf_Tbl_Priority_Last_Entry   equ   Tbl_Priority_Last_Entry_0-DPS_buffer_0          
 buf_Lst_Priority_Unset        equ   Lst_Priority_Unset_0-DPS_buffer_0
 * ---------------------------------------------------------------------------
 * Object Status Table - OST
 * ---------------------------------------------------------------------------
         
-Object_RAM @globals
+Object_RAM * @globals
 Reserved_Object_RAM
 Obj_MainCharacter             rmb   object_size,0
 Obj_Sidekick                  rmb   object_size,0

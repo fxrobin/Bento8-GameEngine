@@ -4,36 +4,645 @@
  * Fichier source      : .\tmp\test.asm
  * Fichier destination : test.BIN
  * Contenu :
- *     Main     0:TEST.ASM     277
+ *     Main     0:TEST.ASM     10795
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-      2        9000                  org $9000
+      2        6200                  org $6200
       3                  90          setdp $90
-      4                            
-      5                  001A     constant1 equ $1A
-      6                  00E9     constant2 equ $E9
-      7                  0001     render_xmirror_mask           equ $01 ; (>>
-      8                  0002     render_ymirror_mask           equ $02 ; (>>
-      9
-     10
-     11  2     9000 84   03               anda  #render_xmirror_mask!render>>
-     12  4+1   9002 30   C8 2E            leax  46,u
-     13  4+1   9005 30   C8 3A            leax  58,u
-     14  4+1   9008 30   C8 10            leax  16,u
-     15  6     900B FE   A000             ldu $A000
-     16  6     900E FE   0000             ldu $0000
-     17  6     9011 FE   0001             ldu $0001
-     18  6     9014 FE   1001             ldu $1001
-     19  6     9017 FE   0000             ldu 0
+      4
+      5                           * --------------------------------------->>
+      6                           * Constants
+      7                           *
+      8                           * Naming convention
+      9                           * -----------------
+     10                           * - lower case
+     11                           * - underscore-separated names
+     12                           *
+     13                           * --------------------------------------->>
+     14
+     15                           * =======================================>>
+     16                           * TO8 Registers
+     17                           * =======================================>>
+     18
+     19                  6049     dk_lecteur                    equ $6049
+     20                  604A     dk_piste                      equ $604A
+     21                  604C     dk_secteur                    equ $604C
+     22                  604F     dk_destination                equ $604F
+     23
+     24                           * =======================================>>
+     25                           * Display Constants
+     26                           * =======================================>>
+     27
+     28                  00A0     screen_width                  equ 160 ; s>>
+     29                  00C8     screen_height                 equ 200 ; s>>
+     30                  0008     nb_priority_levels            equ 8   ; n>>
+     31
+     32                           * =======================================>>
+     33                           * Physics Constants
+     34                           * =======================================>>
+     35
+     36                  0038     gravity                       equ $38 ; G>>
+     37
+     38                           * =======================================>>
+     39                           * Images Constants
+     40                           * =======================================>>
+     41
+     42                  0000     page_bckdraw_routine          equ 0
+     43                  0001     bckdraw_routine               equ 1
+     44                  0003     page_draw_routine             equ 3
+     45                  0004     draw_routine                  equ 4
+     46                  0006     page_erase_routine            equ 6
+     47                  0007     erase_routine                 equ 7
+     48                  0009     erase_nb_cell                 equ 9
+     49                  000A     image_x_offset                equ 10
+     50                  000C     image_y_offset                equ 12
+     51                  000E     image_x_size                  equ 14
+     52                  0010     image_y_size                  equ 16
+     53                  0012     image_meta_size               equ 18 ; nu>>
+     54
+     55                           * =======================================>>
+     56                           * Object Constants
+     57                           * =======================================>>
+     58
+     59                  0002     nb_reserved_objects           equ 2
+     60                  003B     nb_dynamic_objects            equ 59
+     61                  0003     nb_level_objects              equ 3
+     62                  003D     nb_objects                    equ (nb_res>>
+     63
+     64                           * --------------------------------------->>
+     65                           * Object Status Table offsets
+     66                           * --------------------------------------->>
+     67
+     68                  0043     object_size                   equ 67 ; th>>
+     69                  0043     next_object                   equ object_>>
+     70
+     71                  0000     id                            equ 0      >>
+     72                  0001     subtype                       equ 1      >>
+     73                  0002     render_flags                  equ 2
+     74
+     75                           * --- render_flags bitfield variables --->>
+     76                  0001     render_xmirror_mask           equ $01 ; (>>
+     77                  0002     render_ymirror_mask           equ $02 ; (>>
+     78                  0004     render_playfieldcoord_mask    equ $04 ; (>>
+     79                  0008     render_hide_mask              equ $08 ; (>>
+     80                  0010     render_fixedoverlay_mask      equ $10 ; (>>
+     81                  0020     render_todelete_mask          equ $20 ; (>>
+     82                  0040     render_free2_mask             equ $40 ; (>>
+     83                  0080     render_free3_mask             equ $80 ; (>>
+     84                            
+     85                  0003     priority                      equ 3      >>
+     86                  0004     anim                          equ 4  ; an>>
+     87                  0006     anim_frame                    equ 6      >>
+     88                  0007     anim_frame_duration           equ 7      >>
+     89                  0008     mapping_frame                 equ 8  ; an>>
+     90                  000A     x_pos                         equ 10 ; an>>
+     91                  000C     x_sub                         equ 12     >>
+     92                  000D     y_pos                         equ 13 ; an>>
+     93                  000F     y_sub                         equ 15     >>
+     94                  0010     x_pixel                       equ 16     >>
+     95                  0011     y_pixel                       equ 17     >>
+     96                  0012     routine                       equ 18     >>
+     97                  0013     routine_secondary             equ 19     >>
+     98                  0014     ext_variables                 equ 20 ; to>>
+     99
+    100                           * --------------------------------------->>
+    101                           * reserved variables (engine)
+    102
+    103                  0029     rsv_render_flags              equ 41
+    104
+    105                           * --- rsv_render_flags bitfield variables>>
+    106                  0001     rsv_render_onscreen_0_mask    equ $01 ; (>>
+    107                  0002     rsv_render_onscreen_1_mask    equ $02 ; (>>
+    108                  0004     rsv_render_erasesprite_mask   equ $04 ; (>>
+    109                  0008     rsv_render_displaysprite_mask equ $08 ; (>>
+    110                  0010     rsv_render_outofrange_mask    equ $10 ; (>>
+    111
+    112                  002A     rsv_prev_anim                 equ 42 ; an>>
+    113                  002C     rsv_curr_mapping_frame        equ 44 ; an>>
+    114
+    115                           * --------------------------------------->>
+    116                           * reserved variables (engine) - buffer sp>>
+    117
+    118                  002E     rsv_buffer_0                  equ 46 ; St>>
+    119                  002E     rsv_priority_0                equ 46 ; in>>
+    120                  002F     rsv_priority_prev_obj_0       equ 47 ; an>>
+    121                  0031     rsv_priority_next_obj_0       equ 49 ; an>>
+    122                  0033     rsv_prev_mapping_frame_0      equ 51 ; an>>
+    123                  0035     rsv_bgdata_0                  equ 53 ; an>>
+    124                  0037     rsv_prev_x_pixel_0            equ 55 ; pr>>
+    125                  0038     rsv_prev_y_pixel_0            equ 56 ; pr>>
+    126                  0039     rsv_onscreen_0                equ 57 ; ha>>
+    127
+    128                  003A     rsv_buffer_1                  equ 58 ; St>>
+    129                  003A     rsv_priority_1                equ 58 ; in>>
+    130                  003B     rsv_priority_prev_obj_1       equ 59 ; an>>
+    131                  003D     rsv_priority_next_obj_1       equ 61 ; an>>
+    132                  003F     rsv_prev_mapping_frame_1      equ 63 ; an>>
+    133                  0041     rsv_bgdata_1                  equ 65 ; an>>
+    134                  0043     rsv_prev_x_pixel_1            equ 67 ; pr>>
+    135                  0044     rsv_prev_y_pixel_1            equ 68 ; pr>>
+    136                  0045     rsv_onscreen_1                equ 69 ; ha>>
+    137
+    138                  0000     buf_priority                  equ 0  ; of>>
+    139                  0001     buf_priority_prev_obj         equ 1  ;
+    140                  0003     buf_priority_next_obj         equ 3  ;
+    141                  0005     buf_prev_mapping_frame        equ 5  ;
+    142                  0007     buf_bgdata                    equ 7  ;
+    143                  0009     buf_prev_x_pixel              equ 9  ;
+    144                  000A     buf_prev_y_pixel              equ 10 ;
+    145                  000B     buf_onscreen                  equ 11 ;
+    146
+    147                           * =======================================>>
+    148                           * Global Data
+    149                           *
+    150                           * Naming convention
+    151                           * -----------------
+    152                           * - underscore-separated names
+    153                           * - first letter of each word in upper ca>>
+    154                           *
+    155                           * Templates
+    156                           * ---------
+    157                           * - Glb_*        : global variable
+    158                           * - Tbl_*        : data table
+    159                           * - Lst_*        : list is a data table w>>
+    160                           * - Obj_*        : address of an object i>>
+    161                           *
+    162                           * - *_Object_RAM : sub group of objects
+    163                           * - *_end        : data end label
+    164                           *
+    165                           * =======================================>>
+    166
+    167                           * --------------------------------------->>
+    168                           * Display
+    169                           * --------------------------------------->>
+    170                            
+    171        6200 00            Glb_Cur_Wrk_Screen_Id         fcb   $00  >>
+    172        6201 00            Glb_Cur_Wrk_Screen_Id_x2      fcb   $00  >>
+    173        6202 0000          Glb_Camera_X_Pos              fdb   $0000>>
+    174        6204 0000          Glb_Camera_Y_Pos              fdb   $0000>>
+    175
+    176                           * --------------------------------------->>
+    177                           * Background Backup Cells - BBC
+    178                           * --------------------------------------->>
+    179
+    180                  0040     nb_free_cells                 equ   64
+    181                  0083     cell_size                     equ   ($600>>
+    182
+    183        6206 0000          Lst_FreeCellFirstEntry_0      fdb   $0000>>
+    184        6208               Lst_FreeCell_0                rmb   cell_>>
+    185
+    186        7268 0000          Lst_FreeCellFirstEntry_1      fdb   $0000>>
+    187        726A               Lst_FreeCell_1                rmb   cell_>>
+    188
+    189                           * ----- Cells variables
+    190                  0000     nb_cells                      equ   0
+    191                  0001     cell_start                    equ   1
+    192                  0003     cell_end                      equ   3
+    193                  0005     next_entry                    equ   5
+    194                  0007     entry_size                    equ   7
+    195
+    196                           * --------------------------------------->>
+    197                           * Display Priority Structure - DPS
+    198                           * --------------------------------------->>
+    199
+    200        82CA               DPS_buffer_0
+    201        82CA               Tbl_Priority_First_Entry_0    rmb   2+(nb>>
+    202        82DC               Tbl_Priority_Last_Entry_0     rmb   2+(nb>>
+    203        82EE 82F0          Lst_Priority_Unset_0          fdb   Lst_P>>
+    204        82F0                                             rmb   (nb_o>>
+    205        836A               DPS_buffer_1
+    206        836A               Tbl_Priority_First_Entry_1    rmb   2+(nb>>
+    207        837C               Tbl_Priority_Last_Entry_1     rmb   2+(nb>>
+    208        838E 8390          Lst_Priority_Unset_1          fdb   Lst_P>>
+    209        8390                                             rmb   (nb_o>>
+    210                            
+    211                  0000     buf_Tbl_Priority_First_Entry  equ   0
+    212                  0012     buf_Tbl_Priority_Last_Entry   equ   Tbl_P>>
+    213                  0024     buf_Lst_Priority_Unset        equ   Lst_P>>
+    214                           * --------------------------------------->>
+    215                           * Object Status Table - OST
+    216                           * --------------------------------------->>
+    217                            
+    218        840A               Object_RAM * @globals
+    219        840A               Reserved_Object_RAM
+    220        840A               Obj_MainCharacter             rmb   objec>>
+    221        844D               Obj_Sidekick                  rmb   objec>>
+    222        8490               Reserved_Object_RAM_End
+    223        8490               Dynamic_Object_RAM            rmb   nb_dy>>
+    224        9401               Dynamic_Object_RAM_End
+    225        9401               LevelOnly_Object_RAM
+    226        9401               Obj_TailsTails                rmb   objec>>
+    227        9444               Obj_SonicDust                 rmb   objec>>
+    228        9487               Obj_TailsDust                 rmb   objec>>
+    229        94CA               LevelOnly_Object_RAM_End
+    230        94CA               Object_RAM_End
+    231
+    232                           * --------------------------------------->>
+    233                           * Lifecycle
+    234                           * --------------------------------------->>
+    235
+    236        94CA               Glb_MainCharacter_Is_Dead     rmb   $1,0
+    237
+    238                           * --------------------------------------->>
+    239                           * Get Orientation To Player
+    240                           * --------------------------------------->>
+    241
+    242        94CB               Glb_Closest_Player            rmb   $2,0 >>
+    243        94CD               Glb_Player_Is_Left            rmb   $1,0 >>
+    244        94CE               Glb_Player_Is_Above           rmb   $1,0 >>
+    245        94CF               Glb_Player_H_Distance         rmb   $2,0 >>
+    246        94D1               Glb_Player_V_Distance         rmb   $2,0 >>
+    247        94D3               Glb_Abs_H_Distance_Mainc      rmb   $2,0 >>
+    248        94D5               Glb_H_Distance_Sidek          rmb   $2,0 >>
+    249
+    250
+    251                            
+    252                           * --------------------------------------->>
+    253                           * CheckSpritesRefresh
+    254                           * -------------------
+    255                           * Subroutine to determine if sprites are >>
+    256                           * Read Display Priority Structure (back t>>
+    257                           * priority: 0 - unregistred
+    258                           * priority: 1 - register non moving overl>>
+    259                           * priority; 2-8 - register moving sprite >>
+    260                           *
+    261                           * input REG : none
+    262                           * --------------------------------------->>
+    263                            
+    264        94D7               CheckSpritesRefresh
+    265
+    266        94D7               CSR_Start
+    267  5     94D7 B6   6200             lda   Glb_Cur_Wrk_Screen_Id      >>
+    268  3     94DA 26   6F               bne   CSR_SetBuffer1
+    269                            
+    270        94DC               CSR_SetBuffer0
+    271  5     94DC B6   002E             lda   rsv_buffer_0               >>
+    272  5     94DF B7   95BC             sta   CSR_ProcessEachPriorityLeve>>
+    273        94E2               CSR_P8B0
+    274  6     94E2 FE   82D8             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    275  3     94E5 27   08               beq   CSR_P7B0
+    276  2     94E7 86   08               lda   #$08
+    277  5     94E9 B7   95C0             sta   CSR_CheckPriority+1
+    278  8     94EC BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    279        94EF               CSR_P7B0
+    280  6     94EF FE   82D6             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    281  3     94F2 27   08               beq   CSR_P6B0
+    282  2     94F4 86   07               lda   #$07
+    283  5     94F6 B7   95C0             sta   CSR_CheckPriority+1
+    284  8     94F9 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    285        94FC               CSR_P6B0
+    286  6     94FC FE   82D4             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    287  3     94FF 27   08               beq   CSR_P5B0
+    288  2     9501 86   06               lda   #$06
+    289  5     9503 B7   95C0             sta   CSR_CheckPriority+1
+    290  8     9506 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    291        9509               CSR_P5B0
+    292  6     9509 FE   82D2             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    293  3     950C 27   08               beq   CSR_P4B0
+    294  2     950E 86   05               lda   #$05
+    295  5     9510 B7   95C0             sta   CSR_CheckPriority+1
+    296  8     9513 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    297        9516               CSR_P4B0
+    298  6     9516 FE   82D0             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    299  3     9519 27   08               beq   CSR_P3B0
+    300  2     951B 86   04               lda   #$04
+    301  5     951D B7   95C0             sta   CSR_CheckPriority+1
+    302  8     9520 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    303        9523               CSR_P3B0
+    304  6     9523 FE   82CE             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    305  3     9526 27   08               beq   CSR_P2B0
+    306  2     9528 86   03               lda   #$03
+    307  5     952A B7   95C0             sta   CSR_CheckPriority+1
+    308  8     952D BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    309        9530               CSR_P2B0
+    310  6     9530 FE   82CC             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    311  3     9533 27   08               beq   CSR_P1B0
+    312  2     9535 86   02               lda   #$02
+    313  5     9537 B7   95C0             sta   CSR_CheckPriority+1
+    314  8     953A BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    315        953D               CSR_P1B0
+    316  6     953D FE   82CA             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+    317  3     9540 27   08               beq   CSR_rtsB0
+    318  2     9542 86   01               lda   #$01
+    319  5     9544 B7   95C0             sta   CSR_CheckPriority+1
+    320  8     9547 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    321        954A               CSR_rtsB0
+    322  5     954A 39                    rts
+    323                            
+    324        954B               CSR_SetBuffer1
+    325  5     954B B6   003A             lda   rsv_buffer_1               >>
+    326  5     954E B7   95BC             sta   CSR_ProcessEachPriorityLeve>>
+    327        9551               CSR_P8B1
+    328  6     9551 FE   8378             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    329  3     9554 27   08               beq   CSR_P7B1
+    330  2     9556 86   08               lda   #$08
+    331  5     9558 B7   95C0             sta   CSR_CheckPriority+1
+    332  8     955B BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    333        955E               CSR_P7B1
+    334  6     955E FE   8376             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    335  3     9561 27   08               beq   CSR_P6B1
+    336  2     9563 86   07               lda   #$07
+    337  5     9565 B7   95C0             sta   CSR_CheckPriority+1
+    338  8     9568 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    339        956B               CSR_P6B1
+    340  6     956B FE   8374             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    341  3     956E 27   08               beq   CSR_P5B1
+    342  2     9570 86   06               lda   #$06
+    343  5     9572 B7   95C0             sta   CSR_CheckPriority+1
+    344  8     9575 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    345        9578               CSR_P5B1
+    346  6     9578 FE   8372             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    347  3     957B 27   08               beq   CSR_P4B1
+    348  2     957D 86   05               lda   #$05
+    349  5     957F B7   95C0             sta   CSR_CheckPriority+1
+    350  8     9582 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    351        9585               CSR_P4B1
+    352  6     9585 FE   8370             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    353  3     9588 27   08               beq   CSR_P3B1
+    354  2     958A 86   04               lda   #$04
+    355  5     958C B7   95C0             sta   CSR_CheckPriority+1
+    356  8     958F BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    357        9592               CSR_P3B1
+    358  6     9592 FE   836E             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    359  3     9595 27   08               beq   CSR_P2B1
+    360  2     9597 86   03               lda   #$03
+    361  5     9599 B7   95C0             sta   CSR_CheckPriority+1
+    362  8     959C BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    363        959F               CSR_P2B1
+    364  6     959F FE   836C             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    365  3     95A2 27   08               beq   CSR_P1B1
+    366  2     95A4 86   02               lda   #$02
+    367  5     95A6 B7   95C0             sta   CSR_CheckPriority+1
+    368  8     95A9 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    369        95AC               CSR_P1B1
+    370  6     95AC FE   836A             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+    371  3     95AF 27   08               beq   CSR_rtsB1
+    372  2     95B1 86   01               lda   #$01
+    373  5     95B3 B7   95C0             sta   CSR_CheckPriority+1
+    374  8     95B6 BD   95BA             jsr   CSR_ProcessEachPriorityLeve>>
+    375        95B9               CSR_rtsB1
+    376  5     95B9 39                    rts
+    377
+    378        95BA               CSR_ProcessEachPriorityLevel
+    379  4+1   95BA 30   C8 10            leax  16,u                       >>
+    380  4+1   95BD A6   00               lda   buf_priority,x
+    381                            
+    382        95BF               CSR_CheckPriority
+    383  2     95BF 81   00               cmpa  #0                         >>
+    384  3     95C1 26   58               bne   CSR_NextObject             >>
+    385  4+1   95C3 A6   42               lda   render_flags,u
+    386  5     95C5 B4   0028             anda  render_hide_mask!render_tod>>
+    387  3     95C8 26   7A               bne   CSR_DoNotDisplaySprite
+    388                            
+    389        95CA               CSR_UpdSpriteImageBasedOnMirror
+    390  4+1   95CA A6   42               lda   render_flags,u             >>
+    391  2     95CC 84   03               anda  #render_xmirror_mask!render>>
+    392  2     95CE C6   12               ldb   #image_meta_size
+    393  11    95D0 3D                    mul
+    394  6+1   95D1 E3   48               addd  mapping_frame,u
+    395  5+1   95D3 ED   C8 2C            std   rsv_curr_mapping_frame,u
+    396                            
+    397        95D6               CSR_CheckPlayFieldCoord
+    398  4+1   95D6 A6   42               lda   render_flags,u
+    399  2     95D8 84   04               anda  #render_playfieldcoord_mask>>
+    400  3     95DA 27   44               beq   CSR_CheckVerticalPosition  >>
+    401                            
+    402  5+1   95DC EC   4A               ldd   x_pos,u
+    403  7     95DE B3   6202             subd  Glb_Camera_X_Pos
+    404  6+1   95E1 10AE C8 2C            ldy   rsv_curr_mapping_frame,u
+    405  6+1   95E5 E3   2A               addd  image_x_offset,y
+    406  3     95E7 29   51               bvs   CSR_SetOutOfRange          >>
+    407  3     95E9 2B   4F               bmi   CSR_SetOutOfRange          >>
+    408  4+1   95EB A7   C8 10            sta   x_pixel,u
+    409  6+1   95EE E3   2E               addd  image_x_size,y
+    410  3     95F0 29   48               bvs   CSR_SetOutOfRange          >>
+    411  5     95F2 1083 00A0             cmpd  #screen_width
+    412  3     95F6 2E   42               bgt   CSR_SetOutOfRange          >>
+    413
+    414  5+1   95F8 EC   4D               ldd   y_pos,u
+    415  7     95FA B3   6204             subd  Glb_Camera_Y_Pos
+    416  6+1   95FD E3   2C               addd  image_y_offset,y
+    417  3     95FF 29   39               bvs   CSR_SetOutOfRange          >>
+    418  3     9601 2B   37               bmi   CSR_SetOutOfRange          >>
+    419  4+1   9603 A7   C8 11            sta   y_pixel,u
+    420  6+1   9606 E3   A8 10            addd  image_y_size,y
+    421  3     9609 29   2F               bvs   CSR_SetOutOfRange          >>
+    422  5     960B 1083 00C8             cmpd  #screen_height
+    423  3     960F 2E   29               bgt   CSR_SetOutOfRange          >>
+    424  4+1   9611 A6   C8 29            lda   rsv_render_flags,u
+    425  2     9614 84   EF               anda  #:rsv_render_outofrange_mas>>
+    426  4+1   9616 A7   C8 29            sta   rsv_render_flags,u
+    427  3     9619 20   27               bra   CSR_CheckErase
+    428                            
+    429        961B               CSR_NextObject
+    430  5+1   961B EE   03               ldu   buf_priority_next_obj,x
+    431  3     961D 26   9B               bne   CSR_ProcessEachPriorityLeve>>
+    432  5     961F 39                    rts
+    433                            
+    434        9620               CSR_CheckVerticalPosition
+    435  2     9620 C6   00               ldb   #0                         >>
+    436  4+1   9622 A6   C8 11            lda   y_pixel,u
+    437  6+1   9625 E3   A8 10            addd  image_y_size,y
+    438  3     9628 29   10               bvs   CSR_SetOutOfRange          >>
+    439  5     962A 1083 00C8             cmpd  #screen_height
+    440  3     962E 2E   0A               bgt   CSR_SetOutOfRange          >>
+    441  4+1   9630 A6   C8 29            lda   rsv_render_flags,u
+    442  2     9633 84   EF               anda  #:rsv_render_outofrange_mas>>
+    443  4+1   9635 A7   C8 29            sta   rsv_render_flags,u
+    444  3     9638 20   08               bra   CSR_CheckErase
+    445                            
+    446        963A               CSR_SetOutOfRange
+    447  4+1   963A A6   C8 29            lda   rsv_render_flags,u
+    448  2     963D 8A   10               ora   #rsv_render_outofrange_mask>>
+    449  4+1   963F A7   C8 29            sta   rsv_render_flags,u
+    450                            
+    451        9642               CSR_CheckErase
+    452
+    453                            
+    454        9642               CSR_CheckDraw
+    455                            
+    456
+    457  3     9642 20   D7               bra   CSR_NextObject
+    458                            
+    459        9644               CSR_DoNotDisplaySprite
+    460  4+1   9644 A6   C8 29            lda   rsv_render_flags,u
+    461  2     9647 84   F3               anda  #:rsv_render_erasesprite_ma>>
+    462  4+1   9649 A7   C8 29            sta   rsv_render_flags,u
+    463  4+1   964C E6   0B               ldb   buf_onscreen,x
+    464  3     964E 27   CB               beq   CSR_NextObject             >>
+    465  2     9650 8A   04               ora   #rsv_render_erasesprite_mas>>
+    466  4+1   9652 A7   C8 29            sta   rsv_render_flags,u
+    467
+    468
 
 000000 Total Errors
 
-000004 Total Symbols
-     0x          Equ   001A constant1
-     0x          Equ   00E9 constant2
+000164 Total Symbols
+     0x          Equ   0004 anim
+     0x          Equ   0006 anim_frame
+     0x          Equ   0007 anim_frame_duration
+     0x          Equ   0001 bckdraw_routine
+     0x          Equ   0007 buf_bgdata
+     0x          Equ   0024 buf_Lst_Priority_Unset
+     1x          Equ   000B buf_onscreen
+     0x          Equ   0005 buf_prev_mapping_frame
+     0x          Equ   0009 buf_prev_x_pixel
+     0x          Equ   000A buf_prev_y_pixel
+     1x          Equ   0000 buf_priority
+     1x          Equ   0003 buf_priority_next_obj
+     0x          Equ   0001 buf_priority_prev_obj
+    16x          Equ   0000 buf_Tbl_Priority_First_Entry
+     0x          Equ   0012 buf_Tbl_Priority_Last_Entry
+     0x          Equ   0003 cell_end
+     2x          Equ   0083 cell_size
+     0x          Equ   0001 cell_start
+     0x          Label 94D7 CheckSpritesRefresh
+     0x          Label 9642 CSR_CheckDraw
+     2x          Label 9642 CSR_CheckErase
+     0x          Label 95D6 CSR_CheckPlayFieldCoord
+    16x          Label 95BF CSR_CheckPriority
+     1x          Label 9620 CSR_CheckVerticalPosition
+     1x          Label 9644 CSR_DoNotDisplaySprite
+     3x          Label 961B CSR_NextObject
+     1x          Label 953D CSR_P1B0
+     1x          Label 95AC CSR_P1B1
+     1x          Label 9530 CSR_P2B0
+     1x          Label 959F CSR_P2B1
+     1x          Label 9523 CSR_P3B0
+     1x          Label 9592 CSR_P3B1
+     1x          Label 9516 CSR_P4B0
+     1x          Label 9585 CSR_P4B1
+     1x          Label 9509 CSR_P5B0
+     1x          Label 9578 CSR_P5B1
+     1x          Label 94FC CSR_P6B0
+     1x          Label 956B CSR_P6B1
+     1x          Label 94EF CSR_P7B0
+     1x          Label 955E CSR_P7B1
+     0x          Label 94E2 CSR_P8B0
+     0x          Label 9551 CSR_P8B1
+    19x          Label 95BA CSR_ProcessEachPriorityLevel
+     1x          Label 954A CSR_rtsB0
+     1x          Label 95B9 CSR_rtsB1
+     0x          Label 94DC CSR_SetBuffer0
+     1x          Label 954B CSR_SetBuffer1
+    10x          Label 963A CSR_SetOutOfRange
+     0x          Label 94D7 CSR_Start
+     0x          Label 95CA CSR_UpdSpriteImageBasedOnMirror
+     0x          Equ   604F dk_destination
+     0x          Equ   6049 dk_lecteur
+     0x          Equ   604A dk_piste
+     0x          Equ   604C dk_secteur
+    10x          Label 82CA DPS_buffer_0
+     8x          Label 836A DPS_buffer_1
+     0x          Equ   0004 draw_routine
+     0x          Label 8490 Dynamic_Object_RAM
+     0x          Label 9401 Dynamic_Object_RAM_End
+     0x          Equ   0007 entry_size
+     0x          Equ   0009 erase_nb_cell
+     0x          Equ   0007 erase_routine
+     0x          Equ   0014 ext_variables
+     0x          Label 94D3 Glb_Abs_H_Distance_Mainc
+     1x          Label 6202 Glb_Camera_X_Pos
+     1x          Label 6204 Glb_Camera_Y_Pos
+     0x          Label 94CB Glb_Closest_Player
+     1x          Label 6200 Glb_Cur_Wrk_Screen_Id
+     0x          Label 6201 Glb_Cur_Wrk_Screen_Id_x2
+     0x          Label 94D5 Glb_H_Distance_Sidek
+     0x          Label 94CA Glb_MainCharacter_Is_Dead
+     0x          Label 94CF Glb_Player_H_Distance
+     0x          Label 94CE Glb_Player_Is_Above
+     0x          Label 94CD Glb_Player_Is_Left
+     0x          Label 94D1 Glb_Player_V_Distance
+     0x          Equ   0038 gravity
+     0x          Equ   0000 id
+     1x          Equ   0012 image_meta_size
+     1x          Equ   000A image_x_offset
+     1x          Equ   000E image_x_size
+     1x          Equ   000C image_y_offset
+     2x          Equ   0010 image_y_size
+     0x          Label 9401 LevelOnly_Object_RAM
+     0x          Label 94CA LevelOnly_Object_RAM_End
+     0x          Label 6206 Lst_FreeCellFirstEntry_0
+     0x          Label 7268 Lst_FreeCellFirstEntry_1
+     0x          Label 6208 Lst_FreeCell_0
+     0x          Label 726A Lst_FreeCell_1
+     2x          Label 82EE Lst_Priority_Unset_0
+     1x          Label 838E Lst_Priority_Unset_1
+     1x          Equ   0008 mapping_frame
+     0x          Equ   0000 nb_cells
+     2x          Equ   003B nb_dynamic_objects
+     3x          Equ   0040 nb_free_cells
+     0x          Equ   0003 nb_level_objects
+     2x          Equ   003D nb_objects
+     4x          Equ   0008 nb_priority_levels
+     1x          Equ   0002 nb_reserved_objects
+     0x          Equ   0005 next_entry
+     0x          Equ   0043 next_object
+     0x          Label 840A Object_RAM
+     0x          Label 94CA Object_RAM_End
+     7x          Equ   0043 object_size
+     0x          Label 840A Obj_MainCharacter
+     0x          Label 844D Obj_Sidekick
+     0x          Label 9444 Obj_SonicDust
+     0x          Label 9487 Obj_TailsDust
+     0x          Label 9401 Obj_TailsTails
+     0x          Equ   0000 page_bckdraw_routine
+     0x          Equ   0003 page_draw_routine
+     0x          Equ   0006 page_erase_routine
+     0x          Equ   0003 priority
+     0x          Equ   0010 render_fixedoverlay_mask
+     3x          Equ   0002 render_flags
+     0x          Equ   0040 render_free2_mask
+     0x          Equ   0080 render_free3_mask
+     1x          Equ   0008 render_hide_mask
+     1x          Equ   0004 render_playfieldcoord_mask
+     1x          Equ   0020 render_todelete_mask
      1x          Equ   0001 render_xmirror_mask
      1x          Equ   0002 render_ymirror_mask
+     0x          Label 840A Reserved_Object_RAM
+     0x          Label 8490 Reserved_Object_RAM_End
+     0x          Equ   0012 routine
+     0x          Equ   0013 routine_secondary
+     0x          Equ   0035 rsv_bgdata_0
+     0x          Equ   0041 rsv_bgdata_1
+     1x          Equ   002E rsv_buffer_0
+     1x          Equ   003A rsv_buffer_1
+     2x          Equ   002C rsv_curr_mapping_frame
+     0x          Equ   0039 rsv_onscreen_0
+     0x          Equ   0045 rsv_onscreen_1
+     0x          Equ   002A rsv_prev_anim
+     0x          Equ   0033 rsv_prev_mapping_frame_0
+     0x          Equ   003F rsv_prev_mapping_frame_1
+     0x          Equ   0037 rsv_prev_x_pixel_0
+     0x          Equ   0043 rsv_prev_x_pixel_1
+     0x          Equ   0038 rsv_prev_y_pixel_0
+     0x          Equ   0044 rsv_prev_y_pixel_1
+     0x          Equ   002E rsv_priority_0
+     0x          Equ   003A rsv_priority_1
+     0x          Equ   0031 rsv_priority_next_obj_0
+     0x          Equ   003D rsv_priority_next_obj_1
+     0x          Equ   002F rsv_priority_prev_obj_0
+     0x          Equ   003B rsv_priority_prev_obj_1
+     1x          Equ   0008 rsv_render_displaysprite_mask
+     2x          Equ   0004 rsv_render_erasesprite_mask
+     9x          Equ   0029 rsv_render_flags
+     0x          Equ   0001 rsv_render_onscreen_0_mask
+     0x          Equ   0002 rsv_render_onscreen_1_mask
+     3x          Equ   0010 rsv_render_outofrange_mask
+     2x          Equ   00C8 screen_height
+     1x          Equ   00A0 screen_width
+     0x          Equ   0001 subtype
+     0x          Label 82CA Tbl_Priority_First_Entry_0
+     0x          Label 836A Tbl_Priority_First_Entry_1
+     1x          Label 82DC Tbl_Priority_Last_Entry_0
+     0x          Label 837C Tbl_Priority_Last_Entry_1
+     1x          Equ   0010 x_pixel
+     1x          Equ   000A x_pos
+     0x          Equ   000C x_sub
+     2x          Equ   0011 y_pixel
+     1x          Equ   000D y_pos
+     0x          Equ   000F y_sub
 
