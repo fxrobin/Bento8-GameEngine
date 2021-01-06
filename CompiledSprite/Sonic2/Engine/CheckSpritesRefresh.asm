@@ -174,11 +174,20 @@ CSR_CheckPlayFieldCoord
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
         sta   rsv_render_flags,u
         bra   CSR_CheckErase
-
+        
+CSR_DoNotDisplaySprite        
+        lda   rsv_render_flags,u
+        anda  #:rsv_render_erasesprite_mask&:rsv_render_displaysprite_mask ; set erase and display flag to false
+        sta   rsv_render_flags,u        
+        ldb   buf_onscreen,x
+        beq   CSR_NextObject                ; branch if not on screen
+        ora   #rsv_render_erasesprite_mask  ; set erase flag to true if on screen                  
+        sta   rsv_render_flags,u   
+        
 CSR_NextObject
         ldu   buf_priority_next_obj,x
         bne   CSR_ProcessEachPriorityLevel   
-        rts
+        rts        
         
 CSR_CheckVerticalPosition
         ldb   #0                            ; in screen coordinate mode, image offset is managed by object
@@ -198,19 +207,44 @@ CSR_SetOutOfRange
         sta   rsv_render_flags,u
         
 CSR_CheckErase
-        ...
+        lda   buf_onscreen,x
+        beq   CSR_SetEraseFalse             ; branch if object is not on screen
+        ldd   x_pixel,u                     ; load x_pixel and y_pixel
+        cmpd  buf_prev_x_pixel,x
+        bne   CSR_SetEraseTrue              ; branch if object moved since last frame
+        ldd   rsv_curr_mapping_frame,u
+        cmpd  buf_prev_mapping_frame,x
+        bne   CSR_SetEraseTrue              ; branch if object image changed since last frame
+        ldd   priority,u
+        cmpd  buf_priority,x
+        bne   CSR_SetEraseTrue              ; branch if object priority changed since last frame
+        bra   CSR_SetEraseFalse             ; branch if object is on screen but unchanged since last frame
+        
+CSR_SetEraseTrue        
+        lda   rsv_render_flags,u
+        ora   #rsv_render_erasesprite_mask        
+        bra   CSR_CheckDraw
+        
+CSR_SetEraseFalse
+        lda   rsv_render_flags,u
+        anda  #:rsv_render_erasesprite_mask
         
 CSR_CheckDraw
-        ...        
-
-        bra   CSR_NextObject
-        
-CSR_DoNotDisplaySprite        
         lda   rsv_render_flags,u
-        anda  #:rsv_render_erasesprite_mask&:rsv_render_displaysprite_mask ; set erase and display flag to false
-        sta   rsv_render_flags,u        
-        ldb   buf_onscreen,x
-        beq   CSR_NextObject                ; branch if not on screen
-        ora   #rsv_render_erasesprite_mask  ; set erase flag to true if on screen                  
-        sta   rsv_render_flags,u   
+        anda  #rsv_render_outofrange_mask
+        bne   CSR_SetDrawFalse              ; branch if object image is out of range
+        ldd   rsv_curr_mapping_frame,u
+        beq   CSR_SetDrawFalse              ; branch if object have no image
+        lda   render_flags
+        anda  #render_hide_mask
+        bne   CSR_SetDrawFalse              ; branch if object is hidden
         
+CSR_SetDrawTrue 
+        lda   rsv_render_flags,u
+        ora   #rsv_render_displaysprite_mask     
+        bra   CSR_NextObject
+
+CSR_SetDrawFalse 
+        lda   rsv_render_flags,u
+        anda  #:rsv_render_displaysprite_mask
+        bra   CSR_NextObject        

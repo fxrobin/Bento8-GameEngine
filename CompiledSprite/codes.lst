@@ -4,7 +4,7 @@
  * Fichier source      : .\tmp\test.asm
  * Fichier destination : test.BIN
  * Contenu :
- *     Main     0:TEST.ASM     10795
+ *     Main     0:TEST.ASM     11658
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -392,10 +392,10 @@ Pass2
     381                            
     382        95BF               CSR_CheckPriority
     383  2     95BF 81   00               cmpa  #0                         >>
-    384  3     95C1 26   58               bne   CSR_NextObject             >>
+    384  3     95C1 26   69               bne   CSR_NextObject             >>
     385  4+1   95C3 A6   42               lda   render_flags,u
     386  5     95C5 B4   0028             anda  render_hide_mask!render_tod>>
-    387  3     95C8 26   7A               bne   CSR_DoNotDisplaySprite
+    387  3     95C8 26   51               bne   CSR_DoNotDisplaySprite
     388                            
     389        95CA               CSR_UpdSpriteImageBasedOnMirror
     390  4+1   95CA A6   42               lda   render_flags,u             >>
@@ -408,90 +408,123 @@ Pass2
     397        95D6               CSR_CheckPlayFieldCoord
     398  4+1   95D6 A6   42               lda   render_flags,u
     399  2     95D8 84   04               anda  #render_playfieldcoord_mask>>
-    400  3     95DA 27   44               beq   CSR_CheckVerticalPosition  >>
+    400  3     95DA 27   55               beq   CSR_CheckVerticalPosition  >>
     401                            
     402  5+1   95DC EC   4A               ldd   x_pos,u
     403  7     95DE B3   6202             subd  Glb_Camera_X_Pos
     404  6+1   95E1 10AE C8 2C            ldy   rsv_curr_mapping_frame,u
     405  6+1   95E5 E3   2A               addd  image_x_offset,y
-    406  3     95E7 29   51               bvs   CSR_SetOutOfRange          >>
-    407  3     95E9 2B   4F               bmi   CSR_SetOutOfRange          >>
+    406  3     95E7 29   62               bvs   CSR_SetOutOfRange          >>
+    407  3     95E9 2B   60               bmi   CSR_SetOutOfRange          >>
     408  4+1   95EB A7   C8 10            sta   x_pixel,u
     409  6+1   95EE E3   2E               addd  image_x_size,y
-    410  3     95F0 29   48               bvs   CSR_SetOutOfRange          >>
+    410  3     95F0 29   59               bvs   CSR_SetOutOfRange          >>
     411  5     95F2 1083 00A0             cmpd  #screen_width
-    412  3     95F6 2E   42               bgt   CSR_SetOutOfRange          >>
+    412  3     95F6 2E   53               bgt   CSR_SetOutOfRange          >>
     413
     414  5+1   95F8 EC   4D               ldd   y_pos,u
     415  7     95FA B3   6204             subd  Glb_Camera_Y_Pos
     416  6+1   95FD E3   2C               addd  image_y_offset,y
-    417  3     95FF 29   39               bvs   CSR_SetOutOfRange          >>
-    418  3     9601 2B   37               bmi   CSR_SetOutOfRange          >>
+    417  3     95FF 29   4A               bvs   CSR_SetOutOfRange          >>
+    418  3     9601 2B   48               bmi   CSR_SetOutOfRange          >>
     419  4+1   9603 A7   C8 11            sta   y_pixel,u
     420  6+1   9606 E3   A8 10            addd  image_y_size,y
-    421  3     9609 29   2F               bvs   CSR_SetOutOfRange          >>
+    421  3     9609 29   40               bvs   CSR_SetOutOfRange          >>
     422  5     960B 1083 00C8             cmpd  #screen_height
-    423  3     960F 2E   29               bgt   CSR_SetOutOfRange          >>
+    423  3     960F 2E   3A               bgt   CSR_SetOutOfRange          >>
     424  4+1   9611 A6   C8 29            lda   rsv_render_flags,u
     425  2     9614 84   EF               anda  #:rsv_render_outofrange_mas>>
     426  4+1   9616 A7   C8 29            sta   rsv_render_flags,u
-    427  3     9619 20   27               bra   CSR_CheckErase
+    427  3     9619 20   38               bra   CSR_CheckErase
     428                            
-    429        961B               CSR_NextObject
-    430  5+1   961B EE   03               ldu   buf_priority_next_obj,x
-    431  3     961D 26   9B               bne   CSR_ProcessEachPriorityLeve>>
-    432  5     961F 39                    rts
-    433                            
-    434        9620               CSR_CheckVerticalPosition
-    435  2     9620 C6   00               ldb   #0                         >>
-    436  4+1   9622 A6   C8 11            lda   y_pixel,u
-    437  6+1   9625 E3   A8 10            addd  image_y_size,y
-    438  3     9628 29   10               bvs   CSR_SetOutOfRange          >>
-    439  5     962A 1083 00C8             cmpd  #screen_height
-    440  3     962E 2E   0A               bgt   CSR_SetOutOfRange          >>
-    441  4+1   9630 A6   C8 29            lda   rsv_render_flags,u
-    442  2     9633 84   EF               anda  #:rsv_render_outofrange_mas>>
-    443  4+1   9635 A7   C8 29            sta   rsv_render_flags,u
-    444  3     9638 20   08               bra   CSR_CheckErase
-    445                            
-    446        963A               CSR_SetOutOfRange
-    447  4+1   963A A6   C8 29            lda   rsv_render_flags,u
-    448  2     963D 8A   10               ora   #rsv_render_outofrange_mask>>
-    449  4+1   963F A7   C8 29            sta   rsv_render_flags,u
-    450                            
-    451        9642               CSR_CheckErase
-    452
-    453                            
-    454        9642               CSR_CheckDraw
-    455                            
-    456
-    457  3     9642 20   D7               bra   CSR_NextObject
-    458                            
-    459        9644               CSR_DoNotDisplaySprite
-    460  4+1   9644 A6   C8 29            lda   rsv_render_flags,u
-    461  2     9647 84   F3               anda  #:rsv_render_erasesprite_ma>>
-    462  4+1   9649 A7   C8 29            sta   rsv_render_flags,u
-    463  4+1   964C E6   0B               ldb   buf_onscreen,x
-    464  3     964E 27   CB               beq   CSR_NextObject             >>
-    465  2     9650 8A   04               ora   #rsv_render_erasesprite_mas>>
-    466  4+1   9652 A7   C8 29            sta   rsv_render_flags,u
-    467
-    468
+    429        961B               CSR_DoNotDisplaySprite
+    430  4+1   961B A6   C8 29            lda   rsv_render_flags,u
+    431  2     961E 84   F3               anda  #:rsv_render_erasesprite_ma>>
+    432  4+1   9620 A7   C8 29            sta   rsv_render_flags,u
+    433  4+1   9623 E6   0B               ldb   buf_onscreen,x
+    434  3     9625 27   05               beq   CSR_NextObject             >>
+    435  2     9627 8A   04               ora   #rsv_render_erasesprite_mas>>
+    436  4+1   9629 A7   C8 29            sta   rsv_render_flags,u
+    437                            
+    438        962C               CSR_NextObject
+    439  5+1   962C EE   03               ldu   buf_priority_next_obj,x
+    440  3     962E 26   8A               bne   CSR_ProcessEachPriorityLeve>>
+    441  5     9630 39                    rts
+    442                            
+    443        9631               CSR_CheckVerticalPosition
+    444  2     9631 C6   00               ldb   #0                         >>
+    445  4+1   9633 A6   C8 11            lda   y_pixel,u
+    446  6+1   9636 E3   A8 10            addd  image_y_size,y
+    447  3     9639 29   10               bvs   CSR_SetOutOfRange          >>
+    448  5     963B 1083 00C8             cmpd  #screen_height
+    449  3     963F 2E   0A               bgt   CSR_SetOutOfRange          >>
+    450  4+1   9641 A6   C8 29            lda   rsv_render_flags,u
+    451  2     9644 84   EF               anda  #:rsv_render_outofrange_mas>>
+    452  4+1   9646 A7   C8 29            sta   rsv_render_flags,u
+    453  3     9649 20   08               bra   CSR_CheckErase
+    454                            
+    455        964B               CSR_SetOutOfRange
+    456  4+1   964B A6   C8 29            lda   rsv_render_flags,u
+    457  2     964E 8A   10               ora   #rsv_render_outofrange_mask>>
+    458  4+1   9650 A7   C8 29            sta   rsv_render_flags,u
+    459                            
+    460        9653               CSR_CheckErase
+    461  4+1   9653 A6   0B               lda   buf_onscreen,x
+    462  3     9655 27   20               beq   CSR_SetEraseFalse          >>
+    463  5+1   9657 EC   C8 10            ldd   x_pixel,u                  >>
+    464  7+1   965A 10A3 09               cmpd  buf_prev_x_pixel,x
+    465  3     965D 26   11               bne   CSR_SetEraseTrue           >>
+    466  5+1   965F EC   C8 2C            ldd   rsv_curr_mapping_frame,u
+    467  7+1   9662 10A3 05               cmpd  buf_prev_mapping_frame,x
+    468  3     9665 26   09               bne   CSR_SetEraseTrue           >>
+    469  5+1   9667 EC   43               ldd   priority,u
+    470  7+1   9669 10A3 00               cmpd  buf_priority,x
+    471  3     966C 26   02               bne   CSR_SetEraseTrue           >>
+    472  3     966E 20   07               bra   CSR_SetEraseFalse          >>
+    473                            
+    474        9670               CSR_SetEraseTrue
+    475  4+1   9670 A6   C8 29            lda   rsv_render_flags,u
+    476  2     9673 8A   04               ora   #rsv_render_erasesprite_mas>>
+    477  3     9675 20   05               bra   CSR_CheckDraw
+    478                            
+    479        9677               CSR_SetEraseFalse
+    480  4+1   9677 A6   C8 29            lda   rsv_render_flags,u
+    481  2     967A 84   FB               anda  #:rsv_render_erasesprite_ma>>
+    482                            
+    483        967C               CSR_CheckDraw
+    484  4+1   967C A6   C8 29            lda   rsv_render_flags,u
+    485  2     967F 84   10               anda  #rsv_render_outofrange_mask>>
+    486  3     9681 26   13               bne   CSR_SetDrawFalse           >>
+    487  5+1   9683 EC   C8 2C            ldd   rsv_curr_mapping_frame,u
+    488  3     9686 27   0E               beq   CSR_SetDrawFalse           >>
+    489  5     9688 B6   0002             lda   render_flags
+    490  2     968B 84   08               anda  #render_hide_mask
+    491  3     968D 26   07               bne   CSR_SetDrawFalse           >>
+    492                            
+    493        968F               CSR_SetDrawTrue
+    494  4+1   968F A6   C8 29            lda   rsv_render_flags,u
+    495  2     9692 8A   08               ora   #rsv_render_displaysprite_m>>
+    496  3     9694 20   96               bra   CSR_NextObject
+    497
+    498        9696               CSR_SetDrawFalse
+    499  4+1   9696 A6   C8 29            lda   rsv_render_flags,u
+    500  2     9699 84   F7               anda  #:rsv_render_displaysprite_>>
+    501  3     969B 20   8F               bra   CSR_NextObject
 
 000000 Total Errors
 
-000164 Total Symbols
+000168 Total Symbols
      0x          Equ   0004 anim
      0x          Equ   0006 anim_frame
      0x          Equ   0007 anim_frame_duration
      0x          Equ   0001 bckdraw_routine
      0x          Equ   0007 buf_bgdata
      0x          Equ   0024 buf_Lst_Priority_Unset
-     1x          Equ   000B buf_onscreen
-     0x          Equ   0005 buf_prev_mapping_frame
-     0x          Equ   0009 buf_prev_x_pixel
+     2x          Equ   000B buf_onscreen
+     1x          Equ   0005 buf_prev_mapping_frame
+     1x          Equ   0009 buf_prev_x_pixel
      0x          Equ   000A buf_prev_y_pixel
-     1x          Equ   0000 buf_priority
+     2x          Equ   0000 buf_priority
      1x          Equ   0003 buf_priority_next_obj
      0x          Equ   0001 buf_priority_prev_obj
     16x          Equ   0000 buf_Tbl_Priority_First_Entry
@@ -500,13 +533,13 @@ Pass2
      2x          Equ   0083 cell_size
      0x          Equ   0001 cell_start
      0x          Label 94D7 CheckSpritesRefresh
-     0x          Label 9642 CSR_CheckDraw
-     2x          Label 9642 CSR_CheckErase
+     1x          Label 967C CSR_CheckDraw
+     2x          Label 9653 CSR_CheckErase
      0x          Label 95D6 CSR_CheckPlayFieldCoord
     16x          Label 95BF CSR_CheckPriority
-     1x          Label 9620 CSR_CheckVerticalPosition
-     1x          Label 9644 CSR_DoNotDisplaySprite
-     3x          Label 961B CSR_NextObject
+     1x          Label 9631 CSR_CheckVerticalPosition
+     1x          Label 961B CSR_DoNotDisplaySprite
+     4x          Label 962C CSR_NextObject
      1x          Label 953D CSR_P1B0
      1x          Label 95AC CSR_P1B1
      1x          Label 9530 CSR_P2B0
@@ -528,7 +561,11 @@ Pass2
      1x          Label 95B9 CSR_rtsB1
      0x          Label 94DC CSR_SetBuffer0
      1x          Label 954B CSR_SetBuffer1
-    10x          Label 963A CSR_SetOutOfRange
+     3x          Label 9696 CSR_SetDrawFalse
+     0x          Label 968F CSR_SetDrawTrue
+     2x          Label 9677 CSR_SetEraseFalse
+     3x          Label 9670 CSR_SetEraseTrue
+    10x          Label 964B CSR_SetOutOfRange
      0x          Label 94D7 CSR_Start
      0x          Label 95CA CSR_UpdSpriteImageBasedOnMirror
      0x          Equ   604F dk_destination
@@ -592,12 +629,12 @@ Pass2
      0x          Equ   0000 page_bckdraw_routine
      0x          Equ   0003 page_draw_routine
      0x          Equ   0006 page_erase_routine
-     0x          Equ   0003 priority
+     1x          Equ   0003 priority
      0x          Equ   0010 render_fixedoverlay_mask
-     3x          Equ   0002 render_flags
+     4x          Equ   0002 render_flags
      0x          Equ   0040 render_free2_mask
      0x          Equ   0080 render_free3_mask
-     1x          Equ   0008 render_hide_mask
+     2x          Equ   0008 render_hide_mask
      1x          Equ   0004 render_playfieldcoord_mask
      1x          Equ   0020 render_todelete_mask
      1x          Equ   0001 render_xmirror_mask
@@ -610,7 +647,7 @@ Pass2
      0x          Equ   0041 rsv_bgdata_1
      1x          Equ   002E rsv_buffer_0
      1x          Equ   003A rsv_buffer_1
-     2x          Equ   002C rsv_curr_mapping_frame
+     4x          Equ   002C rsv_curr_mapping_frame
      0x          Equ   0039 rsv_onscreen_0
      0x          Equ   0045 rsv_onscreen_1
      0x          Equ   002A rsv_prev_anim
@@ -626,12 +663,12 @@ Pass2
      0x          Equ   003D rsv_priority_next_obj_1
      0x          Equ   002F rsv_priority_prev_obj_0
      0x          Equ   003B rsv_priority_prev_obj_1
-     1x          Equ   0008 rsv_render_displaysprite_mask
-     2x          Equ   0004 rsv_render_erasesprite_mask
-     9x          Equ   0029 rsv_render_flags
+     3x          Equ   0008 rsv_render_displaysprite_mask
+     4x          Equ   0004 rsv_render_erasesprite_mask
+    14x          Equ   0029 rsv_render_flags
      0x          Equ   0001 rsv_render_onscreen_0_mask
      0x          Equ   0002 rsv_render_onscreen_1_mask
-     3x          Equ   0010 rsv_render_outofrange_mask
+     4x          Equ   0010 rsv_render_outofrange_mask
      2x          Equ   00C8 screen_height
      1x          Equ   00A0 screen_width
      0x          Equ   0001 subtype
@@ -639,7 +676,7 @@ Pass2
      0x          Label 836A Tbl_Priority_First_Entry_1
      1x          Label 82DC Tbl_Priority_Last_Entry_0
      0x          Label 837C Tbl_Priority_Last_Entry_1
-     1x          Equ   0010 x_pixel
+     2x          Equ   0010 x_pixel
      1x          Equ   000A x_pos
      0x          Equ   000C x_sub
      2x          Equ   0011 y_pixel

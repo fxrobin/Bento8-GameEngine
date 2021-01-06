@@ -61,7 +61,7 @@ nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_le
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ 67 ; the size of an object
+object_size                   equ 70 ; the size of an object
 next_object                   equ object_size
 
 id                            equ 0           ; reference to object model id (ObjID_) (0: free slot)
@@ -88,7 +88,7 @@ x_sub                         equ 12          ; x subpixel (1/256 of a pixel), m
 y_pos                         equ 13 ; and 14 ; y playfield coordinate
 y_sub                         equ 15          ; y subpixel (1/256 of a pixel), must follow y_pos in data structure
 x_pixel                       equ 16          ; x screen coordinate
-y_pixel                       equ 17          ; y screen coordinate
+y_pixel                       equ 17          ; y screen coordinate, must follow x_pixel
 routine                       equ 18          ; index of current object routine
 routine_secondary             equ 19          ; index of current secondary routine
 ext_variables                 equ 20 ; to 40  ; reserved space for additionnal variables
@@ -118,7 +118,7 @@ rsv_priority_next_obj_0       equ 49 ; and 50 ; next object (OST address) in dis
 rsv_prev_mapping_frame_0      equ 51 ; and 52 ; reference to previous image in video buffer 0 (Img_) (0000 if no image) w
 rsv_bgdata_0                  equ 53 ; and 54 ; address of background data in screen 0 w
 rsv_prev_x_pixel_0            equ 55 ; previous x screen coordinate b
-rsv_prev_y_pixel_0            equ 56 ; previous y screen coordinate b
+rsv_prev_y_pixel_0            equ 56 ; previous y screen coordinate b, must follow x_pixel
 rsv_onscreen_0                equ 57 ; has been rendered on screen buffer 0
 
 rsv_buffer_1                  equ 58 ; Start index of buffer 1 variables
@@ -128,7 +128,7 @@ rsv_priority_next_obj_1       equ 61 ; and 61 ; next object (OST address) in dis
 rsv_prev_mapping_frame_1      equ 63 ; and 63 ; reference to previous image in video buffer 1 (Img_) (0000 if no image) w
 rsv_bgdata_1                  equ 65 ; and 65 ; address of background data in screen 1 w
 rsv_prev_x_pixel_1            equ 67 ; previous x screen coordinate b
-rsv_prev_y_pixel_1            equ 68 ; previous y screen coordinate b
+rsv_prev_y_pixel_1            equ 68 ; previous y screen coordinate b, must follow x_pixel
 rsv_onscreen_1                equ 69 ; has been rendered on screen buffer 0
 
 buf_priority                  equ 0  ; offset for each rsv_buffer variables
