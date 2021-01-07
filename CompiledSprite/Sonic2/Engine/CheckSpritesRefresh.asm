@@ -130,7 +130,7 @@ CSR_ProcessEachPriorityLevel
         
 CSR_CheckPriority
         cmpa  #0                            ; dynamic current priority
-        bne   CSR_NextObject                ; do not process this entry in case of priority change
+        bne   CSR_NextObject                ; do not process this entry (case of priority change)
         lda   render_flags,u
         anda  render_hide_mask!render_todelete_mask
         bne   CSR_DoNotDisplaySprite      
@@ -154,8 +154,8 @@ CSR_CheckPlayFieldCoord
         addd  image_x_offset,y
         bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image
         bmi   CSR_SetOutOfRange             ; branch if (x_pixel < 0)
-        sta   x_pixel,u        
-        addd  image_x_size,y
+        stb   x_pixel,u
+        addb  image_x_size,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         cmpd  #screen_width
         bgt   CSR_SetOutOfRange             ; branch if (x_pixel + image.x_size > screen width)
@@ -165,8 +165,8 @@ CSR_CheckPlayFieldCoord
         addd  image_y_offset,y
         bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image        
         bmi   CSR_SetOutOfRange             ; branch if (y_pixel < 0)
-        sta   y_pixel,u        
-        addd  image_y_size,y
+        stb   y_pixel,u        
+        addb  image_y_size,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image        
         cmpd  #screen_height
         bgt   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
@@ -190,8 +190,7 @@ CSR_NextObject
         rts        
         
 CSR_CheckVerticalPosition
-        ldb   #0                            ; in screen coordinate mode, image offset is managed by object
-        lda   y_pixel,u
+        ldb   y_pixel,u                     ; in screen coordinate mode, image offset is managed by object
         addd  image_y_size,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         cmpd  #screen_height

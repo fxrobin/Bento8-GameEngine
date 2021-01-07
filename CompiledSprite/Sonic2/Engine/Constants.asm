@@ -44,9 +44,9 @@ erase_routine                 equ 7
 erase_nb_cell                 equ 9
 image_x_offset                equ 10
 image_y_offset                equ 12
-image_x_size                  equ 14
-image_y_size                  equ 16
-image_meta_size               equ 18 ; number of bytes for each image reference
+image_x_size                  equ 14 
+image_y_size                  equ 15 ; must follow x_size
+image_meta_size               equ 16 ; number of bytes for each image reference
 
 * ===========================================================================
 * Object Constants
@@ -99,11 +99,9 @@ ext_variables                 equ 20 ; to 40  ; reserved space for additionnal v
 rsv_render_flags              equ 41
 
 * --- rsv_render_flags bitfield variables ---
-rsv_render_onscreen_0_mask    equ $01 ; (bit 0) has been rendered on screen buffer 0
-rsv_render_onscreen_1_mask    equ $02 ; (bit 1) has been rendered on screen buffer 1
-rsv_render_erasesprite_mask   equ $04 ; (bit 2) if a sprite need to be cleared on screen
-rsv_render_displaysprite_mask equ $08 ; (bit 3) if a sprite need to be rendered on screen
-rsv_render_outofrange_mask    equ $10 ; (bit 4) if a sprite is out of range for full rendering in screen
+rsv_render_erasesprite_mask   equ $01 ; (bit 0) if a sprite need to be cleared on screen
+rsv_render_displaysprite_mask equ $02 ; (bit 1) if a sprite need to be rendered on screen
+rsv_render_outofrange_mask    equ $04 ; (bit 2) if a sprite is out of range for full rendering in screen
 
 rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w
 rsv_curr_mapping_frame        equ 44 ; and 45 ; reference to current image regarding mirror flags (0000 if no image) w
@@ -129,7 +127,7 @@ rsv_prev_mapping_frame_1      equ 63 ; and 63 ; reference to previous image in v
 rsv_bgdata_1                  equ 65 ; and 65 ; address of background data in screen 1 w
 rsv_prev_x_pixel_1            equ 67 ; previous x screen coordinate b
 rsv_prev_y_pixel_1            equ 68 ; previous y screen coordinate b, must follow x_pixel
-rsv_onscreen_1                equ 69 ; has been rendered on screen buffer 0
+rsv_onscreen_1                equ 69 ; has been rendered on screen buffer 1
 
 buf_priority                  equ 0  ; offset for each rsv_buffer variables
 buf_priority_prev_obj         equ 1  ;
