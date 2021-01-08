@@ -167,15 +167,6 @@ ESP_SubInitOnce
         ...
         
         =>>>>>>>>>>>>>>>> TROP COMPLEXE ON DEMULTIPLIE le code pour chaque buffer ...
-        Pour le parcours on fait une liste à l'avance (dans le check) comme ça plus de test a faire
-        pour savoir si la sub entry est a traiter ou pas
-        attention, un bout du test sur l'erase se faire sur le prev mapping contrairement aux autres
-        => les deux cas ne peuvent pas arriver en même temps soit on efface
-        => soit il n'y a rien a l'ecran et on fait apparaitre.
-        => pre calcul des valeurs pour chaque sub entry candidate seulement
-        !!!!!!!!!! Bonne idée:
-        dans le check => enregistrement du point d'entree dans la liste des sub
-        sur l'element cadidat immobile de prio juste au dessus, si aucun au dessus pas besoin d'ajouter l'element dans la sub liste !!!
         
 ESP_SubCheckEraseCollision
         ldd   buf_prev_x_pixel,x marche pas ! add du buuf0 ou 1           ; load sub entry : rsv_prev_x_pixel_0/1 and rsv_prev_y_pixel_0/1 in one instruction

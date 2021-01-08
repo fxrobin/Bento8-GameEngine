@@ -4,7 +4,7 @@
  * Fichier source      : .\tmp\test.asm
  * Fichier destination : test.BIN
  * Contenu :
- *     Main     0:TEST.ASM     176
+ *     Main     0:TEST.ASM     410
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -12,17 +12,28 @@ Pass1
 Pass2
       2        6200                  org $6200
       3                  90          setdp $90
-      4
-      5  5+1   6200 EC   09               ldd   9,x            ; load sub e>>
-      6  2     6202 81   0A               cmpa  #10                        >>
-      7  3     6204 25   04               blo   ESP_SubCheckAppearCollision>>
-      8  2     6206 C1   0A               cmpb  #10                        >>
-      9  3     6208 25   00               blo   ESP_SubCheckAppearCollision>>
-     10                            
-     11        620A               ESP_SubCheckAppearCollision
+      4                  0010     rsv_ptr_sub_object_erase equ 16
+      5        6200 0000          cur_ptr_sub_obj_erase   fdb   $0000
+      6        6202 0000          cur_ptr_sub_obj_draw    fdb   $0000
+      7
+      8  6     6204 FC   6200             ldd   cur_ptr_sub_obj_erase
+      9  5+1   6207 ED   C8 10            std   rsv_ptr_sub_object_erase,u
+     10  4     620A C3   0002             addd  #$02
+     11  6     620D FD   6200             std   cur_ptr_sub_obj_erase
+     12  5+4   6210 EF   9C ED            stu   [cur_ptr_sub_obj_erase,pcr]>>
+     13                            
+     14  6     6213 BE   6200             ldx   cur_ptr_sub_obj_erase
+     15  5+1   6216 AF   C8 10            stx   rsv_ptr_sub_object_erase,u
+     16  5+1   6219 EF   02               stu   2,x++
+     17  6     621B BF   6200             stx   cur_ptr_sub_obj_erase
+     18                            
+     19        621E               ESP_SubCheckAppearCollision
 
 000000 Total Errors
 
-000001 Total Symbols
-     2x          Label 620A ESP_SubCheckAppearCollision
+000004 Total Symbols
+     0x          Label 6202 cur_ptr_sub_obj_draw
+     5x          Label 6200 cur_ptr_sub_obj_erase
+     0x          Label 621E ESP_SubCheckAppearCollision
+     2x          Equ   0010 rsv_ptr_sub_object_erase
 

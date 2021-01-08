@@ -1,11 +1,19 @@
 (main)TEST
    org $6200
    setdp $90
+rsv_ptr_sub_object_erase equ 16
+cur_ptr_sub_obj_erase   fdb   $0000
+cur_ptr_sub_obj_draw    fdb   $0000
 
-        ldd   9,x            ; load sub entry : rsv_prev_x_pixel_0/1 and rsv_prev_y_pixel_0/1 in one instruction
-        cmpa  #10                            ; (dynamic) entry : x_pixel_0/1 + rsv_curr_mapping_frame_0/1.x_size - 1
-        blo   ESP_SubCheckAppearCollision
-        cmpb  #10                            ; (dynamic) entry : y_pixel_0/1 + rsv_curr_mapping_frame_0/1.y_size - 1
-        blo   ESP_SubCheckAppearCollision
+        ldd   cur_ptr_sub_obj_erase
+        std   rsv_ptr_sub_object_erase,u
+        addd  #$02
+        std   cur_ptr_sub_obj_erase
+        stu   [cur_ptr_sub_obj_erase,pcr]
+        
+        ldx   cur_ptr_sub_obj_erase
+        stx   rsv_ptr_sub_object_erase,u
+        stu   2,x++
+        stx   cur_ptr_sub_obj_erase        
         
 ESP_SubCheckAppearCollision
