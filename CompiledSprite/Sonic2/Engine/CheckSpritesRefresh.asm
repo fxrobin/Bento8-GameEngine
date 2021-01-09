@@ -36,44 +36,37 @@ CSR_P8B0
 CSR_P7B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
         beq   CSR_P6B0
-        lda   #$07
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P6B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
         beq   CSR_P5B0
-        lda   #$06
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P5B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
         beq   CSR_P4B0
-        lda   #$05
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P4B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
         beq   CSR_P3B0
-        lda   #$04
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel               
 CSR_P3B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
         beq   CSR_P2B0
-        lda   #$03
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel      
 CSR_P2B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
         beq   CSR_P1B0
-        lda   #$02
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel  
 CSR_P1B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry
         beq   CSR_rtsB0
-        lda   #$01
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel
 CSR_rtsB0        
         rts
@@ -90,44 +83,37 @@ CSR_P8B1
 CSR_P7B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
         beq   CSR_P6B1
-        lda   #$07
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P6B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
         beq   CSR_P5B1
-        lda   #$06
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P5B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
         beq   CSR_P4B1
-        lda   #$05
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P4B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
         beq   CSR_P3B1
-        lda   #$04
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel               
 CSR_P3B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
         beq   CSR_P2B1
-        lda   #$03
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel      
 CSR_P2B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
         beq   CSR_P1B1
-        lda   #$02
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel  
 CSR_P1B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry
         beq   CSR_rtsB1
-        lda   #$01
-        sta   cur_priority               
+        dec   cur_priority               
         jsr   CSR_ProcessEachPriorityLevel
 CSR_rtsB1        
         rts

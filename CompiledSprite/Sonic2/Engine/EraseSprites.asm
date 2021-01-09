@@ -14,202 +14,196 @@ EraseSprites
 
 ESP_Start
         lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
-        bne   ESP_SetBuffer1
+        bne   ESP_P1B1
         
-ESP_SetBuffer0        
-        lda   rsv_buffer_0                  ; set offset a to object variables that belongs to screen buffer 0
-        sta   ESP_ProcessEachPriorityLevel+2
-        adda  #buf_prev_mapping_frame
-        sta   ESP_SubCheckEraseCollision_00+3    
 ESP_P1B0                                    
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry ; read DPS from priority 8 to priority 1
+        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry ; read DPS from priority 1 to priority 8
         beq   ESP_P2B0
-        lda   #$08
-        sta   ESP_CheckPriority+1        
-        jsr   ESP_ProcessEachPriorityLevel   
+        lda   #$01
+        sta   ESP_CheckPriorityB0+1
+        jsr   ESP_ProcessEachPriorityLevelB0
 ESP_P2B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+2
         beq   ESP_P3B0
-        lda   #$07
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel   
+        inc   ESP_CheckPriorityB0+1
+        jsr   ESP_ProcessEachPriorityLevelB0   
 ESP_P3B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+4
         beq   ESP_P4B0
-        lda   #$06
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel   
+        inc   ESP_CheckPriorityB0+1               
+        jsr   ESP_ProcessEachPriorityLevelB0   
 ESP_P4B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+6
         beq   ESP_P5B0
-        lda   #$05
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel   
+        inc   ESP_CheckPriorityB0+1               
+        jsr   ESP_ProcessEachPriorityLevelB0   
 ESP_P5B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+8
         beq   ESP_P6B0
-        lda   #$04
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel               
+        inc   ESP_CheckPriorityB0+1               
+        jsr   ESP_ProcessEachPriorityLevelB0               
 ESP_P6B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+10
         beq   ESP_P7B0
-        lda   #$03
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel      
+        inc   ESP_CheckPriorityB0+1               
+        jsr   ESP_ProcessEachPriorityLevelB0      
 ESP_P7B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+12
         beq   ESP_P8B0
-        lda   #$02
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel  
+        inc   ESP_CheckPriorityB0+1               
+        jsr   ESP_ProcessEachPriorityLevelB0  
 ESP_P8B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+14
         beq   ESP_rtsB0
-        lda   #$01
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel
+        inc   ESP_CheckPriorityB0+1               
+        jsr   ESP_ProcessEachPriorityLevelB0
 ESP_rtsB0        
         rts
         
-ESP_SetBuffer1       
-        lda   rsv_buffer_1                  ; set offset a to object variables that belongs to screen buffer 1
-        sta   ESP_ProcessEachPriorityLevel+2 
-        adda  #buf_prev_mapping_frame
-        sta   ESP_SubCheckEraseCollision_00+3              
 ESP_P1B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry ; read DPS from priority 8 to priority 1
+        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry ; read DPS from priority 1 to priority 8
         beq   ESP_P2B1
         lda   #$08
-        sta   ESP_CheckPriority+1        
-        jsr   ESP_ProcessEachPriorityLevel   
+        sta   ESP_CheckPriorityB1+1        
+        jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P2B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+2
         beq   ESP_P3B1
         lda   #$07
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel   
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P3B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+4
         beq   ESP_P4B1
         lda   #$06
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel   
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P4B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+6
         beq   ESP_P5B1
         lda   #$05
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel   
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P5B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+8
         beq   ESP_P6B1
         lda   #$04
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel               
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1               
 ESP_P6B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+10
         beq   ESP_P7B1
         lda   #$03
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel      
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1      
 ESP_P7B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+12
         beq   ESP_P8B1
         lda   #$02
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel  
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1  
 ESP_P8B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+14
         beq   ESP_rtsB1
         lda   #$01
-        sta   ESP_CheckPriority+1               
-        jsr   ESP_ProcessEachPriorityLevel
+        sta   ESP_CheckPriorityB1+1               
+        jsr   ESP_ProcessEachPriorityLevelB1
 ESP_rtsB1        
         rts
 
-ESP_ProcessEachPriorityLevel
-        leay  16,u                          ; dynamic offset, x point to object variables relative to current writable buffer (beware that rsv_buffer_0 and rsv_buffer_1 should be equ >=16)
-        lda   buf_priority,y
+ESP_ProcessEachPriorityLevelB0
+        lda   rsv_priority_0,u
         
-ESP_CheckPriority
+ESP_CheckPriorityB0
         cmpa  #0                            ; dynamic current priority
-        bne   ESP_NextObject                ; do not process this entry (case of priority change)
+        bne   ESP_NextObjectB0              ; do not process this entry (case of priority change)
         
-ESP_CheckErase
+ESP_UnsetCheckRefresh
         lda   rsv_render_flags,u
+        anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag (CheckSpriteRefresh)
+        sta   rsv_render_flags,u        
+        
+ESP_CheckEraseB0
         anda  #rsv_render_erasesprite_mask
-        bne   ESP_CallEraseRoutine          ; branch if sprite is supposed to be refreshed
+        bne   ESP_CallEraseRoutineB0        ; branch if sprite is supposed to be refreshed
         
-        * if not supposed to be refreshed
-        * check if the current sprite is rendered on screen and should continue to be displayed
+        * if not supposed to be refreshed check if the current sprite is rendered on screen
         
-        lda   buf_onscreen,y
-        beq   ESP_NextObject
-        lda   rsv_render_flags,u   
-        anda  #rsv_render_displaysprite_mask
-        beq   ESP_NextObject
+        lda   rsv_onscreen_0,u
+        beq   ESP_NextObjectB0
         
         * search a collision with a sprite under the current sprite
-        * the sprite under should have the erase flag or is not on screen and new to display
+        * the sprite under should have to be erased or displayed
         * in this case it forces the refresh of the current sprite that was not supposed to be refreshed
-        * as a sub loop, this should be optimized as much as possible
+        * as a sub loop, this should be optimized as much as possible ... I hope it is
         
-ESP_SubSpriteSearch
-        ...
-        x => sub entry
+ESP_SubEraseSpriteSearchInitB0        
+        ldx   rsv_ptr_sub_object_erase,u
         
-        lda   rsv_render_flags,x
-        anda  #rsv_render_erasesprite_mask
-        beq   ESP_SubCheckAppearCollision   ; branch if sub sprite is not supposed to be refreshed
+ESP_SubEraseSearchB0
+        cmpx  cur_ptr_sub_obj_erase
+        beq   ESP_SubDrawSpriteSearchInitB0 ; branch if no more sub objects
+        ldy   ,x
         
-ESP_SubInitOnce
-        ...
+ESP_SubEraseCheckCollisionB0
+        ldd   rsv_prev_x_pixel_0,y          ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel_0/1 + rsv_curr_mapping_frame_0/1.x_size
+        bhs   ESP_SubEraseNextObjectB0
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel_0/1 + rsv_curr_mapping_frame_0/1.y_size
+        bhs   ESP_SubEraseNextObjectB0
+        ldd   rsv_prev_x2_pixel_0,y         ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
+        cmpa  x_pixel,u                     ;     entry : x_pixel_0/1
+        bls   ESP_SubEraseNextObjectB0
+        cmpb  y_pixel,u                     ;     entry : y_pixel_0/1
+        bls   ESP_SubEraseNextObjectB0
+        bra   ESP_SubCheckOverlayB0
         
-        =>>>>>>>>>>>>>>>> TROP COMPLEXE ON DEMULTIPLIE le code pour chaque buffer ...
-        
-ESP_SubCheckEraseCollision
-        ldd   buf_prev_x_pixel,x marche pas ! add du buuf0 ou 1           ; load sub entry : rsv_prev_x_pixel_0/1 and rsv_prev_y_pixel_0/1 in one instruction
-        cmpa  #0                            ; (dynamic) entry : x_pixel_0/1 + rsv_curr_mapping_frame_0/1.x_size - 1
-        blo   ESP_SubCheckAppearCollision
-        cmpb  #0                            ; (dynamic) entry : y_pixel_0/1 + rsv_curr_mapping_frame_0/1.y_size - 1
-        blo   ESP_SubCheckAppearCollision
-ESP_SubCheckEraseCollision_00        
-        ldx   16,x                          ; (dynamic) sub entry : buf_prev_mapping_frame
-        addd  image_x_size,x                ; add image_x_size and image_y_size in one instruction, overflow is not possible because out of range images are already excluded         
-        cmpa  #0                            ; (dynamic) entry : x_pixel_0/1 + 1
-        bhi   ESP_SubCheckAppearCollision
-        cmpb  #0                            ; (dynamic) entry : y_pixel_0/1 + 1
-        bhi   ESP_SubCheckAppearCollision
-        bra   ESP_SubCheckOverlay
+ESP_SubEraseNextObjectB0
+        leax  -2,x
+        bra   ESP_SubSpriteSearchB0        
 
-ESP_SubCheckAppearCollision
-        lda   rsv_render_flags,x
-        anda  #rsv_render_displaysprite_mask
-        beq   ESP_SubNextObject   ; branch if sub sprite is not supposed to be displayed
-        ldx   16,x                          ; (dynamic) sub entry : buf_prev_mapping_frame        
-        lda   buf_onscreen,x
-        beq   ESP_SubNextObject   ; branch if sub sprite is already on screen
+ESP_SubDrawSpriteSearchInitB0
+        ldx   rsv_ptr_sub_object_draw,u
+        
+ESP_SubDrawSpriteSearchB0
+        cmpx  cur_ptr_sub_obj_draw
+        beq   ESP_SubCheckOverlayB0         ; branch if no more sub objects
+        ldy   ,x
+
+ESP_SubDrawCheckCollisionB0
+        ldd   rsv_prev_x_pixel_0,y          ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel_0/1 + rsv_curr_mapping_frame_0/1.x_size
+        bhs   ESP_SubDrawNextObjectB0
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel_0/1 + rsv_curr_mapping_frame_0/1.y_size
+        bhs   ESP_SubDrawNextObjectB0
+        ldd   rsv_prev_x2_pixel_0,y         ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
+        cmpa  x_pixel,u                     ;     entry : x_pixel_0/1
+        bls   ESP_SubDrawNextObjectB0
+        cmpb  y_pixel,u                     ;     entry : y_pixel_0/1
+        bls   ESP_SubDrawNextObjectB0
+        bra   ESP_SubCheckOverlayB0
+        
+ESP_SubDrawNextObjectB0
+        leax  -2,x
+        bra   ESP_SubSpriteSearchB0                
+        
+ESP_SubCheckOverlayB0
         ...
         
-ESP_SubNextObject
-        ...        
-        
-ESP_SubCheckOverlay
-        ...
-        
-ESP_NextObject
-        ldu   buf_priority_prev_obj,y
-        bne   ESP_ProcessEachPriorityLevel   
+ESP_NextObjectB0
+        ldu   rsv_priority_prev_obj_0,u
+        bne   ESP_ProcessEachPriorityLevelB0   
         rts        
 
-ESP_CallEraseRoutine
+ESP_CallEraseRoutineB0
         ...        
         
-ESP_FreeEraseBuffer
+ESP_FreeEraseBufferB0
         ...
         
-ESP_UnsetOnScreenFlag
+ESP_UnsetOnScreenFlagB0
         ...
-        bra   ESP_NextObject
+        bra   ESP_NextObjectB0
+        
+do it for B1 !
         
