@@ -143,58 +143,47 @@ ESP_SubEraseSpriteSearchInitB0
 ESP_SubEraseSearchB0
         cmpx  cur_ptr_sub_obj_erase
         beq   ESP_SubDrawSpriteSearchInitB0 ; branch if no more sub objects
-        ldy   ,x
+        ldy   ,--x
         
 ESP_SubEraseCheckCollisionB0
         ldd   rsv_prev_x_pixel_0,y          ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
-        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel_0/1 + rsv_curr_mapping_frame_0/1.x_size
-        bhs   ESP_SubEraseNextObjectB0
-        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel_0/1 + rsv_curr_mapping_frame_0/1.y_size
-        bhs   ESP_SubEraseNextObjectB0
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
+        bhs   ESP_SubEraseSearchB0
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
+        bhs   ESP_SubEraseSearchB0
         ldd   rsv_prev_x2_pixel_0,y         ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
-        cmpa  x_pixel,u                     ;     entry : x_pixel_0/1
-        bls   ESP_SubEraseNextObjectB0
-        cmpb  y_pixel,u                     ;     entry : y_pixel_0/1
-        bls   ESP_SubEraseNextObjectB0
-        bra   ESP_SubCheckOverlayB0
-        
-ESP_SubEraseNextObjectB0
-        leax  -2,x
-        bra   ESP_SubSpriteSearchB0        
+        cmpa  x_pixel,u                     ;     entry : x_pixel
+        bls   ESP_SubEraseSearchB0
+        cmpb  y_pixel,u                     ;     entry : y_pixel
+        bls   ESP_SubEraseSearchB0
+        bra   ESP_SubCheckOverlayB0   
 
 ESP_SubDrawSpriteSearchInitB0
         ldx   rsv_ptr_sub_object_draw,u
         
-ESP_SubDrawSpriteSearchB0
+ESP_SubDrawSearchB0
         cmpx  cur_ptr_sub_obj_draw
         beq   ESP_SubCheckOverlayB0         ; branch if no more sub objects
-        ldy   ,x
+        ldy   ,--x
 
 ESP_SubDrawCheckCollisionB0
-        ldd   rsv_prev_x_pixel_0,y          ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
-        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel_0/1 + rsv_curr_mapping_frame_0/1.x_size
-        bhs   ESP_SubDrawNextObjectB0
-        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel_0/1 + rsv_curr_mapping_frame_0/1.y_size
-        bhs   ESP_SubDrawNextObjectB0
-        ldd   rsv_prev_x2_pixel_0,y         ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
-        cmpa  x_pixel,u                     ;     entry : x_pixel_0/1
-        bls   ESP_SubDrawNextObjectB0
-        cmpb  y_pixel,u                     ;     entry : y_pixel_0/1
-        bls   ESP_SubDrawNextObjectB0
-        bra   ESP_SubCheckOverlayB0
-        
-ESP_SubDrawNextObjectB0
-        leax  -2,x
-        bra   ESP_SubSpriteSearchB0                
+        ldd   x_pixel,y                     ; sub entry : x_pixel and y_pixel in one instruction
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
+        bhs   ESP_SubDrawSearchB0
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
+        bhs   ESP_SubDrawSearchB0
+        ldd   rsv_x2_pixel,y                ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
+        cmpa  x_pixel,u                     ;     entry : x_pixel
+        bls   ESP_SubDrawSearchB0
+        cmpb  y_pixel,u                     ;     entry : y_pixel
+        bls   ESP_SubDrawSearchB0
+        bra   ESP_SubCheckOverlayB0   
         
 ESP_SubCheckOverlayB0
-        ...
+        lda   render_flags,u
+        anda  #render_fixedoverlay_mask
+        bne   ESP_UnsetOnScreenFlagB0
         
-ESP_NextObjectB0
-        ldu   rsv_priority_prev_obj_0,u
-        bne   ESP_ProcessEachPriorityLevelB0   
-        rts        
-
 ESP_CallEraseRoutineB0
         ...        
         
@@ -202,8 +191,12 @@ ESP_FreeEraseBufferB0
         ...
         
 ESP_UnsetOnScreenFlagB0
-        ...
-        bra   ESP_NextObjectB0
+        clr   rsv_onscreen_0,u
         
+ESP_NextObjectB0
+        ldu   rsv_priority_prev_obj_0,u
+        bne   ESP_ProcessEachPriorityLevelB0   
+        rts     
+                
 do it for B1 !
         

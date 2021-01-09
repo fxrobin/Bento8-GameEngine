@@ -113,8 +113,8 @@ buf_Lst_Priority_Unset        equ   Lst_Priority_Unset_0-DPS_buffer_0
 * Sub Objects List - SOL
 * ---------------------------------------------------------------------------
 
-Tbl_Sub_Object_Erase          rmb   2+(nb_objects*2),0         ; entries of objects that have erase flag in the order back to front
-Tbl_Sub_Object_Draw           rmb   2+(nb_objects*2),0         ; entries of objects that have draw flag in the order back to front
+Tbl_Sub_Object_Erase          rmb   nb_objects*2,0             ; entries of objects that have erase flag in the order back to front
+Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of objects that have draw flag in the order back to front
 
 * ---------------------------------------------------------------------------
 * Object Status Table - OST

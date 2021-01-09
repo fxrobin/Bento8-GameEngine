@@ -185,7 +185,7 @@ CSR_DoNotDisplaySprite
         
         ldy   cur_ptr_sub_obj_erase
         sty   rsv_ptr_sub_object_erase,u
-        stu   2,y++
+        stu   ,y++
         sty   cur_ptr_sub_obj_erase 
         
 CSR_NextObject
@@ -234,7 +234,7 @@ CSR_SetEraseTrue
         lda   rsv_render_flags,u
         ora   #rsv_render_erasesprite_mask
         
-        stu   2,y++
+        stu   ,y++
         sty   cur_ptr_sub_obj_erase
                 
         bra   CSR_CheckDraw
@@ -264,7 +264,7 @@ CSR_SetDrawTrue
         lda   rsv_render_flags,u
         ora   #rsv_render_displaysprite_mask     
         
-        stu   2,y++
+        stu   ,y++
         sty   cur_ptr_sub_obj_draw
         
         bra   CSR_NextObject
