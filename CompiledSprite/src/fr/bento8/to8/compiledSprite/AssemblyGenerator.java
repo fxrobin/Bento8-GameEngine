@@ -297,10 +297,7 @@ public class AssemblyGenerator{
 		asm.add("\tLDS #$0000");
 		asm.add("\tPULS U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
 		asm.add("ERASE_" + spriteName + "");
-		asm.add("\tPSHS U");	    
 		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2\n");
-		asm.add("ERASE_POS_" + spriteName + "_1");
-		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_1\n");
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;
 	}
@@ -309,9 +306,7 @@ public class AssemblyGenerator{
 		int cycles = 0;
 		cycles += Register.costImmediateLD[Register.S];
 		cycles += Register.getCostImmediatePULPSH(Register.size[Register.U]+2); // PC n'est pas encore dans la liste des registres ;-)
-		cycles += Register.getCostImmediatePULPSH(Register.size[Register.S]);
 		cycles += Register.costExtendedST[Register.S];
-		cycles += Register.costImmediateLD[Register.U];
 		return cycles;
 	}
 
@@ -319,9 +314,7 @@ public class AssemblyGenerator{
 		int size = 0;
 		size += Register.sizeImmediateLD[Register.S];
 		size += Register.sizeImmediatePULPSH;
-		size += Register.sizeImmediatePULPSH;
 		size += Register.sizeExtendedST[Register.S];
-		size += Register.sizeImmediateLD[Register.U];
 		return size;
 	}
 
@@ -329,7 +322,7 @@ public class AssemblyGenerator{
 		List<String> asm = new ArrayList<String>();
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
-		asm.add("\tPULS U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
+		asm.add("\tRTS\n");
 		asm.add("ERASE_DATA_" + spriteName + "_1");
 		return asm;
 	}
@@ -337,14 +330,14 @@ public class AssemblyGenerator{
 	public int getCodeFrame5Cycles() {
 		int cycles = 0;
 		cycles += Register.costImmediateLD[Register.S];
-		cycles += Register.getCostImmediatePULPSH(Register.size[Register.U]+2); // PC n'est pas encore dans la liste des registres ;-)
+		cycles += 5;
 		return cycles;
 	}
 
 	public int getCodeFrame5Size() {
 		int size = 0;
 		size += Register.sizeImmediateLD[Register.S];
-		size += Register.sizeImmediatePULPSH;
+		size += 1;
 		return size;
 	}
 

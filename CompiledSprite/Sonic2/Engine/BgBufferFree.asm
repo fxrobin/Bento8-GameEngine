@@ -16,7 +16,7 @@ BgBufferFree
         bne   BBF1                          ; branch if buffer 1 is current
         
 BBF0
-        ldu   rsv_prev_mapping_frame_0      ; get sprite last image for this buffer
+        ldu   rsv_prev_mapping_frame_0,u    ; get sprite last image for this buffer
         lda   erase_nb_cell,u               ; get nb of cell to free
         ldu   Lst_FreeCell_0                ; get cell table for this buffer
         stu   BBF_AddNewEntryAtEnd+4        ; auto-modification to access cell table later
@@ -24,7 +24,7 @@ BBF0
         bra   BBF_Next
         
 BBF1        
-        ldu   rsv_prev_mapping_frame_1
+        ldu   rsv_prev_mapping_frame_1,u
         lda   erase_nb_cell,u        
         ldu   Lst_FreeCell_1
         stu   BBF_AddNewEntryAtEnd+4        

@@ -185,13 +185,24 @@ ESP_SubCheckOverlayB0
         bne   ESP_UnsetOnScreenFlagB0
         
 ESP_CallEraseRoutineB0
-        ...        
-        
+        stu   ESP_CallEraseRoutineB0_00+1   ; backup u (pointer to object)
+        ldx   rsv_prev_mapping_frame_0,u    ; load previous image to erase (for this buffer) 
+        lda   page_erase_routine,x
+        sta   $E7E5                         ; select page 04 in RAM (A000-DFFF)
+        ldu   rsv_bgdata_0,u                ; cell_start background data
+        jsr   [erase_routine,x]             ; erase sprite un working screen buffer
+        leay  ,u                            ; cell_end background data stored in y
+ESP_CallEraseRoutineB0_00        
+        ldu   #$0000                        ; restore u (pointer to object)
+        ldd   rsv_bgdata_0,u                ; cell_start
+        andb  #cell_size                    ; round cell_start to cell size
+        tfr   d,x                           ; cell_start rounded stored in x
+                        
 ESP_FreeEraseBufferB0
-        ...
+        jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB0
-        clr   rsv_onscreen_0,u
+        clr   rsv_onscreen_0,u              ; sprite is no longer on screen
         
 ESP_NextObjectB0
         ldu   rsv_priority_prev_obj_0,u

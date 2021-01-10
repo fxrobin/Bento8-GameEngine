@@ -74,8 +74,8 @@ Glb_Camera_Y_Pos              fdb   $0000 ; camera y position in palyfield coord
 * Background Backup Cells - BBC
 * ---------------------------------------------------------------------------
 
-nb_free_cells                 equ   64
-cell_size                     equ   ($6000-$3F40)/nb_free_cells
+nb_free_cells                 equ   130
+cell_size                     equ   64     ; 64 bytes x 130 from $3F80 to $6000
 
 Lst_FreeCellFirstEntry_0      fdb   $0000  ; Pointer to first entry in free cell list (buffer 0)
 Lst_FreeCell_0                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 0)
