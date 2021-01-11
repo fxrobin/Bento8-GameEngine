@@ -1,12 +1,12 @@
-; ---------------------------------------------------------------------------
-; Subroutine to animate a sprite using an animation script
-;
-;   this function also change render flags to match orientation given by
-;   the status byte;
-;
-; input REG : [u] pointeur sur l'objet
-;             [x] pointeur sur le script d'animation de l'objet
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Subroutine to animate a sprite using an animation script
+*
+*   this function also change render flags to match orientation given by
+*   the status byte;
+*
+* input REG : [u] pointeur sur l'objet
+*             [x] pointeur sur le script d'animation de l'objet
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine to animate a sprite using an animation script
@@ -103,7 +103,7 @@ Anim_End_FB                            *Anim_End_FB:
         lda   #0
         sta   anim_frame,u             *    move.b  #0,anim_frame(a0)     ; reset animation
         sta   routine_secondary,u      *    clr.b   routine_secondary(a0) ; reset 2nd routine counter
-    rts                                *    rts
+        rts                            *    rts
                                        *; ===========================================================================
                                        *; loc_165F0:
 Anim_End_FA                            *Anim_End_FA:
@@ -120,5 +120,5 @@ Anim_End_FA                            *Anim_End_FA:
                                        *    addq.b  #2,objoff_2A(a0) ; Actually obj89_arrow_routine
                                        *; return_16602:
 Anim_End                               *Anim_End:
-    rts                                *    rts
+        rts                            *    rts
                                        *; End of function AnimateSprite
