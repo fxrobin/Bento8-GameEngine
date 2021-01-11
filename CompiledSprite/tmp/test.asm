@@ -1,14 +1,29 @@
 (main)TEST
    org $6200
    setdp $90
-rsv_ptr_sub_object_erase equ 16
-cur_ptr_sub_obj_erase   fdb   $0000
-cur_ptr_sub_obj_draw    fdb   $0000
 
-        ldu #$A000
-        leax -2,x
-        ldx   ,--x   * 8cy
-        leax   -2,x
-        ldx   ,x   * 8cy
+        sts   dyn1+2
+        stx   dyn2+2        
+        ldd   #$0000
+        ldx   #$0000
+        leay  ,x
+        leas  ,x
+        leau  object_size,u
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+        pshu  d,x,y,s
+dyn1        
+        lds   #$0000
+dyn2        
+        ldx   #$0000        
+        rts
+(info)
         
 ESP_SubCheckAppearCollision

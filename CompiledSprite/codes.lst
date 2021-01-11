@@ -4,7 +4,7 @@
  * Fichier source      : .\tmp\test.asm
  * Fichier destination : test.BIN
  * Contenu :
- *     Main     0:TEST.ASM     237
+ *     Main     0:TEST.ASM     371
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -12,23 +12,43 @@ Pass1
 Pass2
       2        6200                  org $6200
       3                  90          setdp $90
-      4                  0010     rsv_ptr_sub_object_erase equ 16
-      5        6200 0000          cur_ptr_sub_obj_erase   fdb   $0000
-      6        6202 0000          cur_ptr_sub_obj_draw    fdb   $0000
-      7
-      8  3     6204 CE   A000             ldu #$A000
-      9  4+1   6207 30   1E               leax -2,x
-     10  5+3   6209 AE   83               ldx   ,--x   * 8cy
-     11  4+1   620B 30   1E               leax   -2,x
-     12  5+0   620D AE   84               ldx   ,x   * 8cy
-     13                            
-     14        620F               ESP_SubCheckAppearCollision
+      4
+      5  7     6200 10FF 622B             sts   dyn1+2
+      6  6     6204 BF   622F             stx   dyn2+2
+      7  3     6207 CC   0000             ldd   #$0000
+      8  3     620A 8E   0000             ldx   #$0000
+      9  4+0   620D 31   84               leay  ,x
+     10  4+0   620F 32   84               leas  ,x
+(11) Expression Error
+     11         leau  object_size,u
+     12  5+8   6211 36   76               pshu  d,x,y,s
+     13  5+8   6213 36   76               pshu  d,x,y,s
+     14  5+8   6215 36   76               pshu  d,x,y,s
+     15  5+8   6217 36   76               pshu  d,x,y,s
+     16  5+8   6219 36   76               pshu  d,x,y,s
+     17  5+8   621B 36   76               pshu  d,x,y,s
+     18  5+8   621D 36   76               pshu  d,x,y,s
+     19  5+8   621F 36   76               pshu  d,x,y,s
+     20  5+8   6221 36   76               pshu  d,x,y,s
+     21  5+8   6223 36   76               pshu  d,x,y,s
+     22        6225               dyn1
+     23  4     6225 10CE 0000             lds   #$0000
+     24        6229               dyn2
+     25  3     6229 8E   0000             ldx   #$0000
+     26  5     622C 39                    rts
+----------------
+173 cycle(s)
+45 byte(s)
+----------------
+     28                            
+     29        622D               ESP_SubCheckAppearCollision
 
-000000 Total Errors
+000001 Total Errors
+        Expression Error      11         leau  object_size,u
 
 000004 Total Symbols
-     0x          Label 6202 cur_ptr_sub_obj_draw
-     0x          Label 6200 cur_ptr_sub_obj_erase
-     0x          Label 620F ESP_SubCheckAppearCollision
-     0x          Equ   0010 rsv_ptr_sub_object_erase
+     1x          Label 6229 dyn1
+     1x          Label 622D dyn2
+     0x          Label 6231 ESP_SubCheckAppearCollision
+     1x Unknown  Equ   0000 object_size
 
