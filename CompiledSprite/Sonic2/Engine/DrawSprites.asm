@@ -96,54 +96,118 @@ DSP_ProcessEachPriorityLevelB0
         anda  #render_fixedoverlay_mask
         bne   DSP_DrawWithoutBackupB0
         ldu   rsv_curr_mapping_frame,x
-        lda   erase_nb_cell,u
+        lda   erase_nb_cell,u        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DSP_NextObjectB0              ; branch if no more free space
+        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        std   rsv_prev_x_pixel_0,x          ; save previous x_pixel and y_pixel in one operation
+        jsr   DSP_XYToAddress
+        ldu   rsv_cur_mapping_frame_0,x     ; load image to draw (for this buffer)
+        stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame 
+        lda   page_bckdraw_routine,u
+        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        leau  ,y                            ; cell_end for background data
+        stx   DSP_dyn3B0+1                  ; save x reg
+        jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
+DSP_dyn3B0        
+        ldx   #$0000                        ; (dynamic) restore x reg
+        stu   rsv_bgdata_0,x                ; store pointer to saved background data
+        ldd   rsv_x2_pixel,x                ; load x' and y' in one operation
+        std   rsv_prev_x2_pixel_0,x         ; save as previous x' and y'
+        lda   #$01
+        sta   rsv_onscreen_0,x              ; set the onscreen flag
+DSP_NextObjectB0        
+        ldx   rsv_priority_next_obj_0,x
+        bne   DSP_ProcessEachPriorityLevelB0   
+        rts
+        
+DSP_DrawWithoutBackupB0
+        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        jsr   DSP_XYToAddress 
+        ldu   rsv_cur_mapping_frame_0,x     ; load image to draw (for this buffer)
+        lda   page_draw_routine,u
+        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        stx   DSP_dyn4B0+1                  ; save x reg
+        jsr   [draw_routine,x]              ; backup background and draw sprite on working screen buffer
+DSP_dyn4B0
+        ldx   #$0000                        ; (dynamic) restore x reg
+        ldx   rsv_priority_next_obj_0,x
+        bne   DSP_ProcessEachPriorityLevelB0   
+        rts          
 
 DSP_XYToAddress
-        ldb   x_pixel,u                     ; load x position (0-156)
-        lsrb                                ; x=x/2, sprites moves by 2 pixels on x axis  
+        lsra                                ; x=x/2, sprites moves by 2 pixels on x axis  
         bcs   DSP_XYToAddressRAMBFirst      ; Branch if write must begin in RAMB first
-     
 DSP_XYToAddressRAMAFirst
-        stb   DSP_dyn1+2
+        sta   DSP_dyn1+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
-        ldb   y_pixel,u                     ; load y position (0-199)
+        ldb   y_pixel,x                     ; load y position (0-199)
         mul
 DSP_dyn1        
         addd  $0000                         ; (dynamic) RAMA start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
         ora   #$20                          ; add $2000 to d register
         std   Glb_Sprite_Screen_Pos_PartB        
-        bra   DSP_XYToAddressEnd
-   
+        rts
 DSP_XYToAddressRAMBFirst
-        stb   DSP_dyn2+2
+        sta   DSP_dyn2+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
-        ldb   y_pixel,u                     ; load y position (0-199)
+        ldb   y_pixel,x                     ; load y position (0-199)
         mul
 DSP_dyn2        
         addd  $2000                         ; (dynamic) RAMB start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
         subd  $1FFF
         std   Glb_Sprite_Screen_Pos_PartB
-DSP_XYToAddressEnd
-
-        ldu   rsv_prev_mapping_frame_0,x    ; load image to draw (for this buffer) 
+        rts
+        
+DSP_ProcessEachPriorityLevelB1
+        lda   rsv_render_flags,x
+        anda  #rsv_render_displaysprite_mask
+        beq   DSP_NextObjectB1
+        lda   rsv_onscreen_1,x
+        bne   DSP_NextObjectB1
+        lda   render_flags,x
+        anda  #render_fixedoverlay_mask
+        bne   DSP_DrawWithoutBackupB1
+        ldu   rsv_curr_mapping_frame,x
+        lda   erase_nb_cell,u        
+        jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
+        cmpy  #$0000                        ; y contains cell_end of allocated space 
+        beq   DSP_NextObjectB1              ; branch if no more free space
+        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        std   rsv_prev_x_pixel_1,x          ; save previous x_pixel and y_pixel in one operation
+        jsr   DSP_XYToAddress
+        ldu   rsv_cur_mapping_frame_1,x     ; load image to draw (for this buffer)
+        stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         leau  ,y                            ; cell_end for background data
-        stx   DSP_dyn3+1                    ; save x reg
+        stx   DSP_dyn3B1+1                  ; save x reg
         jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
-DSP_dyn3        
+DSP_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
-        stu   rsv_bgdata_0,x                ; store pointer to saved background data
+        stu   rsv_bgdata_1,x                ; store pointer to saved background data
+        ldd   rsv_x2_pixel,x                ; load x' and y' in one operation
+        std   rsv_prev_x2_pixel_1,x         ; save as previous x' and y'
+        lda   #$01
+        sta   rsv_onscreen_1,x              ; set the onscreen flag
+DSP_NextObjectB1        
+        ldx   rsv_priority_next_obj_1,x
+        bne   DSP_ProcessEachPriorityLevelB1   
+        rts
         
-DSP_DrawWithoutBackupB0
-        
-DSP_NextObjectB0
-        ldu   rsv_priority_next_obj_0,u
-        bne   DSP_ProcessEachPriorityLevelB0   
-        rts          
-
+DSP_DrawWithoutBackupB1
+        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        jsr   DSP_XYToAddress 
+        ldu   rsv_cur_mapping_frame_1,x     ; load image to draw (for this buffer)
+        lda   page_draw_routine,u
+        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        stx   DSP_dyn4B1+1                  ; save x reg
+        jsr   [draw_routine,x]              ; backup background and draw sprite on working screen buffer
+DSP_dyn4B1
+        ldx   #$0000                        ; (dynamic) restore x reg
+        ldx   rsv_priority_next_obj_1,x
+        bne   DSP_ProcessEachPriorityLevelB1   
+        rts              

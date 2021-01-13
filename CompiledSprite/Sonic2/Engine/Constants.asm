@@ -134,8 +134,8 @@ rsv_prev_mapping_frame_1      equ 71 ; and 72 ; reference to previous image in v
 rsv_bgdata_1                  equ 73 ; and 74 ; address of background data in screen 1 w
 rsv_prev_x_pixel_1            equ 75 ; previous x screen coordinate b
 rsv_prev_y_pixel_1            equ 76 ; previous y screen coordinate b, must follow x_pixel
-rsv_prev_x2_pixel_0           equ 77 ; previous x+x_size screen coordinate b
-rsv_prev_y2_pixel_0           equ 78 ; previous y+y_size screen coordinate b, must follow x_pixel
+rsv_prev_x2_pixel_1           equ 77 ; previous x+x_size screen coordinate b
+rsv_prev_y2_pixel_1           equ 78 ; previous y+y_size screen coordinate b, must follow x_pixel
 rsv_onscreen_1                equ 79 ; has been rendered on screen buffer 1
 
 buf_priority                  equ 0  ; offset for each rsv_buffer variables

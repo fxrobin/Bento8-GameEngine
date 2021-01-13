@@ -4,7 +4,7 @@
  * Fichier source      : .\tmp\test.asm
  * Fichier destination : test.BIN
  * Contenu :
- *     Main     0:TEST.ASM     574
+ *     Main     0:TEST.ASM     132
  *--------------------------------------------------------------*/
 
 Macro Pass
@@ -13,65 +13,13 @@ Pass2
       2        6200                  org $6200
       3                  90          setdp $90
       4
-      5        6200 0000          Glb_Sprite_RAMA fdb $0000
-      6        6202 0000          Glb_Sprite_RAMB fdb $0000
-      7                  0010     x_pixel equ 16
-      8                  0011     y_pixel equ 17
-----------------
-0 cycle(s)
-4 byte(s)
-----------------
-     10
-     11        6204               DSP_XYToAddress
-     12  4+1   6204 E6   C8 10            ldb   x_pixel,u                  >>
-     13  2     6207 54                    lsrb                             >>
-     14  3     6208 25   16               bcs   DSP_XYToAddressRAMBFirst   >>
-----------------
-10 cycle(s)
-6 byte(s)
-----------------
-     16        620A               DSP_XYToAddressRAMAFirst
-     17  5     620A F7   6215             stb   DSP_dyn1+2
-     18  2     620D 86   28               lda   #$28                       >>
-     19  4+1   620F E6   C8 11            ldb   y_pixel,u                  >>
-     20  11    6212 3D                    mul
-     21        6213               DSP_dyn1
-     22  7     6213 F3   0000             addd  $0000                      >>
-     23  6     6216 FD   6200             std   Glb_Sprite_RAMA
-     24  2     6219 8A   20               ora   #$20                       >>
-     25  6     621B FD   6202             std   Glb_Sprite_RAMB
-     26  3     621E 20   15               bra   DSP_XYToAddressEnd
-----------------
-47 cycle(s)
-22 byte(s)
-----------------
-     28        6220               DSP_XYToAddressRAMBFirst
-     29  5     6220 F7   622B             stb   DSP_dyn2+2
-     30  2     6223 86   28               lda   #$28                       >>
-     31  4+1   6225 E6   C8 11            ldb   y_pixel,u                  >>
-     32  11    6228 3D                    mul
-     33        6229               DSP_dyn2
-     34  7     6229 F3   2000             addd  $2000                      >>
-     35  6     622C FD   6200             std   Glb_Sprite_RAMA
-     36  7     622F B3   1FFF             subd  $1FFF
-     37  6     6232 FD   6202             std   Glb_Sprite_RAMB
-     38        6235               DSP_XYToAddressEnd
-----------------
-49 cycle(s)
-21 byte(s)
-----------------
+      5                  0037     rsv_priority_next_obj_0 equ 55
+      6
+      7  5+1   6200 AE   88 37            ldx   rsv_priority_next_obj_0,x
+      8  4+1   6203 30   88 37            leax  rsv_priority_next_obj_0,x
 
 000000 Total Errors
 
-000010 Total Symbols
-     1x          Label 6213 DSP_dyn1
-     1x          Label 6229 DSP_dyn2
-     0x          Label 6204 DSP_XYToAddress
-     1x          Label 6235 DSP_XYToAddressEnd
-     0x          Label 620A DSP_XYToAddressRAMAFirst
-     1x          Label 6220 DSP_XYToAddressRAMBFirst
-     2x          Label 6200 Glb_Sprite_RAMA
-     2x          Label 6202 Glb_Sprite_RAMB
-     1x          Equ   0010 x_pixel
-     2x          Equ   0011 y_pixel
+000001 Total Symbols
+     2x          Equ   0037 rsv_priority_next_obj_0
 
