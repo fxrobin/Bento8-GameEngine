@@ -1,25 +1,3010 @@
 /*--------------------------------------------------------------*
  * Compilé avec C6809 v0.83                                     *
  *--------------------------------------------------------------*
- * Fichier source      : .\tmp\test.asm
- * Fichier destination : test.BIN
+ * Fichier source      : .\Sonic2\GeneratedCode\MainEngine.asm
+ * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
  * Contenu :
- *     Main     0:TEST.ASM     132
+ *     Main     0:MAIN.ASM     3615
+ *     Include  0:CONSTANT.ASM 3801
+ *     Include  0:WAITVBL.ASM  1923
+ *     Include  0:UPDTPAL.ASM  626
+ *     Include  0:READJPDS.ASM 1727
+ *     Include  0:RUNOBJTS.ASM 1582
+ *     Include  0:ANIMSPR.ASM  1918
+ *     Include  0:OBJMOVE.ASM  752
+ *     Include  0:OBJLOAD.ASM  1111
+ *     Include  0:DELETOBJ.ASM 1288
+ *     Include  0:DISPLSPR.ASM 2008
+ *     Include  0:MRKOBJGN.ASM 480
+ *     Include  0:CLEAROBJ.ASM 559
+ *     Include  0:CHECKSPR.ASM 6054
+ *     Include  0:ERASESPR.ASM 6836
+ *     Include  0:UNSETDSP.ASM 2828
+ *     Include  0:DRAWSPR.ASM  4687
+ *     Include  0:BGBALLOC.ASM 958
+ *     Include  0:BGBFREE.ASM  1736
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-      2        6200                  org $6200
-      3                  90          setdp $90
-      4
-      5                  0037     rsv_priority_next_obj_0 equ 55
-      6
-      7  5+1   6200 AE   88 37            ldx   rsv_priority_next_obj_0,x
-      8  4+1   6203 30   88 37            leax  rsv_priority_next_obj_0,x
+    162                                   INCLUD CONSTANT
+    163                           * --------------------------------------->>
+    164                           * Constants
+    165                           *
+    166                           * Naming convention
+    167                           * -----------------
+    168                           * - lower case
+    169                           * - underscore-separated names
+    170                           *
+    171                           * --------------------------------------->>
+    172
+    173                           * =======================================>>
+    174                           * TO8 Registers
+    175                           * =======================================>>
+    176
+    177                  6049     dk_lecteur                    equ $6049
+    178                  604A     dk_piste                      equ $604A
+    179                  604C     dk_secteur                    equ $604C
+    180                  604F     dk_destination                equ $604F
+    181
+    182                           * =======================================>>
+    183                           * Display Constants
+    184                           * =======================================>>
+    185
+    186                  00A0     screen_width                  equ 160 ; s>>
+    187                  00C8     screen_height                 equ 200 ; s>>
+    188                  0008     nb_priority_levels            equ 8   ; n>>
+    189
+    190                           * =======================================>>
+    191                           * Physics Constants
+    192                           * =======================================>>
+    193
+    194                  0038     gravity                       equ $38 ; G>>
+    195
+    196                           * =======================================>>
+    197                           * Images Constants
+    198                           * =======================================>>
+    199
+    200                  0000     page_bckdraw_routine          equ 0
+    201                  0001     bckdraw_routine               equ 1
+    202                  0003     page_draw_routine             equ 3
+    203                  0004     draw_routine                  equ 4
+    204                  0006     page_erase_routine            equ 6
+    205                  0007     erase_routine                 equ 7
+    206                  0009     erase_nb_cell                 equ 9
+    207                  000A     image_x_offset                equ 10
+    208                  000C     image_y_offset                equ 12
+    209                  000E     image_x_size                  equ 14
+    210                  000F     image_y_size                  equ 15 ; mu>>
+    211                  0010     image_meta_size               equ 16 ; nu>>
+    212
+    213                           * =======================================>>
+    214                           * Object Constants
+    215                           * =======================================>>
+    216
+    217                  0002     nb_reserved_objects           equ 2
+    218                  003B     nb_dynamic_objects            equ 59
+    219                  0003     nb_level_objects              equ 3
+    220                  003D     nb_objects                    equ (nb_res>>
+    221
+    222                           * --------------------------------------->>
+    223                           * Object Status Table offsets
+    224                           * --------------------------------------->>
+    225
+    226                  0050     object_size                   equ 80 ; th>>
+    227                  0050     next_object                   equ object_>>
+    228
+    229                  0000     id                            equ 0      >>
+    230                  0001     subtype                       equ 1      >>
+    231                  0002     render_flags                  equ 2
+    232
+    233                           * --- render_flags bitfield variables --->>
+    234                  0001     render_xmirror_mask           equ $01 ; (>>
+    235                  0002     render_ymirror_mask           equ $02 ; (>>
+    236                  0004     render_playfieldcoord_mask    equ $04 ; (>>
+    237                  0008     render_hide_mask              equ $08 ; (>>
+    238                  0010     render_fixedoverlay_mask      equ $10 ; (>>
+    239                  0020     render_todelete_mask          equ $20 ; (>>
+    240                  0040     render_free2_mask             equ $40 ; (>>
+    241                  0080     render_free3_mask             equ $80 ; (>>
+    242                            
+    243                  0003     priority                      equ 3      >>
+    244                  0004     anim                          equ 4  ; an>>
+    245                  0006     anim_frame                    equ 6      >>
+    246                  0007     anim_frame_duration           equ 7      >>
+    247                  0008     mapping_frame                 equ 8  ; an>>
+    248                  000A     x_pos                         equ 10 ; an>>
+    249                  000C     x_sub                         equ 12     >>
+    250                  000D     y_pos                         equ 13 ; an>>
+    251                  000F     y_sub                         equ 15     >>
+    252                  0010     x_pixel                       equ 16     >>
+    253                  0011     y_pixel                       equ 17     >>
+    254                  0012     routine                       equ 18     >>
+    255                  0013     routine_secondary             equ 19     >>
+    256                  0014     ext_variables                 equ 20 ; to>>
+    257
+    258                           * --------------------------------------->>
+    259                           * reserved variables (engine)
+    260
+    261                  0029     rsv_render_flags              equ 41
+    262
+    263                           * --- rsv_render_flags bitfield variables>>
+    264                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
+    265                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
+    266                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
+    267                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
+    268
+    269                  002A     rsv_prev_anim                 equ 42 ; an>>
+    270                  002C     rsv_curr_mapping_frame        equ 44 ; an>>
+    271                  002E     rsv_ptr_sub_object_erase      equ 46 ; an>>
+    272                  0030     rsv_ptr_sub_object_draw       equ 48 ; an>>
+    273                  0032     rsv_x2_pixel                  equ 50     >>
+    274                  0033     rsv_y2_pixel                  equ 51     >>
+    275
+    276                           * --------------------------------------->>
+    277                           * reserved variables (engine) - buffer sp>>
+    278
+    279                  0034     rsv_buffer_0                  equ 52 ; St>>
+    280                  0034     rsv_priority_0                equ 52 ; in>>
+    281                  0035     rsv_priority_prev_obj_0       equ 53 ; an>>
+    282                  0037     rsv_priority_next_obj_0       equ 55 ; an>>
+    283                  0039     rsv_prev_mapping_frame_0      equ 57 ; an>>
+    284                  003B     rsv_bgdata_0                  equ 59 ; an>>
+    285                  003D     rsv_prev_x_pixel_0            equ 61 ; pr>>
+    286                  003E     rsv_prev_y_pixel_0            equ 62 ; pr>>
+    287                  003F     rsv_prev_x2_pixel_0           equ 63 ; pr>>
+    288                  0040     rsv_prev_y2_pixel_0           equ 64 ; pr>>
+    289                  0041     rsv_onscreen_0                equ 65 ; ha>>
+    290
+    291                  0042     rsv_buffer_1                  equ 66 ; St>>
+    292                  0042     rsv_priority_1                equ 66 ; in>>
+    293                  0043     rsv_priority_prev_obj_1       equ 67 ; an>>
+    294                  0045     rsv_priority_next_obj_1       equ 69 ; an>>
+    295                  0047     rsv_prev_mapping_frame_1      equ 71 ; an>>
+    296                  0049     rsv_bgdata_1                  equ 73 ; an>>
+    297                  004B     rsv_prev_x_pixel_1            equ 75 ; pr>>
+    298                  004C     rsv_prev_y_pixel_1            equ 76 ; pr>>
+    299                  004D     rsv_prev_x2_pixel_1           equ 77 ; pr>>
+    300                  004E     rsv_prev_y2_pixel_1           equ 78 ; pr>>
+    301                  004F     rsv_onscreen_1                equ 79 ; ha>>
+    302
+    303                  0000     buf_priority                  equ 0  ; of>>
+    304                  0001     buf_priority_prev_obj         equ 1  ;
+    305                  0003     buf_priority_next_obj         equ 3  ;
+    306                  0005     buf_prev_mapping_frame        equ 5  ;
+    307                  0007     buf_bgdata                    equ 7  ;
+    308                  0009     buf_prev_x_pixel              equ 9  ;
+    309                  000A     buf_prev_y_pixel              equ 10 ;
+    310                  000B     buf_prev_x2_pixel             equ 11 ;
+    311                  000C     buf_prev_y2_pixel             equ 12 ;
+    312                  000D     buf_onscreen                  equ 13 ;
+    313
+     10        6000                       org   $6000
+     11
+     12                           *****************************************>>
+     13                           * Main Loop
+     14                           *****************************************>>
+     15        6000               LevelMainLoop
+     16  8     6000 BD   96E9             jsr   WaitVBL
+     17  8     6003 BD   972F             jsr   UpdatePalette
+     18  8     6006 BD   97B8             jsr   ReadJoypads
+     19  8     6009 BD   97D0             jsr   RunObjects
+     20  8     600C BD   99CC             jsr   CheckSpritesRefresh
+     21  8     600F BD   9BBC             jsr   EraseSprites
+     22  8     6012 BD   9DAF             jsr   UnsetDisplayPriority
+     23  8     6015 BD   9E92             jsr   DrawSprites
+     24  3     6018 20   E6               bra   LevelMainLoop
+     25
+     26                           * =======================================>>
+     27                           * Global Data
+     28                           *
+     29                           * Naming convention
+     30                           * -----------------
+     31                           * - underscore-separated names
+     32                           * - first letter of each word in upper ca>>
+     33                           *
+     34                           * Templates
+     35                           * ---------
+     36                           * - Glb_*        : global variable
+     37                           * - Tbl_*        : data table
+     38                           * - Lst_*        : list is a data table w>>
+     39                           * - Obj_*        : address of an object i>>
+     40                           *
+     41                           * - *_Object_RAM : sub group of objects
+     42                           * - *_end        : data end label
+     43                           *
+     44                           * =======================================>>
+     45
+     46                           * --------------------------------------->>
+     47                           * Display
+     48                           * --------------------------------------->>
+     49                            
+     50        601A 00            Glb_Cur_Wrk_Screen_Id         fcb   $00  >>
+     51        601B 00            Glb_Cur_Wrk_Screen_Id_x2      fcb   $00  >>
+     52        601C 0000          Glb_Camera_X_Pos              fdb   $0000>>
+     53        601E 0000          Glb_Camera_Y_Pos              fdb   $0000>>
+     54        6020 0000          Glb_Sprite_Screen_Pos_PartA   fdb   $0000>>
+     55        6022 0000          Glb_Sprite_Screen_Pos_PartB   fdb   $0000>>
+     56
+     57                           * --------------------------------------->>
+     58                           * Background Backup Cells - BBC
+     59                           * --------------------------------------->>
+     60
+     61                  0082     nb_free_cells                 equ   130
+     62                  0040     cell_size                     equ   64   >>
+     63                  6000     cell_start_adr                equ   $6000>>
+     64
+     65        6024 0000          Lst_FreeCellFirstEntry_0      fdb   $0000>>
+     66        6026               Lst_FreeCell_0                rmb   cell_>>
+     67
+     68        7066 0000          Lst_FreeCellFirstEntry_1      fdb   $0000>>
+     69        7068               Lst_FreeCell_1                rmb   cell_>>
+     70
+     71                           * ----- Cells variables
+     72                  0000     nb_cells                      equ   0
+     73                  0001     cell_start                    equ   1
+     74                  0003     cell_end                      equ   3
+     75                  0005     next_entry                    equ   5
+     76                  0007     entry_size                    equ   7
+     77
+     78                           * --------------------------------------->>
+     79                           * Display Priority Structure - DPS
+     80                           * --------------------------------------->>
+     81
+     82        80A8               DPS_buffer_0
+     83        80A8               Tbl_Priority_First_Entry_0    rmb   2+(nb>>
+     84        80BA               Tbl_Priority_Last_Entry_0     rmb   2+(nb>>
+     85        80CC 80CE          Lst_Priority_Unset_0          fdb   Lst_P>>
+     86        80CE                                             rmb   (nb_o>>
+     87        8148               DPS_buffer_1
+     88        8148               Tbl_Priority_First_Entry_1    rmb   2+(nb>>
+     89        815A               Tbl_Priority_Last_Entry_1     rmb   2+(nb>>
+     90        816C 816E          Lst_Priority_Unset_1          fdb   Lst_P>>
+     91        816E                                             rmb   (nb_o>>
+     92                            
+     93                  0000     buf_Tbl_Priority_First_Entry  equ   0
+     94                  0012     buf_Tbl_Priority_Last_Entry   equ   Tbl_P>>
+     95                  0024     buf_Lst_Priority_Unset        equ   Lst_P>>
+     96
+     97                           * --------------------------------------->>
+     98                           * Sub Objects List - SOL
+     99                           * --------------------------------------->>
+    100
+    101        81E8               Tbl_Sub_Object_Erase          rmb   nb_ob>>
+    102        8262               Tbl_Sub_Object_Draw           rmb   nb_ob>>
+    103
+    104                           * --------------------------------------->>
+    105                           * Object Status Table - OST
+    106                           * --------------------------------------->>
+    107                            
+    108        82DC               Object_RAM * @globals
+    109        82DC               Reserved_Object_RAM
+    110        82DC               Obj_MainCharacter             rmb   objec>>
+    111        832C               Obj_Sidekick                  rmb   objec>>
+    112        837C               Reserved_Object_RAM_End
+    113        837C               Dynamic_Object_RAM            rmb   nb_dy>>
+    114        95EC               Dynamic_Object_RAM_End
+    115        95EC               LevelOnly_Object_RAM
+    116        95EC               Obj_TailsTails                rmb   objec>>
+    117        963C               Obj_SonicDust                 rmb   objec>>
+    118        968C               Obj_TailsDust                 rmb   objec>>
+    119        96DC               LevelOnly_Object_RAM_End
+    120        96DC               Object_RAM_End
+    121
+    122                           * --------------------------------------->>
+    123                           * Lifecycle
+    124                           * --------------------------------------->>
+    125
+    126        96DC               Glb_MainCharacter_Is_Dead     rmb   $1,0
+    127
+    128                           * --------------------------------------->>
+    129                           * Get Orientation To Player
+    130                           * --------------------------------------->>
+    131
+    132        96DD               Glb_Closest_Player            rmb   $2,0 >>
+    133        96DF               Glb_Player_Is_Left            rmb   $1,0 >>
+    134        96E0               Glb_Player_Is_Above           rmb   $1,0 >>
+    135        96E1               Glb_Player_H_Distance         rmb   $2,0 >>
+    136        96E3               Glb_Player_V_Distance         rmb   $2,0 >>
+    137        96E5               Glb_Abs_H_Distance_Mainc      rmb   $2,0 >>
+    138        96E7               Glb_H_Distance_Sidek          rmb   $2,0 >>
+    139
+    140                           * =======================================>>
+    141                           * Routines
+    142                           * =======================================>>
+    314                                   INCLUD WAITVBL
+    315                           *****************************************>>
+    316                           * Attente VBL
+    317                           * Alternance de la page 2 et 3 entre affi>>
+    318                           * Alternance de la RAMA et RAM B dans l'e>>
+    319                           * --------------------------------------->>
+    320                           *
+    321                           * Page Affichee par l'automate Video
+    322                           * ----------------------------------
+    323                           *   $E7DD determine la page affichee a l'>>
+    324                           *   bit7=0 bit6=0 bit5=0 bit4=0 (#$0_) : >>
+    325                           *   bit7=0 bit6=1 bit5=0 bit4=0 (#$4_) : >>
+    326                           *   bit7=1 bit6=0 bit5=0 bit4=0 (#$8_) : >>
+    327                           *   bit7=1 bit6=1 bit5=0 bit4=0 (#$C_) : >>
+    328                           *   bit3 bit2 bit1 bit0  (#$_0 a #$_F) : >>
+    329                           *   Remarque : bit5 et bit4 utilisable un>>
+    330                           *
+    331                           * Page en espace cartouche (ecriture dans>>
+    332                           * --------------------------------------->>
+    333                           *   $E7E6 determine la page visible dans >>
+    334                           *   bit7 toujours a 0
+    335                           *   bit6=1 : ecriture autorisee
+    336                           *   bit5=1 : espace cartouche recouvert p>>
+    337                           *   bit4=0 : CAS1N valide : banques 0-15 >>
+    338                           *   bit5=1 bit4=0 bit3=0 bit2=0 bit1=0 bi>>
+    339                           *   ...
+    340                           *   bit5=1 bit4=0 bit3=1 bit2=1 bit1=1 bi>>
+    341                           *   bit5=1 bit4=1 bit3=0 bit2=0 bit1=0 bi>>
+    342                           *   ...
+    343                           *   bit5=1 bit4=1 bit3=1 bit2=1 bit1=1 bi>>
+    344                           *
+    345                           * Demi-Page 0 en espace ecran (4000 a 5FF>>
+    346                           * --------------------------------------->>
+    347                           *   $E7C3 determine la demi-page de la pa>>
+    348                           *   bit0=0 : 8Ko RAMA
+    349                           *   bit0=1 : 8ko RAMB
+    350                           *
+    351                           *****************************************>>
+    352        96E9               WaitVBL
+    353  7     96E9 7D   E7E7             tst   $E7E7              * le fai>>
+    354  3     96EC 2A   FB               bpl   WaitVBL            * tant q>>
+    355        96EE               WaitVBL_01
+    356  7     96EE 7D   E7E7             tst   $E7E7              * le fai>>
+    357  3     96F1 2B   FB               bmi   WaitVBL_01         * tant q>>
+    358                            
+    359  6     96F3 FC   972D             ldd   Vint_runcount
+    360  4     96F6 C3   0001             addd  #1
+    361  6     96F9 FD   972D             std   Vint_runcount
+    362                            
+    363  5     96FC B6   601A             lda   Glb_Cur_Wrk_Screen_Id
+    364  4     96FF 9A   01               ora   1
+    365  5     9701 B7   601A             sta   Glb_Cur_Wrk_Screen_Id
+    366  2     9704 48                    lsla
+    367  5     9705 B7   601B             sta   Glb_Cur_Wrk_Screen_Id_x2
+    368                            
+    369        9708               SwapVideoPage
+    370  5     9708 F6   9716             ldb   am_SwapVideoPage+1 * charge>>
+    371  2     970B C4   40               andb  #$40               * altern>>
+    372  2     970D CA   80               orb   #$80               * bit7=1>>
+    373  5     970F F7   E7DD             stb   $E7DD              * change>>
+    374  7     9712 73   9716             com   am_SwapVideoPage+1 * altern>>
+    375        9715               am_SwapVideoPage
+    376  2     9715 C6   00               ldb   #$00
+    377  2     9717 C4   01               andb  #$01               * altern>>
+    378  2     9719 CA   62               orb   #$62               * bit6=1>>
+    379  5     971B F7   E7E6             stb   $E7E6              * change>>
+    380  5     971E F6   E7C3             ldb   $E7C3              * charge>>
+    381  2     9721 C4   01               andb  #$01
+    382  3     9723 26   04               bne   SwapVideoPage_01   * si bit>>
+    383  7     9725 7C   E7C3             inc   $E7C3              * bit0=1>>
+    384  5     9728 39                    rts
+    385        9729               SwapVideoPage_01
+    386  7     9729 7A   E7C3             dec   $E7C3              * bit0=0>>
+    387  5     972C 39                    rts
+    388                            
+    389        972D               Vint_runcount rmb   $2,0 *@globals
+    390
+    391                                   INCLUD UPDTPAL
+    392                           *****************************************>>
+    393                           * Mise a jour de la palette
+    394                           *****************************************>>
+    395        972F               UpdatePalette
+(396)0:UPDTPAL.ASM Expression Error
+    396        ldy   [Ptr_palette]
+(397)0:UPDTPAL.ASM Expression Error
+    397        ldx   [Ptr_palette]
+    398  4+1   972F 30   88 20           leax  $20,x
+    399  7     9732 7F   9753            clr   cpt                      * r>>
+    400        9735               SetColor
+    401  5     9735 B6   9753             lda   cpt                        >>
+(402)0:UPDTPAL.ASM Expression Error
+    402        alsa                                   * multiplication par >>
+    403  5     9738 B7   E7DB            sta   $E7DB                       >>
+    404  5+3   973B EC   A1              ldd   ,y++                        >>
+    405  5     973D F7   E7DA            stb   $E7DA                       >>
+    406  5     9740 B7   E7DA            sta   $E7DA                    * s>>
+    407  7     9743 7C   9753            inc   cpt                         >>
+    408  7+0   9746 10AC 84              cmpy  ,x                       * t>>
+(409)0:UPDTPAL.ASM Expression Error
+    409        bna   SetColor                 * on reboucle si fin de liste>>
+    410  5     9749 39                    rts
+    411                            
+(412)0:UPDTPAL.ASM Bad Label
+    412 ; TODO ajout systeme de refresh pour ne pas update la palette a cha>>
+(413)0:UPDTPAL.ASM Bad Label
+    413 ; ou integrer le refresh palette en debut d'overscan avant que le f>>
+(414)0:UPDTPAL.ASM Bad Label
+    414 ; palette doit etre refresh avant le tracage avec les donnees de la>>
+    415
+    416        974A 00            cpt            fcb   $00
+(417)0:UPDTPAL.ASM Bad Opcode
+    417 Ptr_palette    #Normal_palette
+    418        974B               Normal_palette rmb   $20,0   *@globals
+    419        976B               Black_palette  rmb   $20,0   *@globals
+    420        978B               White_palette  rmb   $20,$FF *@globals
+    421
+    422
+    423                                   INCLUD READJPDS
+(424)0:READJPDS.ASM Bad Label
+    424 ; ----------------------------------------------------------------->>
+(425)0:READJPDS.ASM Bad Label
+    425 ; Controller Buttons
+(426)0:READJPDS.ASM Bad Label
+    426 ;
+    427                  0001     c1_button_up_mask            equ   $01 *@>>
+    428                  0002     c1_button_down_mask          equ   $02 *@>>
+    429                  0004     c1_button_left_mask          equ   $04 *@>>
+    430                  0008     c1_button_right_mask         equ   $08 *@>>
+    431                  0010     c2_button_up_mask            equ   $10 *@>>
+    432                  0020     c2_button_down_mask          equ   $20 *@>>
+    433                  0040     c2_button_left_mask          equ   $40 *@>>
+    434                  0080     c2_button_right_mask         equ   $80 *@>>
+    435                  0040     c1_button_A_mask             equ   $40 *@>>
+    436                  0080     c2_button_A_mask             equ   $80 *@>>
+    437
+    438        97AB               Joypads
+    439        97AB               Joypads_Held
+    440        97AB 00            Dpad_Held                    fcb   $00
+    441        97AC 00            Fire_Held                    fcb   $00
+    442        97AD               Joypads_Press
+    443        97AD 00            Dpad_Press                   fcb   $00
+    444        97AE 00            Fire_Press                   fcb   $00
+    445
+    446                           *****************************************>>
+    447                           * Get joystick parameters
+    448                           *
+    449                           * Direction des Joypads
+    450                           * ---------------------
+    451                           * Registre: $E7CC (8bits)
+    452                           *
+    453                           * Joypad2     Joypad1
+    454                           * 1111        1111 (0: appuye | 1: relach>>
+    455                           * ||||_Haut   ||||_Haut
+    456                           * |||__Bas    |||__Bas
+    457                           * ||___Gauche ||___Gauche
+    458                           * |____Droite |____Droite
+    459                           *
+    460                           * Boutons des Joypads
+    461                           * -------------------
+    462                           * Registre: $E7CD (8bits)
+    463                           *
+    464                           * 11 000000 (0: appuye | 1: relache)
+    465                           * ||[------] 6 bits convertisseur numeriq>>
+    466                           * ||_Fire Joypad1
+    467                           * |__Fire Joypad2
+    468                           *
+    469                           * Variables globales: Joypads_Held, Joypa>>
+    470                           * --------------------------------------->>
+    471                           * (16 bits)
+    472                           * Joypad2     Joypad1
+    473                           * 0000        0000 (0: relache | 1: appuy>>
+    474                           * ||||_Haut   ||||_Haut                  >>
+    475                           * |||__Bas    |||__Bas                   >>
+    476                           * ||___Gauche ||___Gauche                >>
+    477                           * |____Droite |____Droite
+    478                           *
+    479                           *****************************************>>
+    480                            
+    481                                                                  *;>>
+    482                                                                  *;>>
+    483                                                                  *;>>
+    484                                                                  *;>>
+    485                                                                  *
+    486                                                                  *;>>
+    487        97AF               ReadJoypads                            *R>>
+    488                                                                  * >>
+    489                                                                  * >>
+    490                                                                  * >>
+    491                                                                  * >>
+    492                                                                  *
+    493                                                                  *;>>
+    494                                                                  *J>>
+    495                                                                  * >>
+    496                                                                  * >>
+    497                                                                  * >>
+    498                                                                  * >>
+    499                                                                  * >>
+    500                                                                  * >>
+    501                                                                  * >>
+    502                                                                  * >>
+    503                                                                  * >>
+    504                                                                  * >>
+    505                                                                  * >>
+    506  3     97AF CC   E7CC             ldd   #$E7CC                   * >>
+    507  2     97B2 43                    coma                           * >>
+    508  2     97B3 53                    comb
+    509                                                                  * >>
+    510                                                                  * >>
+    511                                                                  * >>
+    512  6     97B4 FD   97B4             std   Joypads_Held
+    513  5     97B7 B8   97B4             eora  Dpad_Held
+    514  5     97BA F8   97B5             eorb  Fire_Held
+    515  5     97BD B4   97B4             anda  Dpad_Held                * >>
+    516  5     97C0 F4   97B5             andb  Fire_Held
+    517  6     97C3 FD   97B6             std   Joypads_Press            * >>
+    518  5     97C6 39                    rts                            * >>
+    519                                                                  *;>>
+    520
+    521
+    522                                   INCLUD RUNOBJTS
+    523                           * --------------------------------------->>
+    524                           * This runs the code of all the objects t>>
+    525                           *
+    526                           * ecart par rapport au code d'origine :
+    527                           * Il n'y a pas de tableau de pointeur Obj>>
+    528                           * du code de l'objet
+    529                           * --------------------------------------->>
+    530
+    531                                                                  *;>>
+    532                                                                  *;>>
+    533                                                                  *;>>
+    534                                                                  *
+    535                                                                  *;>>
+    536                                                                  *
+    537                                                                  *;>>
+    538        97C7               RunObjects                             *R>>
+    539                                                                  * >>
+    540                                                                  * >>
+    541  4     97C7 108E 82DC             ldy   #Object_RAM              * >>
+    542                                                                  *
+    543                                                                  * >>
+    544                                                                  * >>
+    545                                                                  * >>
+    546                                                                  * >>
+    547                                                                  * >>
+    548                                                                  * >>
+    549        97CB               RunObjects_01                          *+>>
+    550                                                                  * >>
+    551                                                                  * >>
+    552                                                                  * >>
+    553                                                                  *
+(554)0:RUNOBJTS.ASM Expression Error
+    554         tst   MainCharacter_is_dead    *    cmpi.b  #6,(MainCharact>>
+    555  3     97CB 27   1C               beq   RunObjectsWhenPlayerIsDead
+    556                                                                  * >>
+    557                                                                  * >>
+    558                                                                  *;>>
+    559                                                                  *
+    560                                                                  *;>>
+    561                                                                  *;>>
+    562                                                                  *;>>
+    563                                                                  *
+    564                                                                  *;>>
+    565                                                                  *
+    566                                                                  *;>>
+    567        97CD               RunObject                              *R>>
+    568  5+0   97CD EE   A4               ldu   ,y                       * >>
+    569  3     97CF 27   0E               beq   RunNextObject            * >>
+    570                                                                  *
+    571                                                                  * >>
+    572                                                                  * >>
+    573                                                                  * >>
+    574  7+0   97D1 AD   C4               jsr   ,u                       * >>
+    575                                                                  * >>
+    576                                                                  *
+    577                                                                  *;>>
+    578        97D3               RunNextObject                          *R>>
+    579  4+1   97D3 31   A8 50            leay  next_object,y            * >>
+    580        97D6               am_RunNextObject
+    581  5     97D6 108C 96DC             cmpy  #Object_RAM_End          * >>
+    582  3     97DA 26   FD               bne   RunObject                *;>>
+    583        97DC               RunObjects_End                         *R>>
+    584  5     97DC 39                    rts                            * >>
+    585                                                                  *
+    586                                                                  *;>>
+    587                                                                  *;>>
+    588                                                                  *;>>
+    589        97DD               RunObjectsWhenPlayerIsDead             *R>>
+    590                                                                  * >>
+    591                                                                  * >>
+    592  4     97DD 108E 82DC             ldy   #Reserved_Object_RAM
+    593  3     97E1 8E   837C             ldx   #Reserved_Object_RAM_End
+    594  6     97E4 BF   97E4             stx   am_RunNextObject+2
+    595  7     97E7 8D   F0               bsr   RunObject
+    596                                                                  * >>
+    597                                                                  * >>
+    598  4     97E9 108E 837C             ldy   #Dynamic_Object_RAM
+    599  7     97ED 8D   1E               bsr   RunObjectDisplayOnly
+    600                                                                  * >>
+    601                                                                  * >>
+    602  4     97EF 108E 95EC             ldy   #LevelOnly_Object_RAM
+    603  3     97F3 8E   96DC             ldx   #LevelOnly_Object_RAM_End
+    604  6     97F6 BF   97E4             stx   am_RunNextObject+2
+    605  3     97F9 20   DE               bra   RunObject
+    606                                                                  *
+    607  3     97FB 8E   96DC             ldx   #Object_RAM_End          * >>
+    608  6     97FE BF   97E4             stx   am_RunNextObject+2
+    609                                                                  *;>>
+    610                                                                  *
+    611                                                                  *;>>
+    612        9801               RunObjectDisplayOnly                   *R>>
+    613                                                                  * >>
+    614  5+0   9801 EE   A4               ldu   ,y                       * >>
+    615  3     9803 27   12               beq   RunNextObjectDisplayOnly * >>
+    616  6+1   9805 6D   22               tst   render_flags,y           * >>
+    617  3     9807 2A   0E               bpl   RunNextObjectDisplayOnly * >>
+(618)0:RUNOBJTS.ASM Expression Error
+    618         bsr   DisplaySprite           *    bsr.w   DisplaySprite
+    619        9809               RunNextObjectDisplayOnly               *+>>
+    620  4+1   9809 31   A8 50            leay  next_object,y            * >>
+    621  5     980C 108C 95EC             cmpy  #Dynamic_Object_RAM_End  * >>
+    622  3     9810 26   FB               bne   RunObjectDisplayOnly
+    623  5     9812 39                    rts                            * >>
+    624                                                                  *;>>
+    625                                                                  *
+    626                                                                  *;>>
+    627
+    628                                   INCLUD ANIMSPR
+    629                           * --------------------------------------->>
+    630                           * Subroutine to animate a sprite using an>>
+    631                           *
+    632                           *   this function also change render flag>>
+    633                           *   the status byte;
+    634                           *
+    635                           * input REG : [u] pointeur sur l'objet
+    636                           *             [x] pointeur sur le script >>
+    637                           * --------------------------------------->>
+    638
+    639                                                                  *;>>
+    640                                                                  *;>>
+    641                                                                  *;>>
+    642                                                                  *
+    643                                                                  *;>>
+    644                                                                  *
+    645                                                                  *;>>
+    646        9813               AnimateSprite                          *A>>
+    647                                                                  * >>
+    648  4+1   9813 A6   44               lda   anim,u                   * >>
+(649)0:ANIMSPR.ASM Expression Error
+    649         cmpa  prev_anim,u              *    cmp.b   prev_anim(a0),d>>
+    650  3     9815 27   1C               beq   Anim_Run                 * >>
+(651)0:ANIMSPR.ASM Expression Error
+    651         sta   prev_anim,u              *    move.b  d0,prev_anim(a0>>
+    652  2     9817 C6   00                     ldb   #0
+    653  4+1   9819 E7   46               stb   anim_frame,u             * >>
+    654  4+1   981B E7   47               stb   anim_frame_duration,u    * >>
+    655                                                                  *;>>
+    656        981D               Anim_Run                               *A>>
+    657  6+1   981D 6A   47               dec   anim_frame_duration,u    * >>
+    658  3     981F 2A   39               bpl   Anim_Wait                * >>
+    659  4+1   9821 AB   44               adda  anim,u                   * >>
+    660  4+1   9823 30   86               leax  a,x                      * >>
+    661  4+0   9825 E6   84               ldb   ,x
+    662  4+1   9827 E7   47                     stb   anim_frame_duration,u>>
+    663                                                                  * >>
+    664  4+1   9829 E6   46               ldb   anim_frame,u             * >>
+    665  2     982B 5C                    incb
+    666  4+1   982C A6   85               lda   b,x                      * >>
+    667                                   * bmi   Anim_End_FF            * >>
+    668  2     982E 81   FA                     cmpa  #$FA                 >>
+    669  3     9830 24   29                     bhs   Anim_End_FF          >>
+    670                                                                  *;>>
+    671        9832               Anim_Next                              *A>>
+    672                                      * ne pas utiliser             >>
+    673  4+1   9832 A7   48               sta   mapping_frame,u          * >>
+(674)0:ANIMSPR.ASM Expression Error
+    674         ldb   status,u                 *    move.b  status(a0),d1
+    675  2     9834 C4   03               andb  #3                       * >>
+    676  4+1   9836 A6   42               lda   render_flags,u           * >>
+    677  2     9838 84   FC               anda  #$FC
+    678  4+1   983A A7   42               sta   render_flags,u
+    679  4+1   983C EA   42               orb   render_flags,u           * >>
+    680  6+1   983E 6C   46               inc   anim_frame,u             * >>
+    681                                                                  *;>>
+    682        9840               Anim_Wait                              *A>>
+    683  5     9840 39                    rts                            * >>
+    684                                                                  *;>>
+    685                                                                  *;>>
+    686        9841               Anim_End_FF                            *A>>
+    687  2     9841 4C                    inca                           * >>
+    688  3     9842 26   22               bne   Anim_End_FE              * >>
+    689  2     9844 C6   00                     ldb   #0
+    690  4+1   9846 E7   46               stb   anim_frame,u             * >>
+    691  4+1   9848 A6   01               lda   1,x                      * >>
+    692  3     984A 20   FC               bra   Anim_Next                * >>
+    693                                                                  *;>>
+    694                                                                  *;>>
+    695        984C               Anim_End_FE                            *A>>
+    696  2     984C 4C                    inca                           * >>
+    697  3     984D 26   28               bne   Anim_End_FD              * >>
+    698  2     984F 5C                    incb
+    699  4+1   9850 A6   46               lda   anim_frame,u             * >>
+    700  4+1   9852 A0   85               suba  b,x                      * >>
+    701  4+1   9854 A7   46               sta   anim_frame,u
+    702  6     9856 1F   89               tfr   a,b                      * >>
+    703  2     9858 5C                    incb
+    704  4+1   9859 A6   85               lda   b,x                      * >>
+    705  3     985B 20   EB               bra   Anim_Next                * >>
+    706                                                                  *;>>
+    707                                                                  *;>>
+    708        985D               Anim_End_FD                            *A>>
+    709  2     985D 4C                    inca                           * >>
+    710  3     985E 26   20               bne   Anim_End_FC              * >>
+    711  2     9860 5C                    incb
+    712  4+1   9861 A6   85               lda   b,x
+    713  4+1   9863 A7   44               sta   anim,u                   * >>
+    714  5     9865 39                    rts                            * >>
+    715                                                                  *;>>
+    716                                                                  *;>>
+    717        9866               Anim_End_FC                            *A>>
+    718  2     9866 4C                    inca                           * >>
+    719  3     9867 26   27               bne   Anim_End_FB              * >>
+    720  6+1   9869 6C   C8 12            inc   routine,u
+    721  6+1   986C 6C   C8 12            inc   routine,u                * >>
+    722  2     986F 86   00               lda   #0
+    723  4+1   9871 A7   47               sta   anim_frame_duration,u    * >>
+    724  6+1   9873 6C   46               inc   anim_frame,u             * >>
+    725  5     9875 39                    rts                            * >>
+    726                                                                  *;>>
+    727                                                                  *;>>
+    728        9876               Anim_End_FB                            *A>>
+    729  2     9876 4C                    inca                           * >>
+    730  3     9877 26   22               bne   Anim_End_FA              * >>
+    731  2     9879 86   00               lda   #0
+    732  4+1   987B A7   46               sta   anim_frame,u             * >>
+    733  4+1   987D A7   C8 13            sta   routine_secondary,u      * >>
+    734  5     9880 39                    rts                            * >>
+    735                                                                  *;>>
+    736                                                                  *;>>
+    737        9881               Anim_End_FA                            *A>>
+    738                                   * inca                         * >>
+    739  3     9881 26   21               bne   Anim_End                 * >>
+    740  6+1   9883 6C   C8 13            inc   routine_secondary,u      * >>
+    741  6+1   9886 6C   C8 13            inc   routine_secondary,u
+    742  5     9889 39                    rts                            * >>
+    743                                                                  *;>>
+    744                                                                  *;>>
+    745                                                                  *A>>
+    746                                                                  * >>
+    747                                                                  * >>
+    748                                                                  * >>
+    749                                                                  *;>>
+    750        988A               Anim_End                               *A>>
+    751  5     988A 39                    rts                            * >>
+    752                                                                  *;>>
+    753
+    754                                   INCLUD OBJMOVE
+(755)0:OBJMOVE.ASM Bad Label
+    755 ; ----------------------------------------------------------------->>
+(756)0:OBJMOVE.ASM Bad Label
+    756 ; Subroutine translating object speed to update object position
+(757)0:OBJMOVE.ASM Bad Label
+    757 ; This moves the object horizontally and vertically
+(758)0:OBJMOVE.ASM Bad Label
+    758 ; but does not apply gravity to it
+(759)0:OBJMOVE.ASM Bad Label
+    759 ; ----------------------------------------------------------------->>
+    760
+    761                                                                  *;>>
+    762                                                                  *;>>
+    763                                                                  *;>>
+    764                                                                  *;>>
+    765                                                                  *;>>
+    766                                                                  *
+    767                                                                  *;>>
+    768                                                                  *
+    769                                                                  *;>>
+    770        988B               ObjectMove                             *O>>
+    771                                                                  * >>
+    772                                                                  * >>
+    773                                                                  * >>
+    774                                                                  * >>
+    775                                                                  * >>
+    776                                                                  * >>
+(777)0:OBJMOVE.ASM Expression Error
+    777         ldb   x_vel,u
+    778  2     988B 1D                    sex                            ; >>
+    779  5     988C B7   98B8             sta   am_ObjectMove_01+1
+(780)0:OBJMOVE.ASM Expression Error
+    780         ldd   x_vel,u
+    781  6+1   988F E3   4B               addd  x_pos+1,u                ; >>
+    782  5+1   9891 ED   4B               std   x_pos+1,u                ; >>
+    783  4+1   9893 A6   4A               lda   x_pos,u
+    784        9895               am_ObjectMove_01
+    785  2     9895 89   00               adca  #$00                     ; >>
+    786  4+1   9897 A7   4A               sta   x_pos,u                  ; >>
+    787                            
+    788                                                                  * >>
+    789                                                                  * >>
+    790                                                                  * >>
+    791                                                                  * >>
+    792                                                                  * >>
+    793                                                                  * >>
+(794)0:OBJMOVE.ASM Expression Error
+    794         ldb   y_vel,u
+    795  2     9899 1D                    sex                            ; >>
+    796  5     989A B7   98CE             sta   am_ObjectMove_02+1
+(797)0:OBJMOVE.ASM Expression Error
+    797         ldd   y_vel,u
+    798  6+1   989D E3   4E               addd  y_pos+1,u                ; >>
+    799  5+1   989F ED   4E               std   y_pos+1,u                ; >>
+    800  4+1   98A1 A6   4D               lda   y_pos,u
+    801        98A3               am_ObjectMove_02
+    802  2     98A3 89   00               adca  #$00                     ; >>
+    803  4+1   98A5 A7   4D               sta   y_pos,u                  ; >>
+    804  5     98A7 39                    rts                            * >>
+    805                                                                  *;>>
+    806                                                                  *;>>
+    807
+    808                                   INCLUD OBJLOAD
+(809)0:OBJLOAD.ASM Bad Label
+    809 ; ----------------------------------------------------------------->>
+(810)0:OBJLOAD.ASM Bad Label
+    810 ; Single object loading subroutine
+(811)0:OBJLOAD.ASM Bad Label
+    811 ; Find an empty object array
+(812)0:OBJLOAD.ASM Bad Label
+    812 ;
+(813)0:OBJLOAD.ASM Bad Opcode
+    813  ; input  REG : [u] pointeur sur l'objet courant
+(814)0:OBJLOAD.ASM Bad Opcode
+    814  ; output REG : [x] pointeur sur l'objet libre
+(815)0:OBJLOAD.ASM Bad Label
+    815 ; ----------------------------------------------------------------->>
+    816
+    817                                                                  *;>>
+    818                                                                  *;>>
+    819                                                                  *;>>
+    820                                                                  *;>>
+    821                                                                  *;>>
+    822                                                                  *
+    823                                                                  *;>>
+    824                                                                  *S>>
+    825                                                                  * >>
+    826                                                                  * >>
+    827                                                                  * >>
+    828                                                                  * >>
+    829                                                                  * >>
+    830                                                                  *
+    831                                                                  */>>
+    832                                                                  * >>
+    833                                                                  * >>
+    834                                                                  * >>
+    835                                                                  * >>
+    836                                                                  *
+    837                                                                  *r>>
+    838                                                                  * >>
+    839                                                                  *;>>
+    840                                                                  *;>>
+    841                                                                  *;>>
+    842                                                                  *;>>
+    843                                                                  *;>>
+    844                                                                  *
+    845                                                                  *;>>
+    846                                                                  *
+    847                                                                  *;>>
+    848        98A8               SingleObjLoad2                         *S>>
+    849  6     98A8 1F   31               tfr   u,x                      * >>
+    850  4+1   98AA 30   88 50            leax  next_object,x            * >>
+    851  4     98AD 8C   95EC             cmpx  #Dynamic_Object_RAM_End  * >>
+    852  3     98B0 27   36               beq   SingleObjLoad2_02        * >>
+    853                                                                  * >>
+    854                                                                  * >>
+    855                                                                  * >>
+    856                                                                  * >>
+    857                                                                  * >>
+    858                                                                  * >>
+    859                                                                  * >>
+    860                                                                  * >>
+    861                                                                  *
+    862        98B2               SingleObjLoad2_01                      *->>
+    863  6+0   98B2 6D   84               tst   ,x                       * >>
+    864  3     98B4 27   32               beq   SingleObjLoad2_02        * >>
+    865  4+1   98B6 30   88 50            leax  next_object,x            * >>
+    866  4     98B9 8C   95EC             cmpx  #Dynamic_Object_RAM_End
+    867  3     98BC 26   1E               bne   SingleObjLoad2_01        * >>
+    868                                                                  *
+    869        98BE               SingleObjLoad2_02                      *r>>
+    870  5     98BE 39                    rts                            * >>
+    871                                                                  *
+    872                                                                  * >>
+    873                                                                  *+>>
+    874                                                                  *.>>
+    875                                                                  *.>>
+    876                                                                  *
+    877                                                                  * >>
+    878                                                                  * >>
+    879                                                                  * >>
+    880                                                                  * >>
+    881                                                                  * >>
+    882                                                                  * >>
+    883                                                                  *
+    884                                                                  *.>>
+    885                                                                  *.>>
+    886                                                                  * >>
+    887                                                                  * >>
+    888                                                                  * >>
+    889                                                                  *;>>
+    890                                                                  *;>>
+    891                                                                  *;>>
+    892                                                                  *;>>
+    893                                                                  *;>>
+    894                                                                  *
+    895                                                                  *;>>
+    896                                                                  *
+    897                                                                  *;>>
+    898                                                                  *S>>
+    899                                                                  * >>
+    900                                                                  * >>
+    901                                                                  *
+    902                                                                  *->>
+    903                                                                  * >>
+    904                                                                  * >>
+    905                                                                  * >>
+    906                                                                  * >>
+    907                                                                  *
+    908                                                                  *r>>
+    909                                                                  * >>
+    910                                                                  *;>>
+----------------
+861 cycle(s)
+14527 byte(s)
+----------------
+    912
+    913
+    914                                   INCLUD DELETOBJ
+(915)0:DELETOBJ.ASM Bad Label
+    915 ; ----------------------------------------------------------------->>
+(916)0:DELETOBJ.ASM Bad Label
+    916 ; DeleteObject
+(917)0:DELETOBJ.ASM Bad Label
+    917 ; ------------
+(918)0:DELETOBJ.ASM Bad Label
+    918 ; Subroutine to delete an object.
+(919)0:DELETOBJ.ASM Bad Label
+    919 ; If the object is rendered as a sprite it will be deleted by Erase>>
+(920)0:DELETOBJ.ASM Bad Label
+    920 ; routine
+(921)0:DELETOBJ.ASM Bad Label
+    921 ;
+(922)0:DELETOBJ.ASM Bad Label
+    922 ; DeleteObject
+(923)0:DELETOBJ.ASM Bad Label
+    923 ; input REG : [u] object pointer (OST)
+(924)0:DELETOBJ.ASM Bad Label
+    924 ;
+(925)0:DELETOBJ.ASM Bad Label
+    925 ; DeleteObject_x
+(926)0:DELETOBJ.ASM Bad Label
+    926 ; input REG : [x] object pointer (OST)
+(927)0:DELETOBJ.ASM Bad Label
+    927 ; ----------------------------------------------------------------->>
+    928
+    929                                                                  *;>>
+    930                                                                  *;>>
+    931                                                                  *;>>
+    932                                                                  *
+    933                                                                  *;>>
+    934                                                                  *
+    935                                                                  *;>>
+(936)0:DELETOBJ.ASM Bad Opcode
+    936 DeleteObject_x @globals                *DeleteObject:
+    937  5+6   98BF 34   56               pshs  d,x,u                    * >>
+    938  6     98C1 1F   13               tfr   x,u                      *;>>
+    939  3     98C3 20   2C               bra   DOB_Start
+(940)0:DELETOBJ.ASM Bad Opcode
+    940 DeleteObject @globals                  *DeleteObject2:
+    941  5+6   98C5 34   56               pshs  d,x,u
+    942        98C7               DOB_Start
+    943  4+1   98C7 A6   C8 29            lda   rsv_render_flags,u
+(944)0:DELETOBJ.ASM Expression Error
+    944         anda  #rsv_render_onscreen_0_mask
+    945  3     98CA 27   49               beq   DOB_TestOnscreen1Delete  ; >>
+    946                            
+    947        98CC               DOB_Unset0
+    948  6     98CC BE   80CC             ldx   Lst_Priority_Unset_0     ; >>
+    949  5+0   98CF EF   84               stu   ,x
+    950  4+1   98D1 30   02               leax  2,x
+    951  6     98D3 BF   80CC             stx   Lst_Priority_Unset_0
+    952                            
+    953        98D6               DOB_TestOnscreen1
+    954  4+1   98D6 A6   C8 29            lda   rsv_render_flags,u
+(955)0:DELETOBJ.ASM Expression Error
+    955         anda  #rsv_render_onscreen_1_mask
+    956  3     98D9 27   46               beq   DOB_ToDeleteFlag         ; >>
+    957                            
+    958        98DB               DOB_Unset1
+    959  6     98DB BE   816C             ldx   Lst_Priority_Unset_1     ; >>
+    960  5+0   98DE EF   84               stu   ,x
+    961  4+1   98E0 30   02               leax  2,x
+    962  6     98E2 BF   816C             stx   Lst_Priority_Unset_1
+    963  3     98E5 20   3A               bra  DOB_ToDeleteFlag
+    964                            
+    965        98E7               DOB_TestOnscreen1Delete
+    966  4+1   98E7 A6   C8 29            lda   rsv_render_flags,u
+(967)0:DELETOBJ.ASM Expression Error
+    967         anda  #rsv_render_onscreen_1_mask
+    968  3     98EA 26   1D               bne   DOB_Unset1               ; >>
+    969
+(970)0:DELETOBJ.ASM Expression Error
+    970         jsr   ClearObj                 ; this object is not onscree>>
+    971  3     98EC 20   39               bra   DOB_rts
+    972                                                                  * >>
+    973                                                                  *
+    974                                                                  * >>
+    975                                                                  * >>
+    976                                                                  *->>
+    977                                                                  * >>
+    978                                                                  * >>
+    979                                                                  * >>
+    980                                                                  * >>
+    981                                                                  *
+    982        98EE               DOB_ToDeleteFlag
+    983  4+1   98EE A6   42               lda   render_flags,u
+    984  4     98F0 9A   20               ora   render_todelete_mask
+    985  4+1   98F2 A7   42               sta   render_flags,u           ; >>
+    986                            
+    987        98F4               DOB_rts
+    988  5+8   98F4 35   D6               puls  d,x,u,pc                 * >>
+    989                                                                  *;>>
+    990
+    991                                   INCLUD DISPLSPR
+(992)0:DISPLSPR.ASM Bad Label
+    992 ; ----------------------------------------------------------------->>
+(993)0:DISPLSPR.ASM Bad Label
+    993 ; DisplaySprite
+(994)0:DISPLSPR.ASM Bad Label
+    994 ; -------------
+(995)0:DISPLSPR.ASM Bad Label
+    995 ; Subroutine to manage sprite priority.
+(996)0:DISPLSPR.ASM Bad Label
+    996 ; Object's priority is read and object is (un)registred in display >>
+(997)0:DISPLSPR.ASM Bad Label
+    997 ; priority: 0 - unregistred
+(998)0:DISPLSPR.ASM Bad Label
+    998 ; priority: 1 - register non moving overlay sprite
+(999)0:DISPLSPR.ASM Bad Label
+    999 ; priority; 2-8 - register moving sprite (2:front, ..., 8:back)
+(1000)0:DISPLSPR.ASM Bad Label
+   1000 ;
+(1001)0:DISPLSPR.ASM Bad Label
+   1001 ; Unlike original S2 code, sprite priority is stored in an open dou>>
+(1002)0:DISPLSPR.ASM Bad Label
+   1002 ; it allows to keep an exact sprite order for each screen buffer
+(1003)0:DISPLSPR.ASM Bad Label
+   1003 ;
+(1004)0:DISPLSPR.ASM Bad Label
+   1004 ; DisplaySprite
+(1005)0:DISPLSPR.ASM Bad Label
+   1005 ; input REG : [u] object pointer (OST)
+(1006)0:DISPLSPR.ASM Bad Label
+   1006 ;
+(1007)0:DISPLSPR.ASM Bad Label
+   1007 ; DisplaySprite_x
+(1008)0:DISPLSPR.ASM Bad Label
+   1008 ; input REG : [x] object pointer (OST)
+(1009)0:DISPLSPR.ASM Bad Label
+   1009 ; ----------------------------------------------------------------->>
+   1010                            
+(1011)0:DISPLSPR.ASM Bad Opcode
+   1011 DisplaySprite_x @globals
+   1012  5+6   98F6 34   56               pshs  d,x,u
+   1013  6     98F8 1F   13               tfr   x,u
+(1014)0:DISPLSPR.ASM Expression Error
+   1014         bra DisplaySprite_Start
+   1015                            
+(1016)0:DISPLSPR.ASM Bad Opcode
+   1016 DisplaySprite @globals
+   1017  5+6   98FA 34   56               pshs  d,x,u
+   1018                            
+(1019)0:DISPLSPR.ASM Multiply Defined Symbol
+   1019 DSP_Start
+   1020  5     98FC B6   601A             lda   Glb_Cur_Wrk_Screen_Id      >>
+   1021  3     98FF 26   3E               bne   DSP_SetBuffer1
+   1022                            
+   1023        9901               DSP_SetBuffer0
+   1024  4+1   9901 30   C8 34            leax  rsv_buffer_0,u             >>
+   1025  7     9904 10BE 80A8             ldy   DPS_buffer_0               >>
+   1026  3     9908 20   3C               bra   DSP_BufferPositionned
+   1027                            
+   1028        990A               DSP_SetBuffer1
+   1029  4+1   990A 30   C8 42            leax  rsv_buffer_1,u             >>
+   1030  7     990D 10BE 8148             ldy   DPS_buffer_1               >>
+   1031                            
+   1032        9911               DSP_BufferPositionned
+   1033  4+1   9911 A6   43               lda   priority,u                 >>
+   1034  4+1   9913 A1   00               cmpa  buf_priority,x
+   1035  3     9915 27   7B               beq   DSP_rts                    >>
+   1036  4+1   9917 E6   00               ldb   buf_priority,x
+   1037  3     9919 26   66               bne   DSP_ChangePriority
+   1038                            
+   1039        991B               DSP_InitPriority
+   1040  4+1   991B A7   00               sta   buf_priority,x             >>
+   1041                            
+   1042        991D               DSP_CheckLastEntry
+   1043  4+1   991D 31   A8 12            leay  buf_Tbl_Priority_Last_Entry>>
+   1044  6+1   9920 6D   A6               tst   a,y                        >>
+   1045  3     9922 26   44               bne   DSP_addToExistingNode      >>
+   1046                            
+   1047        9924               DSP_addFirstNode
+   1048  5+1   9924 EF   A6               stu   a,y                        >>
+   1049  4+1   9926 31   A8 EE            leay  buf_Tbl_Priority_First_Entr>>
+   1050  5+1   9929 EF   A6               stu   a,y                        >>
+   1051  5     992B DC   00               ldd   0
+   1052  5+1   992D ED   01               std   buf_priority_prev_obj,x    >>
+   1053  5+1   992F ED   03               std   buf_priority_next_obj,x
+   1054  3     9931 20   5F               bra   DSP_rts
+   1055                            
+   1056        9933               DSP_addToExistingNode
+   1057  5+4   9933 AE   B6               ldx   [a,y]                      >>
+   1058  5     9935 F6   601A             ldb   Glb_Cur_Wrk_Screen_Id
+   1059  3     9938 26   3A               bne   DSP_LinkBuffer1
+   1060  5+1   993A EF   88 37            stu   rsv_priority_next_obj_0,x  >>
+   1061  3     993D 20   38               bra   DSP_LinkCurWithPrev
+   1062        993F               DSP_LinkBuffer1
+   1063  5+1   993F EF   88 45            stu   rsv_priority_next_obj_1,x  >>
+   1064                            
+   1065        9942               DSP_LinkCurWithPrev
+   1066  5+1   9942 AF   41               stx   buf_priority_prev_obj,u    >>
+   1067  5+1   9944 EF   A6               stu   a,y                        >>
+   1068  5     9946 DC   00               ldd   0
+   1069  5+1   9948 ED   03               std   buf_priority_next_obj,x    >>
+   1070  3     994A 20   46               bra   DSP_rts
+   1071                            
+   1072        994C               DSP_ChangePriority
+   1073  4+1   994C 31   A8 24            leay  buf_Lst_Priority_Unset,y
+   1074  5+3   994F EF   B4               stu   [,y]                       >>
+   1075  4+1   9951 31   22               leay  2,y
+   1076  6+0   9953 10AF A4               sty   ,y                         >>
+   1077  4+1   9956 31   A8 DA            leay  -buf_Lst_Priority_Unset-2,y>>
+   1078  4     9959 91   00               cmpa  0
+   1079  3     995B 26   F5               bne   DSP_CheckLastEntry         >>
+(1080)0:DISPLSPR.ASM Bad Opcode
+   1080                                             ; priority is 0, nothin>>
+   1081        995D               DSP_rts
+   1082  5+8   995D 35   D6               puls  d,x,u,pc
+   1083                            
+   1084                                                                  *;>>
+   1085                                                                  *;>>
+   1086                                                                  *;>>
+   1087                                                                  *
+   1088                                                                  *;>>
+   1089                                                                  *
+   1090                                                                  *;>>
+   1091                                                                  *D>>
+   1092                                                                  * >>
+   1093                                                                  * >>
+   1094                                                                  * >>
+   1095                                                                  * >>
+   1096                                                                  * >>
+   1097                            
+   1098                                                                  * >>
+   1099                                                                  * >>
+   1100                                                                  * >>
+   1101                            
+   1102                                                                  * >>
+   1103                                                                  * >>
+   1104                                                                  *
+   1105                                                                  *r>>
+   1106                            
+   1107                                                                  * >>
+   1108                                                                  *;>>
+   1109
+   1110                                   INCLUD MRKOBJGN
+(1111)0:MRKOBJGN.ASM Bad Label
+   1111 ; ----------------------------------------------------------------->>
+(1112)0:MRKOBJGN.ASM Bad Label
+   1112 ; MarkObjGone
+(1113)0:MRKOBJGN.ASM Bad Label
+   1113 ; -----------
+(1114)0:MRKOBJGN.ASM Bad Label
+   1114 ; Subroutine to destroy an object that is outside of destroy/respaw>>
+(1115)0:MRKOBJGN.ASM Bad Label
+   1115 ; -- TODO --
+(1116)0:MRKOBJGN.ASM Bad Label
+   1116 ; waiting for camera implementation
+(1117)0:MRKOBJGN.ASM Bad Label
+   1117 ;
+(1118)0:MRKOBJGN.ASM Bad Label
+   1118 ; input REG : none
+(1119)0:MRKOBJGN.ASM Bad Label
+   1119 ; clear REG : none
+(1120)0:MRKOBJGN.ASM Bad Label
+   1120 ; ----------------------------------------------------------------->>
+   1121
+   1122                                                                  *;>>
+   1123                                                                  *;>>
+   1124                                                                  *;>>
+   1125                                                                  *
+   1126                                                                  *;>>
+   1127                                                                  *;>>
+   1128                                                                  *;>>
+(1129)0:MRKOBJGN.ASM Bad Opcode
+   1129 MarkObjGone @globals                   *MarkObjGone:
+   1130                                                                  * >>
+   1131                                                                  * >>
+(1132)0:MRKOBJGN.ASM Expression Error
+   1132         bra   DisplaySprite            *    bra.w   DisplaySprite
+   1133                                                                  *+>>
+   1134                                                                  * >>
+   1135                                                                  * >>
+   1136                                                                  * >>
+   1137                                                                  * >>
+   1138                                                                  * >>
+   1139                                                                  * >>
+   1140                                                                  *
+   1141                                                                  *+>>
+   1142                                                                  * >>
+   1143                                                                  * >>
+   1144                                                                  * >>
+   1145                                                                  * >>
+   1146                                                                  *+>>
+   1147                                                                  * >>
+   1148
+   1149                                   INCLUD CLEAROBJ
+(1150)0:CLEAROBJ.ASM Bad Label
+   1150 ; ----------------------------------------------------------------->>
+(1151)0:CLEAROBJ.ASM Bad Label
+   1151 ; ClearObj
+(1152)0:CLEAROBJ.ASM Bad Label
+   1152 ; --------
+(1153)0:CLEAROBJ.ASM Bad Label
+   1153 ; Subroutine to clear an object data in OST
+(1154)0:CLEAROBJ.ASM Bad Label
+   1154 ;
+(1155)0:CLEAROBJ.ASM Bad Label
+   1155 ; input REG : [u] pointer on objet (OST)
+(1156)0:CLEAROBJ.ASM Bad Label
+   1156 ; clear REG : [d,y]
+(1157)0:CLEAROBJ.ASM Bad Label
+   1157 ; ----------------------------------------------------------------->>
+   1158
+(1159)0:CLEAROBJ.ASM Bad Opcode
+   1159 ClearObj @globals
+   1160  7     995F 10FF 99C0             sts   CLO_1+2
+   1161  6     9963 BF   99C4             stx   CLO_2+2
+   1162  3     9966 CC   0000             ldd   #$0000
+   1163  3     9969 8E   0000             ldx   #$0000
+   1164  4+0   996C 31   84               leay  ,x
+   1165  4+0   996E 32   84               leas  ,x
+   1166  4+1   9970 33   C8 50            leau  object_size,u
+   1167  5+8   9973 36   76               pshu  d,x,y,s
+   1168  5+8   9975 36   76               pshu  d,x,y,s
+   1169  5+8   9977 36   76               pshu  d,x,y,s
+   1170  5+8   9979 36   76               pshu  d,x,y,s
+   1171  5+8   997B 36   76               pshu  d,x,y,s
+   1172  5+8   997D 36   76               pshu  d,x,y,s
+   1173  5+8   997F 36   76               pshu  d,x,y,s
+   1174  5+8   9981 36   76               pshu  d,x,y,s
+   1175  5+8   9983 36   76               pshu  d,x,y,s
+   1176  5+8   9985 36   76               pshu  d,x,y,s
+   1177        9987               CLO_1
+   1178  4     9987 10CE 0000             lds   #$0000
+   1179        998B               CLO_2
+   1180  3     998B 8E   0000             ldx   #$0000
+   1181  5     998E 39                    rts
+   1182
+   1183                                   INCLUD CHECKSPR
+   1184                           * --------------------------------------->>
+   1185                           * CheckSpritesRefresh
+   1186                           * -------------------
+   1187                           * Subroutine to determine if sprites are >>
+   1188                           * Read Display Priority Structure (back t>>
+   1189                           * priority: 0 - unregistred
+   1190                           * priority: 1 - register non moving overl>>
+   1191                           * priority; 2-8 - register moving sprite >>
+   1192                           *
+   1193                           * input REG : none
+   1194                           * --------------------------------------->>
+   1195
+   1196        998F 0000          cur_priority            fdb   $00
+   1197        9991 0000          cur_ptr_sub_obj_erase   fdb   $0000
+   1198        9993 0000          cur_ptr_sub_obj_draw    fdb   $0000
+   1199                            
+   1200        9995               CheckSpritesRefresh
+   1201
+   1202        9995               CSR_Start
+   1203  3     9995 CC   81E8             ldd   #Tbl_Sub_Object_Erase
+   1204  6     9998 FD   99C8             std   cur_ptr_sub_obj_erase
+   1205  3     999B CC   8262             ldd   #Tbl_Sub_Object_Draw
+   1206  6     999E FD   99CA             std   cur_ptr_sub_obj_draw
+   1207  5     99A1 B6   601A             lda   Glb_Cur_Wrk_Screen_Id      >>
+(1208)0:CHECKSPR.ASM Branch Out Of Range
+   1208  3     99A4 26   FE               bne   CSR_SetBuffer1
+   1209                            
+   1210        99A6               CSR_SetBuffer0
+   1211  4     99A6 96   34               lda   rsv_buffer_0               >>
+   1212  5     99A8 B7   9A9F             sta   CSR_ProcessEachPriorityLeve>>
+   1213        99AB               CSR_P8B0
+   1214  6     99AB FE   80B6             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1215  3     99AE 27   3F               beq   CSR_P7B0
+   1216  2     99B0 86   08               lda   #$08
+   1217  5     99B2 B7   99C6             sta   cur_priority
+   1218  8     99B5 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1219        99B8               CSR_P7B0
+   1220  6     99B8 FE   80B4             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1221  3     99BB 27   3D               beq   CSR_P6B0
+   1222  7     99BD 7A   99C6             dec   cur_priority
+   1223  8     99C0 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1224        99C3               CSR_P6B0
+   1225  6     99C3 FE   80B2             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1226  3     99C6 27   3D               beq   CSR_P5B0
+   1227  7     99C8 7A   99C6             dec   cur_priority
+   1228  8     99CB BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1229        99CE               CSR_P5B0
+   1230  6     99CE FE   80B0             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1231  3     99D1 27   3D               beq   CSR_P4B0
+   1232  7     99D3 7A   99C6             dec   cur_priority
+   1233  8     99D6 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1234        99D9               CSR_P4B0
+   1235  6     99D9 FE   80AE             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1236  3     99DC 27   3D               beq   CSR_P3B0
+   1237  7     99DE 7A   99C6             dec   cur_priority
+   1238  8     99E1 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1239        99E4               CSR_P3B0
+   1240  6     99E4 FE   80AC             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1241  3     99E7 27   3D               beq   CSR_P2B0
+   1242  7     99E9 7A   99C6             dec   cur_priority
+   1243  8     99EC BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1244        99EF               CSR_P2B0
+   1245  6     99EF FE   80AA             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1246  3     99F2 27   3D               beq   CSR_P1B0
+   1247  7     99F4 7A   99C6             dec   cur_priority
+   1248  8     99F7 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1249        99FA               CSR_P1B0
+   1250  6     99FA FE   80A8             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1251  3     99FD 27   3D               beq   CSR_rtsB0
+   1252  7     99FF 7A   99C6             dec   cur_priority
+   1253  8     9A02 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1254        9A05               CSR_rtsB0
+   1255  5     9A05 39                    rts
+   1256                            
+   1257        9A06               CSR_SetBuffer1
+   1258  4     9A06 96   42               lda   rsv_buffer_1               >>
+   1259  5     9A08 B7   9A9F             sta   CSR_ProcessEachPriorityLeve>>
+   1260        9A0B               CSR_P8B1
+   1261  6     9A0B FE   8156             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1262  3     9A0E 27   3F               beq   CSR_P7B1
+   1263  2     9A10 86   08               lda   #$08
+   1264  5     9A12 B7   99C6             sta   cur_priority
+   1265  8     9A15 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1266        9A18               CSR_P7B1
+   1267  6     9A18 FE   8154             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1268  3     9A1B 27   3D               beq   CSR_P6B1
+   1269  7     9A1D 7A   99C6             dec   cur_priority
+   1270  8     9A20 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1271        9A23               CSR_P6B1
+   1272  6     9A23 FE   8152             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1273  3     9A26 27   3D               beq   CSR_P5B1
+   1274  7     9A28 7A   99C6             dec   cur_priority
+   1275  8     9A2B BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1276        9A2E               CSR_P5B1
+   1277  6     9A2E FE   8150             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1278  3     9A31 27   3D               beq   CSR_P4B1
+   1279  7     9A33 7A   99C6             dec   cur_priority
+   1280  8     9A36 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1281        9A39               CSR_P4B1
+   1282  6     9A39 FE   814E             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1283  3     9A3C 27   3D               beq   CSR_P3B1
+   1284  7     9A3E 7A   99C6             dec   cur_priority
+   1285  8     9A41 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1286        9A44               CSR_P3B1
+   1287  6     9A44 FE   814C             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1288  3     9A47 27   3D               beq   CSR_P2B1
+   1289  7     9A49 7A   99C6             dec   cur_priority
+   1290  8     9A4C BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1291        9A4F               CSR_P2B1
+   1292  6     9A4F FE   814A             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1293  3     9A52 27   3D               beq   CSR_P1B1
+   1294  7     9A54 7A   99C6             dec   cur_priority
+   1295  8     9A57 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1296        9A5A               CSR_P1B1
+   1297  6     9A5A FE   8148             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1298  3     9A5D 27   3D               beq   CSR_rtsB1
+   1299  7     9A5F 7A   99C6             dec   cur_priority
+   1300  8     9A62 BD   9A9D             jsr   CSR_ProcessEachPriorityLeve>>
+   1301        9A65               CSR_rtsB1
+   1302  5     9A65 39                    rts
+   1303
+   1304        9A66               CSR_ProcessEachPriorityLevel
+   1305  4+1   9A66 30   C8 10            leax  16,u                       >>
+   1306  4+1   9A69 A6   C8 29            lda   rsv_render_flags,u
+   1307  2     9A6C 84   01               anda  #rsv_render_checkrefresh_ma>>
+(1308)0:CHECKSPR.ASM Branch Out Of Range
+   1308  3     9A6E 26   FE               bne   CSR_CheckErase
+   1309                            
+   1310        9A70               CSR_CheckDelHide
+   1311  4+1   9A70 A6   42               lda   render_flags,u
+   1312  2     9A72 84   28               anda  #render_hide_mask!render_to>>
+(1313)0:CHECKSPR.ASM Branch Out Of Range
+   1313  3     9A74 26   FE               bne   CSR_DoNotDisplaySprite
+   1314
+   1315        9A76               CSR_UpdSpriteImageBasedOnMirror
+   1316  4+1   9A76 A6   C8 29            lda   rsv_render_flags,u
+   1317  2     9A79 8A   01               ora   #rsv_render_checkrefresh_ma>>
+   1318  4+1   9A7B A7   C8 29            sta   rsv_render_flags,u         >>
+   1319  4+1   9A7E A6   42               lda   render_flags,u             >>
+   1320  2     9A80 84   03               anda  #render_xmirror_mask!render>>
+   1321  2     9A82 C6   10               ldb   #image_meta_size
+   1322  11    9A84 3D                    mul
+   1323  6+1   9A85 E3   48               addd  mapping_frame,u
+   1324  5+1   9A87 ED   C8 2C            std   rsv_curr_mapping_frame,u
+   1325                            
+   1326        9A8A               CSR_CheckPlayFieldCoord
+   1327  4+1   9A8A A6   42               lda   render_flags,u
+   1328  2     9A8C 84   04               anda  #render_playfieldcoord_mask>>
+(1329)0:CHECKSPR.ASM Branch Out Of Range
+   1329  3     9A8E 27   FE               beq   CSR_CheckVerticalPosition  >>
+   1330                            
+   1331  5+1   9A90 EC   4A               ldd   x_pos,u
+   1332  7     9A92 B3   601C             subd  Glb_Camera_X_Pos
+   1333  6+1   9A95 10AE C8 2C            ldy   rsv_curr_mapping_frame,u
+   1334  6+1   9A99 E3   2A               addd  image_x_offset,y
+(1335)0:CHECKSPR.ASM Branch Out Of Range
+   1335  3     9A9B 29   FE               bvs   CSR_SetOutOfRange          >>
+(1336)0:CHECKSPR.ASM Branch Out Of Range
+   1336  3     9A9D 2B   FE               bmi   CSR_SetOutOfRange          >>
+   1337  4+1   9A9F E7   C8 10            stb   x_pixel,u
+   1338  4+1   9AA2 EB   2E               addb  image_x_size,y
+(1339)0:CHECKSPR.ASM Branch Out Of Range
+   1339  3     9AA4 29   FE               bvs   CSR_SetOutOfRange          >>
+   1340  4+1   9AA6 E7   C8 32            stb   rsv_x2_pixel,u
+   1341  2     9AA9 C1   A0               cmpb  #screen_width
+(1342)0:CHECKSPR.ASM Branch Out Of Range
+   1342  3     9AAB 2E   FE               bgt   CSR_SetOutOfRange          >>
+   1343
+   1344  5+1   9AAD EC   4D               ldd   y_pos,u
+   1345  7     9AAF B3   601E             subd  Glb_Camera_Y_Pos
+   1346  6+1   9AB2 E3   2C               addd  image_y_offset,y
+(1347)0:CHECKSPR.ASM Branch Out Of Range
+   1347  3     9AB4 29   FE               bvs   CSR_SetOutOfRange          >>
+(1348)0:CHECKSPR.ASM Branch Out Of Range
+   1348  3     9AB6 2B   FE               bmi   CSR_SetOutOfRange          >>
+   1349  4+1   9AB8 E7   C8 11            stb   y_pixel,u
+   1350  4+1   9ABB EB   2F               addb  image_y_size,y
+(1351)0:CHECKSPR.ASM Branch Out Of Range
+   1351  3     9ABD 29   FE               bvs   CSR_SetOutOfRange          >>
+   1352  4+1   9ABF E7   C8 33            stb   rsv_y2_pixel,u
+   1353  2     9AC2 C1   C8               cmpb  #screen_height
+   1354  3     9AC4 2E   7C               bgt   CSR_SetOutOfRange          >>
+   1355  4+1   9AC6 A6   C8 29            lda   rsv_render_flags,u
+   1356  2     9AC9 84   F7               anda  #:rsv_render_outofrange_mas>>
+   1357  4+1   9ACB A7   C8 29            sta   rsv_render_flags,u
+   1358  3     9ACE 20   7A               bra   CSR_CheckErase
+   1359                            
+   1360        9AD0               CSR_DoNotDisplaySprite
+   1361  4+1   9AD0 A6   C8 29            lda   rsv_render_flags,u
+   1362  2     9AD3 84   F9               anda  #:rsv_render_erasesprite_ma>>
+   1363  4+1   9AD5 A7   C8 29            sta   rsv_render_flags,u
+   1364  4+1   9AD8 E6   0D               ldb   buf_onscreen,x
+   1365  3     9ADA 27   4A               beq   CSR_NextObject             >>
+   1366  2     9ADC 8A   02               ora   #rsv_render_erasesprite_mas>>
+   1367  4+1   9ADE A7   C8 29            sta   rsv_render_flags,u
+   1368                            
+   1369  7     9AE1 10BE 99C8             ldy   cur_ptr_sub_obj_erase
+   1370  6+1   9AE5 10AF C8 2E            sty   rsv_ptr_sub_object_erase,u
+   1371  5+3   9AE9 EF   A1               stu   ,y++
+   1372  7     9AEB 10BF 99C8             sty   cur_ptr_sub_obj_erase
+   1373                            
+   1374        9AEF               CSR_NextObject
+   1375  5+1   9AEF EE   03               ldu   buf_priority_next_obj,x
+   1376  3     9AF1 26   AA               bne   CSR_ProcessEachPriorityLeve>>
+   1377  5     9AF3 39                    rts
+   1378
+   1379        9AF4               CSR_CheckVerticalPosition
+   1380  4+1   9AF4 E6   C8 11            ldb   y_pixel,u                  >>
+   1381  6+1   9AF7 E3   2F               addd  image_y_size,y
+   1382  3     9AF9 29   47               bvs   CSR_SetOutOfRange          >>
+   1383  5     9AFB 1083 00C8             cmpd  #screen_height
+   1384  3     9AFF 2E   41               bgt   CSR_SetOutOfRange          >>
+   1385  4+1   9B01 A6   C8 29            lda   rsv_render_flags,u
+   1386  2     9B04 84   F7               anda  #:rsv_render_outofrange_mas>>
+   1387  4+1   9B06 A7   C8 29            sta   rsv_render_flags,u
+   1388  3     9B09 20   3F               bra   CSR_CheckErase
+   1389                            
+   1390        9B0B               CSR_SetOutOfRange
+   1391  4+1   9B0B A6   C8 29            lda   rsv_render_flags,u
+   1392  2     9B0E 8A   08               ora   #rsv_render_outofrange_mask>>
+   1393  4+1   9B10 A7   C8 29            sta   rsv_render_flags,u
+   1394
+   1395        9B13               CSR_CheckErase
+   1396  4+1   9B13 A6   00               lda   buf_priority,x
+   1397  5     9B15 B1   99C6             cmpa  cur_priority
+   1398  3     9B18 26   6D               bne   CSR_CheckDraw
+   1399                            
+   1400  7     9B1A 10BE 99C8             ldy   cur_ptr_sub_obj_erase
+   1401  6+1   9B1E 10AF C8 2E            sty   rsv_ptr_sub_object_erase,u
+   1402                            
+   1403  4+1   9B22 A6   0D               lda   buf_onscreen,x
+   1404  3     9B24 27   5C               beq   CSR_SetEraseFalse          >>
+   1405  5+1   9B26 EC   C8 10            ldd   x_pixel,u                  >>
+   1406  7+1   9B29 10A3 09               cmpd  buf_prev_x_pixel,x
+   1407  3     9B2C 26   47               bne   CSR_SetEraseTrue           >>
+   1408  5+1   9B2E EC   C8 2C            ldd   rsv_curr_mapping_frame,u
+   1409  7+1   9B31 10A3 05               cmpd  buf_prev_mapping_frame,x
+   1410  3     9B34 26   3F               bne   CSR_SetEraseTrue           >>
+   1411  4+1   9B36 A6   43               lda   priority,u
+   1412  4+1   9B38 A1   00               cmpa  buf_priority,x
+   1413  3     9B3A 26   39               bne   CSR_SetEraseTrue           >>
+   1414  3     9B3C 20   44               bra   CSR_SetEraseFalse          >>
+   1415                            
+   1416        9B3E               CSR_SetEraseTrue
+   1417  4+1   9B3E A6   C8 29            lda   rsv_render_flags,u
+   1418  2     9B41 8A   02               ora   #rsv_render_erasesprite_mas>>
+   1419                            
+   1420  5+3   9B43 EF   A1               stu   ,y++
+   1421  7     9B45 10BF 99C8             sty   cur_ptr_sub_obj_erase
+   1422                            
+   1423  3     9B49 20   3C               bra   CSR_CheckDraw
+   1424                            
+   1425        9B4B               CSR_SetEraseFalse
+   1426  4+1   9B4B A6   C8 29            lda   rsv_render_flags,u
+   1427  2     9B4E 84   FD               anda  #:rsv_render_erasesprite_ma>>
+   1428                            
+   1429        9B50               CSR_CheckDraw
+   1430  4+1   9B50 A6   43               lda   priority,u
+   1431  5     9B52 B1   99C6             cmpa  cur_priority
+   1432  3     9B55 26   CF               bne   CSR_NextObject
+   1433                            
+   1434  7     9B57 10BE 99CA             ldy   cur_ptr_sub_obj_draw
+   1435  6+1   9B5B 10AF C8 30            sty   rsv_ptr_sub_object_draw,u
+   1436                            
+   1437  4+1   9B5F A6   C8 29            lda   rsv_render_flags,u
+   1438  2     9B62 84   08               anda  #rsv_render_outofrange_mask>>
+   1439  3     9B64 26   4F               bne   CSR_SetDrawFalse           >>
+   1440  5+1   9B66 EC   C8 2C            ldd   rsv_curr_mapping_frame,u
+   1441  3     9B69 27   4A               beq   CSR_SetDrawFalse           >>
+   1442  4     9B6B 96   02               lda   render_flags
+   1443  2     9B6D 84   08               anda  #render_hide_mask
+   1444  3     9B6F 26   44               bne   CSR_SetDrawFalse           >>
+   1445                            
+   1446        9B71               CSR_SetDrawTrue
+   1447  4+1   9B71 A6   C8 29            lda   rsv_render_flags,u
+   1448  2     9B74 8A   04               ora   #rsv_render_displaysprite_m>>
+   1449                            
+   1450  5+3   9B76 EF   A1               stu   ,y++
+   1451  7     9B78 10BF 99CA             sty   cur_ptr_sub_obj_draw
+   1452                            
+   1453  3     9B7C 20   A8               bra   CSR_NextObject
+   1454
+   1455        9B7E               CSR_SetDrawFalse
+   1456  4+1   9B7E A6   C8 29            lda   rsv_render_flags,u
+   1457  2     9B81 84   FB               anda  #:rsv_render_displaysprite_>>
+   1458  3     9B83 20   A1               bra   CSR_NextObject
+   1459
+   1460
+   1461                                   INCLUD ERASESPR
+   1462                           * --------------------------------------->>
+   1463                           * EraseSprites
+   1464                           * ------------
+   1465                           * Subroutine to erase sprites on screen
+   1466                           * Read Display Priority Structure (front >>
+   1467                           * priority: 0 - unregistred
+   1468                           * priority: 1 - register non moving overl>>
+   1469                           * priority; 2-8 - register moving sprite >>
+   1470                           *
+   1471                           * input REG : none
+   1472                           * --------------------------------------->>
+   1473                            
+   1474        9B85               EraseSprites
+   1475
+   1476        9B85               ESP_Start
+   1477  5     9B85 B6   601A             lda   Glb_Cur_Wrk_Screen_Id      >>
+(1478)0:ERASESPR.ASM Branch Out Of Range
+   1478  3     9B88 26   FE               bne   ESP_P1B1
+   1479                            
+   1480        9B8A               ESP_P1B0
+   1481  6     9B8A FE   80BA             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1482  3     9B8D 27   3F               beq   ESP_P2B0
+   1483  2     9B8F 86   01               lda   #$01
+   1484  5     9B91 B7   9C89             sta   ESP_CheckPriorityB0+1
+   1485  8     9B94 BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1486        9B97               ESP_P2B0
+   1487  6     9B97 FE   80BC             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1488  3     9B9A 27   3D               beq   ESP_P3B0
+   1489  7     9B9C 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1490  8     9B9F BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1491        9BA2               ESP_P3B0
+   1492  6     9BA2 FE   80BE             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1493  3     9BA5 27   3D               beq   ESP_P4B0
+   1494  7     9BA7 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1495  8     9BAA BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1496        9BAD               ESP_P4B0
+   1497  6     9BAD FE   80C0             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1498  3     9BB0 27   3D               beq   ESP_P5B0
+   1499  7     9BB2 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1500  8     9BB5 BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1501        9BB8               ESP_P5B0
+   1502  6     9BB8 FE   80C2             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1503  3     9BBB 27   3D               beq   ESP_P6B0
+   1504  7     9BBD 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1505  8     9BC0 BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1506        9BC3               ESP_P6B0
+   1507  6     9BC3 FE   80C4             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1508  3     9BC6 27   3D               beq   ESP_P7B0
+   1509  7     9BC8 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1510  8     9BCB BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1511        9BCE               ESP_P7B0
+   1512  6     9BCE FE   80C6             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1513  3     9BD1 27   3D               beq   ESP_P8B0
+   1514  7     9BD3 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1515  8     9BD6 BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1516        9BD9               ESP_P8B0
+   1517  6     9BD9 FE   80C8             ldu   DPS_buffer_0+buf_Tbl_Priori>>
+   1518  3     9BDC 27   3D               beq   ESP_rtsB0
+   1519  7     9BDE 7C   9C89             inc   ESP_CheckPriorityB0+1
+   1520  8     9BE1 BD   9C85             jsr   ESP_ProcessEachPriorityLeve>>
+   1521        9BE4               ESP_rtsB0
+   1522  5     9BE4 39                    rts
+   1523                            
+   1524        9BE5               ESP_P1B1
+   1525  6     9BE5 FE   815A             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1526  3     9BE8 27   3F               beq   ESP_P2B1
+   1527  2     9BEA 86   08               lda   #$08
+   1528  5     9BEC B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1529  8     9BEF BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1530        9BF2               ESP_P2B1
+   1531  6     9BF2 FE   815C             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1532  3     9BF5 27   3F               beq   ESP_P3B1
+   1533  2     9BF7 86   07               lda   #$07
+   1534  5     9BF9 B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1535  8     9BFC BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1536        9BFF               ESP_P3B1
+   1537  6     9BFF FE   815E             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1538  3     9C02 27   3F               beq   ESP_P4B1
+   1539  2     9C04 86   06               lda   #$06
+   1540  5     9C06 B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1541  8     9C09 BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1542        9C0C               ESP_P4B1
+   1543  6     9C0C FE   8160             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1544  3     9C0F 27   3F               beq   ESP_P5B1
+   1545  2     9C11 86   05               lda   #$05
+   1546  5     9C13 B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1547  8     9C16 BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1548        9C19               ESP_P5B1
+   1549  6     9C19 FE   8162             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1550  3     9C1C 27   3F               beq   ESP_P6B1
+   1551  2     9C1E 86   04               lda   #$04
+   1552  5     9C20 B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1553  8     9C23 BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1554        9C26               ESP_P6B1
+   1555  6     9C26 FE   8164             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1556  3     9C29 27   3F               beq   ESP_P7B1
+   1557  2     9C2B 86   03               lda   #$03
+   1558  5     9C2D B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1559  8     9C30 BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1560        9C33               ESP_P7B1
+   1561  6     9C33 FE   8166             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1562  3     9C36 27   3F               beq   ESP_P8B1
+   1563  2     9C38 86   02               lda   #$02
+   1564  5     9C3A B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1565  8     9C3D BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1566        9C40               ESP_P8B1
+   1567  6     9C40 FE   8168             ldu   DPS_buffer_1+buf_Tbl_Priori>>
+   1568  3     9C43 27   3F               beq   ESP_rtsB1
+   1569  2     9C45 86   01               lda   #$01
+   1570  5     9C47 B7   9D1E             sta   ESP_CheckPriorityB1+1
+   1571  8     9C4A BD   9D1A             jsr   ESP_ProcessEachPriorityLeve>>
+   1572        9C4D               ESP_rtsB1
+   1573  5     9C4D 39                    rts
+   1574
+   1575                           * *******
+   1576                           * BUFFER0
+   1577                           * *******
+   1578
+   1579        9C4E               ESP_ProcessEachPriorityLevelB0
+   1580  4+1   9C4E A6   C8 34            lda   rsv_priority_0,u
+   1581                            
+   1582        9C51               ESP_CheckPriorityB0
+   1583  2     9C51 81   00               cmpa  #0                         >>
+(1584)0:ERASESPR.ASM Branch Out Of Range
+   1584  3     9C53 26   FE               bne   ESP_NextObjectB0           >>
+   1585                            
+   1586        9C55               ESP_UnsetCheckRefreshB0
+   1587  4+1   9C55 A6   C8 29            lda   rsv_render_flags,u
+   1588  2     9C58 84   FE               anda  #:rsv_render_checkrefresh_m>>
+   1589  4+1   9C5A A7   C8 29            sta   rsv_render_flags,u
+   1590                            
+   1591        9C5D               ESP_CheckEraseB0
+   1592  2     9C5D 84   02               anda  #rsv_render_erasesprite_mas>>
+(1593)0:ERASESPR.ASM Branch Out Of Range
+   1593  3     9C5F 26   FE               bne   ESP_CallEraseRoutineB0     >>
+   1594                            
+   1595                                   * if not supposed to be refreshed>>
+   1596                            
+   1597  4+1   9C61 A6   C8 41            lda   rsv_onscreen_0,u
+(1598)0:ERASESPR.ASM Branch Out Of Range
+   1598  3     9C64 27   FE               beq   ESP_NextObjectB0
+   1599                            
+   1600                                   * search a collision with a sprit>>
+   1601                                   * the sprite under should have to>>
+   1602                                   * in this case it forces the refr>>
+   1603                                   * as a sub loop, this should be o>>
+   1604                            
+   1605        9C66               ESP_SubEraseSpriteSearchInitB0
+   1606  5+1   9C66 AE   C8 2E            ldx   rsv_ptr_sub_object_erase,u
+   1607                            
+   1608        9C69               ESP_SubEraseSearchB0
+   1609  7     9C69 BC   99C8             cmpx  cur_ptr_sub_obj_erase
+   1610  3     9C6C 27   56               beq   ESP_SubDrawSpriteSearchInit>>
+   1611  6+3   9C6E 10AE 83               ldy   ,--x
+   1612                            
+   1613        9C71               ESP_SubEraseCheckCollisionB0
+   1614  5+1   9C71 EC   A8 3D            ldd   rsv_prev_x_pixel_0,y       >>
+   1615  4+1   9C74 A1   C8 32            cmpa  rsv_x2_pixel,u             >>
+   1616  3     9C77 24   27               bhs   ESP_SubEraseSearchB0
+   1617  4+1   9C79 E1   C8 33            cmpb  rsv_y2_pixel,u             >>
+   1618  3     9C7C 24   22               bhs   ESP_SubEraseSearchB0
+   1619  5+1   9C7E EC   A8 3F            ldd   rsv_prev_x2_pixel_0,y      >>
+   1620  4+1   9C81 A1   C8 10            cmpa  x_pixel,u                  >>
+   1621  3     9C84 23   1A               bls   ESP_SubEraseSearchB0
+   1622  4+1   9C86 E1   C8 11            cmpb  y_pixel,u                  >>
+   1623  3     9C89 23   15               bls   ESP_SubEraseSearchB0
+   1624  3     9C8B 20   5E               bra   ESP_SubCheckOverlayB0
+   1625
+   1626        9C8D               ESP_SubDrawSpriteSearchInitB0
+   1627  5+1   9C8D AE   C8 30            ldx   rsv_ptr_sub_object_draw,u
+   1628                            
+   1629        9C90               ESP_SubDrawSearchB0
+   1630  7     9C90 BC   99CA             cmpx  cur_ptr_sub_obj_draw
+   1631  3     9C93 27   56               beq   ESP_SubCheckOverlayB0      >>
+   1632  6+3   9C95 10AE 83               ldy   ,--x
+   1633
+   1634        9C98               ESP_SubDrawCheckCollisionB0
+   1635  5+1   9C98 EC   A8 10            ldd   x_pixel,y                  >>
+   1636  4+1   9C9B A1   C8 32            cmpa  rsv_x2_pixel,u             >>
+   1637  3     9C9E 24   27               bhs   ESP_SubDrawSearchB0
+   1638  4+1   9CA0 E1   C8 33            cmpb  rsv_y2_pixel,u             >>
+   1639  3     9CA3 24   22               bhs   ESP_SubDrawSearchB0
+   1640  5+1   9CA5 EC   A8 32            ldd   rsv_x2_pixel,y             >>
+   1641  4+1   9CA8 A1   C8 10            cmpa  x_pixel,u                  >>
+   1642  3     9CAB 23   1A               bls   ESP_SubDrawSearchB0
+   1643  4+1   9CAD E1   C8 11            cmpb  y_pixel,u                  >>
+   1644  3     9CB0 23   15               bls   ESP_SubDrawSearchB0
+   1645  3     9CB2 20   37               bra   ESP_SubCheckOverlayB0
+   1646                            
+   1647        9CB4               ESP_SubCheckOverlayB0
+   1648  4+1   9CB4 A6   42               lda   render_flags,u
+   1649  2     9CB6 84   10               anda  #render_fixedoverlay_mask
+   1650  3     9CB8 26   57               bne   ESP_UnsetOnScreenFlagB0
+   1651                            
+   1652        9CBA               ESP_CallEraseRoutineB0
+   1653  6     9CBA FF   9D05             stu   ESP_CallEraseRoutineB0_00+1>>
+   1654  5+1   9CBD AE   C8 39            ldx   rsv_prev_mapping_frame_0,u >>
+   1655  4+1   9CC0 A6   06               lda   page_erase_routine,x
+   1656  5     9CC2 B7   E7E5             sta   $E7E5                      >>
+   1657  5+1   9CC5 EE   C8 3B            ldu   rsv_bgdata_0,u             >>
+   1658  7+4   9CC8 AD   98 07            jsr   [erase_routine,x]          >>
+   1659  4+0   9CCB 31   C4               leay  ,u                         >>
+   1660        9CCD               ESP_CallEraseRoutineB0_00
+   1661  3     9CCD CE   0000             ldu   #$0000                     >>
+   1662  5+1   9CD0 EC   C8 3B            ldd   rsv_bgdata_0,u             >>
+   1663  2     9CD3 C4   40               andb  #cell_size                 >>
+   1664  6     9CD5 1F   01               tfr   d,x                        >>
+   1665                            
+   1666        9CD7               ESP_FreeEraseBufferB0
+   1667  8     9CD7 BD   A073             jsr   BgBufferFree               >>
+   1668                            
+   1669        9CDA               ESP_UnsetOnScreenFlagB0
+   1670  6+1   9CDA 6F   C8 41            clr   rsv_onscreen_0,u           >>
+   1671                            
+   1672        9CDD               ESP_NextObjectB0
+   1673  5+1   9CDD EE   C8 35            ldu   rsv_priority_prev_obj_0,u
+   1674  3     9CE0 26   A3               bne   ESP_ProcessEachPriorityLeve>>
+   1675  5     9CE2 39                    rts
+   1676
+   1677                           * *******
+   1678                           * BUFFER1
+   1679                           * *******
+   1680                            
+   1681        9CE3               ESP_ProcessEachPriorityLevelB1
+   1682  4+1   9CE3 A6   C8 42            lda   rsv_priority_1,u
+   1683                            
+   1684        9CE6               ESP_CheckPriorityB1
+   1685  2     9CE6 81   00               cmpa  #0                         >>
+(1686)0:ERASESPR.ASM Branch Out Of Range
+   1686  3     9CE8 26   FE               bne   ESP_NextObjectB1           >>
+   1687                            
+   1688        9CEA               ESP_UnsetCheckRefreshB1
+   1689  4+1   9CEA A6   C8 29            lda   rsv_render_flags,u
+   1690  2     9CED 84   FE               anda  #:rsv_render_checkrefresh_m>>
+   1691  4+1   9CEF A7   C8 29            sta   rsv_render_flags,u
+   1692                            
+   1693        9CF2               ESP_CheckEraseB1
+   1694  2     9CF2 84   02               anda  #rsv_render_erasesprite_mas>>
+(1695)0:ERASESPR.ASM Branch Out Of Range
+   1695  3     9CF4 26   FE               bne   ESP_CallEraseRoutineB1     >>
+   1696                            
+   1697                                   * if not supposed to be refreshed>>
+   1698                            
+   1699  4+1   9CF6 A6   C8 4F            lda   rsv_onscreen_1,u
+(1700)0:ERASESPR.ASM Branch Out Of Range
+   1700  3     9CF9 27   FE               beq   ESP_NextObjectB1
+   1701                            
+   1702                                   * search a collision with a sprit>>
+   1703                                   * the sprite under should have to>>
+   1704                                   * in this case it forces the refr>>
+   1705                                   * as a sub loop, this should be o>>
+   1706                            
+   1707        9CFB               ESP_SubEraseSpriteSearchInitB1
+   1708  5+1   9CFB AE   C8 2E            ldx   rsv_ptr_sub_object_erase,u
+   1709                            
+   1710        9CFE               ESP_SubEraseSearchB1
+   1711  7     9CFE BC   99C8             cmpx  cur_ptr_sub_obj_erase
+   1712  3     9D01 27   56               beq   ESP_SubDrawSpriteSearchInit>>
+   1713  6+3   9D03 10AE 83               ldy   ,--x
+   1714                            
+   1715        9D06               ESP_SubEraseCheckCollisionB1
+   1716  5+1   9D06 EC   A8 4B            ldd   rsv_prev_x_pixel_1,y       >>
+   1717  4+1   9D09 A1   C8 32            cmpa  rsv_x2_pixel,u             >>
+   1718  3     9D0C 24   27               bhs   ESP_SubEraseSearchB1
+   1719  4+1   9D0E E1   C8 33            cmpb  rsv_y2_pixel,u             >>
+   1720  3     9D11 24   22               bhs   ESP_SubEraseSearchB1
+   1721  5+1   9D13 EC   A8 4D            ldd   rsv_prev_x2_pixel_1,y      >>
+   1722  4+1   9D16 A1   C8 10            cmpa  x_pixel,u                  >>
+   1723  3     9D19 23   1A               bls   ESP_SubEraseSearchB1
+   1724  4+1   9D1B E1   C8 11            cmpb  y_pixel,u                  >>
+   1725  3     9D1E 23   15               bls   ESP_SubEraseSearchB1
+   1726  3     9D20 20   5E               bra   ESP_SubCheckOverlayB1
+   1727
+   1728        9D22               ESP_SubDrawSpriteSearchInitB1
+   1729  5+1   9D22 AE   C8 30            ldx   rsv_ptr_sub_object_draw,u
+   1730                            
+   1731        9D25               ESP_SubDrawSearchB1
+   1732  7     9D25 BC   99CA             cmpx  cur_ptr_sub_obj_draw
+   1733  3     9D28 27   56               beq   ESP_SubCheckOverlayB1      >>
+   1734  6+3   9D2A 10AE 83               ldy   ,--x
+   1735
+   1736        9D2D               ESP_SubDrawCheckCollisionB1
+   1737  5+1   9D2D EC   A8 10            ldd   x_pixel,y                  >>
+   1738  4+1   9D30 A1   C8 32            cmpa  rsv_x2_pixel,u             >>
+   1739  3     9D33 24   27               bhs   ESP_SubDrawSearchB1
+   1740  4+1   9D35 E1   C8 33            cmpb  rsv_y2_pixel,u             >>
+   1741  3     9D38 24   22               bhs   ESP_SubDrawSearchB1
+   1742  5+1   9D3A EC   A8 32            ldd   rsv_x2_pixel,y             >>
+   1743  4+1   9D3D A1   C8 10            cmpa  x_pixel,u                  >>
+   1744  3     9D40 23   1A               bls   ESP_SubDrawSearchB1
+   1745  4+1   9D42 E1   C8 11            cmpb  y_pixel,u                  >>
+   1746  3     9D45 23   15               bls   ESP_SubDrawSearchB1
+   1747  3     9D47 20   37               bra   ESP_SubCheckOverlayB1
+   1748                            
+   1749        9D49               ESP_SubCheckOverlayB1
+   1750  4+1   9D49 A6   42               lda   render_flags,u
+   1751  2     9D4B 84   10               anda  #render_fixedoverlay_mask
+   1752  3     9D4D 26   57               bne   ESP_UnsetOnScreenFlagB1
+   1753                            
+   1754        9D4F               ESP_CallEraseRoutineB1
+   1755  6     9D4F FF   9D9A             stu   ESP_CallEraseRoutineB1_00+1>>
+   1756  5+1   9D52 AE   C8 47            ldx   rsv_prev_mapping_frame_1,u >>
+   1757  4+1   9D55 A6   06               lda   page_erase_routine,x
+   1758  5     9D57 B7   E7E5             sta   $E7E5                      >>
+   1759  5+1   9D5A EE   C8 49            ldu   rsv_bgdata_1,u             >>
+   1760  7+4   9D5D AD   98 07            jsr   [erase_routine,x]          >>
+   1761  4+0   9D60 31   C4               leay  ,u                         >>
+   1762        9D62               ESP_CallEraseRoutineB1_00
+   1763  3     9D62 CE   0000             ldu   #$0000                     >>
+   1764  5+1   9D65 EC   C8 49            ldd   rsv_bgdata_1,u             >>
+   1765  2     9D68 C4   40               andb  #cell_size                 >>
+   1766  6     9D6A 1F   01               tfr   d,x                        >>
+   1767                            
+   1768        9D6C               ESP_FreeEraseBufferB1
+   1769  8     9D6C BD   A073             jsr   BgBufferFree               >>
+   1770                            
+   1771        9D6F               ESP_UnsetOnScreenFlagB1
+   1772  6+1   9D6F 6F   C8 4F            clr   rsv_onscreen_1,u           >>
+   1773                            
+   1774        9D72               ESP_NextObjectB1
+   1775  5+1   9D72 EE   C8 43            ldu   rsv_priority_prev_obj_1,u
+   1776  3     9D75 26   A3               bne   ESP_ProcessEachPriorityLeve>>
+   1777  5     9D77 39                    rts
+   1778
+   1779                                   INCLUD UNSETDSP
+   1780                           * --------------------------------------->>
+   1781                           * UnsetDisplayPriority
+   1782                           * --------------------
+   1783                           * Subroutine to unset sprites in Display >>
+   1784                           * Read Lst_Priority_Unset_0/1
+   1785                           *
+   1786                           * input REG : none
+   1787                           * --------------------------------------->>
+   1788                            
+   1789        9D78               UnsetDisplayPriority
+   1790
+   1791        9D78               UDP_Start
+   1792  5     9D78 B6   601A             lda   Glb_Cur_Wrk_Screen_Id      >>
+(1793)0:UNSETDSP.ASM Branch Out Of Range
+   1793  3     9D7B 26   FE               bne   UDP_B1
+   1794                            
+   1795        9D7D               UDP_B0
+   1796  3     9D7D 8E   80CE             ldx   #Lst_Priority_Unset_0+2
+   1797                            
+   1798        9D80               UDP_CheckEndB0
+   1799  7     9D80 BC   80CC             cmpx  Lst_Priority_Unset_0       >>
+   1800  3     9D83 26   3E               bne   UDP_CheckPrioPrevB0
+   1801                            
+   1802        9D85               UDP_InitListB0
+   1803  3     9D85 8E   80CE             ldx   #Lst_Priority_Unset_0+2
+   1804  6     9D88 BF   80CC             stx   Lst_Priority_Unset_0       >>
+   1805  5     9D8B 39                    rts
+   1806                            
+   1807        9D8C               UDP_CheckPrioPrevB0
+   1808  5+3   9D8C EE   81               ldu   ,x++
+   1809  5+1   9D8E EC   C8 35            ldd   rsv_priority_prev_obj_0,u
+   1810  3     9D91 26   49               bne   UDP_ChainPrevB0
+   1811                            
+   1812  4+1   9D93 A6   C8 34            lda   rsv_priority_0,u
+   1813  2     9D96 4A                    deca
+   1814  2     9D97 48                    lsla
+   1815  4     9D98 108E 80A8             ldy   #Tbl_Priority_First_Entry_0>>
+   1816  4+1   9D9C 31   A6               leay  a,y
+   1817  5+1   9D9E EC   C8 37            ldd   rsv_priority_next_obj_0,u
+   1818  5+0   9DA1 ED   A4               std   ,y
+   1819  3     9DA3 20   41               bra   UDP_CheckPrioNextB0
+   1820                            
+   1821        9DA5               UDP_ChainPrevB0
+   1822  5+1   9DA5 EC   C8 37            ldd   rsv_priority_next_obj_0,u
+   1823  6+1   9DA8 10AE C8 35            ldy   rsv_priority_prev_obj_0,u
+   1824  5+1   9DAC ED   A8 37            std   rsv_priority_next_obj_0,y
+   1825
+   1826        9DAF               UDP_CheckPrioNextB0
+   1827  5+1   9DAF EC   C8 37            ldd   rsv_priority_next_obj_0,u
+   1828  3     9DB2 26   49               bne   UDP_ChainNextB0
+   1829
+   1830  4+1   9DB4 A6   C8 34            lda   rsv_priority_0,u
+   1831  2     9DB7 4A                    deca
+   1832  2     9DB8 48                    lsla
+   1833  4     9DB9 108E 80BA             ldy   #Tbl_Priority_Last_Entry_0
+   1834  4+1   9DBD 31   A6               leay  a,y
+   1835  5+1   9DBF EC   C8 37            ldd   rsv_priority_next_obj_0,u
+   1836  5+0   9DC2 ED   A4               std   ,y
+   1837  3     9DC4 20   41               bra   UDP_CheckDeleteB0
+   1838                            
+   1839        9DC6               UDP_ChainNextB0
+   1840  5+1   9DC6 EC   C8 35            ldd   rsv_priority_prev_obj_0,u
+   1841  6+1   9DC9 10AE C8 37            ldy   rsv_priority_next_obj_0,u
+   1842  5+1   9DCD ED   A8 35            std   rsv_priority_prev_obj_0,y
+   1843                            
+   1844        9DD0               UDP_CheckDeleteB0
+   1845  4+1   9DD0 A6   42               lda   render_flags,u
+   1846  2     9DD2 84   20               anda  #render_todelete_mask
+   1847  3     9DD4 27   46               beq   UDP_SetNewPrioB0
+   1848  4+1   9DD6 A6   C8 41            lda   rsv_onscreen_0,u
+   1849  3     9DD9 26   41               bne   UDP_SetNewPrioB0
+   1850  4+1   9DDB A6   C8 4F            lda   rsv_onscreen_1,u
+   1851  3     9DDE 26   3C               bne   UDP_SetNewPrioB0
+(1852)0:UNSETDSP.ASM Expression Error
+   1852         jsr   ClearObj
+   1853  3     9DE0 20   D5               bra   UDP_CheckEndB0
+   1854                            
+   1855        9DE2               UDP_SetNewPrioB0
+   1856  4+1   9DE2 A6   43               lda   priority,u
+   1857  4+1   9DE4 A7   C8 34            sta   rsv_priority_0,u
+   1858  3     9DE7 20   CE               bra   UDP_CheckEndB0
+   1859
+   1860        9DE9               UDP_B1
+   1861  3     9DE9 8E   816E             ldx   #Lst_Priority_Unset_1+2
+   1862                            
+   1863        9DEC               UDP_CheckEndB1
+   1864  7     9DEC BC   816C             cmpx  Lst_Priority_Unset_1       >>
+   1865  3     9DEF 26   41               bne   UDP_CheckPrioPrevB1
+   1866                            
+   1867        9DF1               UDP_InitListB1
+   1868  3     9DF1 8E   816E             ldx   #Lst_Priority_Unset_1+2
+   1869  6     9DF4 BF   816C             stx   Lst_Priority_Unset_1       >>
+   1870  5     9DF7 39                    rts
+   1871                            
+   1872        9DF8               UDP_CheckPrioPrevB1
+   1873  5+3   9DF8 EE   81               ldu   ,x++
+   1874  5+1   9DFA EC   C8 43            ldd   rsv_priority_prev_obj_1,u
+   1875  3     9DFD 26   4C               bne   UDP_ChainPrevB1
+   1876                            
+   1877  4+1   9DFF A6   C8 42            lda   rsv_priority_1,u
+   1878  2     9E02 4A                    deca
+   1879  2     9E03 48                    lsla
+   1880  4     9E04 108E 8148             ldy   #Tbl_Priority_First_Entry_1>>
+   1881  4+1   9E08 31   A6               leay  a,y
+   1882  5+1   9E0A EC   C8 45            ldd   rsv_priority_next_obj_1,u
+   1883  5+0   9E0D ED   A4               std   ,y
+   1884  3     9E0F 20   44               bra   UDP_CheckPrioNextB1
+   1885                            
+   1886        9E11               UDP_ChainPrevB1
+   1887  5+1   9E11 EC   C8 45            ldd   rsv_priority_next_obj_1,u
+   1888  6+1   9E14 10AE C8 43            ldy   rsv_priority_prev_obj_1,u
+   1889  5+1   9E18 ED   A8 45            std   rsv_priority_next_obj_1,y
+   1890
+   1891        9E1B               UDP_CheckPrioNextB1
+   1892  5+1   9E1B EC   C8 45            ldd   rsv_priority_next_obj_1,u
+   1893  3     9E1E 26   4C               bne   UDP_ChainNextB1
+   1894
+   1895  4+1   9E20 A6   C8 42            lda   rsv_priority_1,u
+   1896  2     9E23 4A                    deca
+   1897  2     9E24 48                    lsla
+   1898  4     9E25 108E 815A             ldy   #Tbl_Priority_Last_Entry_1
+   1899  4+1   9E29 31   A6               leay  a,y
+   1900  5+1   9E2B EC   C8 45            ldd   rsv_priority_next_obj_1,u
+   1901  5+0   9E2E ED   A4               std   ,y
+   1902  3     9E30 20   44               bra   UDP_CheckDeleteB1
+   1903                            
+   1904        9E32               UDP_ChainNextB1
+   1905  5+1   9E32 EC   C8 43            ldd   rsv_priority_prev_obj_1,u
+   1906  6+1   9E35 10AE C8 45            ldy   rsv_priority_next_obj_1,u
+   1907  5+1   9E39 ED   A8 43            std   rsv_priority_prev_obj_1,y
+   1908                            
+   1909        9E3C               UDP_CheckDeleteB1
+   1910  4+1   9E3C A6   42               lda   render_flags,u
+   1911  2     9E3E 84   20               anda  #render_todelete_mask
+   1912  3     9E40 27   49               beq   UDP_SetNewPrioB1
+   1913  4+1   9E42 A6   C8 4F            lda   rsv_onscreen_1,u
+   1914  3     9E45 26   44               bne   UDP_SetNewPrioB1
+   1915  4+1   9E47 A6   C8 4F            lda   rsv_onscreen_1,u
+   1916  3     9E4A 26   3F               bne   UDP_SetNewPrioB1
+(1917)0:UNSETDSP.ASM Expression Error
+   1917         jsr   ClearObj
+   1918  3     9E4C 20   D8               bra   UDP_CheckEndB1
+   1919                            
+   1920        9E4E               UDP_SetNewPrioB1
+   1921  4+1   9E4E A6   43               lda   priority,u
+   1922  4+1   9E50 A7   C8 42            sta   rsv_priority_1,u
+   1923  3     9E53 20   D1               bra   UDP_CheckEndB1
+   1924
+   1925                                   INCLUD DRAWSPR
+   1926                           * --------------------------------------->>
+   1927                           * DrawSprites
+   1928                           * ------------
+   1929                           * Subroutine to draw sprites on screen
+   1930                           * Read Display Priority Structure (back t>>
+   1931                           * priority: 0 - unregistred
+   1932                           * priority: 1 - register non moving overl>>
+   1933                           * priority; 2-8 - register moving sprite >>
+   1934                           *
+   1935                           * input REG : none
+   1936                           * --------------------------------------->>
+   1937                            
+   1938        9E55               DrawSprites
+   1939
+(1940)0:DRAWSPR.ASM Multiply Defined Symbol
+   1940 DSP_Start
+   1941  5     9E55 B6   601A             lda   Glb_Cur_Wrk_Screen_Id      >>
+(1942)0:DRAWSPR.ASM Branch Out Of Range
+   1942  3     9E58 26   FE               bne   DSP_SetBuffer1
+   1943                            
+   1944        9E5A               DSP_P8B0
+   1945  6     9E5A BE   80B6             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1946  3     9E5D 27   40               beq   DSP_P7B0
+   1947  8     9E5F BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1948        9E62               DSP_P7B0
+   1949  6     9E62 BE   80B4             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1950  3     9E65 27   40               beq   DSP_P6B0
+   1951  8     9E67 BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1952        9E6A               DSP_P6B0
+   1953  6     9E6A BE   80B2             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1954  3     9E6D 27   40               beq   DSP_P5B0
+   1955  8     9E6F BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1956        9E72               DSP_P5B0
+   1957  6     9E72 BE   80B0             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1958  3     9E75 27   40               beq   DSP_P4B0
+   1959  8     9E77 BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1960        9E7A               DSP_P4B0
+   1961  6     9E7A BE   80AE             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1962  3     9E7D 27   40               beq   DSP_P3B0
+   1963  8     9E7F BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1964        9E82               DSP_P3B0
+   1965  6     9E82 BE   80AC             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1966  3     9E85 27   40               beq   DSP_P2B0
+   1967  8     9E87 BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1968        9E8A               DSP_P2B0
+   1969  6     9E8A BE   80AA             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1970  3     9E8D 27   40               beq   DSP_P1B0
+   1971  8     9E8F BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1972        9E92               DSP_P1B0
+   1973  6     9E92 BE   80A8             ldx   DPS_buffer_0+buf_Tbl_Priori>>
+   1974  3     9E95 27   40               beq   DSP_rtsB0
+   1975  8     9E97 BD   9F19             jsr   DSP_ProcessEachPriorityLeve>>
+   1976        9E9A               DSP_rtsB0
+   1977  5     9E9A 39                    rts
+   1978                            
+   1979        9E9B               DSP_P8B1
+   1980  6     9E9B BE   8156             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   1981  3     9E9E 27   40               beq   DSP_P7B1
+   1982  8     9EA0 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   1983        9EA3               DSP_P7B1
+   1984  6     9EA3 BE   8154             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   1985  3     9EA6 27   40               beq   DSP_P6B1
+   1986  8     9EA8 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   1987        9EAB               DSP_P6B1
+   1988  6     9EAB BE   8152             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   1989  3     9EAE 27   40               beq   DSP_P5B1
+   1990  8     9EB0 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   1991        9EB3               DSP_P5B1
+   1992  6     9EB3 BE   8150             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   1993  3     9EB6 27   40               beq   DSP_P4B1
+   1994  8     9EB8 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   1995        9EBB               DSP_P4B1
+   1996  6     9EBB BE   814E             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   1997  3     9EBE 27   40               beq   DSP_P3B1
+   1998  8     9EC0 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   1999        9EC3               DSP_P3B1
+   2000  6     9EC3 BE   814C             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   2001  3     9EC6 27   40               beq   DSP_P2B1
+   2002  8     9EC8 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   2003        9ECB               DSP_P2B1
+   2004  6     9ECB BE   814A             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   2005  3     9ECE 27   40               beq   DSP_P1B1
+   2006  8     9ED0 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   2007        9ED3               DSP_P1B1
+   2008  6     9ED3 BE   8148             ldx   DPS_buffer_1+buf_Tbl_Priori>>
+   2009  3     9ED6 27   40               beq   DSP_rtsB1
+   2010  8     9ED8 BD   9FB8             jsr   DSP_ProcessEachPriorityLeve>>
+   2011        9EDB               DSP_rtsB1
+   2012  5     9EDB 39                    rts
+   2013
+   2014        9EDC               DSP_ProcessEachPriorityLevelB0
+   2015  4+1   9EDC A6   88 29            lda   rsv_render_flags,x
+   2016  2     9EDF 84   04               anda  #rsv_render_displaysprite_m>>
+(2017)0:DRAWSPR.ASM Branch Out Of Range
+   2017  3     9EE1 27   FE               beq   DSP_NextObjectB0
+   2018  4+1   9EE3 A6   88 41            lda   rsv_onscreen_0,x
+   2019  3     9EE6 26   7F               bne   DSP_NextObjectB0
+   2020  4+1   9EE8 A6   02               lda   render_flags,x
+   2021  2     9EEA 84   10               anda  #render_fixedoverlay_mask
+   2022  3     9EEC 26   7F               bne   DSP_DrawWithoutBackupB0
+   2023  5+1   9EEE EE   88 2C            ldu   rsv_curr_mapping_frame,x
+   2024  4+1   9EF1 A6   49               lda   erase_nb_cell,u
+   2025  8     9EF3 BD   A02A             jsr   BgBufferAlloc              >>
+   2026  5     9EF6 108C 0000             cmpy  #$0000                     >>
+   2027  3     9EFA 27   6B               beq   DSP_NextObjectB0           >>
+   2028  5+1   9EFC EC   88 10            ldd   x_pixel,x                  >>
+   2029  5+1   9EFF ED   88 3D            std   rsv_prev_x_pixel_0,x       >>
+   2030  8     9F02 BD   9F8B             jsr   DSP_XYToAddress
+(2031)0:DRAWSPR.ASM Expression Error
+   2031         ldu   rsv_cur_mapping_frame_0,x     ; load image to draw (f>>
+   2032  5+1   9F05 EF   88 39            stu   rsv_prev_mapping_frame_0,x >>
+   2033  4+1   9F08 A6   40               lda   page_bckdraw_routine,u
+   2034  5     9F0A B7   E7E5             sta   $E7E5                      >>
+   2035  4+0   9F0D 33   A4               leau  ,y                         >>
+   2036  6     9F0F BF   9F57             stx   DSP_dyn3B0+1               >>
+   2037  7+4   9F12 AD   98 01            jsr   [bckdraw_routine,x]        >>
+   2038        9F15               DSP_dyn3B0
+   2039  3     9F15 8E   0000             ldx   #$0000                     >>
+   2040  5+1   9F18 EF   88 3B            stu   rsv_bgdata_0,x             >>
+   2041  5+1   9F1B EC   88 32            ldd   rsv_x2_pixel,x             >>
+   2042  5+1   9F1E ED   88 3F            std   rsv_prev_x2_pixel_0,x      >>
+   2043  2     9F21 86   01               lda   #$01
+   2044  4+1   9F23 A7   88 41            sta   rsv_onscreen_0,x           >>
+   2045        9F26               DSP_NextObjectB0
+   2046  5+1   9F26 AE   88 37            ldx   rsv_priority_next_obj_0,x
+   2047  3     9F29 26   EE               bne   DSP_ProcessEachPriorityLeve>>
+   2048  5     9F2B 39                    rts
+   2049                            
+   2050        9F2C               DSP_DrawWithoutBackupB0
+   2051  5+1   9F2C EC   88 10            ldd   x_pixel,x                  >>
+   2052  8     9F2F BD   9F8B             jsr   DSP_XYToAddress
+(2053)0:DRAWSPR.ASM Expression Error
+   2053         ldu   rsv_cur_mapping_frame_0,x     ; load image to draw (f>>
+   2054  4+1   9F32 A6   43               lda   page_draw_routine,u
+   2055  5     9F34 B7   E7E5             sta   $E7E5                      >>
+   2056  6     9F37 BF   9F83             stx   DSP_dyn4B0+1               >>
+   2057  7+4   9F3A AD   98 04            jsr   [draw_routine,x]           >>
+   2058        9F3D               DSP_dyn4B0
+   2059  3     9F3D 8E   0000             ldx   #$0000                     >>
+   2060  5+1   9F40 AE   88 37            ldx   rsv_priority_next_obj_0,x
+   2061  3     9F43 26   D4               bne   DSP_ProcessEachPriorityLeve>>
+   2062  5     9F45 39                    rts
+   2063
+   2064        9F46               DSP_XYToAddress
+   2065  2     9F46 44                    lsra                             >>
+   2066  3     9F47 25   59               bcs   DSP_XYToAddressRAMBFirst   >>
+   2067        9F49               DSP_XYToAddressRAMAFirst
+   2068  5     9F49 B7   9F99             sta   DSP_dyn1+2
+   2069  2     9F4C 86   28               lda   #$28                       >>
+   2070  4+1   9F4E E6   88 11            ldb   y_pixel,x                  >>
+   2071  11    9F51 3D                    mul
+   2072        9F52               DSP_dyn1
+   2073  6     9F52 D3   00               addd  $0000                      >>
+   2074  6     9F54 FD   6020             std   Glb_Sprite_Screen_Pos_PartA>>
+   2075  2     9F57 8A   20               ora   #$20                       >>
+   2076  6     9F59 FD   6022             std   Glb_Sprite_Screen_Pos_PartB>>
+   2077  5     9F5C 39                    rts
+   2078        9F5D               DSP_XYToAddressRAMBFirst
+   2079  5     9F5D B7   9FAD             sta   DSP_dyn2+2
+   2080  2     9F60 86   28               lda   #$28                       >>
+   2081  4+1   9F62 E6   88 11            ldb   y_pixel,x                  >>
+   2082  11    9F65 3D                    mul
+   2083        9F66               DSP_dyn2
+   2084  7     9F66 F3   2000             addd  $2000                      >>
+   2085  6     9F69 FD   6020             std   Glb_Sprite_Screen_Pos_PartA>>
+   2086  7     9F6C B3   1FFF             subd  $1FFF
+   2087  6     9F6F FD   6022             std   Glb_Sprite_Screen_Pos_PartB>>
+   2088  5     9F72 39                    rts
+   2089                            
+   2090        9F73               DSP_ProcessEachPriorityLevelB1
+   2091  4+1   9F73 A6   88 29            lda   rsv_render_flags,x
+   2092  2     9F76 84   04               anda  #rsv_render_displaysprite_m>>
+(2093)0:DRAWSPR.ASM Branch Out Of Range
+   2093  3     9F78 27   FE               beq   DSP_NextObjectB1
+   2094  4+1   9F7A A6   88 4F            lda   rsv_onscreen_1,x
+(2095)0:DRAWSPR.ASM Branch Out Of Range
+   2095  3     9F7D 26   FE               bne   DSP_NextObjectB1
+   2096  4+1   9F7F A6   02               lda   render_flags,x
+   2097  2     9F81 84   10               anda  #render_fixedoverlay_mask
+(2098)0:DRAWSPR.ASM Branch Out Of Range
+   2098  3     9F83 26   FE               bne   DSP_DrawWithoutBackupB1
+   2099  5+1   9F85 EE   88 2C            ldu   rsv_curr_mapping_frame,x
+   2100  4+1   9F88 A6   49               lda   erase_nb_cell,u
+   2101  8     9F8A BD   A02A             jsr   BgBufferAlloc              >>
+   2102  5     9F8D 108C 0000             cmpy  #$0000                     >>
+   2103  3     9F91 27   73               beq   DSP_NextObjectB1           >>
+   2104  5+1   9F93 EC   88 10            ldd   x_pixel,x                  >>
+   2105  5+1   9F96 ED   88 4B            std   rsv_prev_x_pixel_1,x       >>
+   2106  8     9F99 BD   9F8B             jsr   DSP_XYToAddress
+(2107)0:DRAWSPR.ASM Expression Error
+   2107         ldu   rsv_cur_mapping_frame_1,x     ; load image to draw (f>>
+   2108  5+1   9F9C EF   88 47            stu   rsv_prev_mapping_frame_1,x >>
+   2109  4+1   9F9F A6   40               lda   page_bckdraw_routine,u
+   2110  5     9FA1 B7   E7E5             sta   $E7E5                      >>
+   2111  4+0   9FA4 33   A4               leau  ,y                         >>
+   2112  6     9FA6 BF   9FF6             stx   DSP_dyn3B1+1               >>
+   2113  7+4   9FA9 AD   98 01            jsr   [bckdraw_routine,x]        >>
+   2114        9FAC               DSP_dyn3B1
+   2115  3     9FAC 8E   0000             ldx   #$0000                     >>
+   2116  5+1   9FAF EF   88 49            stu   rsv_bgdata_1,x             >>
+   2117  5+1   9FB2 EC   88 32            ldd   rsv_x2_pixel,x             >>
+   2118  5+1   9FB5 ED   88 4D            std   rsv_prev_x2_pixel_1,x      >>
+   2119  2     9FB8 86   01               lda   #$01
+   2120  4+1   9FBA A7   88 4F            sta   rsv_onscreen_1,x           >>
+   2121        9FBD               DSP_NextObjectB1
+   2122  5+1   9FBD AE   88 45            ldx   rsv_priority_next_obj_1,x
+   2123  3     9FC0 26   F6               bne   DSP_ProcessEachPriorityLeve>>
+   2124  5     9FC2 39                    rts
+   2125                            
+   2126        9FC3               DSP_DrawWithoutBackupB1
+   2127  5+1   9FC3 EC   88 10            ldd   x_pixel,x                  >>
+   2128  8     9FC6 BD   9F8B             jsr   DSP_XYToAddress
+(2129)0:DRAWSPR.ASM Expression Error
+   2129         ldu   rsv_cur_mapping_frame_1,x     ; load image to draw (f>>
+   2130  4+1   9FC9 A6   43               lda   page_draw_routine,u
+   2131  5     9FCB B7   E7E5             sta   $E7E5                      >>
+   2132  6     9FCE BF   A022             stx   DSP_dyn4B1+1               >>
+   2133  7+4   9FD1 AD   98 04            jsr   [draw_routine,x]           >>
+   2134        9FD4               DSP_dyn4B1
+   2135  3     9FD4 8E   0000             ldx   #$0000                     >>
+   2136  5+1   9FD7 AE   88 45            ldx   rsv_priority_next_obj_1,x
+   2137  3     9FDA 26   DC               bne   DSP_ProcessEachPriorityLeve>>
+   2138  5     9FDC 39                    rts
+   2139
+   2140                                   INCLUD BGBALLOC
+(2141)0:BGBALLOC.ASM Bad Label
+   2141 ; ----------------------------------------------------------------->>
+(2142)0:BGBALLOC.ASM Bad Label
+   2142 ; BgBufferAlloc
+(2143)0:BGBALLOC.ASM Bad Label
+   2143 ; -------------
+(2144)0:BGBALLOC.ASM Bad Label
+   2144 ; Subroutine to allocate memory into background buffer
+(2145)0:BGBALLOC.ASM Bad Label
+   2145 ;
+(2146)0:BGBALLOC.ASM Bad Label
+   2146 ; input  REG : [a] number of requested cells
+(2147)0:BGBALLOC.ASM Bad Label
+   2147 ; output REG : [y] cell_end or 0000 if no more space
+(2148)0:BGBALLOC.ASM Bad Label
+   2148 ; ----------------------------------------------------------------->>
+   2149
+   2150        9FDD               BgBufferAlloc
+   2151  5+3   9FDD 34   14               pshs  b,x
+   2152  5     9FDF F6   601A             ldb   Glb_Cur_Wrk_Screen_Id      >>
+   2153  3     9FE2 26   56               bne   BBA1                       >>
+   2154                            
+   2155        9FE4               BBA0
+   2156  3     9FE4 8E   6024             ldx   #Lst_FreeCellFirstEntry_0  >>
+   2157  7     9FE7 10BE 6024             ldy   Lst_FreeCellFirstEntry_0   >>
+(2158)0:BGBALLOC.ASM Expression Error
+   2158         bra   BBA_Next
+   2159                            
+   2160        9FEB               BBA1
+   2161  3     9FEB 8E   7066             ldx   #Lst_FreeCellFirstEntry_1  >>
+   2162  7     9FEE 10BE 7066             ldy   Lst_FreeCellFirstEntry_1   >>
+   2163                            
+(2164)0:BGBALLOC.ASM Bad Opcode
+   2164 BBA_Next                                    ; loop thru all entries>>
+   2165  3     9FF2 27   7D               beq   BBA_rts                    >>
+   2166  4+1   9FF4 A1   20               cmpa  nb_cells,y                 >>
+   2167  3     9FF6 27   58               beq   BBA_FitCell                >>
+   2168  3     9FF8 23   61               bls   BBA_DivideCell             >>
+   2169  4+1   9FFA 30   25               leax  next_entry,y               >>
+   2170  6+1   9FFC 10AE 25               ldy   next_entry,y               >>
+(2171)0:BGBALLOC.ASM Expression Error
+   2171         bra   BBA_Next
+   2172                            
+   2173        9FFF               BBA_FitCell
+   2174  5+1   9FFF EC   25               ldd   next_entry,y
+   2175  5+0   A001 ED   84               std   ,x                         >>
+   2176  6+1   A003 6F   20               clr   nb_cells,y                 >>
+   2177  6+1   A005 10AE 23               ldy   cell_end,y                 >>
+   2178  3     A008 20   67               bra   BBA_rts
+   2179                            
+   2180        A00A               BBA_DivideCell
+   2181  5     A00A B7   A061             sta   BBA_dyn+1
+   2182  4+1   A00D E6   20               ldb   nb_cells,y
+   2183        A00F               BBA_dyn
+   2184  2     A00F C0   00               subb  #$00                       >>
+   2185  4+1   A011 E7   20               stb   nb_cells,y                 >>
+   2186                            
+   2187  2     A013 C6   40               ldb   #cell_size
+   2188  11    A015 3D                    mul
+   2189  2     A016 8A   50               ora   #80                        >>
+   2190  5+1   A018 AE   23               ldx   cell_end,y
+   2191  4+4   A01A 30   8B               leax  d,x                        >>
+   2192  5+1   A01C AF   23               stx   cell_end,y                 >>
+   2193  4+0   A01E 31   84               leay  ,x                         >>
+   2194                            
+   2195        A020               BBA_rts
+   2196  5+5   A020 35   94               puls  b,x,pc
+   2197
+   2198                                   INCLUD BGBFREE
+(2199)0:BGBFREE.ASM Bad Label
+   2199 ; ----------------------------------------------------------------->>
+(2200)0:BGBFREE.ASM Bad Label
+   2200 ; BgBufferFree
+(2201)0:BGBFREE.ASM Bad Label
+   2201 ; ------------
+(2202)0:BGBFREE.ASM Bad Label
+   2202 ; Subroutine to free memory from background buffer
+(2203)0:BGBFREE.ASM Bad Label
+   2203 ;
+(2204)0:BGBFREE.ASM Bad Label
+   2204 ; input  REG : [x] cell_start
+(2205)0:BGBFREE.ASM Bad Label
+   2205 ;              [y] cell_end
+(2206)0:BGBFREE.ASM Bad Label
+   2206 ; output REG : none
+(2207)0:BGBFREE.ASM Bad Label
+   2207 ; ----------------------------------------------------------------->>
+   2208
+   2209        A022               BgBufferFree
+   2210  5+4   A022 34   46               pshs  d,u
+   2211  3     A024 CC   0000             ldd   #$0000
+   2212  6     A027 FD   A0C6             std   BBF_SetNewEntryNextentry+1 >>
+   2213  5     A02A F6   601A             ldb   Glb_Cur_Wrk_Screen_Id      >>
+   2214  3     A02D 26   61               bne   BBF1                       >>
+   2215                            
+   2216        A02F               BBF0
+   2217  5+1   A02F EE   C8 39            ldu   rsv_prev_mapping_frame_0,u >>
+   2218  4+1   A032 A6   49               lda   erase_nb_cell,u            >>
+   2219  6     A034 FE   6026             ldu   Lst_FreeCell_0             >>
+   2220  6     A037 FF   A0B4             stu   BBF_AddNewEntryAtEnd+4     >>
+   2221  6     A03A FE   6024             ldu   Lst_FreeCellFirstEntry_0   >>
+(2222)0:BGBFREE.ASM Expression Error
+   2222         bra   BBF_Next
+   2223                            
+   2224        A03D               BBF1
+   2225  5+1   A03D EE   C8 47            ldu   rsv_prev_mapping_frame_1,u
+   2226  4+1   A040 A6   49               lda   erase_nb_cell,u
+   2227  6     A042 FE   7068             ldu   Lst_FreeCell_1
+   2228  6     A045 FF   A0B4             stu   BBF_AddNewEntryAtEnd+4
+   2229  6     A048 FE   7066             ldu   Lst_FreeCellFirstEntry_1
+   2230                            
+(2231)0:BGBFREE.ASM Bad Opcode
+   2231 BBF_Next                                    ; loop thru all entry
+   2232  3     A04B 27   63               beq   BBF_AddNewEntryAtEnd       >>
+   2233  7+1   A04D 10AC 41               cmpy  cell_start,u               >>
+   2234  3     A050 27   7A               beq   BBF_ExpandAtStart          >>
+(2235)0:BGBFREE.ASM Branch Out Of Range
+   2235  3     A052 22   FE               bhi   BBF_ExpandAtEnd            >>
+   2236  5+1   A054 EE   45               ldu   next_entry,u               >>
+(2237)0:BGBFREE.ASM Expression Error
+   2237         bra   BBF_Next
+   2238                            
+   2239        A056               BBF_AddNewEntry
+   2240  6     A056 FF   A0C6             stu   BBF_SetNewEntryNextentry+1
+   2241  4+1   A059 33   45               leau  next_entry,u               >>
+   2242        A05B               BBF_AddNewEntryAtEnd
+   2243  6     A05B FF   A0CB             stu   BBF_SetNewEntryPrevLink+1  >>
+   2244  3     A05E CE   0000             ldu   #$0000                     >>
+   2245        A061               BBF_FindFreeSlot
+   2246  4+1   A061 E6   40               ldb   nb_cells,u                 >>
+   2247  3     A063 27   59               beq   BBF_SetNewEntry            >>
+   2248  4+1   A065 33   47               leau  entry_size,u               >>
+   2249  3     A067 20   4D               bra   BBF_FindFreeSlot           >>
+   2250        A069               BBF_SetNewEntry
+   2251  4+1   A069 A7   40               sta   nb_cells,u                 >>
+   2252  5+1   A06B AF   41               stx   cell_start,u               >>
+   2253  6+1   A06D 10AF 43               sty   cell_end,u                 >>
+   2254        A070               BBF_SetNewEntryNextentry
+   2255  3     A070 8E   0000             ldx   #$0000                     >>
+   2256  5+1   A073 AF   45               stx   next_entry,u               >>
+   2257        A075               BBF_SetNewEntryPrevLink
+(2258)0:BGBFREE.ASM Bad Operand
+   2258         stu   #$0000                        ; set Lst_FreeCellFirst>>
+(2259)0:BGBFREE.ASM Branch Out Of Range
+   2259  3     A075 20   FE               bra   BBF_rts
+   2260
+   2261        A077               BBF_ExpandAtStart
+   2262  5+1   A077 AF   41               stx   cell_start,u
+   2263  4+1   A079 AB   40               adda  nb_cells,u
+   2264  4+1   A07B A7   40               sta   nb_cells,u
+   2265  6+1   A07D 10AE 45               ldy   next_entry,u
+   2266  3     A080 27   76               beq   BBF_rts
+   2267        A082               BBF_Join
+   2268  6+1   A082 AC   23               cmpx  cell_end,y
+   2269  3     A084 26   72               bne   BBF_rts
+   2270  5+1   A086 EC   21               ldd   cell_start,y
+   2271  5+1   A088 ED   41               std   cell_start,u
+   2272  4+1   A08A A6   20               lda   nb_cells,y
+   2273  4+1   A08C AB   40               adda  nb_cells,u
+   2274  4+1   A08E A7   40               sta   nb_cells,u
+   2275  6+1   A090 6F   20               clr   nb_cells,y                 >>
+   2276  5+1   A092 EC   25               ldd   next_entry,y
+   2277  5+1   A094 ED   45               std   next_entry,u               >>
+   2278  3     A096 20   60               bra   BBF_rts
+   2279
+   2280        A098               BBF_ExpandAtEnd
+   2281  6+1   A098 AC   43               cmpx  cell_end,u
+   2282  3     A09A 26   0F               bne   BBF_AddNewEntry
+   2283  6+1   A09C 10AF 43               sty   cell_end,u
+   2284  4+1   A09F AB   40               adda  nb_cells,u
+   2285  4+1   A0A1 A7   40               sta   nb_cells,u
+   2286                            
+   2287        A0A3               BBF_rts
+   2288  5+6   A0A3 35   C6               puls  d,u,pc
+    160                            
+    161
 
-000000 Total Errors
+000152 Total Errors
+        Expression Error     396        ldy   [Ptr_palette]
+        Expression Error     397        ldx   [Ptr_palette]
+        Expression Error     402        alsa                               >>
+        Expression Error     409        bna   SetColor                 * on>>
+               Bad Label     412 ; TODO ajout systeme de refresh pour ne pa>>
+               Bad Label     413 ; ou integrer le refresh palette en debut >>
+               Bad Label     414 ; palette doit etre refresh avant le traca>>
+              Bad Opcode     417 Ptr_palette    #Normal_palette
+               Bad Label     424 ; ---------------------------------------->>
+               Bad Label     425 ; Controller Buttons
+               Bad Label     426 ;
+        Expression Error     554         tst   MainCharacter_is_dead    *  >>
+        Expression Error     618         bsr   DisplaySprite           *   >>
+        Expression Error     649         cmpa  prev_anim,u              *  >>
+        Expression Error     651         sta   prev_anim,u              *  >>
+        Expression Error     674         ldb   status,u                 *  >>
+               Bad Label     755 ; ---------------------------------------->>
+               Bad Label     756 ; Subroutine translating object speed to u>>
+               Bad Label     757 ; This moves the object horizontally and v>>
+               Bad Label     758 ; but does not apply gravity to it
+               Bad Label     759 ; ---------------------------------------->>
+        Expression Error     777         ldb   x_vel,u
+        Expression Error     780         ldd   x_vel,u
+        Expression Error     794         ldb   y_vel,u
+        Expression Error     797         ldd   y_vel,u
+               Bad Label     809 ; ---------------------------------------->>
+               Bad Label     810 ; Single object loading subroutine
+               Bad Label     811 ; Find an empty object array
+               Bad Label     812 ;
+              Bad Opcode     813  ; input  REG : [u] pointeur sur l'objet c>>
+              Bad Opcode     814  ; output REG : [x] pointeur sur l'objet l>>
+               Bad Label     815 ; ---------------------------------------->>
+               Bad Label     915 ; ---------------------------------------->>
+               Bad Label     916 ; DeleteObject
+               Bad Label     917 ; ------------
+               Bad Label     918 ; Subroutine to delete an object.
+               Bad Label     919 ; If the object is rendered as a sprite it>>
+               Bad Label     920 ; routine
+               Bad Label     921 ;
+               Bad Label     922 ; DeleteObject
+               Bad Label     923 ; input REG : [u] object pointer (OST)
+               Bad Label     924 ;
+               Bad Label     925 ; DeleteObject_x
+               Bad Label     926 ; input REG : [x] object pointer (OST)
+               Bad Label     927 ; ---------------------------------------->>
+              Bad Opcode     936 DeleteObject_x @globals                *De>>
+              Bad Opcode     940 DeleteObject @globals                  *De>>
+        Expression Error     944         anda  #rsv_render_onscreen_0_mask
+        Expression Error     955         anda  #rsv_render_onscreen_1_mask
+        Expression Error     967         anda  #rsv_render_onscreen_1_mask
+        Expression Error     970         jsr   ClearObj                 ; t>>
+               Bad Label     992 ; ---------------------------------------->>
+               Bad Label     993 ; DisplaySprite
+               Bad Label     994 ; -------------
+               Bad Label     995 ; Subroutine to manage sprite priority.
+               Bad Label     996 ; Object's priority is read and object is >>
+               Bad Label     997 ; priority: 0 - unregistred
+               Bad Label     998 ; priority: 1 - register non moving overla>>
+               Bad Label     999 ; priority; 2-8 - register moving sprite (>>
+               Bad Label    1000 ;
+               Bad Label    1001 ; Unlike original S2 code, sprite priority>>
+               Bad Label    1002 ; it allows to keep an exact sprite order >>
+               Bad Label    1003 ;
+               Bad Label    1004 ; DisplaySprite
+               Bad Label    1005 ; input REG : [u] object pointer (OST)
+               Bad Label    1006 ;
+               Bad Label    1007 ; DisplaySprite_x
+               Bad Label    1008 ; input REG : [x] object pointer (OST)
+               Bad Label    1009 ; ---------------------------------------->>
+              Bad Opcode    1011 DisplaySprite_x @globals
+        Expression Error    1014         bra DisplaySprite_Start
+              Bad Opcode    1016 DisplaySprite @globals
+ Multiply Defined Symbol    1019 DSP_Start
+              Bad Opcode    1080                                           >>
+               Bad Label    1111 ; ---------------------------------------->>
+               Bad Label    1112 ; MarkObjGone
+               Bad Label    1113 ; -----------
+               Bad Label    1114 ; Subroutine to destroy an object that is >>
+               Bad Label    1115 ; -- TODO --
+               Bad Label    1116 ; waiting for camera implementation
+               Bad Label    1117 ;
+               Bad Label    1118 ; input REG : none
+               Bad Label    1119 ; clear REG : none
+               Bad Label    1120 ; ---------------------------------------->>
+              Bad Opcode    1129 MarkObjGone @globals                   *Ma>>
+        Expression Error    1132         bra   DisplaySprite            *  >>
+               Bad Label    1150 ; ---------------------------------------->>
+               Bad Label    1151 ; ClearObj
+               Bad Label    1152 ; --------
+               Bad Label    1153 ; Subroutine to clear an object data in OS>>
+               Bad Label    1154 ;
+               Bad Label    1155 ; input REG : [u] pointer on objet (OST)
+               Bad Label    1156 ; clear REG : [d,y]
+               Bad Label    1157 ; ---------------------------------------->>
+              Bad Opcode    1159 ClearObj @globals
+     Branch Out Of Range    1208         bne   CSR_SetBuffer1
+     Branch Out Of Range    1308         bne   CSR_CheckErase
+     Branch Out Of Range    1313         bne   CSR_DoNotDisplaySprite
+     Branch Out Of Range    1329         beq   CSR_CheckVerticalPosition   >>
+     Branch Out Of Range    1335         bvs   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1336         bmi   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1339         bvs   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1342         bgt   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1347         bvs   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1348         bmi   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1351         bvs   CSR_SetOutOfRange           >>
+     Branch Out Of Range    1478         bne   ESP_P1B1
+     Branch Out Of Range    1584         bne   ESP_NextObjectB0            >>
+     Branch Out Of Range    1593         bne   ESP_CallEraseRoutineB0      >>
+     Branch Out Of Range    1598         beq   ESP_NextObjectB0
+     Branch Out Of Range    1686         bne   ESP_NextObjectB1            >>
+     Branch Out Of Range    1695         bne   ESP_CallEraseRoutineB1      >>
+     Branch Out Of Range    1700         beq   ESP_NextObjectB1
+     Branch Out Of Range    1793         bne   UDP_B1
+        Expression Error    1852         jsr   ClearObj
+        Expression Error    1917         jsr   ClearObj
+ Multiply Defined Symbol    1940 DSP_Start
+     Branch Out Of Range    1942         bne   DSP_SetBuffer1
+     Branch Out Of Range    2017         beq   DSP_NextObjectB0
+        Expression Error    2031         ldu   rsv_cur_mapping_frame_0,x   >>
+        Expression Error    2053         ldu   rsv_cur_mapping_frame_0,x   >>
+     Branch Out Of Range    2093         beq   DSP_NextObjectB1
+     Branch Out Of Range    2095         bne   DSP_NextObjectB1
+     Branch Out Of Range    2098         bne   DSP_DrawWithoutBackupB1
+        Expression Error    2107         ldu   rsv_cur_mapping_frame_1,x   >>
+        Expression Error    2129         ldu   rsv_cur_mapping_frame_1,x   >>
+               Bad Label    2141 ; ---------------------------------------->>
+               Bad Label    2142 ; BgBufferAlloc
+               Bad Label    2143 ; -------------
+               Bad Label    2144 ; Subroutine to allocate memory into backg>>
+               Bad Label    2145 ;
+               Bad Label    2146 ; input  REG : [a] number of requested cel>>
+               Bad Label    2147 ; output REG : [y] cell_end or 0000 if no >>
+               Bad Label    2148 ; ---------------------------------------->>
+        Expression Error    2158         bra   BBA_Next
+              Bad Opcode    2164 BBA_Next                                  >>
+        Expression Error    2171         bra   BBA_Next
+               Bad Label    2199 ; ---------------------------------------->>
+               Bad Label    2200 ; BgBufferFree
+               Bad Label    2201 ; ------------
+               Bad Label    2202 ; Subroutine to free memory from backgroun>>
+               Bad Label    2203 ;
+               Bad Label    2204 ; input  REG : [x] cell_start
+               Bad Label    2205 ;              [y] cell_end
+               Bad Label    2206 ; output REG : none
+               Bad Label    2207 ; ---------------------------------------->>
+        Expression Error    2222         bra   BBF_Next
+              Bad Opcode    2231 BBF_Next                                  >>
+     Branch Out Of Range    2235         bhi   BBF_ExpandAtEnd             >>
+        Expression Error    2237         bra   BBF_Next
+             Bad Operand    2258         stu   #$0000                      >>
+     Branch Out Of Range    2259         bra   BBF_rts
 
-000001 Total Symbols
-     2x          Equ   0037 rsv_priority_next_obj_0
+000406 Total Symbols
+     1x Unknown  Equ   0000 alsa
+     1x          Label 98B7 am_ObjectMove_01
+     1x          Label 98CD am_ObjectMove_02
+     3x          Label 97E2 am_RunNextObject
+     2x          Label 9715 am_SwapVideoPage
+     3x          Equ   0004 anim
+     0x          Label 9821 AnimateSprite
+     1x          Label 98A4 Anim_End
+     1x          Label 989B Anim_End_FA
+     1x          Label 9890 Anim_End_FB
+     1x          Label 9880 Anim_End_FC
+     1x          Label 9877 Anim_End_FD
+     1x          Label 9866 Anim_End_FE
+     1x          Label 985B Anim_End_FF
+     8x          Equ   0006 anim_frame
+     4x          Equ   0007 anim_frame_duration
+     2x          Label 9848 Anim_Next
+     1x          Label 9833 Anim_Run
+     1x          Label 985A Anim_Wait
+     0x          Label A031 BBA0
+     1x          Label A03A BBA1
+     1x          Label A05B BBA_DivideCell
+     1x          Label A060 BBA_dyn
+     1x          Label A050 BBA_FitCell
+     2x Unknown  Equ   0000 BBA_Next
+     2x          Label A071 BBA_rts
+     0x          Label A080 BBF0
+     1x          Label A090 BBF1
+     1x          Label A0AB BBF_AddNewEntry
+     3x          Label A0B0 BBF_AddNewEntryAtEnd
+     1x          Label A0ED BBF_ExpandAtEnd
+     1x          Label A0CC BBF_ExpandAtStart
+     1x          Label A0B6 BBF_FindFreeSlot
+     0x          Label A0D7 BBF_Join
+     2x Unknown  Equ   0000 BBF_Next
+     4x          Label A0F8 BBF_rts
+     1x          Label A0BE BBF_SetNewEntry
+     2x          Label A0C5 BBF_SetNewEntryNextentry
+     1x          Label A0CA BBF_SetNewEntryPrevLink
+     2x          Equ   0001 bckdraw_routine
+     2x          Label A02A BgBufferAlloc
+     2x          Label A073 BgBufferFree
+     0x          Label 9774 Black_palette
+     1x Unknown  Equ   0000 bna
+     0x          Equ   0007 buf_bgdata
+     2x          Equ   0024 buf_Lst_Priority_Unset
+     2x          Equ   000D buf_onscreen
+     1x          Equ   0005 buf_prev_mapping_frame
+     0x          Equ   000B buf_prev_x2_pixel
+     1x          Equ   0009 buf_prev_x_pixel
+     0x          Equ   000C buf_prev_y2_pixel
+     0x          Equ   000A buf_prev_y_pixel
+     5x          Equ   0000 buf_priority
+     3x          Equ   0003 buf_priority_next_obj
+     2x          Equ   0001 buf_priority_prev_obj
+    33x          Equ   0000 buf_Tbl_Priority_First_Entry
+    18x          Equ   0012 buf_Tbl_Priority_Last_Entry
+     0x          Equ   0040 c1_button_A_mask
+     0x          Equ   0002 c1_button_down_mask
+     0x          Equ   0004 c1_button_left_mask
+     0x          Equ   0008 c1_button_right_mask
+     0x          Equ   0001 c1_button_up_mask
+     0x          Equ   0080 c2_button_A_mask
+     0x          Equ   0020 c2_button_down_mask
+     0x          Equ   0040 c2_button_left_mask
+     0x          Equ   0080 c2_button_right_mask
+     0x          Equ   0010 c2_button_up_mask
+     7x          Equ   0003 cell_end
+     5x          Equ   0040 cell_size
+     5x          Equ   0001 cell_start
+     0x          Equ   6000 cell_start_adr
+     1x          Label 99CC CheckSpritesRefresh
+     3x Unknown  Equ   0000 ClearObj
+     1x          Label 99BE CLO_1
+     1x          Label 99C2 CLO_2
+     3x          Label 9753 cpt
+     0x          Label 9AA7 CSR_CheckDelHide
+     2x          Label 9B87 CSR_CheckDraw
+     3x          Label 9B4A CSR_CheckErase
+     0x          Label 9AC1 CSR_CheckPlayFieldCoord
+     1x          Label 9B2B CSR_CheckVerticalPosition
+     1x          Label 9B07 CSR_DoNotDisplaySprite
+     4x          Label 9B26 CSR_NextObject
+     1x          Label 9A31 CSR_P1B0
+     1x          Label 9A91 CSR_P1B1
+     1x          Label 9A26 CSR_P2B0
+     1x          Label 9A86 CSR_P2B1
+     1x          Label 9A1B CSR_P3B0
+     1x          Label 9A7B CSR_P3B1
+     1x          Label 9A10 CSR_P4B0
+     1x          Label 9A70 CSR_P4B1
+     1x          Label 9A05 CSR_P5B0
+     1x          Label 9A65 CSR_P5B1
+     1x          Label 99FA CSR_P6B0
+     1x          Label 9A5A CSR_P6B1
+     1x          Label 99EF CSR_P7B0
+     1x          Label 9A4F CSR_P7B1
+     0x          Label 99E2 CSR_P8B0
+     0x          Label 9A42 CSR_P8B1
+    19x          Label 9A9D CSR_ProcessEachPriorityLevel
+     1x          Label 9A3C CSR_rtsB0
+     1x          Label 9A9C CSR_rtsB1
+     0x          Label 99DD CSR_SetBuffer0
+     1x          Label 9A3D CSR_SetBuffer1
+     3x          Label 9BB5 CSR_SetDrawFalse
+     0x          Label 9BA8 CSR_SetDrawTrue
+     2x          Label 9B82 CSR_SetEraseFalse
+     3x          Label 9B75 CSR_SetEraseTrue
+    10x          Label 9B42 CSR_SetOutOfRange
+     0x          Label 99CC CSR_Start
+     0x          Label 9AAD CSR_UpdSpriteImageBasedOnMirror
+    18x          Label 99C6 cur_priority
+     5x          Label 99CA cur_ptr_sub_obj_draw
+     7x          Label 99C8 cur_ptr_sub_obj_erase
+     2x Unknown  Equ   0000 DisplaySprite
+     1x Unknown  Equ   0000 DisplaySprite_Start
+     0x          Equ   604F dk_destination
+     0x          Equ   6049 dk_lecteur
+     0x          Equ   604A dk_piste
+     0x          Equ   604C dk_secteur
+     1x          Label 9927 DOB_rts
+     1x          Label 98F1 DOB_Start
+     0x          Label 9902 DOB_TestOnscreen1
+     1x          Label 9915 DOB_TestOnscreen1Delete
+     2x          Label 9921 DOB_ToDeleteFlag
+     0x          Label 98F8 DOB_Unset0
+     1x          Label 9909 DOB_Unset1
+     2x          Label 97B4 Dpad_Held
+     0x          Label 97B6 Dpad_Press
+    27x          Label 80A8 DPS_buffer_0
+    25x          Label 8148 DPS_buffer_1
+     1x          Label 9E92 DrawSprites
+     2x          Equ   0004 draw_routine
+     0x          Label 9959 DSP_addFirstNode
+     1x          Label 9968 DSP_addToExistingNode
+     1x          Label 9946 DSP_BufferPositionned
+     1x          Label 9981 DSP_ChangePriority
+     1x          Label 9952 DSP_CheckLastEntry
+     1x          Label 9F6D DSP_DrawWithoutBackupB0
+     1x          Label A00C DSP_DrawWithoutBackupB1
+     1x          Label 9F97 DSP_dyn1
+     1x          Label 9FAB DSP_dyn2
+     1x          Label 9F56 DSP_dyn3B0
+     1x          Label 9FF5 DSP_dyn3B1
+     1x          Label 9F82 DSP_dyn4B0
+     1x          Label A021 DSP_dyn4B1
+     0x          Label 9950 DSP_InitPriority
+     1x          Label 9974 DSP_LinkBuffer1
+     1x          Label 9977 DSP_LinkCurWithPrev
+     3x          Label 9F67 DSP_NextObjectB0
+     3x          Label A006 DSP_NextObjectB1
+     1x          Label 9ECF DSP_P1B0
+     1x          Label 9F10 DSP_P1B1
+     1x          Label 9EC7 DSP_P2B0
+     1x          Label 9F08 DSP_P2B1
+     1x          Label 9EBF DSP_P3B0
+     1x          Label 9F00 DSP_P3B1
+     1x          Label 9EB7 DSP_P4B0
+     1x          Label 9EF8 DSP_P4B1
+     1x          Label 9EAF DSP_P5B0
+     1x          Label 9EF0 DSP_P5B1
+     1x          Label 9EA7 DSP_P6B0
+     1x          Label 9EE8 DSP_P6B1
+     1x          Label 9E9F DSP_P7B0
+     1x          Label 9EE0 DSP_P7B1
+     0x          Label 9E97 DSP_P8B0
+     0x          Label 9ED8 DSP_P8B1
+    10x          Label 9F19 DSP_ProcessEachPriorityLevelB0
+    10x          Label 9FB8 DSP_ProcessEachPriorityLevelB1
+     3x          Label 9992 DSP_rts
+     1x          Label 9ED7 DSP_rtsB0
+     1x          Label 9F18 DSP_rtsB1
+     0x          Label 9936 DSP_SetBuffer0
+     2x          Label 993F DSP_SetBuffer1
+     0x Multiply Label 9931 DSP_Start
+     4x          Label 9F8B DSP_XYToAddress
+     0x          Label 9F8E DSP_XYToAddressRAMAFirst
+     1x          Label 9FA2 DSP_XYToAddressRAMBFirst
+     1x          Label 837C Dynamic_Object_RAM
+     3x          Label 95EC Dynamic_Object_RAM_End
+     1x          Equ   0007 entry_size
+     1x          Label 9BBC EraseSprites
+     4x          Equ   0009 erase_nb_cell
+     2x          Equ   0007 erase_routine
+     1x          Label 9CF1 ESP_CallEraseRoutineB0
+     1x          Label 9D04 ESP_CallEraseRoutineB0_00
+     1x          Label 9D86 ESP_CallEraseRoutineB1
+     1x          Label 9D99 ESP_CallEraseRoutineB1_00
+     0x          Label 9C94 ESP_CheckEraseB0
+     0x          Label 9D29 ESP_CheckEraseB1
+     8x          Label 9C88 ESP_CheckPriorityB0
+     8x          Label 9D1D ESP_CheckPriorityB1
+     0x          Label 9D0E ESP_FreeEraseBufferB0
+     0x          Label 9DA3 ESP_FreeEraseBufferB1
+     2x          Label 9D14 ESP_NextObjectB0
+     2x          Label 9DA9 ESP_NextObjectB1
+     0x          Label 9BC1 ESP_P1B0
+     1x          Label 9C1C ESP_P1B1
+     1x          Label 9BCE ESP_P2B0
+     1x          Label 9C29 ESP_P2B1
+     1x          Label 9BD9 ESP_P3B0
+     1x          Label 9C36 ESP_P3B1
+     1x          Label 9BE4 ESP_P4B0
+     1x          Label 9C43 ESP_P4B1
+     1x          Label 9BEF ESP_P5B0
+     1x          Label 9C50 ESP_P5B1
+     1x          Label 9BFA ESP_P6B0
+     1x          Label 9C5D ESP_P6B1
+     1x          Label 9C05 ESP_P7B0
+     1x          Label 9C6A ESP_P7B1
+     1x          Label 9C10 ESP_P8B0
+     1x          Label 9C77 ESP_P8B1
+     9x          Label 9C85 ESP_ProcessEachPriorityLevelB0
+     9x          Label 9D1A ESP_ProcessEachPriorityLevelB1
+     1x          Label 9C1B ESP_rtsB0
+     1x          Label 9C84 ESP_rtsB1
+     0x          Label 9BBC ESP_Start
+     3x          Label 9CEB ESP_SubCheckOverlayB0
+     3x          Label 9D80 ESP_SubCheckOverlayB1
+     0x          Label 9CCF ESP_SubDrawCheckCollisionB0
+     0x          Label 9D64 ESP_SubDrawCheckCollisionB1
+     4x          Label 9CC7 ESP_SubDrawSearchB0
+     4x          Label 9D5C ESP_SubDrawSearchB1
+     1x          Label 9CC4 ESP_SubDrawSpriteSearchInitB0
+     1x          Label 9D59 ESP_SubDrawSpriteSearchInitB1
+     0x          Label 9CA8 ESP_SubEraseCheckCollisionB0
+     0x          Label 9D3D ESP_SubEraseCheckCollisionB1
+     4x          Label 9CA0 ESP_SubEraseSearchB0
+     4x          Label 9D35 ESP_SubEraseSearchB1
+     0x          Label 9C9D ESP_SubEraseSpriteSearchInitB0
+     0x          Label 9D32 ESP_SubEraseSpriteSearchInitB1
+     0x          Label 9C8C ESP_UnsetCheckRefreshB0
+     0x          Label 9D21 ESP_UnsetCheckRefreshB1
+     1x          Label 9D11 ESP_UnsetOnScreenFlagB0
+     1x          Label 9DA6 ESP_UnsetOnScreenFlagB1
+     0x          Equ   0014 ext_variables
+     2x          Label 97B5 Fire_Held
+     0x          Label 97B7 Fire_Press
+     0x          Label 96E5 Glb_Abs_H_Distance_Mainc
+     1x          Label 601C Glb_Camera_X_Pos
+     1x          Label 601E Glb_Camera_Y_Pos
+     0x          Label 96DD Glb_Closest_Player
+    10x          Label 601A Glb_Cur_Wrk_Screen_Id
+     1x          Label 601B Glb_Cur_Wrk_Screen_Id_x2
+     0x          Label 96E7 Glb_H_Distance_Sidek
+     0x          Label 96DC Glb_MainCharacter_Is_Dead
+     0x          Label 96E1 Glb_Player_H_Distance
+     0x          Label 96E0 Glb_Player_Is_Above
+     0x          Label 96DF Glb_Player_Is_Left
+     0x          Label 96E3 Glb_Player_V_Distance
+     2x          Label 6020 Glb_Sprite_Screen_Pos_PartA
+     2x          Label 6022 Glb_Sprite_Screen_Pos_PartB
+     0x          Equ   0038 gravity
+     0x          Equ   0000 id
+     1x          Equ   0010 image_meta_size
+     1x          Equ   000A image_x_offset
+     1x          Equ   000E image_x_size
+     1x          Equ   000C image_y_offset
+     2x          Equ   000F image_y_size
+     0x          Label 97B4 Joypads
+     1x          Label 97B4 Joypads_Held
+     1x          Label 97B6 Joypads_Press
+     1x          Label 6000 LevelMainLoop
+     1x          Label 95EC LevelOnly_Object_RAM
+     1x          Label 96DC LevelOnly_Object_RAM_End
+     3x          Label 6024 Lst_FreeCellFirstEntry_0
+     3x          Label 7066 Lst_FreeCellFirstEntry_1
+     1x          Label 6026 Lst_FreeCell_0
+     1x          Label 7068 Lst_FreeCell_1
+     8x          Label 80CC Lst_Priority_Unset_0
+     7x          Label 816C Lst_Priority_Unset_1
+     1x Unknown  Equ   0000 MainCharacter_is_dead
+     2x          Equ   0008 mapping_frame
+    14x          Equ   0000 nb_cells
+     2x          Equ   003B nb_dynamic_objects
+     2x          Equ   0082 nb_free_cells
+     0x          Equ   0003 nb_level_objects
+     4x          Equ   003D nb_objects
+     4x          Equ   0008 nb_priority_levels
+     1x          Equ   0002 nb_reserved_objects
+     9x          Equ   0005 next_entry
+     4x          Equ   0050 next_object
+     0x          Label 9754 Normal_palette
+     0x          Label 98A5 ObjectMove
+     1x          Label 82DC Object_RAM
+     2x          Label 96DC Object_RAM_End
+     8x          Equ   0050 object_size
+     0x          Label 82DC Obj_MainCharacter
+     0x          Label 832C Obj_Sidekick
+     0x          Label 963C Obj_SonicDust
+     0x          Label 968C Obj_TailsDust
+     0x          Label 95EC Obj_TailsTails
+     2x          Equ   0000 page_bckdraw_routine
+     2x          Equ   0003 page_draw_routine
+     2x          Equ   0006 page_erase_routine
+     2x Unknown  Equ   0000 prev_anim
+     5x          Equ   0003 priority
+     2x Unknown  Equ   0000 Ptr_palette
+     1x          Label 97B8 ReadJoypads
+     4x          Equ   0010 render_fixedoverlay_mask
+    16x          Equ   0002 render_flags
+     0x          Equ   0040 render_free2_mask
+     0x          Equ   0080 render_free3_mask
+     2x          Equ   0008 render_hide_mask
+     1x          Equ   0004 render_playfieldcoord_mask
+     4x          Equ   0020 render_todelete_mask
+     1x          Equ   0001 render_xmirror_mask
+     1x          Equ   0002 render_ymirror_mask
+     1x          Label 82DC Reserved_Object_RAM
+     1x          Label 837C Reserved_Object_RAM_End
+     2x          Equ   0012 routine
+     3x          Equ   0013 routine_secondary
+     3x          Equ   003B rsv_bgdata_0
+     3x          Equ   0049 rsv_bgdata_1
+     2x          Equ   0034 rsv_buffer_0
+     2x          Equ   0042 rsv_buffer_1
+     6x          Equ   002C rsv_curr_mapping_frame
+     2x Unknown  Equ   0000 rsv_cur_mapping_frame_0
+     2x Unknown  Equ   0000 rsv_cur_mapping_frame_1
+     5x          Equ   0041 rsv_onscreen_0
+     7x          Equ   004F rsv_onscreen_1
+     0x          Equ   002A rsv_prev_anim
+     3x          Equ   0039 rsv_prev_mapping_frame_0
+     3x          Equ   0047 rsv_prev_mapping_frame_1
+     2x          Equ   003F rsv_prev_x2_pixel_0
+     2x          Equ   004D rsv_prev_x2_pixel_1
+     2x          Equ   003D rsv_prev_x_pixel_0
+     2x          Equ   004B rsv_prev_x_pixel_1
+     0x          Equ   0040 rsv_prev_y2_pixel_0
+     0x          Equ   004E rsv_prev_y2_pixel_1
+     0x          Equ   003E rsv_prev_y_pixel_0
+     0x          Equ   004C rsv_prev_y_pixel_1
+     4x          Equ   0034 rsv_priority_0
+     4x          Equ   0042 rsv_priority_1
+     9x          Equ   0037 rsv_priority_next_obj_0
+     9x          Equ   0045 rsv_priority_next_obj_1
+     5x          Equ   0035 rsv_priority_prev_obj_0
+     5x          Equ   0043 rsv_priority_prev_obj_1
+     3x          Equ   0030 rsv_ptr_sub_object_draw
+     4x          Equ   002E rsv_ptr_sub_object_erase
+     4x          Equ   0001 rsv_render_checkrefresh_mask
+     5x          Equ   0004 rsv_render_displaysprite_mask
+     6x          Equ   0002 rsv_render_erasesprite_mask
+    26x          Equ   0029 rsv_render_flags
+     1x Unknown  Equ   0000 rsv_render_onscreen_0_mask
+     2x Unknown  Equ   0000 rsv_render_onscreen_1_mask
+     4x          Equ   0008 rsv_render_outofrange_mask
+     9x          Equ   0032 rsv_x2_pixel
+     5x          Equ   0033 rsv_y2_pixel
+     1x          Label 97DF RunNextObject
+     2x          Label 9817 RunNextObjectDisplayOnly
+     3x          Label 97D9 RunObject
+     2x          Label 980D RunObjectDisplayOnly
+     1x          Label 97D0 RunObjects
+     1x          Label 97E9 RunObjectsWhenPlayerIsDead
+     0x          Label 97D4 RunObjects_01
+     0x          Label 97E8 RunObjects_End
+     2x          Equ   00C8 screen_height
+     1x          Equ   00A0 screen_width
+     0x          Label 973E SetColor
+     0x          Label 98D2 SingleObjLoad2
+     1x          Label 98DC SingleObjLoad2_01
+     2x          Label 98E8 SingleObjLoad2_02
+     1x Unknown  Equ   0000 status
+     0x          Equ   0001 subtype
+     0x          Label 9708 SwapVideoPage
+     1x          Label 9729 SwapVideoPage_01
+     1x          Label 80A8 Tbl_Priority_First_Entry_0
+     1x          Label 8148 Tbl_Priority_First_Entry_1
+     2x          Label 80BA Tbl_Priority_Last_Entry_0
+     1x          Label 815A Tbl_Priority_Last_Entry_1
+     1x          Label 8262 Tbl_Sub_Object_Draw
+     1x          Label 81E8 Tbl_Sub_Object_Erase
+     0x          Label 9DB4 UDP_B0
+     1x          Label 9E23 UDP_B1
+     1x          Label 9DFD UDP_ChainNextB0
+     1x          Label 9E6C UDP_ChainNextB1
+     1x          Label 9DDC UDP_ChainPrevB0
+     1x          Label 9E4B UDP_ChainPrevB1
+     1x          Label 9E07 UDP_CheckDeleteB0
+     1x          Label 9E76 UDP_CheckDeleteB1
+     2x          Label 9DB7 UDP_CheckEndB0
+     2x          Label 9E26 UDP_CheckEndB1
+     1x          Label 9DE6 UDP_CheckPrioNextB0
+     1x          Label 9E55 UDP_CheckPrioNextB1
+     1x          Label 9DC3 UDP_CheckPrioPrevB0
+     1x          Label 9E32 UDP_CheckPrioPrevB1
+     0x          Label 9DBC UDP_InitListB0
+     0x          Label 9E2B UDP_InitListB1
+     3x          Label 9E1C UDP_SetNewPrioB0
+     3x          Label 9E8B UDP_SetNewPrioB1
+     0x          Label 9DAF UDP_Start
+     1x          Label 9DAF UnsetDisplayPriority
+     1x          Label 972F UpdatePalette
+     2x          Label 972D Vint_runcount
+     2x          Label 96E9 WaitVBL
+     1x          Label 96EE WaitVBL_01
+     0x          Label 9794 White_palette
+    12x          Equ   0010 x_pixel
+     5x          Equ   000A x_pos
+     0x          Equ   000C x_sub
+     2x Unknown  Equ   0000 x_vel
+     8x          Equ   0011 y_pixel
+     5x          Equ   000D y_pos
+     0x          Equ   000F y_sub
+     2x Unknown  Equ   0000 y_vel
 

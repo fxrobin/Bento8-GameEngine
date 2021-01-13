@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @author Benoît Rousseau
+ * @author BenoÃ®t Rousseau
  * @version 1.0
  *
  */
@@ -24,37 +24,45 @@ public class FdUtil
 	}
 
 	/**
-	 * Positionne l'index d'écriture sur un secteur dans une image fd
-	 * en fonction d'une unité, d'une piste et d'un numéro de secteur
-	 * Un TO8 gère jusqu'a 4 unités (têtes de lecture) soit deux lecteurs double face
+	 * Positionne l'index d'Ã©criture sur un secteur dans une image fd
+	 * en fonction d'une unitÃ©, d'une piste et d'un numÃ©ro de secteur
+	 * Un TO8 gÃ¨re jusqu'a 4 unitÃ©s (tÃªtes de lecture) soit deux lecteurs double face
 	 * L'image fd permet le stockage de deux disquettes double face en un seul fichier
 	 * 
-	 * @param unité numéro de l'unité (0-3)
-	 * @param piste numéro de la piste (0-79)
-	 * @param secteur numéro du secteur (1-16)
+	 * @param unitÃ© numÃ©ro de l'unitÃ© (0-3)
+	 * @param piste numÃ©ro de la piste (0-79)
+	 * @param secteur numÃ©ro du secteur (1-16)
 	 */
 	public void setIndex(int unite, int piste, int secteur) {
 		if (unite < 0 || unite > 3 || piste < 0 || piste > 79 || secteur < 1 || secteur > 16) {
-			logger.debug("DiskUtil.getIndex: paramètres incorrects");
-			logger.debug("unité (0-3):"+unite+" piste (0-79):"+piste+" secteur (1-16):"+secteur);
+			logger.debug("DiskUtil.getIndex: paramÃ¨tres incorrects");
+			logger.debug("unitÃ© (0-3):"+unite+" piste (0-79):"+piste+" secteur (1-16):"+secteur);
 		} else {
 			index = (unite*327680)+(piste*4096)+((secteur-1)*256);
 		}
 	}
 
 	/**
-	 * Positionne l'index d'écriture à une valeur donnée
+	 * Positionne l'index d'Ã©criture Ã  une valeur donnÃ©e
 	 * 
-	 * @param position Index d'écriture
+	 * @param position Index d'Ã©criture
 	 */
 	public void setIndex(int position) {
 		index = position;
 	}
 	
 	/**
-	 * Positionne l'index d'écriture au secteur suivant
-	 * avance de la piste si nécessaire
-	 * avance de l'unité si nécessaire
+	 * RÃ©cupÃ¨re l'index d'Ã©criture
+	 * 
+	 */
+	public int getIndex() {
+		return index;
+	}	
+	
+	/**
+	 * Positionne l'index d'Ã©criture au secteur suivant
+	 * avance de la piste si nÃ©cessaire
+	 * avance de l'unitÃ© si nÃ©cessaire
 	 * 
 	 */
 	public void nextSector() {
@@ -62,9 +70,9 @@ public class FdUtil
 	}
 	
 	/**
-	 * Eciture de données à l'index courant dans le fichier fd monté en mémoire
+	 * Eciture de donnÃ©es Ã  l'index courant dans le fichier fd montÃ© en mÃ©moire
 	 * 
-	 * @param bytes données à copier
+	 * @param bytes donnÃ©es Ã  copier
 	 */
 	public void write(byte[] bytes) {
 		logger.debug("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
@@ -76,9 +84,9 @@ public class FdUtil
 	}
 	
 	/**
-	 * Eciture de données à l'index courant dans le fichier fd monté en mémoire
+	 * Eciture de donnÃ©es Ã  l'index courant dans le fichier fd montÃ© en mÃ©moire
 	 * 
-	 * @param bytes données à copier
+	 * @param bytes donnÃ©es Ã  copier
 	 */
 	public void write(byte[] bytes, int start, int length) {
 		logger.debug("Ecriture Disquette en :"+index+" ($"+String.format("%1$04X",index)+")");
@@ -92,7 +100,7 @@ public class FdUtil
 	/**
 	 * Eciture (et remplacement) du fichier fd
 	 * 
-	 * @param outputFileName nom du fichier a écrire
+	 * @param outputFileName nom du fichier a Ã©crire
 	 */
 	public void save(String outputFileName) {
 		Path outputFile = Paths.get(outputFileName+".fd");
@@ -108,14 +116,14 @@ public class FdUtil
 	/**
 	 * Eciture (et remplacement) du fichier sd
 	 * 
-	 * @param outputFileName nom du fichier a écrire
+	 * @param outputFileName nom du fichier a Ã©crire
 	 */
 	public void saveToSd(String outputFileName) {
 		final byte[] sdBytes = new byte[1310720];
 
-		// Génération des données au format .sd
+		// GÃ©nÃ©ration des donnÃ©es au format .sd
 		for (int ifd=0, isd=0; ifd<fdBytes.length; ifd++) {
-			// copie des données fd
+			// copie des donnÃ©es fd
 			sdBytes[isd] = fdBytes[ifd];
 			isd++;
 			// a chaque intervalle de 256 octets on ajoute 256 octets de valeur FF

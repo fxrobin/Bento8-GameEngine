@@ -24,24 +24,6 @@ LevelMainLoop
         bra   LevelMainLoop
 
 * ==============================================================================
-* Routines
-* ==============================================================================
-        INCLUD WAITVBL
-        INCLUD UPDTPAL
-        INCLUD READJPDS
-        INCLUD RUNOBJTS
-        INCLUD DELETOBJ
-        INCLUD DISPLSPR
-        INCLUD MRKOBJGN
-        INCLUD CLEAROBJ
-        INCLUD CHECKSPR
-        INCLUD ERASESPR
-        INCLUD UNSETDSP
-        INCLUD DRAWSPR
-        INCLUD BGBALLOC
-        INCLUD BGBFREE
-
-* ==============================================================================
 * Global Data
 *
 * Naming convention
@@ -154,3 +136,25 @@ Glb_Player_H_Distance         rmb   $2,0  ; closest character's h distance to ob
 Glb_Player_V_Distance         rmb   $2,0  ; closest character's v distance to obj 
 Glb_Abs_H_Distance_Mainc      rmb   $2,0  ; absolute horizontal distance to main character
 Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
+
+* ==============================================================================
+* Routines
+* ==============================================================================
+        INCLUD WAITVBL
+        INCLUD UPDTPAL
+        INCLUD READJPDS
+        INCLUD RUNOBJTS
+        INCLUD ANIMSPR
+        INCLUD OBJMOVE
+        INCLUD OBJLOAD
+        INCLUD DELETOBJ
+        INCLUD DISPLSPR
+        INCLUD MRKOBJGN
+        INCLUD CLEAROBJ
+        INCLUD CHECKSPR
+        INCLUD ERASESPR
+        INCLUD UNSETDSP
+        INCLUD DRAWSPR
+        INCLUD BGBALLOC
+        INCLUD BGBFREE
+        

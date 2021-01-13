@@ -5,7 +5,7 @@
  * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
  * Contenu :
  *     Main     0:GAMEMODE.ASM 1764
- *     Include  0:CONSTANT.ASM 2436
+ *     Include  0:CONSTANT.ASM 3801
  *     Include  0:GLOBALS.ASM  54
  *     Include  0:GMENGINE.ASM 4774
  *     Include  0:GMEDATA.ASM  200
@@ -15,104 +15,162 @@ Macro Pass
 Pass1
 Pass2
     113                                   INCLUD CONSTANT
-    114                           * =======================================>>
-    115                           * TO8 Registers
-    116                           * =======================================>>
-    117
-    118                  6049     dk_lecteur           equ   $6049
-    119                  604A     dk_piste             equ   $604A
-    120                  604C     dk_secteur           equ   $604C
-    121                  604F     dk_destination       equ   $604F
-    122
-    123                           * =======================================>>
-    124                           * Physics Constants
-    125                           * =======================================>>
-    126
-    127                  0038     gravity                       equ $38 ; G>>
-    128
-    129                           * =======================================>>
-    130                           * Object Constants
-    131                           * =======================================>>
+    114                           * --------------------------------------->>
+    115                           * Constants
+    116                           *
+    117                           * Naming convention
+    118                           * -----------------
+    119                           * - lower case
+    120                           * - underscore-separated names
+    121                           *
+    122                           * --------------------------------------->>
+    123
+    124                           * =======================================>>
+    125                           * TO8 Registers
+    126                           * =======================================>>
+    127
+    128                  6049     dk_lecteur                    equ $6049
+    129                  604A     dk_piste                      equ $604A
+    130                  604C     dk_secteur                    equ $604C
+    131                  604F     dk_destination                equ $604F
     132
-    133                  0002     number_of_reserved_objects       equ 2
-    134                  002D     number_of_dynamic_objects        equ 45
-    135                  0003     number_of_level_objects          equ 3
+    133                           * =======================================>>
+    134                           * Display Constants
+    135                           * =======================================>>
     136
-    137                           * --------------------------------------->>
-    138                           * Object Status Table offsets
-    139                           * --------------------------------------->>
+    137                  00A0     screen_width                  equ 160 ; s>>
+    138                  00C8     screen_height                 equ 200 ; s>>
+    139                  0008     nb_priority_levels            equ 8   ; n>>
     140
-    141                  001F     object_size                   equ $1F ; t>>
-    142                  001F     next_object                   equ object_>>
-    143                            
-    144                  0000     id                            equ $00 ; o>>
-    145                  0002     render_flags                  equ $02 ; b>>
-    146                  0003     x_pos                         equ $03 ; a>>
-    147                  0005     x_sub                         equ $05 ; s>>
-    148                  0005     y_pos                         equ $05 ; a>>
-    149                  0007     y_sub                         equ $07 ; s>>
-    150                  0003     x_pixel                       equ x_pos
-    151                  0005     y_pixel                       equ x_pos+2>>
-    152                  0008     priority                      equ $08 ; $>>
-    153                  000A     width_pixels                  equ $0A
-    154                  000B     x_vel                         equ $0B ; a>>
-    155                  000D     y_vel                         equ $0D ; a>>
-    156                  000F     y_radius                      equ $0F ; c>>
-    157                  0010     x_radius                      equ $10 ; c>>
-    158                  0012     anim                          equ $12 ; e>>
-    159                  0013     prev_anim                     equ $13 ; e>>
-    160                  0014     anim_frame_duration           equ $14 ; d>>
-    161                  0011     anim_frame                    equ $11 ; i>>
-    162                  000B     mapping_frame                 equ $0B ; $>>
-    163                  0015     status                        equ $15 ; n>>
-    164                  0016     routine                       equ $16
-    165                  0017     routine_secondary             equ $17
-    166                  0018     objoff_01                     equ $18 ; v>>
-    167                  0019     objoff_02                     equ $19
-    168                  001A     objoff_03                     equ $1A
-    169                  001B     objoff_04                     equ $1B
-    170                  001C     objoff_05                     equ $1C
-    171                  001D     collision_flags               equ $1D
-    172                  001E     subtype                       equ $1E
-    173
-    174                           * --------------------------------------->>
-    175                           * render_flags bitfield variables
-    176                  0001     render_xmirror_mask           equ $01 ; b>>
-    177                  0002     render_ymirror_mask           equ $02 ; b>>
-    178                  0004     render_coordinate1_mask       equ $04 ; b>>
-    179                  0008     render_coordinate2_mask       equ $08 ;
-    180                  0010     render_ycheckonscreen_mask    equ $10 ; b>>
-    181                  0020     render_staticmappings_mask    equ $20 ; b>>
-    182                  0040     render_subobjects_mask        equ $40 ; b>>
-    183                  0080     render_onscreen_mask          equ $80 ; b>>
-    184
-    185                           * --------------------------------------->>
-    186                           * status bitfield variables
-    187                  0001     status_leftfacing_mask        equ $01 ; b>>
-    188                  0002     status_inair_mask             equ $02 ; b>>
-    189                  0004     status_spinning_mask          equ $04 ; b>>
-    190                  0008     status_onobject_mask          equ $08 ; b>>
-    191                  0010     status_rolljumping_mask       equ $10 ; b>>
-    192                  0020     status_pushing_mask           equ $20 ; b>>
-    193                  0040     status_underwater_mask        equ $40 ; b>>
-    194                  0080     status_tobedeleted_mask       equ $80 ; b>>
-    195
-    196                           * --------------------------------------->>
-    197                           * status_secondary bitfield variables
-    198                  0001     status_sec_hasShield_mask     equ $01 ; b>>
-    199                  0002     status_sec_isInvincible_mask  equ $02 ; b>>
-    200                  0004     status_sec_hasSpeedShoes_mask equ $04 ; b>>
-    201                  0008     status_sec_3_mask             equ $08 ; b>>
-    202                  0010     status_sec_4_mask             equ $10 ; b>>
-    203                  0020     status_sec_5_mask             equ $20 ; b>>
-    204                  0040     status_sec_6_mask             equ $40 ; b>>
-    205                  0080     status_sec_isSliding_mask     equ $80 ; b>>
-    206
-    207                                   INCLUD GLOBALS
-    208                           * Generated Code
-    209                  41B2     current_game_mode_data equ $41B2
-    210
+    141                           * =======================================>>
+    142                           * Physics Constants
+    143                           * =======================================>>
+    144
+    145                  0038     gravity                       equ $38 ; G>>
+    146
+    147                           * =======================================>>
+    148                           * Images Constants
+    149                           * =======================================>>
+    150
+    151                  0000     page_bckdraw_routine          equ 0
+    152                  0001     bckdraw_routine               equ 1
+    153                  0003     page_draw_routine             equ 3
+    154                  0004     draw_routine                  equ 4
+    155                  0006     page_erase_routine            equ 6
+    156                  0007     erase_routine                 equ 7
+    157                  0009     erase_nb_cell                 equ 9
+    158                  000A     image_x_offset                equ 10
+    159                  000C     image_y_offset                equ 12
+    160                  000E     image_x_size                  equ 14
+    161                  000F     image_y_size                  equ 15 ; mu>>
+    162                  0010     image_meta_size               equ 16 ; nu>>
+    163
+    164                           * =======================================>>
+    165                           * Object Constants
+    166                           * =======================================>>
+    167
+    168                  0002     nb_reserved_objects           equ 2
+    169                  003B     nb_dynamic_objects            equ 59
+    170                  0003     nb_level_objects              equ 3
+    171                  003D     nb_objects                    equ (nb_res>>
+    172
+    173                           * --------------------------------------->>
+    174                           * Object Status Table offsets
+    175                           * --------------------------------------->>
+    176
+    177                  0050     object_size                   equ 80 ; th>>
+    178                  0050     next_object                   equ object_>>
+    179
+    180                  0000     id                            equ 0      >>
+    181                  0001     subtype                       equ 1      >>
+    182                  0002     render_flags                  equ 2
+    183
+    184                           * --- render_flags bitfield variables --->>
+    185                  0001     render_xmirror_mask           equ $01 ; (>>
+    186                  0002     render_ymirror_mask           equ $02 ; (>>
+    187                  0004     render_playfieldcoord_mask    equ $04 ; (>>
+    188                  0008     render_hide_mask              equ $08 ; (>>
+    189                  0010     render_fixedoverlay_mask      equ $10 ; (>>
+    190                  0020     render_todelete_mask          equ $20 ; (>>
+    191                  0040     render_free2_mask             equ $40 ; (>>
+    192                  0080     render_free3_mask             equ $80 ; (>>
+    193                            
+    194                  0003     priority                      equ 3      >>
+    195                  0004     anim                          equ 4  ; an>>
+    196                  0006     anim_frame                    equ 6      >>
+    197                  0007     anim_frame_duration           equ 7      >>
+    198                  0008     mapping_frame                 equ 8  ; an>>
+    199                  000A     x_pos                         equ 10 ; an>>
+    200                  000C     x_sub                         equ 12     >>
+    201                  000D     y_pos                         equ 13 ; an>>
+    202                  000F     y_sub                         equ 15     >>
+    203                  0010     x_pixel                       equ 16     >>
+    204                  0011     y_pixel                       equ 17     >>
+    205                  0012     routine                       equ 18     >>
+    206                  0013     routine_secondary             equ 19     >>
+    207                  0014     ext_variables                 equ 20 ; to>>
+    208
+    209                           * --------------------------------------->>
+    210                           * reserved variables (engine)
     211
+    212                  0029     rsv_render_flags              equ 41
+    213
+    214                           * --- rsv_render_flags bitfield variables>>
+    215                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
+    216                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
+    217                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
+    218                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
+    219
+    220                  002A     rsv_prev_anim                 equ 42 ; an>>
+    221                  002C     rsv_curr_mapping_frame        equ 44 ; an>>
+    222                  002E     rsv_ptr_sub_object_erase      equ 46 ; an>>
+    223                  0030     rsv_ptr_sub_object_draw       equ 48 ; an>>
+    224                  0032     rsv_x2_pixel                  equ 50     >>
+    225                  0033     rsv_y2_pixel                  equ 51     >>
+    226
+    227                           * --------------------------------------->>
+    228                           * reserved variables (engine) - buffer sp>>
+    229
+    230                  0034     rsv_buffer_0                  equ 52 ; St>>
+    231                  0034     rsv_priority_0                equ 52 ; in>>
+    232                  0035     rsv_priority_prev_obj_0       equ 53 ; an>>
+    233                  0037     rsv_priority_next_obj_0       equ 55 ; an>>
+    234                  0039     rsv_prev_mapping_frame_0      equ 57 ; an>>
+    235                  003B     rsv_bgdata_0                  equ 59 ; an>>
+    236                  003D     rsv_prev_x_pixel_0            equ 61 ; pr>>
+    237                  003E     rsv_prev_y_pixel_0            equ 62 ; pr>>
+    238                  003F     rsv_prev_x2_pixel_0           equ 63 ; pr>>
+    239                  0040     rsv_prev_y2_pixel_0           equ 64 ; pr>>
+    240                  0041     rsv_onscreen_0                equ 65 ; ha>>
+    241
+    242                  0042     rsv_buffer_1                  equ 66 ; St>>
+    243                  0042     rsv_priority_1                equ 66 ; in>>
+    244                  0043     rsv_priority_prev_obj_1       equ 67 ; an>>
+    245                  0045     rsv_priority_next_obj_1       equ 69 ; an>>
+    246                  0047     rsv_prev_mapping_frame_1      equ 71 ; an>>
+    247                  0049     rsv_bgdata_1                  equ 73 ; an>>
+    248                  004B     rsv_prev_x_pixel_1            equ 75 ; pr>>
+    249                  004C     rsv_prev_y_pixel_1            equ 76 ; pr>>
+    250                  004D     rsv_prev_x2_pixel_1           equ 77 ; pr>>
+    251                  004E     rsv_prev_y2_pixel_1           equ 78 ; pr>>
+    252                  004F     rsv_onscreen_1                equ 79 ; ha>>
+    253
+    254                  0000     buf_priority                  equ 0  ; of>>
+    255                  0001     buf_priority_prev_obj         equ 1  ;
+    256                  0003     buf_priority_next_obj         equ 3  ;
+    257                  0005     buf_prev_mapping_frame        equ 5  ;
+    258                  0007     buf_bgdata                    equ 7  ;
+    259                  0009     buf_prev_x_pixel              equ 9  ;
+    260                  000A     buf_prev_y_pixel              equ 10 ;
+    261                  000B     buf_prev_x2_pixel             equ 11 ;
+    262                  000C     buf_prev_y2_pixel             equ 12 ;
+    263                  000D     buf_onscreen                  equ 13 ;
+    264
+    265                                   INCLUD GLOBALS
+    266                           * Generated Code
+    267                  41B2     current_game_mode_data equ $41B2
+    268
+    269
      35        A000                       org $A000
      36
      37                           * =======================================>>
@@ -187,465 +245,475 @@ Pass2
     106                           * GameModeEngine
     107                           * =======================================>>
     108        A056               GameModeEngineBin
-    212                                   INCLUD GMENGINE
-    213
-    214        A056 34                    fcb   $34
-    215        A057 7F                    fcb   $7F
-    216        A058 1F                    fcb   $1F
-    217        A059 50                    fcb   $50
-    218        A05A 1F                    fcb   $1F
-    219        A05B 8B                    fcb   $8B
-    220        A05C 31                    fcb   $31
-    221        A05D 8D                    fcb   $8D
-    222        A05E 00                    fcb   $00
-    223        A05F A9                    fcb   $A9
-    224        A060 5F                    fcb   $5F
-    225        A061 D7                    fcb   $D7
-    226        A062 8D                    fcb   $8D
-    227        A063 4F                    fcb   $4F
-    228        A064 34                    fcb   $34
-    229        A065 06                    fcb   $06
-    230        A066 C5                    fcb   $C5
-    231        A067 0F                    fcb   $0F
-    232        A068 26                    fcb   $26
-    233        A069 03                    fcb   $03
-    234        A06A 8E                    fcb   $8E
-    235        A06B 00                    fcb   $00
-    236        A06C 01                    fcb   $01
-    237        A06D C6                    fcb   $C6
-    238        A06E 04                    fcb   $04
-    239        A06F 8D                    fcb   $8D
-    240        A070 6D                    fcb   $6D
-    241        A071 E7                    fcb   $E7
-    242        A072 A0                    fcb   $A0
-    243        A073 53                    fcb   $53
-    244        A074 69                    fcb   $69
-    245        A075 E4                    fcb   $E4
-    246        A076 49                    fcb   $49
-    247        A077 5C                    fcb   $5C
-    248        A078 2B                    fcb   $2B
-    249        A079 FA                    fcb   $FA
-    250        A07A E6                    fcb   $E6
-    251        A07B E4                    fcb   $E4
-    252        A07C AF                    fcb   $AF
-    253        A07D A1                    fcb   $A1
-    254        A07E 30                    fcb   $30
-    255        A07F 8B                    fcb   $8B
-    256        A080 35                    fcb   $35
-    257        A081 06                    fcb   $06
-    258        A082 5C                    fcb   $5C
-    259        A083 C1                    fcb   $C1
-    260        A084 34                    fcb   $34
-    261        A085 26                    fcb   $26
-    262        A086 DC                    fcb   $DC
-    263        A087 10                    fcb   $10
-    264        A088 AE                    fcb   $AE
-    265        A089 66                    fcb   $66
-    266        A08A C6                    fcb   $C6
-    267        A08B 01                    fcb   $01
-    268        A08C 8D                    fcb   $8D
-    269        A08D 50                    fcb   $50
-    270        A08E 26                    fcb   $26
-    271        A08F 15                    fcb   $15
-    272        A090 D7                    fcb   $D7
-    273        A091 45                    fcb   $45
-    274        A092 8C                    fcb   $8C
-    275        A093 0C                    fcb   $0C
-    276        A094 45                    fcb   $45
-    277        A095 5C                    fcb   $5C
-    278        A096 8D                    fcb   $8D
-    279        A097 46                    fcb   $46
-    280        A098 27                    fcb   $27
-    281        A099 F9                    fcb   $F9
-    282        A09A C6                    fcb   $C6
-    283        A09B 00                    fcb   $00
-    284        A09C C1                    fcb   $C1
-    285        A09D 10                    fcb   $10
-    286        A09E 27                    fcb   $27
-    287        A09F 37                    fcb   $37
-    288        A0A0 25                    fcb   $25
-    289        A0A1 0F                    fcb   $0F
-    290        A0A2 5A                    fcb   $5A
-    291        A0A3 8D                    fcb   $8D
-    292        A0A4 39                    fcb   $39
-    293        A0A5 1F                    fcb   $1F
-    294        A0A6 01                    fcb   $01
-    295        A0A7 A6                    fcb   $A6
-    296        A0A8 C2                    fcb   $C2
-    297        A0A9 A7                    fcb   $A7
-    298        A0AA A2                    fcb   $A2
-    299        A0AB 30                    fcb   $30
-    300        A0AC 1F                    fcb   $1F
-    301        A0AD 26                    fcb   $26
-    302        A0AE F8                    fcb   $F8
-    303        A0AF 20                    fcb   $20
-    304        A0B0 D9                    fcb   $D9
-    305        A0B1 8D                    fcb   $8D
-    306        A0B2 44                    fcb   $44
-    307        A0B3 34                    fcb   $34
-    308        A0B4 06                    fcb   $06
-    309        A0B5 30                    fcb   $30
-    310        A0B6 8C                    fcb   $8C
-    311        A0B7 4B                    fcb   $4B
-    312        A0B8 10                    fcb   $10
-    313        A0B9 83                    fcb   $83
-    314        A0BA 00                    fcb   $00
-    315        A0BB 03                    fcb   $03
-    316        A0BC 24                    fcb   $24
-    317        A0BD 01                    fcb   $01
-    318        A0BE 3A                    fcb   $3A
-    319        A0BF 8D                    fcb   $8D
-    320        A0C0 1B                    fcb   $1B
-    321        A0C1 EB                    fcb   $EB
-    322        A0C2 03                    fcb   $03
-    323        A0C3 8D                    fcb   $8D
-    324        A0C4 32                    fcb   $32
-    325        A0C5 DD                    fcb   $DD
-    326        A0C6 77                    fcb   $77
-    327        A0C7 35                    fcb   $35
-    328        A0C8 10                    fcb   $10
-    329        A0C9 31                    fcb   $31
-    330        A0CA 3F                    fcb   $3F
-    331        A0CB A6                    fcb   $A6
-    332        A0CC A9                    fcb   $A9
-    333        A0CD 12                    fcb   $12
-    334        A0CE 34                    fcb   $34
-    335        A0CF A7                    fcb   $A7
-    336        A0D0 A4                    fcb   $A4
-    337        A0D1 30                    fcb   $30
-    338        A0D2 1F                    fcb   $1F
-    339        A0D3 26                    fcb   $26
-    340        A0D4 F4                    fcb   $F4
-    341        A0D5 20                    fcb   $20
-    342        A0D6 B3                    fcb   $B3
-    343        A0D7 10                    fcb   $10
-    344        A0D8 AF                    fcb   $AF
-    345        A0D9 66                    fcb   $66
-    346        A0DA 35                    fcb   $35
-    347        A0DB FF                    fcb   $FF
-    348        A0DC E6                    fcb   $E6
-    349        A0DD 84                    fcb   $84
-    350        A0DE 6F                    fcb   $6F
-    351        A0DF E2                    fcb   $E2
-    352        A0E0 6F                    fcb   $6F
-    353        A0E1 E2                    fcb   $E2
-    354        A0E2 86                    fcb   $86
-    355        A0E3 12                    fcb   $12
-    356        A0E4 20                    fcb   $20
-    357        A0E5 09                    fcb   $09
-    358        A0E6 A6                    fcb   $A6
-    359        A0E7 C2                    fcb   $C2
-    360        A0E8 46                    fcb   $46
-    361        A0E9 27                    fcb   $27
-    362        A0EA FB                    fcb   $FB
-    363        A0EB 69                    fcb   $69
-    364        A0EC 61                    fcb   $61
-    365        A0ED 69                    fcb   $69
-    366        A0EE E4                    fcb   $E4
-    367        A0EF 5A                    fcb   $5A
-    368        A0F0 2A                    fcb   $2A
-    369        A0F1 F6                    fcb   $F6
-    370        A0F2 97                    fcb   $97
-    371        A0F3 8D                    fcb   $8D
-    372        A0F4 EC                    fcb   $EC
-    373        A0F5 E1                    fcb   $E1
-    374        A0F6 39                    fcb   $39
-    375        A0F7 30                    fcb   $30
-    376        A0F8 8D                    fcb   $8D
-    377        A0F9 00                    fcb   $00
-    378        A0FA 0E                    fcb   $0E
-    379        A0FB 3A                    fcb   $3A
-    380        A0FC 58                    fcb   $58
-    381        A0FD 3A                    fcb   $3A
-    382        A0FE 8D                    fcb   $8D
-    383        A0FF DC                    fcb   $DC
-    384        A100 E3                    fcb   $E3
-    385        A101 01                    fcb   $01
-    386        A102 39                    fcb   $39
-    387        A103 04                    fcb   $04
-    388        A104 02                    fcb   $02
-    389        A105 04                    fcb   $04
-    390        A106 10                    fcb   $10
-    391        A107 30                    fcb   $30
-    392        A108 20                    fcb   $20
-    393        A109 00                    fcb   $00
-    394        A10A 00                    fcb   $00
-    395        A10B 00                    fcb   $00
-    396        A10C 00                    fcb   $00
-    397        A10D 00                    fcb   $00
-    398        A10E 00                    fcb   $00
-    399        A10F 00                    fcb   $00
-    400        A110 00                    fcb   $00
-    401        A111 00                    fcb   $00
-    402        A112 00                    fcb   $00
-    403        A113 00                    fcb   $00
-    404        A114 00                    fcb   $00
-    405        A115 00                    fcb   $00
-    406        A116 00                    fcb   $00
-    407        A117 00                    fcb   $00
-    408        A118 00                    fcb   $00
-    409        A119 00                    fcb   $00
-    410        A11A 00                    fcb   $00
-    411        A11B 00                    fcb   $00
-    412        A11C 00                    fcb   $00
-    413        A11D 00                    fcb   $00
-    414        A11E 00                    fcb   $00
-    415        A11F 00                    fcb   $00
-    416        A120 00                    fcb   $00
-    417        A121 00                    fcb   $00
-    418        A122 00                    fcb   $00
-    419        A123 00                    fcb   $00
-    420        A124 00                    fcb   $00
-    421        A125 00                    fcb   $00
-    422        A126 00                    fcb   $00
-    423        A127 00                    fcb   $00
-    424        A128 00                    fcb   $00
-    425        A129 00                    fcb   $00
-    426        A12A 00                    fcb   $00
-    427        A12B 00                    fcb   $00
-    428        A12C 00                    fcb   $00
-    429        A12D 00                    fcb   $00
-    430        A12E 00                    fcb   $00
-    431        A12F 00                    fcb   $00
-    432        A130 00                    fcb   $00
-    433        A131 00                    fcb   $00
-    434        A132 00                    fcb   $00
-    435        A133 00                    fcb   $00
-    436        A134 00                    fcb   $00
-    437        A135 00                    fcb   $00
-    438        A136 00                    fcb   $00
-    439        A137 00                    fcb   $00
-    440        A138 00                    fcb   $00
-    441        A139 00                    fcb   $00
-    442        A13A 00                    fcb   $00
-    443        A13B 00                    fcb   $00
-    444        A13C 00                    fcb   $00
-    445        A13D 00                    fcb   $00
-    446        A13E 00                    fcb   $00
-    447        A13F 00                    fcb   $00
-    448        A140 00                    fcb   $00
-    449        A141 00                    fcb   $00
-    450        A142 00                    fcb   $00
-    451        A143 00                    fcb   $00
-    452        A144 00                    fcb   $00
-    453        A145 00                    fcb   $00
-    454        A146 00                    fcb   $00
-    455        A147 00                    fcb   $00
-    456        A148 00                    fcb   $00
-    457        A149 00                    fcb   $00
-    458        A14A 00                    fcb   $00
-    459        A14B 00                    fcb   $00
-    460        A14C 00                    fcb   $00
-    461        A14D 00                    fcb   $00
-    462        A14E 00                    fcb   $00
-    463        A14F 00                    fcb   $00
-    464        A150 00                    fcb   $00
-    465        A151 00                    fcb   $00
-    466        A152 00                    fcb   $00
-    467        A153 00                    fcb   $00
-    468        A154 00                    fcb   $00
-    469        A155 00                    fcb   $00
-    470        A156 00                    fcb   $00
-    471        A157 00                    fcb   $00
-    472        A158 00                    fcb   $00
-    473        A159 00                    fcb   $00
-    474        A15A 00                    fcb   $00
-    475        A15B 00                    fcb   $00
-    476        A15C 00                    fcb   $00
-    477        A15D 00                    fcb   $00
-    478        A15E 00                    fcb   $00
-    479        A15F 00                    fcb   $00
-    480        A160 00                    fcb   $00
-    481        A161 00                    fcb   $00
-    482        A162 00                    fcb   $00
-    483        A163 00                    fcb   $00
-    484        A164 00                    fcb   $00
-    485        A165 00                    fcb   $00
-    486        A166 00                    fcb   $00
-    487        A167 00                    fcb   $00
-    488        A168 00                    fcb   $00
-    489        A169 00                    fcb   $00
-    490        A16A 00                    fcb   $00
-    491        A16B 00                    fcb   $00
-    492        A16C 00                    fcb   $00
-    493        A16D 00                    fcb   $00
-    494        A16E 00                    fcb   $00
-    495        A16F 00                    fcb   $00
-    496        A170 00                    fcb   $00
-    497        A171 00                    fcb   $00
-    498        A172 00                    fcb   $00
-    499        A173 00                    fcb   $00
-    500        A174 00                    fcb   $00
-    501        A175 00                    fcb   $00
-    502        A176 00                    fcb   $00
-    503        A177 00                    fcb   $00
-    504        A178 00                    fcb   $00
-    505        A179 00                    fcb   $00
-    506        A17A 00                    fcb   $00
-    507        A17B 00                    fcb   $00
-    508        A17C 00                    fcb   $00
-    509        A17D 00                    fcb   $00
-    510        A17E 00                    fcb   $00
-    511        A17F 00                    fcb   $00
-    512        A180 00                    fcb   $00
-    513        A181 00                    fcb   $00
-    514        A182 00                    fcb   $00
-    515        A183 00                    fcb   $00
-    516        A184 00                    fcb   $00
-    517        A185 00                    fcb   $00
-    518        A186 00                    fcb   $00
-    519        A187 00                    fcb   $00
-    520        A188 00                    fcb   $00
-    521        A189 00                    fcb   $00
-    522        A18A 00                    fcb   $00
-    523        A18B 00                    fcb   $00
-    524        A18C 00                    fcb   $00
-    525        A18D 00                    fcb   $00
-    526        A18E 00                    fcb   $00
-    527        A18F 00                    fcb   $00
-    528        A190 00                    fcb   $00
-    529        A191 00                    fcb   $00
-    530        A192 00                    fcb   $00
-    531        A193 00                    fcb   $00
-    532        A194 00                    fcb   $00
-    533        A195 00                    fcb   $00
-    534        A196 00                    fcb   $00
-    535        A197 00                    fcb   $00
-    536        A198 00                    fcb   $00
-    537        A199 00                    fcb   $00
-    538        A19A 00                    fcb   $00
-    539        A19B 00                    fcb   $00
-    540        A19C 00                    fcb   $00
-    541        A19D 00                    fcb   $00
-    542        A19E 00                    fcb   $00
-    543        A19F 00                    fcb   $00
-    544        A1A0 00                    fcb   $00
-    545        A1A1 00                    fcb   $00
-    546        A1A2 00                    fcb   $00
-    547        A1A3 00                    fcb   $00
-    548        A1A4 00                    fcb   $00
-    549        A1A5 CE                    fcb   $CE
-    550        A1A6 41                    fcb   $41
-    551        A1A7 B2                    fcb   $B2
-    552        A1A8 34                    fcb   $34
-    553        A1A9 40                    fcb   $40
-    554        A1AA 86                    fcb   $86
-    555        A1AB 60                    fcb   $60
-    556        A1AC 1F                    fcb   $1F
-    557        A1AD 8B                    fcb   $8B
-    558        A1AE E6                    fcb   $E6
-    559        A1AF C0                    fcb   $C0
-    560        A1B0 1D                    fcb   $1D
-    561        A1B1 84                    fcb   $84
-    562        A1B2 01                    fcb   $01
-    563        A1B3 C4                    fcb   $C4
-    564        A1B4 80                    fcb   $80
-    565        A1B5 97                    fcb   $97
-    566        A1B6 49                    fcb   $49
-    567        A1B7 86                    fcb   $86
-    568        A1B8 00                    fcb   $00
-    569        A1B9 DD                    fcb   $DD
-    570        A1BA 4A                    fcb   $4A
-    571        A1BB C6                    fcb   $C6
-    572        A1BC 00                    fcb   $00
-    573        A1BD DD                    fcb   $DD
-    574        A1BE 4F                    fcb   $4F
-    575        A1BF EC                    fcb   $EC
-    576        A1C0 C1                    fcb   $C1
-    577        A1C1 2A                    fcb   $2A
-    578        A1C2 02                    fcb   $02
-    579        A1C3 0E                    fcb   $0E
-    580        A1C4 00                    fcb   $00
-    581        A1C5 97                    fcb   $97
-    582        A1C6 4C                    fcb   $4C
-    583        A1C7 F7                    fcb   $F7
-    584        A1C8 41                    fcb   $41
-    585        A1C9 99                    fcb   $99
-    586        A1CA 37                    fcb   $37
-    587        A1CB 26                    fcb   $26
-    588        A1CC B7                    fcb   $B7
-    589        A1CD 41                    fcb   $41
-    590        A1CE 9F                    fcb   $9F
-    591        A1CF F7                    fcb   $F7
-    592        A1D0 41                    fcb   $41
-    593        A1D1 A2                    fcb   $A2
-    594        A1D2 34                    fcb   $34
-    595        A1D3 40                    fcb   $40
-    596        A1D4 86                    fcb   $86
-    597        A1D5 02                    fcb   $02
-    598        A1D6 97                    fcb   $97
-    599        A1D7 48                    fcb   $48
-    600        A1D8 BD                    fcb   $BD
-    601        A1D9 E8                    fcb   $E8
-    602        A1DA 2A                    fcb   $2A
-    603        A1DB 0C                    fcb   $0C
-    604        A1DC 4C                    fcb   $4C
-    605        A1DD 96                    fcb   $96
-    606        A1DE 4C                    fcb   $4C
-    607        A1DF 81                    fcb   $81
-    608        A1E0 10                    fcb   $10
-    609        A1E1 23                    fcb   $23
-    610        A1E2 06                    fcb   $06
-    611        A1E3 86                    fcb   $86
-    612        A1E4 01                    fcb   $01
-    613        A1E5 97                    fcb   $97
-    614        A1E6 4C                    fcb   $4C
-    615        A1E7 0C                    fcb   $0C
-    616        A1E8 4B                    fcb   $4B
-    617        A1E9 0C                    fcb   $0C
-    618        A1EA 4F                    fcb   $4F
-    619        A1EB DE                    fcb   $DE
-    620        A1EC 4F                    fcb   $4F
-    621        A1ED 11                    fcb   $11
-    622        A1EE 83                    fcb   $83
-    623        A1EF 00                    fcb   $00
-    624        A1F0 00                    fcb   $00
-    625        A1F1 23                    fcb   $23
-    626        A1F2 E5                    fcb   $E5
-    627        A1F3 33                    fcb   $33
-    628        A1F4 C9                    fcb   $C9
-    629        A1F5 FF                    fcb   $FF
-    630        A1F6 00                    fcb   $00
-    631        A1F7 86                    fcb   $86
-    632        A1F8 00                    fcb   $00
-    633        A1F9 B7                    fcb   $B7
-    634        A1FA E7                    fcb   $E7
-    635        A1FB E5                    fcb   $E5
-    636        A1FC BD                    fcb   $BD
-    637        A1FD 40                    fcb   $40
-    638        A1FE 00                    fcb   $00
-    639        A1FF 35                    fcb   $35
-    640        A200 40                    fcb   $40
-    641        A201 20                    fcb   $20
-    642        A202 A7                    fcb   $A7
-    643        A203 00                    fcb   $00
-    644        A204 00                    fcb   $00
-    645        A205 00                    fcb   $00
-    646        A206 00                    fcb   $00
-    647        A207 00                    fcb   $00
-    648
-    649                                   INCLUD GMEDATA
-    650                           * Generated Code
-    651
-    652                  0000     gm_TITLESCR equ $00
-    653        A208               current_game_mode
-    654        A208 00                    fcb   gm_TITLESCR
-    655        A209               gm_data_TITLESCR
-    656        A209 FF FF FF FF           fcb   $FF,$FF,$FF,$FF,$FF,$FF,$FF>>
+    270                                   INCLUD GMENGINE
+    271
+    272        A056 34                    fcb   $34
+    273        A057 7F                    fcb   $7F
+    274        A058 1F                    fcb   $1F
+    275        A059 50                    fcb   $50
+    276        A05A 1F                    fcb   $1F
+    277        A05B 8B                    fcb   $8B
+    278        A05C 31                    fcb   $31
+    279        A05D 8D                    fcb   $8D
+    280        A05E 00                    fcb   $00
+    281        A05F A9                    fcb   $A9
+    282        A060 5F                    fcb   $5F
+    283        A061 D7                    fcb   $D7
+    284        A062 8D                    fcb   $8D
+    285        A063 4F                    fcb   $4F
+    286        A064 34                    fcb   $34
+    287        A065 06                    fcb   $06
+    288        A066 C5                    fcb   $C5
+    289        A067 0F                    fcb   $0F
+    290        A068 26                    fcb   $26
+    291        A069 03                    fcb   $03
+    292        A06A 8E                    fcb   $8E
+    293        A06B 00                    fcb   $00
+    294        A06C 01                    fcb   $01
+    295        A06D C6                    fcb   $C6
+    296        A06E 04                    fcb   $04
+    297        A06F 8D                    fcb   $8D
+    298        A070 6D                    fcb   $6D
+    299        A071 E7                    fcb   $E7
+    300        A072 A0                    fcb   $A0
+    301        A073 53                    fcb   $53
+    302        A074 69                    fcb   $69
+    303        A075 E4                    fcb   $E4
+    304        A076 49                    fcb   $49
+    305        A077 5C                    fcb   $5C
+    306        A078 2B                    fcb   $2B
+    307        A079 FA                    fcb   $FA
+    308        A07A E6                    fcb   $E6
+    309        A07B E4                    fcb   $E4
+    310        A07C AF                    fcb   $AF
+    311        A07D A1                    fcb   $A1
+    312        A07E 30                    fcb   $30
+    313        A07F 8B                    fcb   $8B
+    314        A080 35                    fcb   $35
+    315        A081 06                    fcb   $06
+    316        A082 5C                    fcb   $5C
+    317        A083 C1                    fcb   $C1
+    318        A084 34                    fcb   $34
+    319        A085 26                    fcb   $26
+    320        A086 DC                    fcb   $DC
+    321        A087 10                    fcb   $10
+    322        A088 AE                    fcb   $AE
+    323        A089 66                    fcb   $66
+    324        A08A C6                    fcb   $C6
+    325        A08B 01                    fcb   $01
+    326        A08C 8D                    fcb   $8D
+    327        A08D 50                    fcb   $50
+    328        A08E 26                    fcb   $26
+    329        A08F 15                    fcb   $15
+    330        A090 D7                    fcb   $D7
+    331        A091 45                    fcb   $45
+    332        A092 8C                    fcb   $8C
+    333        A093 0C                    fcb   $0C
+    334        A094 45                    fcb   $45
+    335        A095 5C                    fcb   $5C
+    336        A096 8D                    fcb   $8D
+    337        A097 46                    fcb   $46
+    338        A098 27                    fcb   $27
+    339        A099 F9                    fcb   $F9
+    340        A09A C6                    fcb   $C6
+    341        A09B 00                    fcb   $00
+    342        A09C C1                    fcb   $C1
+    343        A09D 10                    fcb   $10
+    344        A09E 27                    fcb   $27
+    345        A09F 37                    fcb   $37
+    346        A0A0 25                    fcb   $25
+    347        A0A1 0F                    fcb   $0F
+    348        A0A2 5A                    fcb   $5A
+    349        A0A3 8D                    fcb   $8D
+    350        A0A4 39                    fcb   $39
+    351        A0A5 1F                    fcb   $1F
+    352        A0A6 01                    fcb   $01
+    353        A0A7 A6                    fcb   $A6
+    354        A0A8 C2                    fcb   $C2
+    355        A0A9 A7                    fcb   $A7
+    356        A0AA A2                    fcb   $A2
+    357        A0AB 30                    fcb   $30
+    358        A0AC 1F                    fcb   $1F
+    359        A0AD 26                    fcb   $26
+    360        A0AE F8                    fcb   $F8
+    361        A0AF 20                    fcb   $20
+    362        A0B0 D9                    fcb   $D9
+    363        A0B1 8D                    fcb   $8D
+    364        A0B2 44                    fcb   $44
+    365        A0B3 34                    fcb   $34
+    366        A0B4 06                    fcb   $06
+    367        A0B5 30                    fcb   $30
+    368        A0B6 8C                    fcb   $8C
+    369        A0B7 4B                    fcb   $4B
+    370        A0B8 10                    fcb   $10
+    371        A0B9 83                    fcb   $83
+    372        A0BA 00                    fcb   $00
+    373        A0BB 03                    fcb   $03
+    374        A0BC 24                    fcb   $24
+    375        A0BD 01                    fcb   $01
+    376        A0BE 3A                    fcb   $3A
+    377        A0BF 8D                    fcb   $8D
+    378        A0C0 1B                    fcb   $1B
+    379        A0C1 EB                    fcb   $EB
+    380        A0C2 03                    fcb   $03
+    381        A0C3 8D                    fcb   $8D
+    382        A0C4 32                    fcb   $32
+    383        A0C5 DD                    fcb   $DD
+    384        A0C6 77                    fcb   $77
+    385        A0C7 35                    fcb   $35
+    386        A0C8 10                    fcb   $10
+    387        A0C9 31                    fcb   $31
+    388        A0CA 3F                    fcb   $3F
+    389        A0CB A6                    fcb   $A6
+    390        A0CC A9                    fcb   $A9
+    391        A0CD 12                    fcb   $12
+    392        A0CE 34                    fcb   $34
+    393        A0CF A7                    fcb   $A7
+    394        A0D0 A4                    fcb   $A4
+    395        A0D1 30                    fcb   $30
+    396        A0D2 1F                    fcb   $1F
+    397        A0D3 26                    fcb   $26
+    398        A0D4 F4                    fcb   $F4
+    399        A0D5 20                    fcb   $20
+    400        A0D6 B3                    fcb   $B3
+    401        A0D7 10                    fcb   $10
+    402        A0D8 AF                    fcb   $AF
+    403        A0D9 66                    fcb   $66
+    404        A0DA 35                    fcb   $35
+    405        A0DB FF                    fcb   $FF
+    406        A0DC E6                    fcb   $E6
+    407        A0DD 84                    fcb   $84
+    408        A0DE 6F                    fcb   $6F
+    409        A0DF E2                    fcb   $E2
+    410        A0E0 6F                    fcb   $6F
+    411        A0E1 E2                    fcb   $E2
+    412        A0E2 86                    fcb   $86
+    413        A0E3 12                    fcb   $12
+    414        A0E4 20                    fcb   $20
+    415        A0E5 09                    fcb   $09
+    416        A0E6 A6                    fcb   $A6
+    417        A0E7 C2                    fcb   $C2
+    418        A0E8 46                    fcb   $46
+    419        A0E9 27                    fcb   $27
+    420        A0EA FB                    fcb   $FB
+    421        A0EB 69                    fcb   $69
+    422        A0EC 61                    fcb   $61
+    423        A0ED 69                    fcb   $69
+    424        A0EE E4                    fcb   $E4
+    425        A0EF 5A                    fcb   $5A
+    426        A0F0 2A                    fcb   $2A
+    427        A0F1 F6                    fcb   $F6
+    428        A0F2 97                    fcb   $97
+    429        A0F3 8D                    fcb   $8D
+    430        A0F4 EC                    fcb   $EC
+    431        A0F5 E1                    fcb   $E1
+    432        A0F6 39                    fcb   $39
+    433        A0F7 30                    fcb   $30
+    434        A0F8 8D                    fcb   $8D
+    435        A0F9 00                    fcb   $00
+    436        A0FA 0E                    fcb   $0E
+    437        A0FB 3A                    fcb   $3A
+    438        A0FC 58                    fcb   $58
+    439        A0FD 3A                    fcb   $3A
+    440        A0FE 8D                    fcb   $8D
+    441        A0FF DC                    fcb   $DC
+    442        A100 E3                    fcb   $E3
+    443        A101 01                    fcb   $01
+    444        A102 39                    fcb   $39
+    445        A103 04                    fcb   $04
+    446        A104 02                    fcb   $02
+    447        A105 04                    fcb   $04
+    448        A106 10                    fcb   $10
+    449        A107 30                    fcb   $30
+    450        A108 20                    fcb   $20
+    451        A109 00                    fcb   $00
+    452        A10A 00                    fcb   $00
+    453        A10B 00                    fcb   $00
+    454        A10C 00                    fcb   $00
+    455        A10D 00                    fcb   $00
+    456        A10E 00                    fcb   $00
+    457        A10F 00                    fcb   $00
+    458        A110 00                    fcb   $00
+    459        A111 00                    fcb   $00
+    460        A112 00                    fcb   $00
+    461        A113 00                    fcb   $00
+    462        A114 00                    fcb   $00
+    463        A115 00                    fcb   $00
+    464        A116 00                    fcb   $00
+    465        A117 00                    fcb   $00
+    466        A118 00                    fcb   $00
+    467        A119 00                    fcb   $00
+    468        A11A 00                    fcb   $00
+    469        A11B 00                    fcb   $00
+    470        A11C 00                    fcb   $00
+    471        A11D 00                    fcb   $00
+    472        A11E 00                    fcb   $00
+    473        A11F 00                    fcb   $00
+    474        A120 00                    fcb   $00
+    475        A121 00                    fcb   $00
+    476        A122 00                    fcb   $00
+    477        A123 00                    fcb   $00
+    478        A124 00                    fcb   $00
+    479        A125 00                    fcb   $00
+    480        A126 00                    fcb   $00
+    481        A127 00                    fcb   $00
+    482        A128 00                    fcb   $00
+    483        A129 00                    fcb   $00
+    484        A12A 00                    fcb   $00
+    485        A12B 00                    fcb   $00
+    486        A12C 00                    fcb   $00
+    487        A12D 00                    fcb   $00
+    488        A12E 00                    fcb   $00
+    489        A12F 00                    fcb   $00
+    490        A130 00                    fcb   $00
+    491        A131 00                    fcb   $00
+    492        A132 00                    fcb   $00
+    493        A133 00                    fcb   $00
+    494        A134 00                    fcb   $00
+    495        A135 00                    fcb   $00
+    496        A136 00                    fcb   $00
+    497        A137 00                    fcb   $00
+    498        A138 00                    fcb   $00
+    499        A139 00                    fcb   $00
+    500        A13A 00                    fcb   $00
+    501        A13B 00                    fcb   $00
+    502        A13C 00                    fcb   $00
+    503        A13D 00                    fcb   $00
+    504        A13E 00                    fcb   $00
+    505        A13F 00                    fcb   $00
+    506        A140 00                    fcb   $00
+    507        A141 00                    fcb   $00
+    508        A142 00                    fcb   $00
+    509        A143 00                    fcb   $00
+    510        A144 00                    fcb   $00
+    511        A145 00                    fcb   $00
+    512        A146 00                    fcb   $00
+    513        A147 00                    fcb   $00
+    514        A148 00                    fcb   $00
+    515        A149 00                    fcb   $00
+    516        A14A 00                    fcb   $00
+    517        A14B 00                    fcb   $00
+    518        A14C 00                    fcb   $00
+    519        A14D 00                    fcb   $00
+    520        A14E 00                    fcb   $00
+    521        A14F 00                    fcb   $00
+    522        A150 00                    fcb   $00
+    523        A151 00                    fcb   $00
+    524        A152 00                    fcb   $00
+    525        A153 00                    fcb   $00
+    526        A154 00                    fcb   $00
+    527        A155 00                    fcb   $00
+    528        A156 00                    fcb   $00
+    529        A157 00                    fcb   $00
+    530        A158 00                    fcb   $00
+    531        A159 00                    fcb   $00
+    532        A15A 00                    fcb   $00
+    533        A15B 00                    fcb   $00
+    534        A15C 00                    fcb   $00
+    535        A15D 00                    fcb   $00
+    536        A15E 00                    fcb   $00
+    537        A15F 00                    fcb   $00
+    538        A160 00                    fcb   $00
+    539        A161 00                    fcb   $00
+    540        A162 00                    fcb   $00
+    541        A163 00                    fcb   $00
+    542        A164 00                    fcb   $00
+    543        A165 00                    fcb   $00
+    544        A166 00                    fcb   $00
+    545        A167 00                    fcb   $00
+    546        A168 00                    fcb   $00
+    547        A169 00                    fcb   $00
+    548        A16A 00                    fcb   $00
+    549        A16B 00                    fcb   $00
+    550        A16C 00                    fcb   $00
+    551        A16D 00                    fcb   $00
+    552        A16E 00                    fcb   $00
+    553        A16F 00                    fcb   $00
+    554        A170 00                    fcb   $00
+    555        A171 00                    fcb   $00
+    556        A172 00                    fcb   $00
+    557        A173 00                    fcb   $00
+    558        A174 00                    fcb   $00
+    559        A175 00                    fcb   $00
+    560        A176 00                    fcb   $00
+    561        A177 00                    fcb   $00
+    562        A178 00                    fcb   $00
+    563        A179 00                    fcb   $00
+    564        A17A 00                    fcb   $00
+    565        A17B 00                    fcb   $00
+    566        A17C 00                    fcb   $00
+    567        A17D 00                    fcb   $00
+    568        A17E 00                    fcb   $00
+    569        A17F 00                    fcb   $00
+    570        A180 00                    fcb   $00
+    571        A181 00                    fcb   $00
+    572        A182 00                    fcb   $00
+    573        A183 00                    fcb   $00
+    574        A184 00                    fcb   $00
+    575        A185 00                    fcb   $00
+    576        A186 00                    fcb   $00
+    577        A187 00                    fcb   $00
+    578        A188 00                    fcb   $00
+    579        A189 00                    fcb   $00
+    580        A18A 00                    fcb   $00
+    581        A18B 00                    fcb   $00
+    582        A18C 00                    fcb   $00
+    583        A18D 00                    fcb   $00
+    584        A18E 00                    fcb   $00
+    585        A18F 00                    fcb   $00
+    586        A190 00                    fcb   $00
+    587        A191 00                    fcb   $00
+    588        A192 00                    fcb   $00
+    589        A193 00                    fcb   $00
+    590        A194 00                    fcb   $00
+    591        A195 00                    fcb   $00
+    592        A196 00                    fcb   $00
+    593        A197 00                    fcb   $00
+    594        A198 00                    fcb   $00
+    595        A199 00                    fcb   $00
+    596        A19A 00                    fcb   $00
+    597        A19B 00                    fcb   $00
+    598        A19C 00                    fcb   $00
+    599        A19D 00                    fcb   $00
+    600        A19E 00                    fcb   $00
+    601        A19F 00                    fcb   $00
+    602        A1A0 00                    fcb   $00
+    603        A1A1 00                    fcb   $00
+    604        A1A2 00                    fcb   $00
+    605        A1A3 00                    fcb   $00
+    606        A1A4 00                    fcb   $00
+    607        A1A5 CE                    fcb   $CE
+    608        A1A6 41                    fcb   $41
+    609        A1A7 B2                    fcb   $B2
+    610        A1A8 34                    fcb   $34
+    611        A1A9 40                    fcb   $40
+    612        A1AA 86                    fcb   $86
+    613        A1AB 60                    fcb   $60
+    614        A1AC 1F                    fcb   $1F
+    615        A1AD 8B                    fcb   $8B
+    616        A1AE E6                    fcb   $E6
+    617        A1AF C0                    fcb   $C0
+    618        A1B0 1D                    fcb   $1D
+    619        A1B1 84                    fcb   $84
+    620        A1B2 01                    fcb   $01
+    621        A1B3 C4                    fcb   $C4
+    622        A1B4 80                    fcb   $80
+    623        A1B5 97                    fcb   $97
+    624        A1B6 49                    fcb   $49
+    625        A1B7 86                    fcb   $86
+    626        A1B8 00                    fcb   $00
+    627        A1B9 DD                    fcb   $DD
+    628        A1BA 4A                    fcb   $4A
+    629        A1BB C6                    fcb   $C6
+    630        A1BC 00                    fcb   $00
+    631        A1BD DD                    fcb   $DD
+    632        A1BE 4F                    fcb   $4F
+    633        A1BF EC                    fcb   $EC
+    634        A1C0 C1                    fcb   $C1
+    635        A1C1 2A                    fcb   $2A
+    636        A1C2 02                    fcb   $02
+    637        A1C3 0E                    fcb   $0E
+    638        A1C4 00                    fcb   $00
+    639        A1C5 97                    fcb   $97
+    640        A1C6 4C                    fcb   $4C
+    641        A1C7 F7                    fcb   $F7
+    642        A1C8 41                    fcb   $41
+    643        A1C9 99                    fcb   $99
+    644        A1CA 37                    fcb   $37
+    645        A1CB 26                    fcb   $26
+    646        A1CC B7                    fcb   $B7
+    647        A1CD 41                    fcb   $41
+    648        A1CE 9F                    fcb   $9F
+    649        A1CF F7                    fcb   $F7
+    650        A1D0 41                    fcb   $41
+    651        A1D1 A2                    fcb   $A2
+    652        A1D2 34                    fcb   $34
+    653        A1D3 40                    fcb   $40
+    654        A1D4 86                    fcb   $86
+    655        A1D5 02                    fcb   $02
+    656        A1D6 97                    fcb   $97
+    657        A1D7 48                    fcb   $48
+    658        A1D8 BD                    fcb   $BD
+    659        A1D9 E8                    fcb   $E8
+    660        A1DA 2A                    fcb   $2A
+    661        A1DB 0C                    fcb   $0C
+    662        A1DC 4C                    fcb   $4C
+    663        A1DD 96                    fcb   $96
+    664        A1DE 4C                    fcb   $4C
+    665        A1DF 81                    fcb   $81
+    666        A1E0 10                    fcb   $10
+    667        A1E1 23                    fcb   $23
+    668        A1E2 06                    fcb   $06
+    669        A1E3 86                    fcb   $86
+    670        A1E4 01                    fcb   $01
+    671        A1E5 97                    fcb   $97
+    672        A1E6 4C                    fcb   $4C
+    673        A1E7 0C                    fcb   $0C
+    674        A1E8 4B                    fcb   $4B
+    675        A1E9 0C                    fcb   $0C
+    676        A1EA 4F                    fcb   $4F
+    677        A1EB DE                    fcb   $DE
+    678        A1EC 4F                    fcb   $4F
+    679        A1ED 11                    fcb   $11
+    680        A1EE 83                    fcb   $83
+    681        A1EF 00                    fcb   $00
+    682        A1F0 00                    fcb   $00
+    683        A1F1 23                    fcb   $23
+    684        A1F2 E5                    fcb   $E5
+    685        A1F3 33                    fcb   $33
+    686        A1F4 C9                    fcb   $C9
+    687        A1F5 FF                    fcb   $FF
+    688        A1F6 00                    fcb   $00
+    689        A1F7 86                    fcb   $86
+    690        A1F8 00                    fcb   $00
+    691        A1F9 B7                    fcb   $B7
+    692        A1FA E7                    fcb   $E7
+    693        A1FB E5                    fcb   $E5
+    694        A1FC BD                    fcb   $BD
+    695        A1FD 40                    fcb   $40
+    696        A1FE 00                    fcb   $00
+    697        A1FF 35                    fcb   $35
+    698        A200 40                    fcb   $40
+    699        A201 20                    fcb   $20
+    700        A202 A7                    fcb   $A7
+    701        A203 00                    fcb   $00
+    702        A204 00                    fcb   $00
+    703        A205 00                    fcb   $00
+    704        A206 00                    fcb   $00
+    705        A207 00                    fcb   $00
+    706
+    707                                   INCLUD GMEDATA
+    708                           * Generated Code
+    709
+    710                  0000     gm_TITLESCR equ $00
+    711        A208               current_game_mode
+    712        A208 00                    fcb   gm_TITLESCR
+    713        A209               gm_data_TITLESCR
+    714        A209 FF FF FF FF           fcb   $FF,$FF,$FF,$FF,$FF,$FF,$FF>>
                A20D FF FF FF
-    657        A210               gm_dataEnd
-    658        A210               GameModesArray
-    659        A210 A209 0007             fdb   gm_data_TITLESCR,gm_dataEnd>>
+    715        A210               gm_dataEnd
+    716        A210               GameModesArray
+    717        A210 A209 0007             fdb   gm_data_TITLESCR,gm_dataEnd>>
     111
     112
 
 000000 Total Errors
 
-000079 Total Symbols
-     0x          Equ   0012 anim
-     0x          Equ   0011 anim_frame
-     0x          Equ   0014 anim_frame_duration
-     0x          Equ   001D collision_flags
+000110 Total Symbols
+     0x          Equ   0004 anim
+     0x          Equ   0006 anim_frame
+     0x          Equ   0007 anim_frame_duration
+     0x          Equ   0001 bckdraw_routine
+     0x          Equ   0007 buf_bgdata
+     0x          Equ   000D buf_onscreen
+     0x          Equ   0005 buf_prev_mapping_frame
+     0x          Equ   000B buf_prev_x2_pixel
+     0x          Equ   0009 buf_prev_x_pixel
+     0x          Equ   000C buf_prev_y2_pixel
+     0x          Equ   000A buf_prev_y_pixel
+     0x          Equ   0000 buf_priority
+     0x          Equ   0003 buf_priority_next_obj
+     0x          Equ   0001 buf_priority_prev_obj
      1x          Label A043 CopyCode1
      0x          Label A047 CopyCode2
      1x          Label A04D CopyCode3
@@ -657,6 +725,10 @@ Pass2
      0x          Equ   6049 dk_lecteur
      0x          Equ   604A dk_piste
      0x          Equ   604C dk_secteur
+     0x          Equ   0004 draw_routine
+     0x          Equ   0009 erase_nb_cell
+     0x          Equ   0007 erase_routine
+     0x          Equ   0014 ext_variables
      1x          Label A056 GameModeEngineBin
      0x          Label A000 GameModeEngineLoader
      1x          Label A210 GameModesArray
@@ -665,60 +737,77 @@ Pass2
      1x          Equ   0000 gm_TITLESCR
      0x          Equ   0038 gravity
      0x          Equ   0000 id
-     0x          Equ   000B mapping_frame
-     0x          Equ   001F next_object
-     0x          Equ   002D number_of_dynamic_objects
-     0x          Equ   0003 number_of_level_objects
-     0x          Equ   0002 number_of_reserved_objects
-     1x          Equ   001F object_size
-     0x          Equ   0018 objoff_01
-     0x          Equ   0019 objoff_02
-     0x          Equ   001A objoff_03
-     0x          Equ   001B objoff_04
-     0x          Equ   001C objoff_05
-     0x          Equ   0013 prev_anim
-     0x          Equ   0008 priority
-     0x          Equ   0004 render_coordinate1_mask
-     0x          Equ   0008 render_coordinate2_mask
+     0x          Equ   0010 image_meta_size
+     0x          Equ   000A image_x_offset
+     0x          Equ   000E image_x_size
+     0x          Equ   000C image_y_offset
+     0x          Equ   000F image_y_size
+     0x          Equ   0008 mapping_frame
+     1x          Equ   003B nb_dynamic_objects
+     0x          Equ   0003 nb_level_objects
+     0x          Equ   003D nb_objects
+     0x          Equ   0008 nb_priority_levels
+     1x          Equ   0002 nb_reserved_objects
+     0x          Equ   0050 next_object
+     1x          Equ   0050 object_size
+     0x          Equ   0000 page_bckdraw_routine
+     0x          Equ   0003 page_draw_routine
+     0x          Equ   0006 page_erase_routine
+     0x          Equ   0003 priority
+     0x          Equ   0010 render_fixedoverlay_mask
      0x          Equ   0002 render_flags
-     0x          Equ   0080 render_onscreen_mask
-     0x          Equ   0020 render_staticmappings_mask
-     0x          Equ   0040 render_subobjects_mask
+     0x          Equ   0040 render_free2_mask
+     0x          Equ   0080 render_free3_mask
+     0x          Equ   0008 render_hide_mask
+     0x          Equ   0004 render_playfieldcoord_mask
+     0x          Equ   0020 render_todelete_mask
      0x          Equ   0001 render_xmirror_mask
-     0x          Equ   0010 render_ycheckonscreen_mask
      0x          Equ   0002 render_ymirror_mask
-     0x          Equ   0016 routine
-     0x          Equ   0017 routine_secondary
-     0x          Equ   0015 status
-     0x          Equ   0002 status_inair_mask
-     0x          Equ   0001 status_leftfacing_mask
-     0x          Equ   0008 status_onobject_mask
-     0x          Equ   0020 status_pushing_mask
-     0x          Equ   0010 status_rolljumping_mask
-     0x          Equ   0008 status_sec_3_mask
-     0x          Equ   0010 status_sec_4_mask
-     0x          Equ   0020 status_sec_5_mask
-     0x          Equ   0040 status_sec_6_mask
-     0x          Equ   0001 status_sec_hasShield_mask
-     0x          Equ   0004 status_sec_hasSpeedShoes_mask
-     0x          Equ   0002 status_sec_isInvincible_mask
-     0x          Equ   0080 status_sec_isSliding_mask
-     0x          Equ   0004 status_spinning_mask
-     0x          Equ   0080 status_tobedeleted_mask
-     0x          Equ   0040 status_underwater_mask
-     0x          Equ   001E subtype
+     0x          Equ   0012 routine
+     0x          Equ   0013 routine_secondary
+     0x          Equ   003B rsv_bgdata_0
+     0x          Equ   0049 rsv_bgdata_1
+     0x          Equ   0034 rsv_buffer_0
+     0x          Equ   0042 rsv_buffer_1
+     0x          Equ   002C rsv_curr_mapping_frame
+     0x          Equ   0041 rsv_onscreen_0
+     0x          Equ   004F rsv_onscreen_1
+     0x          Equ   002A rsv_prev_anim
+     0x          Equ   0039 rsv_prev_mapping_frame_0
+     0x          Equ   0047 rsv_prev_mapping_frame_1
+     0x          Equ   003F rsv_prev_x2_pixel_0
+     0x          Equ   004D rsv_prev_x2_pixel_1
+     0x          Equ   003D rsv_prev_x_pixel_0
+     0x          Equ   004B rsv_prev_x_pixel_1
+     0x          Equ   0040 rsv_prev_y2_pixel_0
+     0x          Equ   004E rsv_prev_y2_pixel_1
+     0x          Equ   003E rsv_prev_y_pixel_0
+     0x          Equ   004C rsv_prev_y_pixel_1
+     0x          Equ   0034 rsv_priority_0
+     0x          Equ   0042 rsv_priority_1
+     0x          Equ   0037 rsv_priority_next_obj_0
+     0x          Equ   0045 rsv_priority_next_obj_1
+     0x          Equ   0035 rsv_priority_prev_obj_0
+     0x          Equ   0043 rsv_priority_prev_obj_1
+     0x          Equ   0030 rsv_ptr_sub_object_draw
+     0x          Equ   002E rsv_ptr_sub_object_erase
+     0x          Equ   0001 rsv_render_checkrefresh_mask
+     0x          Equ   0004 rsv_render_displaysprite_mask
+     0x          Equ   0002 rsv_render_erasesprite_mask
+     0x          Equ   0029 rsv_render_flags
+     0x          Equ   0008 rsv_render_outofrange_mask
+     0x          Equ   0032 rsv_x2_pixel
+     0x          Equ   0033 rsv_y2_pixel
+     0x          Equ   00C8 screen_height
+     0x          Equ   00A0 screen_width
+     0x          Equ   0001 subtype
      0x          Label A00A SwapVideoPage
      1x          Label A000 WaitVBL
      1x          Label A005 WaitVBL_01
-     0x          Equ   000A width_pixels
-     0x          Equ   0003 x_pixel
-     2x          Equ   0003 x_pos
-     0x          Equ   0010 x_radius
-     0x          Equ   0005 x_sub
-     0x          Equ   000B x_vel
-     0x          Equ   0005 y_pixel
-     0x          Equ   0005 y_pos
-     0x          Equ   000F y_radius
-     0x          Equ   0007 y_sub
-     0x          Equ   000D y_vel
+     0x          Equ   0010 x_pixel
+     0x          Equ   000A x_pos
+     0x          Equ   000C x_sub
+     0x          Equ   0011 y_pixel
+     0x          Equ   000D y_pos
+     0x          Equ   000F y_sub
 

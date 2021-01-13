@@ -1,10 +1,10 @@
-; -------------------------------------------------------------------------------
-; This runs the code of all the objects that are in Object_RAM
-;
-; écart par rapport au code d'origine :
-; Il n'y a pas de tableau de pointeur Obj_Index, les ids d'objets sont l'adresse
-; du code de l'objet
-; -------------------------------------------------------------------------------
+* -------------------------------------------------------------------------------
+* This runs the code of all the objects that are in Object_RAM
+*
+* ecart par rapport au code d'origine :
+* Il n'y a pas de tableau de pointeur Obj_Index, les ids d'objets sont l'adresse
+* du code de l'objet
+* -------------------------------------------------------------------------------
 
                                        *; -------------------------------------------------------------------------------
                                        *; This runs the code of all the objects that are in Object_RAM
@@ -82,7 +82,7 @@ RunObjectsWhenPlayerIsDead             *RunObjectsWhenPlayerIsDead:
         stx   am_RunNextObject+2    
         bra   RunObject                                          
                                        *
-        ldx   #Object_RAM_End          * repositionne la fin du RunObject avec sa valeur par défaut
+        ldx   #Object_RAM_End          * repositionne la fin du RunObject avec sa valeur par dï¿½faut
         stx   am_RunNextObject+2
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *

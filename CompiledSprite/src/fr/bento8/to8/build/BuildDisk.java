@@ -50,6 +50,7 @@ public class BuildDisk
 	// Engine
 	private static String engineAsmBoot;
 	private static String engineAsmGameMode;
+	private static String engineAsmMainEngine;	
 	private static HashMap<String, String[]> engineAsmIncludes;
 
 	// Game Mode
@@ -191,6 +192,7 @@ public class BuildDisk
 			// Ecriture sur disquette
 			fd.setIndex(0, 0, 2);
 			fd.write(binBytes);
+			int indexBackup = fd.getIndex();
 
 			// Compilation du code de boot
 			// *****************************************************************
@@ -207,6 +209,23 @@ public class BuildDisk
 			fd.setIndex(0, 0, 1);
 			fd.write(bootLoaderBytes);
 
+			// Compilation du code de Main Engine
+			// *****************************************************************
+
+			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
+
+			compileRAW(mainEngineTmpFile);
+			binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
+			binBytesSize = binBytes.length;
+
+			if (binBytesSize > 16384) {
+				throw new Exception("Le fichier "+engineAsmMainEngine+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
+			}
+
+			// Ecriture sur disquette
+			fd.setIndex(indexBackup);
+			fd.write(binBytes);			
+			
 			// Génération des images de disquettes
 			// *****************************************************************
 
@@ -387,6 +406,11 @@ public class BuildDisk
 		engineAsmGameMode = prop.getProperty("engine.asm.gameMode");
 		if (engineAsmGameMode == null) {
 			throw new Exception("Paramètre engine.asm.gameMode manquant dans le fichier "+file);
+		}
+		
+		engineAsmMainEngine = prop.getProperty("engine.asm.mainEngine");
+		if (engineAsmMainEngine == null) {
+			throw new Exception("Paramètre engine.asm.mainEngine manquant dans le fichier "+file);
 		}
 
 		engineAsmIncludes = getPropertyList(prop, "engine.asm.includ");		
