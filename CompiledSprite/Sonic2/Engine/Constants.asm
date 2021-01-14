@@ -94,7 +94,27 @@ x_vel                         equ 20 ; and 21 ; horizontal velocity
 y_vel                         equ 22 ; and 23 ; vertical velocity
 routine                       equ 24          ; index of current object routine
 routine_secondary             equ 25          ; index of current secondary routine
-ext_variables                 equ 26 ; to 40  ; reserved space for additionnal variables
+status                        equ 26 
+
+* --- status bitfield variables for objects ---
+status_x_orientation          equ   $01 ; (bit 0) X Orientation. Clear is left and set is right
+status_y_orientation          equ   $02 ; (bit 1) Y Orientation. Clear is right-side up, and set is upside-down
+status_bit2                   equ   $04 ; (bit 2) Unused
+status_mainchar_standing      equ   $08 ; (bit 3) Set if Main character is standing on this object
+status_sidekick_standing      equ   $10 ; (bit 4) Set if Sidekick is standing on this object
+status_mainchar_pushing       equ   $20 ; (bit 5) Set if Main character is pushing on this object
+status_sidekick_pushing       equ   $40 ; (bit 6) Set if Sidekick is pushing on this object
+status_bit7                   equ   $80 ; (bit 7) Unused
+
+* --- status bitfield variables for Main characters ---
+status_inair                  equ   $02 ; (bit 1) Set if in the air (jump counts)
+status_jumporroll             equ   $04 ; (bit 2) Set if jumping or rolling
+status_norgroundnorfall       equ   $08 ; (bit 3) Set if isn't on the ground but shouldn't fall. (Usually when he is on a object that should stop him falling, like a platform or a bridge.)
+status_jumpingafterrolling    equ   $10 ; (bit 4) Set if jumping after rolling
+status_pushing                equ   $20 ; (bit 5) Set if pushing something
+status_underwater             equ   $40 ; (bit 6) Set if underwater
+
+ext_variables                 equ 27 ; to 40  ; reserved space for additionnal variables
 
 * ---------------------------------------------------------------------------
 * reserved variables (engine)

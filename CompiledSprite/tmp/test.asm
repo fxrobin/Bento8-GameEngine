@@ -2,7 +2,8 @@
    org $6200
    setdp $90
 
-rsv_priority_next_obj_0 equ 55
+render_xmirror_mask           equ $01 ; (bit 0) tell display engine to mirror sprite on horizontal axis
+render_ymirror_mask           equ $02 ; (bit 1) tell display engine to mirror sprite on vertical axis
 
-        ldx   rsv_priority_next_obj_0,x
-        leax  rsv_priority_next_obj_0,x
+
+           leay  b,x
