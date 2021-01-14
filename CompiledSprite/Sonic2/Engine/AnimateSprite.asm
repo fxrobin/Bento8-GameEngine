@@ -5,7 +5,7 @@
 *   the status byte;
 *
 * input REG : [u] pointeur sur l'objet
-*             [x] pointeur sur le script d'animation de l'objet
+*
 * ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
@@ -17,10 +17,10 @@
                                        *; sub_16544:
 AnimateSprite                          *AnimateSprite:
                                        *    moveq   #0,d0
-        lda   anim,u                   *    move.b  anim(a0),d0      ; move animation number to d0
-        cmpa  prev_anim,u              *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
+        ldx   anim,u                   *    move.b  anim(a0),d0      ; move animation number to d0
+        cmpx  prev_anim,u              *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
         beq   Anim_Run                 *    beq.s   Anim_Run         ; if not, branch
-        sta   prev_anim,u              *    move.b  d0,prev_anim(a0) ; set prev anim to current animation
+        stx   prev_anim,u              *    move.b  d0,prev_anim(a0) ; set prev anim to current animation
 		ldb   #0
         stb   anim_frame,u             *    move.b  #0,anim_frame(a0)          ; reset animation
         stb   anim_frame_duration,u    *    move.b  #0,anim_frame_duration(a0) ; reset frame duration
@@ -28,13 +28,14 @@ AnimateSprite                          *AnimateSprite:
 Anim_Run                               *Anim_Run:
         dec   anim_frame_duration,u    *    subq.b  #1,anim_frame_duration(a0)   ; subtract 1 from frame duration
         bpl   Anim_Wait                *    bpl.s   Anim_Wait                    ; if time remains, branch
-        adda  anim,u                   *    add.w   d0,d0                        ; i*2 position de l'adresse 
-        leax  a,x                      *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
+        * no offset table              *    add.w   d0,d0
+        * anim is the address of anim  *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
         ldb   ,x
 		stb   anim_frame_duration,u    *    move.b  (a1),anim_frame_duration(a0) ; load frame duration
                                        *    moveq   #0,d1
         ldb   anim_frame,u             *    move.b  anim_frame(a0),d1 ; load current frame number
         incb
+!!!        aslb mais pb a l'enregistrement de l'index
         lda   b,x                      *    move.b  1(a1,d1.w),d0 ; read sprite number from script
         * bmi   Anim_End_FF            *    bmi.s   Anim_End_FF   ; if animation is complete, branch
 		cmpa  #$FA                     *    cmp.b   #$FA,d0       ; MJ: is it a flag from FA to FF?

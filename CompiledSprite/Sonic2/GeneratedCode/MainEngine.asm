@@ -105,7 +105,7 @@ Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of obje
 * Object Status Table - OST
 * ---------------------------------------------------------------------------
         
-Object_RAM * @globals
+Object_RAM *@globals
 Reserved_Object_RAM
 Obj_MainCharacter             rmb   object_size,0
 Obj_Sidekick                  rmb   object_size,0
@@ -144,12 +144,12 @@ Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
         INCLUD UPDTPAL
         INCLUD READJPDS
         INCLUD RUNOBJTS
+        INCLUD MRKOBJGN        
+        INCLUD DISPLSPR        
         INCLUD ANIMSPR
         INCLUD OBJMOVE
         INCLUD OBJLOAD
         INCLUD DELETOBJ
-        INCLUD DISPLSPR
-        INCLUD MRKOBJGN
         INCLUD CLEAROBJ
         INCLUD CHECKSPR
         INCLUD ERASESPR
@@ -157,7 +157,7 @@ Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
         INCLUD DRAWSPR
         INCLUD BGBALLOC
         INCLUD BGBFREE
-        
+(info)
 
 (include)CONSTANT
 * ---------------------------------------------------------------------------
@@ -215,7 +215,7 @@ image_meta_size               equ 16 ; number of bytes for each image reference
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 59
+nb_dynamic_objects            equ 43
 nb_level_objects              equ 3
 nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_level_objects
 
@@ -242,18 +242,21 @@ render_free3_mask             equ $80 ; (bit 7) free
  
 priority                      equ 3           ; display priority (0: nothing to display, 1:front, ..., 8:back)
 anim                          equ 4  ; and 5  ; reference to current animation (Ani_)
-anim_frame                    equ 6           ; index of current frame in animation
-anim_frame_duration           equ 7           ; number of frames for each image in animation, range: 00-7F (0-127), 0 means display only during one frame
-mapping_frame                 equ 8  ; and 9  ;reference to current image (Img_) (0000 if no image)
-x_pos                         equ 10 ; and 11 ; x playfield coordinate
-x_sub                         equ 12          ; x subpixel (1/256 of a pixel), must follow x_pos in data structure
-y_pos                         equ 13 ; and 14 ; y playfield coordinate
-y_sub                         equ 15          ; y subpixel (1/256 of a pixel), must follow y_pos in data structure
-x_pixel                       equ 16          ; x screen coordinate
-y_pixel                       equ 17          ; y screen coordinate, must follow x_pixel
-routine                       equ 18          ; index of current object routine
-routine_secondary             equ 19          ; index of current secondary routine
-ext_variables                 equ 20 ; to 40  ; reserved space for additionnal variables
+prev_anim                     equ 6  ; and 7  ; reference to previous animation (Ani_)
+anim_frame                    equ 8           ; index of current frame in animation
+anim_frame_duration           equ 9           ; number of frames for each image in animation, range: 00-7F (0-127), 0 means display only during one frame
+mapping_frame                 equ 10 ; and 11 ;reference to current image (Img_) (0000 if no image)
+x_pos                         equ 12 ; and 13 ; x playfield coordinate
+x_sub                         equ 14          ; x subpixel (1/256 of a pixel), must follow x_pos in data structure
+y_pos                         equ 15 ; and 16 ; y playfield coordinate
+y_sub                         equ 17          ; y subpixel (1/256 of a pixel), must follow y_pos in data structure
+x_pixel                       equ 18          ; x screen coordinate
+y_pixel                       equ 19          ; y screen coordinate, must follow x_pixel
+x_vel                         equ 20 ; and 21 ; horizontal velocity
+y_vel                         equ 22 ; and 23 ; vertical velocity
+routine                       equ 24          ; index of current object routine
+routine_secondary             equ 25          ; index of current secondary routine
+ext_variables                 equ 26 ; to 40  ; reserved space for additionnal variables
 
 * ---------------------------------------------------------------------------
 * reserved variables (engine)
@@ -392,6 +395,16 @@ Vint_runcount rmb   $2,0 *@globals
 ********************************************************************************
 * Mise a jour de la palette
 ********************************************************************************
+* TODO ajout systeme de refresh pour ne pas update la palette a chaque passage
+* ou integrer le refresh palette en debut d'overscan avant que le faisceau entre en visu
+* palette doit etre refresh avant le tracage avec les donnees de la precedente frame pas la nouvelle
+
+cpt            fcb   $00
+Ptr_palette    equ   Normal_palette
+Normal_palette rmb   $20,0   *@globals
+Black_palette  rmb   $20,0   *@globals
+White_palette  rmb   $20,$FF *@globals
+
 UpdatePalette
     	ldy   [Ptr_palette]
     	ldx   [Ptr_palette]
@@ -399,31 +412,21 @@ UpdatePalette
     	clr   cpt                      * registre A a 0
 SetColor
         lda   cpt			           * sauvegarde A
-    	alsa				           * multiplication par deux de A 
+    	asla				           * multiplication par deux de A 
     	sta   $E7DB			           * determine l'indice de couleur (x2): 0=0, 1=2, 2=4, .. 15=30
     	ldd   ,y++			           * chargement de la couleur et increment du poiteur Y
     	stb   $E7DA			           * set de la couleur Vert et Rouge
     	sta   $E7DA                    * set de la couleur Bleu
     	inc   cpt			           * et increment de A
     	cmpy  ,x                       * test fin de liste
-    	bna   SetColor                 * on reboucle si fin de liste pas atteinte
+    	bne   SetColor                 * on reboucle si fin de liste pas atteinte
         rts
-        
-; TODO ajout systeme de refresh pour ne pas update la palette a chaque passage
-; ou integrer le refresh palette en debut d'overscan avant que le faisceau entre en visu
-; palette doit etre refresh avant le tracage avec les donnees de la precedente frame pas la nouvelle
-
-cpt            fcb   $00
-Ptr_palette    #Normal_palette
-Normal_palette rmb   $20,0   *@globals
-Black_palette  rmb   $20,0   *@globals
-White_palette  rmb   $20,$FF *@globals
 
 
 (include)READJPDS
-; ---------------------------------------------------------------------------
-; Controller Buttons
-;
+* ---------------------------------------------------------------------------
+* Controller Buttons
+*
 c1_button_up_mask            equ   $01 *@globals
 c1_button_down_mask          equ   $02 *@globals
 c1_button_left_mask          equ   $04 *@globals
@@ -551,7 +554,8 @@ RunObjects_01                          *+
                                        *    tst.w   (Two_player_mode).w
                                        *    bne.s   RunObject ; if in 2 player competition mode, branch to RunObject
                                        *
-        tst   MainCharacter_is_dead    *    cmpi.b  #6,(MainCharacter+routine).w
+                                       *    cmpi.b  #6,(MainCharacter+routine).w
+        tst   Glb_MainCharacter_Is_Dead
         beq   RunObjectsWhenPlayerIsDead
                                        *    bhs.s   RunObjectsWhenPlayerIsDead ; if dead, branch
                                        *    ; continue straight to RunObject
@@ -615,7 +619,7 @@ RunObjectDisplayOnly                   *RunObjectDisplayOnly:
         beq   RunNextObjectDisplayOnly *    beq.s   +   ; if it's obj00, skip it
         tst   render_flags,y           *    tst.b   render_flags(a0)    ; should we render it?
         bpl   RunNextObjectDisplayOnly *    bpl.s   +           ; if not, skip it
-        bsr   DisplaySprite           *    bsr.w   DisplaySprite
+        bsr   DisplaySprite            *    bsr.w   DisplaySprite
 RunNextObjectDisplayOnly               *+
         leay  next_object,y            *    lea next_object(a0),a0 ; load 0bj address
         cmpy  #Dynamic_Object_RAM_End  *    dbf d7,RunObjectDisplayOnly
@@ -624,6 +628,164 @@ RunNextObjectDisplayOnly               *+
                                        *; End of function RunObjectDisplayOnly
                                        *
                                        *; ===========================================================================
+
+(include)MRKOBJGN
+* ---------------------------------------------------------------------------
+* MarkObjGone
+* -----------
+* Subroutine to destroy an object that is outside of destroy/respawn limit
+* -- TODO --
+* waiting for camera implementation
+*
+* input REG : none
+* clear REG : none
+* ---------------------------------------------------------------------------
+
+                                       *; ---------------------------------------------------------------------------
+                                       *; Routines to mark an enemy/monitor/ring/platform as destroyed
+                                       *; ---------------------------------------------------------------------------
+                                       *
+                                       *; ===========================================================================
+                                       *; input: a0 = the object
+                                       *; loc_163D2:
+MarkObjGone *@globals                  *MarkObjGone:
+                                       *    tst.w   (Two_player_mode).w ; is it two player mode?
+                                       *    beq.s   +           ; if not, branch
+        bra   DisplaySprite            *    bra.w   DisplaySprite
+                                       *+
+                                       *    move.w  x_pos(a0),d0
+                                       *    andi.w  #$FF80,d0
+                                       *    sub.w   (Camera_X_pos_coarse).w,d0
+                                       *    cmpi.w  #$80+320+$40+$80,d0 ; This gives an object $80 pixels of room offscreen before being unloaded (the $40 is there to round up 320 to a multiple of $80)
+                                       *    bhi.w   +
+                                       *    bra.w   DisplaySprite
+                                       *
+                                       *+   lea (Object_Respawn_Table).w,a2
+                                       *    moveq   #0,d0
+                                       *    move.b  respawn_index(a0),d0
+                                       *    beq.s   +
+                                       *    bclr    #7,2(a2,d0.w)
+                                       *+
+                                       *    bra.w   MarkObjToBeDeleted
+
+(include)DISPLSPR
+* ---------------------------------------------------------------------------
+* DisplaySprite
+* -------------
+* Subroutine to manage sprite priority.
+* Object's priority is read and object is (un)registred in display engine.
+* priority: 0 - unregistred
+* priority: 1 - register non moving overlay sprite
+* priority; 2-8 - register moving sprite (2:front, ..., 8:back)  
+*
+* Unlike original S2 code, sprite priority is stored in an open doubly linked list
+* it allows to keep an exact sprite order for each screen buffer 
+*
+* DisplaySprite
+* input REG : [u] object pointer (OST)
+*
+* DisplaySprite_x
+* input REG : [x] object pointer (OST)
+* ---------------------------------------------------------------------------
+									   
+DisplaySprite_x *@globals
+        pshs  d,x,u
+        tfr   x,u
+        bra   DSP_Start
+        
+DisplaySprite *@globals
+        pshs  d,x,u
+        
+DSP_Start
+        lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
+        bne   DSP_SetBuffer1
+        
+DSP_SetBuffer0        
+        leax  rsv_buffer_0,u                ; set x pointer to object variables that belongs to screen buffer 0
+        ldy   DPS_buffer_0                  ; set y pointer to Display Priority Structure that belongs to screen buffer 0
+        bra   DSP_BufferPositionned
+        
+DSP_SetBuffer1       
+        leax  rsv_buffer_1,u                ; set x pointer to object variables that belongs to screen buffer 1
+        ldy   DPS_buffer_1                  ; set y pointer to Display Priority Structure that belongs to screen buffer 1        
+        
+DSP_BufferPositionned       
+        lda   priority,u                    ; read priority set for this object
+        cmpa  buf_priority,x
+        beq   DSP_rts                       ; priority and current priority are the same: nothing to do
+        ldb   buf_priority,x   
+        bne   DSP_ChangePriority
+        
+DSP_InitPriority
+        sta   buf_priority,x                ; init priority for this screen buffer with priority from object
+        
+DSP_CheckLastEntry
+        leay  buf_Tbl_Priority_Last_Entry,y
+        tst   a,y                           ; test left byte only is ok, no object will be stored at $00__ address
+        bne   DSP_addToExistingNode         ; not the first object at this priority level, branch
+        
+DSP_addFirstNode        
+        stu   a,y                           ; save object as last entry in linked list
+        leay  buf_Tbl_Priority_First_Entry-buf_Tbl_Priority_Last_Entry,y
+        stu   a,y                           ; save object as first entry in linked list
+        ldd   0
+        std   buf_priority_prev_obj,x       ; clear object prev and next link, it's the only object at this priority level
+        std   buf_priority_next_obj,x
+        bra   DSP_rts
+        
+DSP_addToExistingNode
+        ldx   [a,y]                         ; x register now store last object at the priority level of current object
+        ldb   Glb_Cur_Wrk_Screen_Id
+        bne   DSP_LinkBuffer1
+        stu   rsv_priority_next_obj_0,x     ; link last object with current object if active screen buffer 0
+        bra   DSP_LinkCurWithPrev        
+DSP_LinkBuffer1        
+        stu   rsv_priority_next_obj_1,x     ; link last object with current object if active screen buffer 1
+        
+DSP_LinkCurWithPrev        
+        stx   buf_priority_prev_obj,u       ; link current object with previous object
+        stu   a,y                           ; update last object in index
+        ldd   0
+        std   buf_priority_next_obj,x       ; clear object next link                
+        bra   DSP_rts
+        
+DSP_ChangePriority
+        leay  buf_Lst_Priority_Unset,y
+        stu   [,y]                          ; add object address to unset list
+        leay  2,y
+        sty   ,y                            ; set index to next free cell of unset list
+        leay  -buf_Lst_Priority_Unset-2,y
+        cmpa  0
+        bne   DSP_CheckLastEntry            ; priority is != 0, branch to add object to display priority list
+
+DSP_rts
+        puls  d,x,u,pc
+        
+                                       *; ---------------------------------------------------------------------------
+                                       *; Subroutine to display a sprite/object, when a0 is the object RAM
+                                       *; ---------------------------------------------------------------------------
+                                       *
+                                       *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+                                       *
+                                       *; sub_164F4:
+                                       *DisplaySprite:
+                                       *    lea (Sprite_Table_Input).w,a1
+                                       *    move.w  priority(a0),d0
+                                       *    lsr.w   #1,d0
+                                       *    andi.w  #$380,d0
+                                       *    adda.w  d0,a1
+                                       
+                                       *    cmpi.w  #$7E,(a1)
+                                       *    bhs.s   return_16510
+                                       *    addq.w  #2,(a1)
+                                       
+                                       *    adda.w  (a1),a1
+                                       *    move.w  a0,(a1)
+                                       *
+                                       *return_16510:
+                                       
+                                       *    rts
+                                       *; End of function DisplaySprite        
 
 (include)ANIMSPR
 * ---------------------------------------------------------------------------
@@ -752,11 +914,11 @@ Anim_End                               *Anim_End:
                                        *; End of function AnimateSprite
 
 (include)OBJMOVE
-; ---------------------------------------------------------------------------
-; Subroutine translating object speed to update object position
-; This moves the object horizontally and vertically
-; but does not apply gravity to it
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Subroutine translating object speed to update object position
+* This moves the object horizontally and vertically
+* but does not apply gravity to it
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine translating object speed to update object position
@@ -806,13 +968,13 @@ am_ObjectMove_02
                                        *; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 (include)OBJLOAD
-; ---------------------------------------------------------------------------
-; Single object loading subroutine
-; Find an empty object array
-;
- ; input  REG : [u] pointeur sur l'objet courant  
- ; output REG : [x] pointeur sur l'objet libre   
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Single object loading subroutine
+* Find an empty object array
+*
+* input  REG : [u] pointeur sur l'objet courant  
+* output REG : [x] pointeur sur l'objet libre   
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Single object loading subroutine
@@ -908,23 +1070,22 @@ SingleObjLoad2_02                      *return_18014:
                                        *return_18028:
                                        *    rts
                                        *; ===========================================================================
-(info)
 
 
 (include)DELETOBJ
-; ---------------------------------------------------------------------------
-; DeleteObject
-; ------------
-; Subroutine to delete an object.
-; If the object is rendered as a sprite it will be deleted by EraseSprites
-; routine
-;
-; DeleteObject
-; input REG : [u] object pointer (OST)
-;
-; DeleteObject_x
-; input REG : [x] object pointer (OST)
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* DeleteObject
+* ------------
+* Subroutine to delete an object.
+* If the object is rendered as a sprite it will be deleted by EraseSprites
+* routine
+*
+* DeleteObject
+* input REG : [u] object pointer (OST)
+*
+* DeleteObject_x
+* input REG : [x] object pointer (OST)
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine to delete an object
@@ -933,15 +1094,14 @@ SingleObjLoad2_02                      *return_18014:
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *
                                        *; freeObject:
-DeleteObject_x @globals                *DeleteObject:
+DeleteObject_x *@globals               *DeleteObject:
         pshs  d,x,u                    *    movea.l a0,a1
         tfr   x,u                      *; sub_164E8:
         bra   DOB_Start
-DeleteObject @globals                  *DeleteObject2:
+DeleteObject *@globals                 *DeleteObject2:
         pshs  d,x,u
 DOB_Start
-        lda   rsv_render_flags,u
-        anda  #rsv_render_onscreen_0_mask
+        lda   rsv_onscreen_0,u
         beq   DOB_TestOnscreen1Delete  ; branch if not onscreen on buffer 0
         
 DOB_Unset0        
@@ -951,8 +1111,7 @@ DOB_Unset0
         stx   Lst_Priority_Unset_0
         
 DOB_TestOnscreen1
-        lda   rsv_render_flags,u
-        anda  #rsv_render_onscreen_1_mask
+        lda   rsv_onscreen_1,u
         beq   DOB_ToDeleteFlag         ; branch if not onscreen on buffer 1
         
 DOB_Unset1
@@ -963,11 +1122,10 @@ DOB_Unset1
         bra  DOB_ToDeleteFlag 
         
 DOB_TestOnscreen1Delete
-        lda   rsv_render_flags,u
-        anda  #rsv_render_onscreen_1_mask
+        lda   rsv_onscreen_1,u
         bne   DOB_Unset1               ; branch if onscreen on buffer 1        
 
-        jsr   ClearObj                 ; this object is not onscreen anymore, clear this object rightnow
+        jsr   ClearObj                 ; this object is not onscreen anymore, clear this object now
         bra   DOB_rts
                                        *    moveq   #0,d1
                                        *
@@ -988,175 +1146,17 @@ DOB_rts
         puls  d,x,u,pc                 *    rts
                                        *; End of function DeleteObject2
 
-(include)DISPLSPR
-; ---------------------------------------------------------------------------
-; DisplaySprite
-; -------------
-; Subroutine to manage sprite priority.
-; Object's priority is read and object is (un)registred in display engine.
-; priority: 0 - unregistred
-; priority: 1 - register non moving overlay sprite
-; priority; 2-8 - register moving sprite (2:front, ..., 8:back)  
-;
-; Unlike original S2 code, sprite priority is stored in an open doubly linked list
-; it allows to keep an exact sprite order for each screen buffer 
-;
-; DisplaySprite
-; input REG : [u] object pointer (OST)
-;
-; DisplaySprite_x
-; input REG : [x] object pointer (OST)
-; ---------------------------------------------------------------------------
-									   
-DisplaySprite_x @globals
-        pshs  d,x,u
-        tfr   x,u
-        bra DisplaySprite_Start
-        
-DisplaySprite @globals
-        pshs  d,x,u
-        
-DSP_Start
-        lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
-        bne   DSP_SetBuffer1
-        
-DSP_SetBuffer0        
-        leax  rsv_buffer_0,u                ; set x pointer to object variables that belongs to screen buffer 0
-        ldy   DPS_buffer_0                  ; set y pointer to Display Priority Structure that belongs to screen buffer 0
-        bra   DSP_BufferPositionned
-        
-DSP_SetBuffer1       
-        leax  rsv_buffer_1,u                ; set x pointer to object variables that belongs to screen buffer 1
-        ldy   DPS_buffer_1                  ; set y pointer to Display Priority Structure that belongs to screen buffer 1        
-        
-DSP_BufferPositionned       
-        lda   priority,u                    ; read priority set for this object
-        cmpa  buf_priority,x
-        beq   DSP_rts                       ; priority and current priority are the same: nothing to do
-        ldb   buf_priority,x   
-        bne   DSP_ChangePriority
-        
-DSP_InitPriority
-        sta   buf_priority,x                ; init priority for this screen buffer with priority from object
-        
-DSP_CheckLastEntry
-        leay  buf_Tbl_Priority_Last_Entry,y
-        tst   a,y                           ; test left byte only is ok, no object will be stored at $00__ address
-        bne   DSP_addToExistingNode         ; not the first object at this priority level, branch
-        
-DSP_addFirstNode        
-        stu   a,y                           ; save object as last entry in linked list
-        leay  buf_Tbl_Priority_First_Entry-buf_Tbl_Priority_Last_Entry,y
-        stu   a,y                           ; save object as first entry in linked list
-        ldd   0
-        std   buf_priority_prev_obj,x       ; clear object prev and next link, it's the only object at this priority level
-        std   buf_priority_next_obj,x
-        bra   DSP_rts
-        
-DSP_addToExistingNode
-        ldx   [a,y]                         ; x register now store last object at the priority level of current object
-        ldb   Glb_Cur_Wrk_Screen_Id
-        bne   DSP_LinkBuffer1
-        stu   rsv_priority_next_obj_0,x     ; link last object with current object if active screen buffer 0
-        bra   DSP_LinkCurWithPrev        
-DSP_LinkBuffer1        
-        stu   rsv_priority_next_obj_1,x     ; link last object with current object if active screen buffer 1
-        
-DSP_LinkCurWithPrev        
-        stx   buf_priority_prev_obj,u       ; link current object with previous object
-        stu   a,y                           ; update last object in index
-        ldd   0
-        std   buf_priority_next_obj,x       ; clear object next link                
-        bra   DSP_rts
-        
-DSP_ChangePriority
-        leay  buf_Lst_Priority_Unset,y
-        stu   [,y]                          ; add object address to unset list
-        leay  2,y
-        sty   ,y                            ; set index to next free cell of unset list
-        leay  -buf_Lst_Priority_Unset-2,y
-        cmpa  0
-        bne   DSP_CheckLastEntry            ; priority is != 0, branch to add object to display priority list
-                                            ; priority is 0, nothing to add to display priority list continue to rts
-DSP_rts
-        puls  d,x,u,pc
-        
-                                       *; ---------------------------------------------------------------------------
-                                       *; Subroutine to display a sprite/object, when a0 is the object RAM
-                                       *; ---------------------------------------------------------------------------
-                                       *
-                                       *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-                                       *
-                                       *; sub_164F4:
-                                       *DisplaySprite:
-                                       *    lea (Sprite_Table_Input).w,a1
-                                       *    move.w  priority(a0),d0
-                                       *    lsr.w   #1,d0
-                                       *    andi.w  #$380,d0
-                                       *    adda.w  d0,a1
-                                       
-                                       *    cmpi.w  #$7E,(a1)
-                                       *    bhs.s   return_16510
-                                       *    addq.w  #2,(a1)
-                                       
-                                       *    adda.w  (a1),a1
-                                       *    move.w  a0,(a1)
-                                       *
-                                       *return_16510:
-                                       
-                                       *    rts
-                                       *; End of function DisplaySprite        
-
-(include)MRKOBJGN
-; ---------------------------------------------------------------------------
-; MarkObjGone
-; -----------
-; Subroutine to destroy an object that is outside of destroy/respawn limit
-; -- TODO --
-; waiting for camera implementation
-;
-; input REG : none
-; clear REG : none
-; ---------------------------------------------------------------------------
-
-                                       *; ---------------------------------------------------------------------------
-                                       *; Routines to mark an enemy/monitor/ring/platform as destroyed
-                                       *; ---------------------------------------------------------------------------
-                                       *
-                                       *; ===========================================================================
-                                       *; input: a0 = the object
-                                       *; loc_163D2:
-MarkObjGone @globals                   *MarkObjGone:
-                                       *    tst.w   (Two_player_mode).w ; is it two player mode?
-                                       *    beq.s   +           ; if not, branch
-        bra   DisplaySprite            *    bra.w   DisplaySprite
-                                       *+
-                                       *    move.w  x_pos(a0),d0
-                                       *    andi.w  #$FF80,d0
-                                       *    sub.w   (Camera_X_pos_coarse).w,d0
-                                       *    cmpi.w  #$80+320+$40+$80,d0 ; This gives an object $80 pixels of room offscreen before being unloaded (the $40 is there to round up 320 to a multiple of $80)
-                                       *    bhi.w   +
-                                       *    bra.w   DisplaySprite
-                                       *
-                                       *+   lea (Object_Respawn_Table).w,a2
-                                       *    moveq   #0,d0
-                                       *    move.b  respawn_index(a0),d0
-                                       *    beq.s   +
-                                       *    bclr    #7,2(a2,d0.w)
-                                       *+
-                                       *    bra.w   MarkObjToBeDeleted
-
 (include)CLEAROBJ
-; ---------------------------------------------------------------------------
-; ClearObj
-; --------
-; Subroutine to clear an object data in OST
-;
-; input REG : [u] pointer on objet (OST)
-; clear REG : [d,y]
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* ClearObj
+* --------
+* Subroutine to clear an object data in OST
+*
+* input REG : [u] pointer on objet (OST)
+* clear REG : [d,y]
+* ---------------------------------------------------------------------------
 
-ClearObj @globals
+ClearObj *@globals
         sts   CLO_1+2
         stx   CLO_2+2        
         ldd   #$0000
@@ -1305,7 +1305,7 @@ CSR_ProcessEachPriorityLevel
         leax  16,u                          ; dynamic offset, x point to object variables relative to current writable buffer (beware that rsv_buffer_0 and rsv_buffer_1 should be equ >=16)
         lda   rsv_render_flags,u
         anda  #rsv_render_checkrefresh_mask ; branch if checkrefresh is true
-        bne   CSR_CheckErase
+        lbne  CSR_CheckErase
         
 CSR_CheckDelHide
         lda   render_flags,u
@@ -1373,7 +1373,7 @@ CSR_DoNotDisplaySprite
         
 CSR_NextObject
         ldu   buf_priority_next_obj,x
-        bne   CSR_ProcessEachPriorityLevel   
+        lbne  CSR_ProcessEachPriorityLevel   
         rts
 
 CSR_CheckVerticalPosition
@@ -1450,12 +1450,17 @@ CSR_SetDrawTrue
         stu   ,y++
         sty   cur_ptr_sub_obj_draw
         
-        bra   CSR_NextObject
+        ldu   buf_priority_next_obj,x
+        lbne   CSR_ProcessEachPriorityLevel   
+        rts
 
 CSR_SetDrawFalse 
         lda   rsv_render_flags,u
         anda  #:rsv_render_displaysprite_mask
-        bra   CSR_NextObject        
+        
+        ldu   buf_priority_next_obj,x
+        lbne   CSR_ProcessEachPriorityLevel   
+        rts      
 
 
 (include)ERASESPR
@@ -1623,6 +1628,11 @@ ESP_SubEraseCheckCollisionB0
         bls   ESP_SubEraseSearchB0
         bra   ESP_SubCheckOverlayB0   
 
+ESP_NextObjectB0
+        ldu   rsv_priority_prev_obj_0,u
+        bne   ESP_ProcessEachPriorityLevelB0   
+        rts   
+
 ESP_SubDrawSpriteSearchInitB0
         ldx   rsv_ptr_sub_object_draw,u
         
@@ -1642,7 +1652,6 @@ ESP_SubDrawCheckCollisionB0
         bls   ESP_SubDrawSearchB0
         cmpb  y_pixel,u                     ;     entry : y_pixel
         bls   ESP_SubDrawSearchB0
-        bra   ESP_SubCheckOverlayB0   
         
 ESP_SubCheckOverlayB0
         lda   render_flags,u
@@ -1668,11 +1677,7 @@ ESP_FreeEraseBufferB0
         
 ESP_UnsetOnScreenFlagB0
         clr   rsv_onscreen_0,u              ; sprite is no longer on screen
-        
-ESP_NextObjectB0
-        ldu   rsv_priority_prev_obj_0,u
-        bne   ESP_ProcessEachPriorityLevelB0   
-        rts     
+        bra   ESP_NextObjectB0   
 
 * *******        
 * BUFFER1
@@ -1725,6 +1730,11 @@ ESP_SubEraseCheckCollisionB1
         bls   ESP_SubEraseSearchB1
         bra   ESP_SubCheckOverlayB1   
 
+ESP_NextObjectB1
+        ldu   rsv_priority_prev_obj_1,u
+        bne   ESP_ProcessEachPriorityLevelB1   
+        rts
+
 ESP_SubDrawSpriteSearchInitB1
         ldx   rsv_ptr_sub_object_draw,u
         
@@ -1744,7 +1754,6 @@ ESP_SubDrawCheckCollisionB1
         bls   ESP_SubDrawSearchB1
         cmpb  y_pixel,u                     ;     entry : y_pixel
         bls   ESP_SubDrawSearchB1
-        bra   ESP_SubCheckOverlayB1   
         
 ESP_SubCheckOverlayB1
         lda   render_flags,u
@@ -1770,11 +1779,7 @@ ESP_FreeEraseBufferB1
         
 ESP_UnsetOnScreenFlagB1
         clr   rsv_onscreen_1,u              ; sprite is no longer on screen
-        
-ESP_NextObjectB1
-        ldu   rsv_priority_prev_obj_1,u
-        bne   ESP_ProcessEachPriorityLevelB1   
-        rts
+        bra   ESP_NextObjectB1
 
 (include)UNSETDSP
 * ---------------------------------------------------------------------------
@@ -1937,215 +1942,215 @@ UDP_SetNewPrioB1
 									   
 DrawSprites
 
-DSP_Start
+DRS_Start
         lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
-        bne   DSP_SetBuffer1
+        bne   DRS_P8B1
         
-DSP_P8B0                                    
+DRS_P8B0                                    
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
-        beq   DSP_P7B0
-        jsr   DSP_ProcessEachPriorityLevelB0   
-DSP_P7B0
+        beq   DRS_P7B0
+        jsr   DRS_ProcessEachPriorityLevelB0   
+DRS_P7B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
-        beq   DSP_P6B0
-        jsr   DSP_ProcessEachPriorityLevelB0  
-DSP_P6B0
+        beq   DRS_P6B0
+        jsr   DRS_ProcessEachPriorityLevelB0  
+DRS_P6B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
-        beq   DSP_P5B0
-        jsr   DSP_ProcessEachPriorityLevelB0  
-DSP_P5B0
+        beq   DRS_P5B0
+        jsr   DRS_ProcessEachPriorityLevelB0  
+DRS_P5B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
-        beq   DSP_P4B0
-        jsr   DSP_ProcessEachPriorityLevelB0  
-DSP_P4B0
+        beq   DRS_P4B0
+        jsr   DRS_ProcessEachPriorityLevelB0  
+DRS_P4B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
-        beq   DSP_P3B0
-        jsr   DSP_ProcessEachPriorityLevelB0              
-DSP_P3B0
+        beq   DRS_P3B0
+        jsr   DRS_ProcessEachPriorityLevelB0              
+DRS_P3B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
-        beq   DSP_P2B0
-        jsr   DSP_ProcessEachPriorityLevelB0     
-DSP_P2B0
+        beq   DRS_P2B0
+        jsr   DRS_ProcessEachPriorityLevelB0     
+DRS_P2B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
-        beq   DSP_P1B0
-        jsr   DSP_ProcessEachPriorityLevelB0 
-DSP_P1B0
+        beq   DRS_P1B0
+        jsr   DRS_ProcessEachPriorityLevelB0 
+DRS_P1B0
         ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry
-        beq   DSP_rtsB0
-        jsr   DSP_ProcessEachPriorityLevelB0
-DSP_rtsB0        
+        beq   DRS_rtsB0
+        jsr   DRS_ProcessEachPriorityLevelB0
+DRS_rtsB0        
         rts
         
-DSP_P8B1
+DRS_P8B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
-        beq   DSP_P7B1
-        jsr   DSP_ProcessEachPriorityLevelB1   
-DSP_P7B1
+        beq   DRS_P7B1
+        jsr   DRS_ProcessEachPriorityLevelB1   
+DRS_P7B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
-        beq   DSP_P6B1
-        jsr   DSP_ProcessEachPriorityLevelB1   
-DSP_P6B1
+        beq   DRS_P6B1
+        jsr   DRS_ProcessEachPriorityLevelB1   
+DRS_P6B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
-        beq   DSP_P5B1
-        jsr   DSP_ProcessEachPriorityLevelB1   
-DSP_P5B1
+        beq   DRS_P5B1
+        jsr   DRS_ProcessEachPriorityLevelB1   
+DRS_P5B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
-        beq   DSP_P4B1
-        jsr   DSP_ProcessEachPriorityLevelB1   
-DSP_P4B1
+        beq   DRS_P4B1
+        jsr   DRS_ProcessEachPriorityLevelB1   
+DRS_P4B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
-        beq   DSP_P3B1
-        jsr   DSP_ProcessEachPriorityLevelB1             
-DSP_P3B1
+        beq   DRS_P3B1
+        jsr   DRS_ProcessEachPriorityLevelB1             
+DRS_P3B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
-        beq   DSP_P2B1
-        jsr   DSP_ProcessEachPriorityLevelB1    
-DSP_P2B1
+        beq   DRS_P2B1
+        jsr   DRS_ProcessEachPriorityLevelB1    
+DRS_P2B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
-        beq   DSP_P1B1
-        jsr   DSP_ProcessEachPriorityLevelB1
-DSP_P1B1
+        beq   DRS_P1B1
+        jsr   DRS_ProcessEachPriorityLevelB1
+DRS_P1B1
         ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry
-        beq   DSP_rtsB1
-        jsr   DSP_ProcessEachPriorityLevelB1
-DSP_rtsB1        
+        beq   DRS_rtsB1
+        jsr   DRS_ProcessEachPriorityLevelB1
+DRS_rtsB1        
         rts
 
-DSP_ProcessEachPriorityLevelB0
+DRS_ProcessEachPriorityLevelB0
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
-        beq   DSP_NextObjectB0
+        beq   DRS_NextObjectB0
         lda   rsv_onscreen_0,x
-        bne   DSP_NextObjectB0
+        bne   DRS_NextObjectB0
         lda   render_flags,x
         anda  #render_fixedoverlay_mask
-        bne   DSP_DrawWithoutBackupB0
+        bne   DRS_DrawWithoutBackupB0
         ldu   rsv_curr_mapping_frame,x
         lda   erase_nb_cell,u        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
-        beq   DSP_NextObjectB0              ; branch if no more free space
+        beq   DRS_NextObjectB0              ; branch if no more free space
         ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
         std   rsv_prev_x_pixel_0,x          ; save previous x_pixel and y_pixel in one operation
-        jsr   DSP_XYToAddress
-        ldu   rsv_cur_mapping_frame_0,x     ; load image to draw (for this buffer)
+        jsr   DRS_XYToAddress
+        ldu   rsv_curr_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame 
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         leau  ,y                            ; cell_end for background data
-        stx   DSP_dyn3B0+1                  ; save x reg
+        stx   DRS_dyn3B0+1                  ; save x reg
         jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
-DSP_dyn3B0        
+DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_0,x                ; store pointer to saved background data
         ldd   rsv_x2_pixel,x                ; load x' and y' in one operation
         std   rsv_prev_x2_pixel_0,x         ; save as previous x' and y'
         lda   #$01
         sta   rsv_onscreen_0,x              ; set the onscreen flag
-DSP_NextObjectB0        
+DRS_NextObjectB0        
         ldx   rsv_priority_next_obj_0,x
-        bne   DSP_ProcessEachPriorityLevelB0   
+        bne   DRS_ProcessEachPriorityLevelB0   
         rts
         
-DSP_DrawWithoutBackupB0
+DRS_DrawWithoutBackupB0
         ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
-        jsr   DSP_XYToAddress 
-        ldu   rsv_cur_mapping_frame_0,x     ; load image to draw (for this buffer)
+        jsr   DRS_XYToAddress 
+        ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
-        stx   DSP_dyn4B0+1                  ; save x reg
+        stx   DRS_dyn4B0+1                  ; save x reg
         jsr   [draw_routine,x]              ; backup background and draw sprite on working screen buffer
-DSP_dyn4B0
+DRS_dyn4B0
         ldx   #$0000                        ; (dynamic) restore x reg
         ldx   rsv_priority_next_obj_0,x
-        bne   DSP_ProcessEachPriorityLevelB0   
+        bne   DRS_ProcessEachPriorityLevelB0   
         rts          
 
-DSP_XYToAddress
+DRS_XYToAddress
         lsra                                ; x=x/2, sprites moves by 2 pixels on x axis  
-        bcs   DSP_XYToAddressRAMBFirst      ; Branch if write must begin in RAMB first
-DSP_XYToAddressRAMAFirst
-        sta   DSP_dyn1+2
+        bcs   DRS_XYToAddressRAMBFirst      ; Branch if write must begin in RAMB first
+DRS_XYToAddressRAMAFirst
+        sta   DRS_dyn1+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         ldb   y_pixel,x                     ; load y position (0-199)
         mul
-DSP_dyn1        
+DRS_dyn1        
         addd  $0000                         ; (dynamic) RAMA start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
         ora   #$20                          ; add $2000 to d register
         std   Glb_Sprite_Screen_Pos_PartB        
         rts
-DSP_XYToAddressRAMBFirst
-        sta   DSP_dyn2+2
+DRS_XYToAddressRAMBFirst
+        sta   DRS_dyn2+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         ldb   y_pixel,x                     ; load y position (0-199)
         mul
-DSP_dyn2        
+DRS_dyn2        
         addd  $2000                         ; (dynamic) RAMB start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
         subd  $1FFF
         std   Glb_Sprite_Screen_Pos_PartB
         rts
         
-DSP_ProcessEachPriorityLevelB1
+DRS_ProcessEachPriorityLevelB1
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
-        beq   DSP_NextObjectB1
+        beq   DRS_NextObjectB1
         lda   rsv_onscreen_1,x
-        bne   DSP_NextObjectB1
+        bne   DRS_NextObjectB1
         lda   render_flags,x
         anda  #render_fixedoverlay_mask
-        bne   DSP_DrawWithoutBackupB1
+        bne   DRS_DrawWithoutBackupB1
         ldu   rsv_curr_mapping_frame,x
         lda   erase_nb_cell,u        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
-        beq   DSP_NextObjectB1              ; branch if no more free space
+        beq   DRS_NextObjectB1              ; branch if no more free space
         ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
         std   rsv_prev_x_pixel_1,x          ; save previous x_pixel and y_pixel in one operation
-        jsr   DSP_XYToAddress
-        ldu   rsv_cur_mapping_frame_1,x     ; load image to draw (for this buffer)
+        jsr   DRS_XYToAddress
+        ldu   rsv_curr_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         leau  ,y                            ; cell_end for background data
-        stx   DSP_dyn3B1+1                  ; save x reg
+        stx   DRS_dyn3B1+1                  ; save x reg
         jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
-DSP_dyn3B1        
+DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_1,x                ; store pointer to saved background data
         ldd   rsv_x2_pixel,x                ; load x' and y' in one operation
         std   rsv_prev_x2_pixel_1,x         ; save as previous x' and y'
         lda   #$01
         sta   rsv_onscreen_1,x              ; set the onscreen flag
-DSP_NextObjectB1        
+DRS_NextObjectB1        
         ldx   rsv_priority_next_obj_1,x
-        bne   DSP_ProcessEachPriorityLevelB1   
+        bne   DRS_ProcessEachPriorityLevelB1   
         rts
         
-DSP_DrawWithoutBackupB1
+DRS_DrawWithoutBackupB1
         ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
-        jsr   DSP_XYToAddress 
-        ldu   rsv_cur_mapping_frame_1,x     ; load image to draw (for this buffer)
+        jsr   DRS_XYToAddress 
+        ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
-        stx   DSP_dyn4B1+1                  ; save x reg
+        stx   DRS_dyn4B1+1                  ; save x reg
         jsr   [draw_routine,x]              ; backup background and draw sprite on working screen buffer
-DSP_dyn4B1
+DRS_dyn4B1
         ldx   #$0000                        ; (dynamic) restore x reg
         ldx   rsv_priority_next_obj_1,x
-        bne   DSP_ProcessEachPriorityLevelB1   
+        bne   DRS_ProcessEachPriorityLevelB1   
         rts              
 
 (include)BGBALLOC
-; ---------------------------------------------------------------------------
-; BgBufferAlloc
-; -------------
-; Subroutine to allocate memory into background buffer
-;
-; input  REG : [a] number of requested cells
-; output REG : [y] cell_end or 0000 if no more space
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* BgBufferAlloc
+* -------------
+* Subroutine to allocate memory into background buffer
+*
+* input  REG : [a] number of requested cells
+* output REG : [y] cell_end or 0000 if no more space
+* ---------------------------------------------------------------------------
 
 BgBufferAlloc
         pshs  b,x
@@ -2161,8 +2166,8 @@ BBA1
         ldx   #Lst_FreeCellFirstEntry_1     ; save previous cell.next_entry into x for future update
         ldy   Lst_FreeCellFirstEntry_1      ; load first cell for screen buffer 1
         
-BBA_Next                                    ; loop thru all entries        
-        beq   BBA_rts                       ; branch if no more free space
+BBA_Next
+        beq   BBA_rts                       ; loop thru all entries, branch if no more free space
         cmpa  nb_cells,y                    ; compare current nb of free cells with requested
         beq   BBA_FitCell                   ; branch if current free cells is the same size than requested
         bls   BBA_DivideCell                ; branch if current free cells are greater than requested
@@ -2196,15 +2201,15 @@ BBA_rts
         puls  b,x,pc
 
 (include)BGBFREE
-; ---------------------------------------------------------------------------
-; BgBufferFree
-; ------------
-; Subroutine to free memory from background buffer
-;
-; input  REG : [x] cell_start
-;              [y] cell_end
-; output REG : none
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* BgBufferFree
+* ------------
+* Subroutine to free memory from background buffer
+*
+* input  REG : [x] cell_start
+*              [y] cell_end
+* output REG : none
+* ---------------------------------------------------------------------------
 
 BgBufferFree
         pshs  d,u
@@ -2228,8 +2233,8 @@ BBF1
         stu   BBF_AddNewEntryAtEnd+4        
         ldu   Lst_FreeCellFirstEntry_1
         
-BBF_Next                                    ; loop thru all entry        
-        beq   BBF_AddNewEntryAtEnd          ; branch if no more entry to expand
+BBF_Next        
+        beq   BBF_AddNewEntryAtEnd          ; loop thru all entry, branch if no more entry to expand
         cmpy  cell_start,u                  ; compare current cell_start with input param cell_end
         beq   BBF_ExpandAtStart             ; branch if current cell_start equals input param cell_end
         bhi   BBF_ExpandAtEnd               ; branch if current cell_start < input param cell_end
@@ -2241,7 +2246,7 @@ BBF_AddNewEntry
         leau  next_entry,u                  ; there is a previous entry, save next_entry adress to store new entry
 BBF_AddNewEntryAtEnd
         stu   BBF_SetNewEntryPrevLink+1     ; if no previous entry we will be using Lst_FreeCellFirstEntry from BBF
-        ldu   #$0000                        ; Lst_FreeCell_0 or Lst_FreeCell_1
+        ldu   #$0000                        ; (dynamic) Lst_FreeCell_0 or Lst_FreeCell_1
 BBF_FindFreeSlot        
         ldb   nb_cells,u                    ; read Lst_FreeCell
         beq   BBF_SetNewEntry               ; branch if empty entry
@@ -2252,10 +2257,10 @@ BBF_SetNewEntry
         stx   cell_start,u                  ; store cell start adress
         sty   cell_end,u                    ; store cell end adress
 BBF_SetNewEntryNextentry        
-        ldx   #$0000                        ; value is dynamically set
+        ldx   #$0000                        ; (dynamic) value is dynamically set
         stx   next_entry,u                  ; link to 0000 if no more entry or next_entry
 BBF_SetNewEntryPrevLink        
-        stu   #$0000                        ; set Lst_FreeCellFirstEntry or prev_entry.next_entry with new entry
+        stu   $0000                         ; (dynamic) set Lst_FreeCellFirstEntry or prev_entry.next_entry with new entry
         bra   BBF_rts
 
 BBF_ExpandAtStart

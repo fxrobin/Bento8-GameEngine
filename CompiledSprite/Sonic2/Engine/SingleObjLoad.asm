@@ -1,10 +1,10 @@
-; ---------------------------------------------------------------------------
-; Single object loading subroutine
-; Find an empty object array
-;
- ; input  REG : [u] pointeur sur l'objet courant  
- ; output REG : [x] pointeur sur l'objet libre   
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Single object loading subroutine
+* Find an empty object array
+*
+* input  REG : [u] pointeur sur l'objet courant  
+* output REG : [x] pointeur sur l'objet libre   
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Single object loading subroutine
@@ -100,4 +100,3 @@ SingleObjLoad2_02                      *return_18014:
                                        *return_18028:
                                        *    rts
                                        *; ===========================================================================
-(info)

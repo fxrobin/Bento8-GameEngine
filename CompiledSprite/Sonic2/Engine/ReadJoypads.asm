@@ -1,6 +1,6 @@
-; ---------------------------------------------------------------------------
-; Controller Buttons
-;
+* ---------------------------------------------------------------------------
+* Controller Buttons
+*
 c1_button_up_mask            equ   $01 *@globals
 c1_button_down_mask          equ   $02 *@globals
 c1_button_left_mask          equ   $04 *@globals

@@ -166,7 +166,7 @@ image_meta_size               equ 16 ; number of bytes for each image reference
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 59
+nb_dynamic_objects            equ 43
 nb_level_objects              equ 3
 nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_level_objects
 
@@ -193,18 +193,21 @@ render_free3_mask             equ $80 ; (bit 7) free
  
 priority                      equ 3           ; display priority (0: nothing to display, 1:front, ..., 8:back)
 anim                          equ 4  ; and 5  ; reference to current animation (Ani_)
-anim_frame                    equ 6           ; index of current frame in animation
-anim_frame_duration           equ 7           ; number of frames for each image in animation, range: 00-7F (0-127), 0 means display only during one frame
-mapping_frame                 equ 8  ; and 9  ;reference to current image (Img_) (0000 if no image)
-x_pos                         equ 10 ; and 11 ; x playfield coordinate
-x_sub                         equ 12          ; x subpixel (1/256 of a pixel), must follow x_pos in data structure
-y_pos                         equ 13 ; and 14 ; y playfield coordinate
-y_sub                         equ 15          ; y subpixel (1/256 of a pixel), must follow y_pos in data structure
-x_pixel                       equ 16          ; x screen coordinate
-y_pixel                       equ 17          ; y screen coordinate, must follow x_pixel
-routine                       equ 18          ; index of current object routine
-routine_secondary             equ 19          ; index of current secondary routine
-ext_variables                 equ 20 ; to 40  ; reserved space for additionnal variables
+prev_anim                     equ 6  ; and 7  ; reference to previous animation (Ani_)
+anim_frame                    equ 8           ; index of current frame in animation
+anim_frame_duration           equ 9           ; number of frames for each image in animation, range: 00-7F (0-127), 0 means display only during one frame
+mapping_frame                 equ 10 ; and 11 ;reference to current image (Img_) (0000 if no image)
+x_pos                         equ 12 ; and 13 ; x playfield coordinate
+x_sub                         equ 14          ; x subpixel (1/256 of a pixel), must follow x_pos in data structure
+y_pos                         equ 15 ; and 16 ; y playfield coordinate
+y_sub                         equ 17          ; y subpixel (1/256 of a pixel), must follow y_pos in data structure
+x_pixel                       equ 18          ; x screen coordinate
+y_pixel                       equ 19          ; y screen coordinate, must follow x_pixel
+x_vel                         equ 20 ; and 21 ; horizontal velocity
+y_vel                         equ 22 ; and 23 ; vertical velocity
+routine                       equ 24          ; index of current object routine
+routine_secondary             equ 25          ; index of current secondary routine
+ext_variables                 equ 26 ; to 40  ; reserved space for additionnal variables
 
 * ---------------------------------------------------------------------------
 * reserved variables (engine)

@@ -162,6 +162,11 @@ ESP_SubEraseCheckCollisionB0
         bls   ESP_SubEraseSearchB0
         bra   ESP_SubCheckOverlayB0   
 
+ESP_NextObjectB0
+        ldu   rsv_priority_prev_obj_0,u
+        bne   ESP_ProcessEachPriorityLevelB0   
+        rts   
+
 ESP_SubDrawSpriteSearchInitB0
         ldx   rsv_ptr_sub_object_draw,u
         
@@ -181,7 +186,6 @@ ESP_SubDrawCheckCollisionB0
         bls   ESP_SubDrawSearchB0
         cmpb  y_pixel,u                     ;     entry : y_pixel
         bls   ESP_SubDrawSearchB0
-        bra   ESP_SubCheckOverlayB0   
         
 ESP_SubCheckOverlayB0
         lda   render_flags,u
@@ -207,11 +211,7 @@ ESP_FreeEraseBufferB0
         
 ESP_UnsetOnScreenFlagB0
         clr   rsv_onscreen_0,u              ; sprite is no longer on screen
-        
-ESP_NextObjectB0
-        ldu   rsv_priority_prev_obj_0,u
-        bne   ESP_ProcessEachPriorityLevelB0   
-        rts     
+        bra   ESP_NextObjectB0   
 
 * *******        
 * BUFFER1
@@ -264,6 +264,11 @@ ESP_SubEraseCheckCollisionB1
         bls   ESP_SubEraseSearchB1
         bra   ESP_SubCheckOverlayB1   
 
+ESP_NextObjectB1
+        ldu   rsv_priority_prev_obj_1,u
+        bne   ESP_ProcessEachPriorityLevelB1   
+        rts
+
 ESP_SubDrawSpriteSearchInitB1
         ldx   rsv_ptr_sub_object_draw,u
         
@@ -283,7 +288,6 @@ ESP_SubDrawCheckCollisionB1
         bls   ESP_SubDrawSearchB1
         cmpb  y_pixel,u                     ;     entry : y_pixel
         bls   ESP_SubDrawSearchB1
-        bra   ESP_SubCheckOverlayB1   
         
 ESP_SubCheckOverlayB1
         lda   render_flags,u
@@ -309,8 +313,4 @@ ESP_FreeEraseBufferB1
         
 ESP_UnsetOnScreenFlagB1
         clr   rsv_onscreen_1,u              ; sprite is no longer on screen
-        
-ESP_NextObjectB1
-        ldu   rsv_priority_prev_obj_1,u
-        bne   ESP_ProcessEachPriorityLevelB1   
-        rts
+        bra   ESP_NextObjectB1

@@ -81,4 +81,4 @@ Page
 fill        
         rmb   7-((fill-exo2)%7),0      * le code est un multilpe de 7 octets (pour la copie)
         
-current_game_mode_data                 * @globals
+current_game_mode_data *@globals

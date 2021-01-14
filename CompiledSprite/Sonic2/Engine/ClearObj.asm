@@ -1,13 +1,13 @@
-; ---------------------------------------------------------------------------
-; ClearObj
-; --------
-; Subroutine to clear an object data in OST
-;
-; input REG : [u] pointer on objet (OST)
-; clear REG : [d,y]
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* ClearObj
+* --------
+* Subroutine to clear an object data in OST
+*
+* input REG : [u] pointer on objet (OST)
+* clear REG : [d,y]
+* ---------------------------------------------------------------------------
 
-ClearObj @globals
+ClearObj *@globals
         sts   CLO_1+2
         stx   CLO_2+2        
         ldd   #$0000

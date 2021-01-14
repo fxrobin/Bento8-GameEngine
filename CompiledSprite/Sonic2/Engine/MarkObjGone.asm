@@ -1,13 +1,13 @@
-; ---------------------------------------------------------------------------
-; MarkObjGone
-; -----------
-; Subroutine to destroy an object that is outside of destroy/respawn limit
-; -- TODO --
-; waiting for camera implementation
-;
-; input REG : none
-; clear REG : none
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* MarkObjGone
+* -----------
+* Subroutine to destroy an object that is outside of destroy/respawn limit
+* -- TODO --
+* waiting for camera implementation
+*
+* input REG : none
+* clear REG : none
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Routines to mark an enemy/monitor/ring/platform as destroyed
@@ -16,7 +16,7 @@
                                        *; ===========================================================================
                                        *; input: a0 = the object
                                        *; loc_163D2:
-MarkObjGone @globals                   *MarkObjGone:
+MarkObjGone *@globals                  *MarkObjGone:
                                        *    tst.w   (Two_player_mode).w ; is it two player mode?
                                        *    beq.s   +           ; if not, branch
         bra   DisplaySprite            *    bra.w   DisplaySprite

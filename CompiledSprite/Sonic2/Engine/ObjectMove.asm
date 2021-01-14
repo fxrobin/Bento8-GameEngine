@@ -1,8 +1,8 @@
-; ---------------------------------------------------------------------------
-; Subroutine translating object speed to update object position
-; This moves the object horizontally and vertically
-; but does not apply gravity to it
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Subroutine translating object speed to update object position
+* This moves the object horizontally and vertically
+* but does not apply gravity to it
+* ---------------------------------------------------------------------------
 
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine translating object speed to update object position

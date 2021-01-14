@@ -122,7 +122,7 @@ CSR_ProcessEachPriorityLevel
         leax  16,u                          ; dynamic offset, x point to object variables relative to current writable buffer (beware that rsv_buffer_0 and rsv_buffer_1 should be equ >=16)
         lda   rsv_render_flags,u
         anda  #rsv_render_checkrefresh_mask ; branch if checkrefresh is true
-        bne   CSR_CheckErase
+        lbne  CSR_CheckErase
         
 CSR_CheckDelHide
         lda   render_flags,u
@@ -190,7 +190,7 @@ CSR_DoNotDisplaySprite
         
 CSR_NextObject
         ldu   buf_priority_next_obj,x
-        bne   CSR_ProcessEachPriorityLevel   
+        lbne  CSR_ProcessEachPriorityLevel   
         rts
 
 CSR_CheckVerticalPosition
@@ -267,9 +267,14 @@ CSR_SetDrawTrue
         stu   ,y++
         sty   cur_ptr_sub_obj_draw
         
-        bra   CSR_NextObject
+        ldu   buf_priority_next_obj,x
+        lbne   CSR_ProcessEachPriorityLevel   
+        rts
 
 CSR_SetDrawFalse 
         lda   rsv_render_flags,u
         anda  #:rsv_render_displaysprite_mask
-        bra   CSR_NextObject        
+        
+        ldu   buf_priority_next_obj,x
+        lbne   CSR_ProcessEachPriorityLevel   
+        rts      

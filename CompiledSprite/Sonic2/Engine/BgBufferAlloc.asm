@@ -1,11 +1,11 @@
-; ---------------------------------------------------------------------------
-; BgBufferAlloc
-; -------------
-; Subroutine to allocate memory into background buffer
-;
-; input  REG : [a] number of requested cells
-; output REG : [y] cell_end or 0000 if no more space
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* BgBufferAlloc
+* -------------
+* Subroutine to allocate memory into background buffer
+*
+* input  REG : [a] number of requested cells
+* output REG : [y] cell_end or 0000 if no more space
+* ---------------------------------------------------------------------------
 
 BgBufferAlloc
         pshs  b,x
@@ -21,8 +21,8 @@ BBA1
         ldx   #Lst_FreeCellFirstEntry_1     ; save previous cell.next_entry into x for future update
         ldy   Lst_FreeCellFirstEntry_1      ; load first cell for screen buffer 1
         
-BBA_Next                                    ; loop thru all entries        
-        beq   BBA_rts                       ; branch if no more free space
+BBA_Next
+        beq   BBA_rts                       ; loop thru all entries, branch if no more free space
         cmpa  nb_cells,y                    ; compare current nb of free cells with requested
         beq   BBA_FitCell                   ; branch if current free cells is the same size than requested
         bls   BBA_DivideCell                ; branch if current free cells are greater than requested

@@ -1,28 +1,28 @@
-; ---------------------------------------------------------------------------
-; DisplaySprite
-; -------------
-; Subroutine to manage sprite priority.
-; Object's priority is read and object is (un)registred in display engine.
-; priority: 0 - unregistred
-; priority: 1 - register non moving overlay sprite
-; priority; 2-8 - register moving sprite (2:front, ..., 8:back)  
-;
-; Unlike original S2 code, sprite priority is stored in an open doubly linked list
-; it allows to keep an exact sprite order for each screen buffer 
-;
-; DisplaySprite
-; input REG : [u] object pointer (OST)
-;
-; DisplaySprite_x
-; input REG : [x] object pointer (OST)
-; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* DisplaySprite
+* -------------
+* Subroutine to manage sprite priority.
+* Object's priority is read and object is (un)registred in display engine.
+* priority: 0 - unregistred
+* priority: 1 - register non moving overlay sprite
+* priority; 2-8 - register moving sprite (2:front, ..., 8:back)  
+*
+* Unlike original S2 code, sprite priority is stored in an open doubly linked list
+* it allows to keep an exact sprite order for each screen buffer 
+*
+* DisplaySprite
+* input REG : [u] object pointer (OST)
+*
+* DisplaySprite_x
+* input REG : [x] object pointer (OST)
+* ---------------------------------------------------------------------------
 									   
-DisplaySprite_x @globals
+DisplaySprite_x *@globals
         pshs  d,x,u
         tfr   x,u
-        bra DisplaySprite_Start
+        bra   DSP_Start
         
-DisplaySprite @globals
+DisplaySprite *@globals
         pshs  d,x,u
         
 DSP_Start
@@ -86,7 +86,7 @@ DSP_ChangePriority
         leay  -buf_Lst_Priority_Unset-2,y
         cmpa  0
         bne   DSP_CheckLastEntry            ; priority is != 0, branch to add object to display priority list
-                                            ; priority is 0, nothing to add to display priority list continue to rts
+
 DSP_rts
         puls  d,x,u,pc
         

@@ -105,7 +105,7 @@ Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of obje
 * Object Status Table - OST
 * ---------------------------------------------------------------------------
         
-Object_RAM * @globals
+Object_RAM *@globals
 Reserved_Object_RAM
 Obj_MainCharacter             rmb   object_size,0
 Obj_Sidekick                  rmb   object_size,0
@@ -144,12 +144,12 @@ Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
         INCLUD UPDTPAL
         INCLUD READJPDS
         INCLUD RUNOBJTS
+        INCLUD MRKOBJGN        
+        INCLUD DISPLSPR        
         INCLUD ANIMSPR
         INCLUD OBJMOVE
         INCLUD OBJLOAD
         INCLUD DELETOBJ
-        INCLUD DISPLSPR
-        INCLUD MRKOBJGN
         INCLUD CLEAROBJ
         INCLUD CHECKSPR
         INCLUD ERASESPR
@@ -157,4 +157,4 @@ Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
         INCLUD DRAWSPR
         INCLUD BGBALLOC
         INCLUD BGBFREE
-        
+(info)

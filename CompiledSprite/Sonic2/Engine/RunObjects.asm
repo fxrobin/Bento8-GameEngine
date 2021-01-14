@@ -29,7 +29,8 @@ RunObjects_01                          *+
                                        *    tst.w   (Two_player_mode).w
                                        *    bne.s   RunObject ; if in 2 player competition mode, branch to RunObject
                                        *
-        tst   MainCharacter_is_dead    *    cmpi.b  #6,(MainCharacter+routine).w
+                                       *    cmpi.b  #6,(MainCharacter+routine).w
+        tst   Glb_MainCharacter_Is_Dead
         beq   RunObjectsWhenPlayerIsDead
                                        *    bhs.s   RunObjectsWhenPlayerIsDead ; if dead, branch
                                        *    ; continue straight to RunObject
@@ -93,7 +94,7 @@ RunObjectDisplayOnly                   *RunObjectDisplayOnly:
         beq   RunNextObjectDisplayOnly *    beq.s   +   ; if it's obj00, skip it
         tst   render_flags,y           *    tst.b   render_flags(a0)    ; should we render it?
         bpl   RunNextObjectDisplayOnly *    bpl.s   +           ; if not, skip it
-        bsr   DisplaySprite           *    bsr.w   DisplaySprite
+        bsr   DisplaySprite            *    bsr.w   DisplaySprite
 RunNextObjectDisplayOnly               *+
         leay  next_object,y            *    lea next_object(a0),a0 ; load 0bj address
         cmpy  #Dynamic_Object_RAM_End  *    dbf d7,RunObjectDisplayOnly
