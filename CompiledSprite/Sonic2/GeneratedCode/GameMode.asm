@@ -166,7 +166,7 @@ image_meta_size               equ 16 ; number of bytes for each image reference
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 43
+nb_dynamic_objects            equ 59
 nb_level_objects              equ 3
 nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_level_objects
 

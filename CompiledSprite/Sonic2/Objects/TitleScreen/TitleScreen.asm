@@ -182,6 +182,8 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         lda   #Img_sonic_1
         sta   mapping_frame,u                    *        move.b  #5,mapping_frame(a0)
+        ldd   #Ani_TitleScreen_Sonic             ; in original code, anim is an index in offset table (1 byte) that is implicitly initialized to 0
+        std   anim,u                             ; so added init code to anim address here because it is not an index anymore
         ldd   #$0110
         std   x_pixel,u                          *        move.w  #$110,x_pixel(a0)
         ldd   #$00E0
@@ -242,7 +244,7 @@ Sonic_SetPal_TitleScreenAfterWait                *+
         * not implemented                        *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB180
         * not implemented
         * not implemented                        *        move.b  #$E,subtype(a1)                         ; piece of sky
-        * not implemented                        *        rts
+        rts                                      *        rts
                                                  *; End of function sub_12F08
                                                  *
                                                  *; ===========================================================================
@@ -275,7 +277,7 @@ MoveObjects_KeepPosition                         *+
                                                  *; ===========================================================================
                                                  *
 TitleScreen_Animate                              *loc_12F52:
-        ldx   #Ani_TitleScreen                   *        lea     (Ani_obj0E).l,a1
+        ; no more offset table                   *        lea     (Ani_obj0E).l,a1
         bsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
@@ -429,8 +431,8 @@ Tails_Init                                       *Obj0E_Tails_Init:
         ldd   #$D8
         std   x_pixel,u                          *        move.w  #$D8,x_pixel(a0)
         std   y_pixel,u                          *        move.w  #$D8,y_pixel(a0)
-        lda   #1
-        sta   anim,u                             *        move.b  #1,anim(a0)
+        ldd   #Ani_TitleScreen_Tails
+        std   anim,u                             *        move.b  #1,anim(a0)
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
@@ -559,8 +561,9 @@ LargeStar_Init                                   *Obj0E_LargeStar_Init:
         lda   #Img_2_star
         sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         * not implemented                        *        ori.w   #high_priority,art_tile(a0)
-        ldd   #$0201
-        sta   anim,u                             *        move.b  #2,anim(a0)
+        ldd   #Ani_TitleScreen_LargeStar
+        std   anim,u                             *        move.b  #2,anim(a0)
+        ldb   #$01
         stb   priority,u                         *        move.b  #1,priority(a0)
         ldd   #$100
         std   x_pixel,u                          *        move.w  #$100,x_pixel(a0)
@@ -740,8 +743,8 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
         std   x_pixel,u                          *        move.w  #$170,x_pixel(a0)
         ldd   #$80
         std   y_pixel,u                          *        move.w  #$80,y_pixel(a0)
-        lda   #3
-        sta   anim,u                             *        move.b  #3,anim(a0)
+        ldd   #Ani_TitleScreen_SmallStar
+        std   anim,u                             *        move.b  #3,anim(a0)
         ldd   #$8C
         std   w_TitleScr_time_frame_countdown,u  *        move.w  #$8C,objoff_2A(a0)
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -760,7 +763,7 @@ SmallStar_MoveContinue
         ldd   y_pixel,u
         addd  #1                                 *        addq.w  #1,y_pixel(a0)
         std   y_pixel,u
-        ldx   #Ani_TitleScreen                   *        lea     (Ani_obj0E).l,a1
+        ; no more offset table                   *        lea     (Ani_obj0E).l,a1
         bsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================

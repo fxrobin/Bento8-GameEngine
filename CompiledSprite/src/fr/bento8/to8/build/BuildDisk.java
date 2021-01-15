@@ -214,17 +214,22 @@ public class BuildDisk
 
 			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
 
-			compileRAW(mainEngineTmpFile);
+			compileLIN(mainEngineTmpFile);
 			binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
-			binBytesSize = binBytes.length;
+			binBytesSize = binBytes.length-10;
 
 			if (binBytesSize > 16384) {
 				throw new Exception("Le fichier "+engineAsmMainEngine+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
 			}
+			
+			exomize(getBINFileName(mainEngineTmpFile));
+			byte[] mainEXOBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
+			int mainEXOSize = mainEXOBytes.length;
+			logger.info("Exomize : "+mainEXOSize+" bytes");
 
 			// Ecriture sur disquette
 			fd.setIndex(indexBackup);
-			fd.write(binBytes);			
+			fd.write(mainEXOBytes);			
 			
 			// Génération des images de disquettes
 			// *****************************************************************
@@ -233,7 +238,7 @@ public class BuildDisk
 			fd.saveToSd(outputDiskName);
 
 		} catch (Exception e) {
-			logger.fatal("Erreur lors de la lecture du fichier de configuration.", e);
+			logger.fatal("Erreur lors du build.", e);
 		}
 	}
 
@@ -593,16 +598,16 @@ public class BuildDisk
 				Pattern pn2;
 				Matcher m2;
 
-				// Recherche de tous les TAG INCLUD dans le fichier ASM
+				// Recherche de tous les @globals dans le fichier ASM
 				while (m.find()) {
 					System.out.println("@globals: " + m.group(1));
-					pn2 = Pattern.compile("Label\\s([0-9a-fA-F]*)\\s"+m.group(1));
+					pn2 = Pattern.compile("(Label|Equ)\\s*([0-9a-fA-F]*)\\s"+m.group(1));
 					m2 = pn2.matcher(contentLst);  
 					if (m2.find() == false) {
 						throw new Exception (m.group(1) + " not found in Symbols.");
 					} else {
-						System.out.println("value: " + m2.group(1));
-						glb.addConstant(m.group(1), "$"+m2.group(1));
+						System.out.println("value: " + m2.group(2));
+						glb.addConstant(m.group(1), "$"+m2.group(2));
 					}
 				}
 

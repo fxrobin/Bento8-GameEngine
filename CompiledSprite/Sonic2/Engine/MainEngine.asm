@@ -7,7 +7,8 @@
 
 (main)MAIN
         INCLUD CONSTANT
-        org   $6000
+        org   $6100
+        setdp $00
 
 ********************************************************************************  
 * Main Loop
@@ -58,22 +59,22 @@ Glb_Sprite_Screen_Pos_PartB   fdb   $0000 ; start address for rendering of curre
 * Background Backup Cells - BBC
 * ---------------------------------------------------------------------------
 
-nb_free_cells                 equ   130
-cell_size                     equ   64     ; 64 bytes x 130 from $3F80 to $6000 (buffer limit is $3F40 to $6000)
-cell_start_adr                equ   $6000
-
-Lst_FreeCellFirstEntry_0      fdb   $0000  ; Pointer to first entry in free cell list (buffer 0)
-Lst_FreeCell_0                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 0)
-
-Lst_FreeCellFirstEntry_1      fdb   $0000  ; Pointer to first entry in free cell list (buffer 1)
-Lst_FreeCell_1                rmb   cell_size*(nb_free_cells/2),0 ; (buffer 1)
-
 * ----- Cells variables
 nb_cells                      equ   0
 cell_start                    equ   1
 cell_end                      equ   3
 next_entry                    equ   5
 entry_size                    equ   7
+
+nb_free_cells                 equ   130
+cell_size                     equ   64     ; 64 bytes x 130 from $3F80 to $6000 (buffer limit is $3F40 to $6000)
+cell_start_adr                equ   $6000
+
+Lst_FreeCellFirstEntry_0      fdb   $0000  ; Pointer to first entry in free cell list (buffer 0)
+Lst_FreeCell_0                rmb   entry_size*(nb_free_cells/2),0 ; (buffer 0)
+
+Lst_FreeCellFirstEntry_1      fdb   $0000  ; Pointer to first entry in free cell list (buffer 1)
+Lst_FreeCell_1                rmb   entry_size*(nb_free_cells/2),0 ; (buffer 1)
 
 * ---------------------------------------------------------------------------
 * Display Priority Structure - DPS
