@@ -10,9 +10,9 @@
         org   $6100
         setdp $00
 
-********************************************************************************  
+* ==============================================================================
 * Main Loop
-********************************************************************************
+* ==============================================================================
 LevelMainLoop
         jsr   WaitVBL
         jsr   UpdatePalette
@@ -59,13 +59,14 @@ Glb_Sprite_Screen_Pos_PartB   fdb   $0000 ; start address for rendering of curre
 * Background Backup Cells - BBC
 * ---------------------------------------------------------------------------
 
-* ----- Cells variables
+* ----- Cell variables
 nb_cells                      equ   0
 cell_start                    equ   1
 cell_end                      equ   3
 next_entry                    equ   5
 entry_size                    equ   7
 
+* ----- Cells List
 nb_free_cells                 equ   130
 cell_size                     equ   64     ; 64 bytes x 130 from $3F80 to $6000 (buffer limit is $3F40 to $6000)
 cell_start_adr                equ   $6000
@@ -96,7 +97,7 @@ buf_Tbl_Priority_Last_Entry   equ   Tbl_Priority_Last_Entry_0-DPS_buffer_0
 buf_Lst_Priority_Unset        equ   Lst_Priority_Unset_0-DPS_buffer_0
 
 * ---------------------------------------------------------------------------
-* Sub Objects List - SOL
+* Sub Priority Objects List - SOL
 * ---------------------------------------------------------------------------
 
 Tbl_Sub_Object_Erase          rmb   nb_objects*2,0             ; entries of objects that have erase flag in the order back to front
@@ -125,18 +126,6 @@ Object_RAM_End
 * ---------------------------------------------------------------------------
 
 Glb_MainCharacter_Is_Dead     rmb   $1,0
-
-* ---------------------------------------------------------------------------
-* Get Orientation To Player
-* ---------------------------------------------------------------------------
-
-Glb_Closest_Player            rmb   $2,0  ; ptr objet de MainCharacter ou Sidekick
-Glb_Player_Is_Left            rmb   $1,0  ; 0: player left from object, 2: right
-Glb_Player_Is_Above           rmb   $1,0  ; 0: player above object, 2: below
-Glb_Player_H_Distance         rmb   $2,0  ; closest character's h distance to obj
-Glb_Player_V_Distance         rmb   $2,0  ; closest character's v distance to obj 
-Glb_Abs_H_Distance_Mainc      rmb   $2,0  ; absolute horizontal distance to main character
-Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
 
 * ==============================================================================
 * Routines

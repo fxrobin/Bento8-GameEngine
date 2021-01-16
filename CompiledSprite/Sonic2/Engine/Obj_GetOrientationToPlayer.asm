@@ -8,6 +8,15 @@
 ;             Gotp_Player_Is_Above   (0: player above object, 2: below)
 ;             Gotp_Player_H_Distance (closest character's h distance to obj)
 ;             Gotp_Player_V_Distance (closest character's v distance to obj)
+
+Glb_Closest_Player            rmb   $2,0  ; ptr objet de MainCharacter ou Sidekick
+Glb_Player_Is_Left            rmb   $1,0  ; 0: player left from object, 2: right
+Glb_Player_Is_Above           rmb   $1,0  ; 0: player above object, 2: below
+Glb_Player_H_Distance         rmb   $2,0  ; closest character's h distance to obj
+Glb_Player_V_Distance         rmb   $2,0  ; closest character's v distance to obj 
+Glb_Abs_H_Distance_Mainc      rmb   $2,0  ; absolute horizontal distance to main character
+Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
+
 Gotp_Closest_Player          fdb   $0000     * ptr objet de MainCharacter ou Sidekick
 Gotp_Player_Is_Left          fcb   $00       * 0: player left from object, 2: right
 Gotp_Player_Is_Above         fcb   $00       * 0: player above object, 2: below
@@ -15,7 +24,6 @@ Gotp_Player_H_Distance       fdb   $0000     * closest character's h distance to
 Gotp_Player_V_Distance       fdb   $0000     * closest character's v distance to obj 
 Gotp_Abs_H_Distance_Mainc    fdb   $0000     * absolute horizontal distance to main character
 Gotp_H_Distance_Sidek        fdb   $0000     * horizontal distance to sidekick
-; ---------------------------------------------------------------------------
 									   
                                        *; ---------------------------------------------------------------------------
                                        *; Get Orientation To Player
