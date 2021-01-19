@@ -117,19 +117,12 @@ public class BuildDisk
 		byte[] binary;
 
 		try {
-
-			// Initialisation
-			// *****************************************************************
+			logger.info("Initialisation");
+			logger.info("**************************************************************************\n");		
 
 			// Chargement du fichier de configuration principal
-			logger.info("Lecture du fichier de configuration: "+args[0]);
+			logger.info("Chargement du fichier de configuration: "+args[0]);
 			readProperties(args[0]);
-
-			// Chargement des fichiers de configuration secondaires
-			for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
-				logger.info("Lecture du fichier de configuration "+curGameMode.getKey()+" : "+curGameMode.getValue()[0]);
-				readGameModeProperties(curGameMode);
-			}
 
 			// Initialisation du logger
 			if (debug) {
@@ -143,20 +136,35 @@ public class BuildDisk
 			if (!logToConsole) {
 				loggerConfig.removeAppender("LogToConsole");
 				context.updateLoggers();
+			}			
+			
+			// Chargement des fichiers de configuration secondaires
+			for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
+				logger.info("Chargement du fichier de configuration GameMode "+curGameMode.getKey()+" : "+curGameMode.getValue()[0]);
+				readGameModeProperties(curGameMode);
 			}
 
 			// Initialisation de l'image de disquette en sortie
 			FdUtil fd = new FdUtil();
 
-			// Gestion des variables globales
+			// Initialisation des variables globales
 			glb = new Globals(engineAsmIncludes);
+			
+			
+			
+			
 
-			// Compilation des includes binaires
-			// *****************************************************************
-			System.out.println("Compilation des includes binaires:");
+			logger.info("\nCompilation des includes binaires");
+			logger.info("**************************************************************************\n");			
+
 			for (Map.Entry<String,String[]> engineAsmInclude : engineAsmIncludes.entrySet()) {
+				
+				// un include binaire contient deux noms de fichier dans la definition engine.asm.includ du fichier properties
+				// fichier 1 : le fichier asm destination contenant les données binaires du source asm compilé sous forme de fcb 
+				// fichier 2 : le fichier asm source			
 				if (engineAsmInclude.getValue().length > 1) {
-					System.out.println(engineAsmInclude.getKey());
+					logger.info("Compilation de " + engineAsmInclude.getKey() + " --------------------------------------------------\n");					
+
 					String engineAsmIncludeTmpFile = duplicateFile(engineAsmInclude.getValue()[1]);
 					compileRAW(engineAsmIncludeTmpFile);
 					byte[] BINBytes = Files.readAllBytes(Paths.get(getBINFileName(engineAsmIncludeTmpFile)));
@@ -170,12 +178,18 @@ public class BuildDisk
 		            } catch (IOException ioExceptionObj) {
 		                System.out.println("Problème à l'écriture du fichier "+engineAsmIncludeTmpFile+": " + ioExceptionObj.getMessage());
 		            }
+		            
+					logger.info("--------------------------------------------------------------------------\n");
 				}
 			}
 
-			// Compilation du code de Game Mode Engine et des Game Modes
-			// *****************************************************************
-
+			
+			
+			
+			
+			logger.info("\nCompilation du code de Game Mode Engine et des Game Modes");
+			logger.info("**************************************************************************\n");
+			
 			String gameModeTmpFile = duplicateFile(engineAsmGameMode);
 
 			processGameModes();		
@@ -194,9 +208,13 @@ public class BuildDisk
 			fd.write(binBytes);
 			int indexBackup = fd.getIndex();
 
-			// Compilation du code de boot
-			// *****************************************************************
+			
+			
+			
 
+			logger.info("\nCompilation du code de boot");
+			logger.info("**************************************************************************\n");			
+			
 			String bootTmpFile = duplicateFile(engineAsmBoot);
 			glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", dernierBloc >> 8)+"00"); // On tronque l'octet de poids faible
 			compileRAW(bootTmpFile);
@@ -209,8 +227,12 @@ public class BuildDisk
 			fd.setIndex(0, 0, 1);
 			fd.write(bootLoaderBytes);
 
-			// Compilation du code de Main Engine
-			// *****************************************************************
+			
+			
+			
+			
+			logger.info("\nCompilation du code de Main Engine");
+			logger.info("**************************************************************************\n");
 
 			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
 
@@ -231,11 +253,17 @@ public class BuildDisk
 			fd.setIndex(indexBackup);
 			fd.write(mainEXOBytes);			
 			
-			// Génération des images de disquettes
-			// *****************************************************************
-
+			
+			
+			
+			
+			logger.info("\nGénération des images de disquettes");
+			logger.info("**************************************************************************\n");
+			
 			fd.save(outputDiskName);
 			fd.saveToSd(outputDiskName);
+			
+			logger.info("\nFin du traitement.");
 
 		} catch (Exception e) {
 			logger.fatal("Erreur lors du build.", e);
@@ -535,7 +563,7 @@ public class BuildDisk
 
 	private static int compile(String asmFile, String option) {
 		try {
-			logger.debug("**************** Process "+asmFile+" ****************");
+			logger.debug("# Process "+asmFile);
 
 			// Purge des fichiers temporaires
 			Files.deleteIfExists(Paths.get(binTmpFile));
@@ -567,7 +595,7 @@ public class BuildDisk
 			// ---------------------------------------------------------------------------
 
 			// Lancement de la compilation du fichier contenant le code de boot
-			logger.debug("**************** Compile "+pathTmp.toString()+" ****************");
+			logger.debug("# Compile "+pathTmp.toString());
 			Process p = new ProcessBuilder(c6809, option, pathTmp.toString(), Paths.get(binTmpFile).toString()).start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
