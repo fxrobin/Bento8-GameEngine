@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpriteSheet {
-	// Convertion d'une planche de sprites en tableaux de données RAMA et RAMB pour chaque Sprite
+	// Convertion d'une planche de sprites en tableaux de donnÃ©ses RAMA et RAMB pour chaque Sprite
 	// Thomson TO8/TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
 	
@@ -28,7 +28,7 @@ public class SpriteSheet {
 	private int width; // largeur totale de l'image
 	private int height; // longueur totale de l'image
 
-	private Boolean hFlipped = false; // L'image est-elle inversée horizontalement ?
+	private Boolean hFlipped = false; // L'image est-elle inversÃ©e horizontalement ?
 	private int subImageNb; // Nombre de sous-images
 	private int subImageWidth; // Largeur des sous-images
 
@@ -49,7 +49,7 @@ public class SpriteSheet {
 
 				subImageWidth = width/nbImages; // Largeur de la sous-image
 
-				if (subImageWidth <= 160 && height <= 200 && pixelSize == 8) { // Contrôle du format d'image
+				if (subImageWidth <= 160 && height <= 200 && pixelSize == 8) { // ContrÃ´le du format d'image
 
 					// On inverse l'image verticalement		
 					if (flip.equals("Y")) {
@@ -80,9 +80,9 @@ public class SpriteSheet {
 					prepareImages();
 
 				} else {
-					System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
-					System.out.println("Resolution: " + subImageWidth + "x" + height + "px (doit être inférieur ou égal à 160x200)");
-					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
+					System.out.println("Le format de fichier de " + file + " n'est pas supportï¿½.");
+					System.out.println("Resolution: " + subImageWidth + "x" + height + "px (doit ï¿½tre infï¿½rieur ou ï¿½gal ï¿½ 160x200)");
+					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit ï¿½tre 8)");
 					// System.out.println("Nombre de composants: "+numComponents+" (doit Ãªtre 3)");
 				}
 			}
@@ -97,9 +97,9 @@ public class SpriteSheet {
 	}
 
 	public void prepareImages() {
-		// sépare l'image en deux parties pour la RAM A et RAM B
-		// ajoute les pixels transparents pour constituer une image linéaire de largeur 2x80px
-		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de même taille
+		// sï¿½pare l'image en deux parties pour la RAM A et RAM B
+		// ajoute les pixels transparents pour constituer une image linï¿½aire de largeur 2x80px
+		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de mï¿½me taille
 		pixels = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 		data = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 
@@ -109,7 +109,7 @@ public class SpriteSheet {
 			int curLine = 0;
 			int page = 0;
 			while (index<subImageWidth*(position+1) + width*(height-1)) { // Parcours de tous les pixels de l'image
-				// Ecriture des pixels 2 à 2
+				// Ecriture des pixels 2 ï¿½ 2
 				pixels[position][page][indexDest] = (byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(index));
 				if (pixels[position][page][indexDest] == 0) {
 					data[position][page][indexDest] = 0;
@@ -154,7 +154,7 @@ public class SpriteSheet {
 	public byte[] getSubImagePixels(int subImagePos, int ramPage) {
 		int position = subImagePos;
 
-		// si l'image est inversée horizontalement, on inverse également l'index des sous-images
+		// si l'image est inversï¿½e horizontalement, on inverse ï¿½galement l'index des sous-images
 		if (hFlipped) {
 			position = (subImageNb-1) - position;
 		}
@@ -165,7 +165,7 @@ public class SpriteSheet {
 	public byte[] getSubImageData(int subImagePos, int ramPage) {
 		int position = subImagePos;
 
-		// si l'image est inversée horizontalement, on inverse également l'index des sous-images
+		// si l'image est inversï¿½e horizontalement, on inverse ï¿½galement l'index des sous-images
 		if (hFlipped) {
 			position = (subImageNb-1) - position;
 		}
