@@ -186,10 +186,6 @@ public class BuildDisk
 					logger.info("--------------------------------------------------------------------------\n");
 				}
 			}
-
-			
-			
-			
 			
 			logger.info("\nCompilation du code de Game Mode Engine et des Game Modes");
 			logger.info("**************************************************************************\n");
@@ -211,11 +207,7 @@ public class BuildDisk
 			fd.setIndex(0, 0, 2);
 			fd.write(binBytes);
 			int indexBackup = fd.getIndex();
-
 			
-			
-			
-
 			logger.info("\nCompilation du code de boot");
 			logger.info("**************************************************************************\n");			
 			
@@ -231,36 +223,6 @@ public class BuildDisk
 			fd.setIndex(0, 0, 1);
 			fd.write(bootLoaderBytes);
 
-			
-			
-			
-			
-			logger.info("\nCompilation du code de Main Engine");
-			logger.info("**************************************************************************\n");
-
-			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
-
-			compileLIN(mainEngineTmpFile);
-			binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
-			binBytesSize = binBytes.length-10;
-
-			if (binBytesSize > 16384) {
-				throw new Exception("Le fichier "+engineAsmMainEngine+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
-			}
-			
-			exomize(getBINFileName(mainEngineTmpFile));
-			byte[] mainEXOBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
-			int mainEXOSize = mainEXOBytes.length;
-			logger.info("Exomize : "+mainEXOSize+" bytes");
-
-			// Ecriture sur disquette
-			fd.setIndex(indexBackup);
-			fd.write(mainEXOBytes);			
-			
-			
-			
-			
-			
 			logger.info("\nGénération des images de disquettes");
 			logger.info("**************************************************************************\n");
 			
@@ -285,58 +247,51 @@ public class BuildDisk
 				gmeData.addLabel("gmboot * @globals");
 			}
 
-			gmeData.addLabel("gm_" + curGameMode.getKey());
+			gmeData.addLabel("gm_" + curGameMode.getKey());			
 			
 			// CONSTANT
 			// ********
 
 			// * Reference des identifiants d'objets (ObjID_IntroStars, ...)
 			// * -----------------------------------
-			// Obj_Index
 			// ObjID_TitleScreen equ $01
 			// ObjID_Shellcracker
 			// ObjID_ShellcrackerClaw
 			// numerotation automatique (commun pour tout le programme)
-
-			// * Référence des mots reserves pour les scripts d'animation
-			// * --------------------------------------------------------
-			// _resetAnim equ $FF
-			// _goBackNFrames equ $FE
-			// _goToAnimation equ $FD
-			// _nextRoutine equ $FC
-			// _resetAnimAndSubRoutine equ $FB
-			// _nextSubRoutine equ $FA
+			
+			int objIndex = 1;
+			for(Entry<String, HashMap<String, String[]>> entry : GameModeObjectProperties.entrySet()) {
+				for (String key : entry.getValue().keySet()) {
+					glb.addConstant("ObjID_"+key, Integer.toString(objIndex++));	
+				}
+			}
 
 			// MAIN
 			// ****
+			
+			// Générer les fichiers ASM :
+//	        OBJINDEX
+//	        IMAGEIDX
+//	        ANIMSCPT
+//	        OBJINDEX		
+	        // et les ajouter à la liste des include
 
+			//GameModeActProperties.get(curGameMode.getKey()).;
+//			gmeData.addLabel("Pal_TitleScreen * @globals");
+//			spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma);
+			
 			// * Données de palette
 			// * ------------------
-			// Pal_TitleScreen:
+			// Pal_TitleScreen
 			// fdb $0000
 			// ...
-
+			
 			// * Adresse du code des objets (Obj_Index: ObjPtr_Sonic, ...)
 			// * --------------------------
-			// ObjectCodeRef
+			// Obj_Index
 			// fcb $05,$A0,$00 ; Objet $01 main code
 			// fcb $05,$A5,$02 ; Objet $02 main code
 			// ...
-
-			// Ani_TitleScreen_LargeStar
-			// fcb $01 ; frame duration
-			// fdb Img_2_star
-			// fdb Img_3_star
-			// fdb Img_4_star
-			// fdb Img_3_star
-			// fdb Img_2_star
-			// fcb _nextSubRoutine
-
-			// Ani_TitleScreen_SmallStar
-			// fcb $03 ; frame duration
-			// fdb Img_1_star
-			// fdb Img_2_star
-			// fcb _resetAnim
 
 			// * Adresse des images de l'objet
 			// * -----------------------------
@@ -354,28 +309,22 @@ public class BuildDisk
 			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
 			// Img_IslandWater
 			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
-			// ...
+			// ...			
+			
+			// Ani_TitleScreen_LargeStar
+			// fcb $01 ; frame duration
+			// fdb Img_2_star
+			// fdb Img_3_star
+			// fdb Img_4_star
+			// fdb Img_3_star
+			// fdb Img_2_star
+			// fcb _nextSubRoutine
 
-//		// Compilation du code de Game Mode Engine et des Game Modes
-//		// *****************************************************************
-//
-//		String gameModeTmpFile = duplicateFile(engineAsmGameMode);
-//
-//		processGameModes();		
-//
-//		compileRAW(gameModeTmpFile);
-//		byte[] mainBINBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
-//		int mainBINSize = mainBINBytes.length;
-//
-//		if (mainBINSize > 16128) {
-//			throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+mainBINSize+" octets (max:16128 va jusqu'en 9F00, avec une pile de 256 octets 9F00-9FFF)");
-//		}
-//		int dernierBloc = 40960 + mainBINSize; //A000
-//
-//		// Ecriture sur disquette
-//		fd.setIndex(0, 0, 2);
-//		fd.write(mainBINBytes);
-
+			// Ani_TitleScreen_SmallStar
+			// fcb $03 ; frame duration
+			// fdb Img_1_star
+			// fdb Img_2_star
+			// fcb _resetAnim
 
 // TODO : positionner dans U le game mode sur lequel booter
 
@@ -383,11 +332,36 @@ public class BuildDisk
 //		        fdb   $0000 * destination : valeur a calculer par le builder (current_game_mode_data + longueur des données ci dessous 1+((x+1)*7)) le 1+ est pour balise de fin ecrite dans le code
 //				fcb   $00,$00,$3,$23,$01,$61,$00 * b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
 //		        fcb   $FF
-				gmeData.addFcb(new String[] { "$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF" });
+			gmeData.addFcb(new String[] { "$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF" });
+			
+			
+			
+			// récupérer l'engine dans properties et le compiler
+			
+			logger.info("\nCompilation du code de Main Engine");
+			logger.info("**************************************************************************\n");
+
+			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
+
+			compileLIN(mainEngineTmpFile);
+			binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
+			binBytesSize = binBytes.length-10;
+
+			if (binBytesSize > 16384) {
+				throw new Exception("Le fichier "+engineAsmMainEngine+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
+			}
+			
+			exomize(getBINFileName(mainEngineTmpFile));
+			byte[] mainEXOBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
+			int mainEXOSize = mainEXOBytes.length;
+			logger.info("Exomize : "+mainEXOSize+" bytes");
+
+			// Ecriture sur disquette
+			fd.setIndex(indexBackup);
+			fd.write(mainEXOBytes);				
 		}
 	}
 
-	}
 
 	private static void readProperties(String file) throws Exception {
 		Properties prop = new Properties();

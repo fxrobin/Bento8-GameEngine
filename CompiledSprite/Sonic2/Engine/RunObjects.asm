@@ -2,10 +2,6 @@
 * RunObjects
 * ------------
 * Subroutine to run objects code
-
-TODO remplacer adresse directe par index dans table d'offset
-la table d'offset stocke la page et l'adresse de l'objet pour ce game mode !
-
 *
 * input REG : none
 * ---------------------------------------------------------------------------

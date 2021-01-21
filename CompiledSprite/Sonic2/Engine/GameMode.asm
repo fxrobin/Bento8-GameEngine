@@ -67,7 +67,7 @@ SwapVideoPage
 * les groupes de 7 octets sont recopiees a l'envers
 * si on souhaite implanter le debut du moteur du niveau en $6000
 * il faut le charger en dernier (car ecrase les registres moniteur)
-* la fin des données est marquée par un octet négatif ($FF par exemple)
+* la fin des donnees est marquee par un octet negatif ($FF par exemple)
 ************************************************************            
         sts   CopyCode3+2              ; sauve s
         lds   -2,u                     ; s=destination u=source

@@ -336,7 +336,7 @@
         fcb   $00
         fcb   $CE
         fcb   $41
-        fcb   $B2
+        fcb   $C0
         fcb   $34
         fcb   $40
         fcb   $86
@@ -363,22 +363,27 @@
         fcb   $EC
         fcb   $C1
         fcb   $2A
-        fcb   $02
-        fcb   $0E
+        fcb   $07
+        fcb   $10
+        fcb   $FE
+        fcb   $9F
+        fcb   $FF
+        fcb   $7E
+        fcb   $61
         fcb   $00
         fcb   $97
         fcb   $4C
         fcb   $F7
         fcb   $41
-        fcb   $99
+        fcb   $9E
         fcb   $37
         fcb   $26
         fcb   $B7
         fcb   $41
-        fcb   $9F
+        fcb   $A4
         fcb   $F7
         fcb   $41
-        fcb   $A2
+        fcb   $A7
         fcb   $34
         fcb   $40
         fcb   $86
@@ -427,7 +432,9 @@
         fcb   $35
         fcb   $40
         fcb   $20
-        fcb   $A7
+        fcb   $A2
+        fcb   $00
+        fcb   $00
         fcb   $00
         fcb   $00
         fcb   $00
