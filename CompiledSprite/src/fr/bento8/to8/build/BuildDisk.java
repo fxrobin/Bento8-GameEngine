@@ -170,6 +170,10 @@ public class BuildDisk
 					byte[] BINBytes = Files.readAllBytes(Paths.get(getBINFileName(engineAsmIncludeTmpFile)));
 					String HEXValues = ByteUtil.bytesToHex(BINBytes);
 					String content = "";
+					
+					// TODO : Inverser l'ordre des données par groupe de 7 octets
+					// ----------------------------------------------------------					
+					
 					for (int i = 0; i < HEXValues.length(); i += 2) {
 						content += "\n        fcb   $" +  HEXValues.charAt(i) +  HEXValues.charAt(i+1);
 					}
@@ -274,103 +278,84 @@ public class BuildDisk
 		// Initialisation des fichiers source générés
 		GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
 
-		// Boot Game Mode
-		int index = 0;
-		logger.info("Traitement du Game Mode (Boot) : "+gameModeBoot);
-		gmeData.addConstant("gm_"+gameModeBoot, String.format("$%1$02X", index));
-		index += 2;
-
-		// Other Game Modes
-		for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
-			if (!curGameMode.getKey().contentEquals(gameModeBoot)) {
-				logger.info("Traitement du Game Mode : "+curGameMode.getKey());
-				gmeData.addConstant("gm_"+curGameMode.getKey(), String.format("$%1$02X", index));
-				index += 2;
+		// Construction des données de chaque Game Mode
+		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
+			logger.info("Traitement du Game Mode : " + curGameMode.getKey());
+			if (curGameMode.getKey().contentEquals(gameModeBoot)) {
+				gmeData.addLabel("gmboot * @globals");
 			}
-		}
 
-		gmeData.addLabel("current_game_mode");
-		gmeData.addFcb(new String[] {"gm_"+gameModeBoot});
-		// Il faut ajouter dans GameMode deux fonctions : changement de Game Mode et changement d'act
-		// Pour faire l'appel il faudra pouvoir set la page mémoire et set le PC pour que l'execution branche au bon endroit 
-		// Donc passer par la page 1 pour faire la transition
+			gmeData.addLabel("gm_" + curGameMode.getKey());
+			
+			// CONSTANT
+			// ********
 
+			// * Reference des identifiants d'objets (ObjID_IntroStars, ...)
+			// * -----------------------------------
+			// Obj_Index
+			// ObjID_TitleScreen equ $01
+			// ObjID_Shellcracker
+			// ObjID_ShellcrackerClaw
+			// numerotation automatique (commun pour tout le programme)
 
-		// *******************************************************************************
+			// * Référence des mots reserves pour les scripts d'animation
+			// * --------------------------------------------------------
+			// _resetAnim equ $FF
+			// _goBackNFrames equ $FE
+			// _goToAnimation equ $FD
+			// _nextRoutine equ $FC
+			// _resetAnimAndSubRoutine equ $FB
+			// _nextSubRoutine equ $FA
 
-		// CONSTANT
-		// ********
+			// MAIN
+			// ****
 
-		//* Reference des identifiants d'objets (ObjID_IntroStars, ...)
-		//* -----------------------------------
-		//ObjID_TitleScreen equ $01
-		//ObjID_Shellcracker
-		//ObjID_ShellcrackerClaw
-		// numerotation automatique (commun pour tout le programme)
+			// * Données de palette
+			// * ------------------
+			// Pal_TitleScreen:
+			// fdb $0000
+			// ...
 
-		//* Référence des mots reserves pour les scripts d'animation
-		//* --------------------------------------------------------
-		//_resetAnim              equ $FF
-		//_goBackNFrames          equ $FE
-		//_goToAnimation          equ $FD
-		//_nextRoutine            equ $FC
-		//_resetAnimAndSubRoutine equ $FB
-		//_nextSubRoutine         equ $FA
+			// * Adresse du code des objets (Obj_Index: ObjPtr_Sonic, ...)
+			// * --------------------------
+			// ObjectCodeRef
+			// fcb $05,$A0,$00 ; Objet $01 main code
+			// fcb $05,$A5,$02 ; Objet $02 main code
+			// ...
 
-		// MAIN
-		// ****
-		
-		//* Données de palette
-		//* ------------------
-		//Pal_TitleScreen:
-		//fdb   $0000
-		//...
+			// Ani_TitleScreen_LargeStar
+			// fcb $01 ; frame duration
+			// fdb Img_2_star
+			// fdb Img_3_star
+			// fdb Img_4_star
+			// fdb Img_3_star
+			// fdb Img_2_star
+			// fcb _nextSubRoutine
 
-		//* Adresse du code des objets (Obj_Index: ObjPtr_Sonic, ...)
-		//* --------------------------
-		//ObjectCodeRef
-		//        fcb   $05,$A0,$00 ; Objet $01 main code
-		//        fcb   $05,$A5,$02 ; Objet $02 main code
-		//...
+			// Ani_TitleScreen_SmallStar
+			// fcb $03 ; frame duration
+			// fdb Img_1_star
+			// fdb Img_2_star
+			// fcb _resetAnim
 
-		//* Scripts d'animation
-		//* -------------------
-		//Ani_TitleScreen
-		//fdb   Ani_TitleScreen_Sonic
-		//fdb   Ani_TitleScreen_Tails
-		//fdb   Ani_TitleScreen_LargeStar
-		//fdb   Ani_TitleScreen_SmallStar
-		//
-		// ...
-		//
-		//Ani_TitleScreen_LargeStar
-		//fcb   $01 ; frame duration
-		//fdb   Img_2_star
-		//fdb   Img_3_star
-		//fdb   Img_4_star
-		//fdb   Img_3_star
-		//fdb   Img_2_star
-		//fcb   _nextSubRoutine
+			// * Adresse des images de l'objet
+			// * -----------------------------
+			// ; page_bckdraw_routine, bckdraw_routine
+			// ; page_draw_routine, draw_routine
+			// ; page_erase_routine, erase_routine, nb_cell
+			// ; x_offset, y_offset
+			// ; x_size, y_size (must follow x_size)
+			// ImgMeta_size fcb 14
+			// Img_Emblem
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
+			// Img_EmblemFront
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
+			// Img_IslandLand
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
+			// Img_IslandWater
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
+			// ...
 
-		//Ani_TitleScreen_SmallStar
-		//fcb   $03 ; frame duration
-		//fdb   Img_1_star
-		//fdb   Img_2_star
-		//fcb   _resetAnim
-
-		//* Adresse des images de l'objet
-		//* -----------------------------
-
-		//Img_Emblem        
-		//        fcb   $07,$B0,$20,$08,$27,$32 ; compiled sprite draw routine (page,address) and erase routine (page,address)					
-		//Img_EmblemFront    
-		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//Img_IslandLand      
-		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//Img_IslandWater     
-		//        fcb   $07,$B0,$20,$08,$27,$32		
-		//...
-		
 //		// Compilation du code de Game Mode Engine et des Game Modes
 //		// *****************************************************************
 //
@@ -391,32 +376,17 @@ public class BuildDisk
 //		fd.setIndex(0, 0, 2);
 //		fd.write(mainBINBytes);
 
-		// *******************************************************************************
 
-		// Game Modes Data
-		for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
-			logger.info("Traitement du Game Mode : "+curGameMode.getKey());
-			gmeData.addLabel("gm_data_"+curGameMode.getKey());
+// TODO : positionner dans U le game mode sur lequel booter
 
-			// Boucle à implémenter
-			// Donnees b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
-			gmeData.addFcb(new String[] {"$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF"});
+//		gm_TITLESCR
+//		        fdb   $0000 * destination : valeur a calculer par le builder (current_game_mode_data + longueur des données ci dessous 1+((x+1)*7)) le 1+ est pour balise de fin ecrite dans le code
+//				fcb   $00,$00,$3,$23,$01,$61,$00 * b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
+//		        fcb   $FF
+				gmeData.addFcb(new String[] { "$FF", "$FF", "$FF", "$FF", "$FF", "$FF", "$FF" });
 		}
-		gmeData.addLabel("gm_dataEnd");
+	}
 
-		// Game Modes Data Array
-		logger.info("Traitement du GameModesArray");
-		gmeData.addLabel("GameModesArray");
-		String entry = null;
-		for (Map.Entry<String,String[]> curGameMode : gameMode.entrySet()) {
-			if (entry != null) {
-				gmeData.addFdb(new String[] {"gm_data_"+entry, "gm_data_AIZ-gm_data_"+entry});
-			}
-			entry=curGameMode.getKey();
-		}
-		gmeData.addFdb(new String[] {"gm_data_"+entry, "gm_dataEnd-gm_data_"+entry});	
-
-		gmeData.flush();
 	}
 
 	private static void readProperties(String file) throws Exception {

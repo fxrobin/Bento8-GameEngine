@@ -2,9 +2,12 @@
 * Chargement du mode de jeu (TO8 Thomson) - Benoit Rousseau 10/11/2020
 * ------------------------------------------------------------------------------
 *
-* Charge les donnees d'un mode de jeu selectionne en RAM
-* Donnees b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
-* on termine par l'ecriture en page 1 des donnees 0000-0100 puis derniere ligne 7x$FF
+* Charge les donnees d'un mode de jeu depuis la disquette
+* decompresse les donnees avec exomizer et copie ces donnees en RAM
+* Les donnees sont stockees par groupe de 7 octets
+* Donnees b: SEC, b: DRV/TRK, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
+* on termine par l'ecriture en page 1 des donnees 0000-0100
+* la derniere ligne contient un premier octet negtif (exemple $FF)
 * Remarque:
 * ---------
 * Les donnees sur la disquette sont continues. Lorsque des donnees se terminent a moitie
@@ -20,7 +23,7 @@
         setdp $40
         INCLUD EXOMIZER  
 
-        ldu   #current_game_mode_data
+        ldu   #current_game_mode_data+7 * on saute la balise de fin du GameMode
         pshs  u
         
 GameModeEngine
@@ -41,7 +44,8 @@ GameModeEngine
         
         ldd   ,u++
         bpl   GMEContinue              * valeur negative de secteur signifie fin du tableau de donnee
-        jmp   $6000                    * on lance le mode de jeu en page 1
+        lds   $9FFF                    * reinit de la pile systeme
+        jmp   $6100                    * on lance le mode de jeu en page 1
 GMEContinue        
         sta   <dk_secteur              * secteur (1-16)
         stb   DKDernierBloc+2          * nombre de secteurs a lire

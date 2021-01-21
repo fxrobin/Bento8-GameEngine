@@ -128,7 +128,7 @@ pal_idx
 ********************************************************************************
 InitVideo
         orcc  #$50                     * desactive les interruptions
-        lds   #$9FFF                   * repositionnement pile systeme
+        lds   #$9FFF                   * positionnement pile systeme
         lda   #$7B                     * passage en mode 160x200x16c
         sta   $E7DC
   
@@ -173,6 +173,7 @@ DKContinue
 dk_dernier_bloc                        
         cmpd  #boot_dernier_bloc       * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO                     * si DK.BUF inferieur ou egal a la limite alors DKCO
+        ldu   #gmboot
         jmp   $A000
 
 * donnees pour le fondu de palette

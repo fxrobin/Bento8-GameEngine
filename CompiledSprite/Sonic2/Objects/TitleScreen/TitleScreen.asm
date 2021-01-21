@@ -795,8 +795,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   y_pixels,u                         *        move.w  #$98,y_pixel(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
         * not implemented                        *        bsr.w   TitleScreen_InitSprite
-        ldy   #ObjID_TitleScreen                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
-        sty   id,x
+        lda   #ObjID_TitleScreen                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
+        sta   id,x
         lda   #Sub_SonicHand
         sta   routine,x                          *        move.b  #$A,routine(a1)                         ; Sonic's hand
         lda   #2
@@ -811,7 +811,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   y_pixel,x                          *        move.w  #$C1,y_pixel(a1)
         ldx   #Obj_Tails                         *        lea     (IntroTails).w,a1
         * not implemented                        *        bsr.w   TitleScreen_InitSprite
-        sty   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        lda   #ObjID_TitleScreen        
+        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
         lda   #4
         sta   routine,x                          *        move.b  #4,routine(a1)                          ; Tails
         lda   #Img_tails_5
@@ -826,7 +827,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   y_pixel,x                          *        move.w  #$A0,y_pixel(a1)
         ldx   #Obj_TailsHand                     *        lea     (IntroTailsHand).w,a1
         * not implemented                        *        bsr.w   TitleScreen_InitSprite
-        sty   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        lda   #ObjID_TitleScreen        
+        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
         ldd   #$1002
         sta   routine,x                          *        move.b  #$10,routine(a1)                        ; Tails' hand
         stb   priority,x                         *        move.b  #2,priority(a1)
@@ -839,7 +841,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         ldd   #$D1
         std   y_pixel,x                          *        move.w  #$D1,y_pixel(a1)
         ldx   Obj_EmblemTop                      *        lea     (IntroEmblemTop).w,a1
-        sty   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        lda   #ObjID_TitleScreen        
+        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
         lda   #Sub_EmblemTop
         sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
