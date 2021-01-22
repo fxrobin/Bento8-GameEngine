@@ -53,7 +53,7 @@ Glb_Cur_Wrk_Screen_Id_x2      fcb   $00   ; precalculated value
 Glb_Camera_X_Pos              fdb   $0000 ; camera x position in palyfield coordinates
 Glb_Camera_Y_Pos              fdb   $0000 ; camera y position in palyfield coordinates
 Glb_Sprite_Screen_Pos_PartA   fdb   $0000 ; start address for rendering of current sprite PartA     
-Glb_Sprite_Screen_Pos_PartB   fdb   $0000 ; start address for rendering of current sprite PartB
+Glb_Sprite_Screen_Pos_PartB   fdb   $0000 ; start address for rendering of current sprite PartB (Must follow PartA)
 
 * ---------------------------------------------------------------------------
 * Background Backup Cells - BBC

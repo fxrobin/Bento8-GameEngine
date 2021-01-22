@@ -32,7 +32,6 @@ public class AssemblyGenerator{
 	public String eraseAddress;
 	private int cyclesFrameCode;
 	private int sizeFrameCode;
-	private String heroPosition = "9F00"; // identique � HERO_POS dans MAIN.ASM TODO A modifier : stocker les positions avec les donn�es d'effacement (multisprite)
 
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
@@ -55,7 +54,7 @@ public class AssemblyGenerator{
 		spriteName = spriteSheet.getName().toUpperCase().replaceAll("[^A-Za-z0-9]", "")+imageNum;
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
-		logger.debug("RAM 0 (val hex 0 � f par pixel, . Transparent):");
+		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
 		String asmFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".ASM";
@@ -65,8 +64,8 @@ public class AssemblyGenerator{
 		String binFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".BIN";
 		Path binFile = Paths.get(binFileName);
 
-		// Si l'option d'utilisation du cache est activ�e et qu'on trouve les fichiers .BIN et .ASM
-		// on passe la g�n�ration du code de sprite compil�
+		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
+		// on passe la génération du code de sprite compilé
 		if (!(BuildDisk.useCache && Files.exists(binFile) && Files.exists(asmFile) && Files.exists(lstFile))) {
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
@@ -90,7 +89,7 @@ public class AssemblyGenerator{
 			sizeSpriteEData1 = regOpt.getDataSize();
 
 			logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
-			logger.debug("RAM 1 (val hex 0 � f par pixel, . Transparent):");
+			logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
 			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
@@ -153,9 +152,9 @@ public class AssemblyGenerator{
 				Files.createFile(asmFile);
 
 				Files.write(asmFile, getCodeFrame1("IMG.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, getCodeFrame2(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmFile, getCodeFrame2(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmFile, getCodeFrame3(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
@@ -199,10 +198,10 @@ public class AssemblyGenerator{
 			logger.debug(lstFileName + " c6809.exe size: " + content.length + " computed size: " + computedSize);
 
 			if (computedCycles != compilerCycles || content.length != computedSize) {
-				logger.fatal(lstFileName + " Ecart de cycles ou de taille entre la version compil�e par c6809 et la valeur calcul�e par le g�n�rateur de code.", new Exception("Pr�requis."));
+				logger.fatal(lstFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 
-			// R�cup�re l'adresse de la routine d'effacement
+			// Récupère l'adresse de la routine d'effacement
 			Pattern pattern = Pattern.compile(".*Label (.*) ERASE_"+spriteName);
 			try (Stream<String> lines = Files.lines(lstFile, Charset.forName("ISO-8859-1"))) {
 				lines.map(pattern::matcher)
@@ -245,49 +244,44 @@ public class AssemblyGenerator{
 		asm.add("(main)" + fileName + "");
 		asm.add("\tORG $" + org + "");
 		asm.add("DRAW_" + spriteName + "");
-		asm.add("\tPSHS U");
-		asm.add("\tSTS SSAV_" + spriteName + "+2\n");
-		asm.add("\tLDS $"+heroPosition+"");
-		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_2");
+		asm.add("\tSTS SSAV_" + spriteName + "+2,PCR\n");
+		asm.add("\tSTD DYN_POS+2,PCR");		
+		asm.add("\tLDS ,Y");
 		return asm;
 	}
 
 	public int getCodeFrame1Cycles() {
 		int cycles = 0;
-		cycles += Register.getCostImmediatePULPSH(Register.size[Register.S]);
-		cycles += Register.costExtendedST[Register.S];
-		cycles += Register.costExtendedLD[Register.S];
-		cycles += Register.costImmediateLD[Register.U];
+		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
+		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
+		cycles += Register.costIndexedLD[Register.S];
 		return cycles;
 	}
 
 	public int getCodeFrame1Size() {
 		int size = 0;
-		size += Register.sizeImmediatePULPSH;
-		size += Register.sizeExtendedST[Register.S];
-		size += Register.sizeExtendedLD[Register.S];
-		size += Register.sizeImmediateLD[Register.U];
+		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
+		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
+		size += Register.sizeIndexedLD[Register.S];
 		return size;
 	}
 
 	public List<String> getCodeFrame2() {
 		List<String> asm = new ArrayList<String>();
-		asm.add("\n\tLDS $"+heroPosition+"+2");		
-		asm.add("\tLDU #ERASE_DATA_" + spriteName + "_END\n");
+		asm.add("DYN_POS");
+		asm.add("\n\tLDS #$0000");		
 		return asm;
 	}
 
 	public int getCodeFrame2Cycles() {
 		int cycles = 0;
-		cycles += Register.costExtendedLD[Register.S];
-		cycles += Register.costImmediateLD[Register.U];
+		cycles += Register.costDirectLD[Register.S];
 		return cycles;
 	}
 
 	public int getCodeFrame2Size() {
 		int size = 0;
-		size += Register.sizeExtendedLD[Register.S];
-		size += Register.sizeImmediateLD[Register.U];
+		size += Register.sizeDirectLD[Register.S];
 		return size;
 	}
 
@@ -295,9 +289,9 @@ public class AssemblyGenerator{
 		List<String> asm = new ArrayList<String>();
 		asm.add("SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
-		asm.add("\tPULS U,PC * Ajout du PC au PULS pour economiser le RTS (Gain: 3c 1o)\n");
+		asm.add("\tRTS\n");
 		asm.add("ERASE_" + spriteName + "");
-		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2\n");
+		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2,PCR\n");
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;
 	}
@@ -305,16 +299,16 @@ public class AssemblyGenerator{
 	public int getCodeFrame3Cycles() {
 		int cycles = 0;
 		cycles += Register.costImmediateLD[Register.S];
-		cycles += Register.getCostImmediatePULPSH(Register.size[Register.U]+2); // PC n'est pas encore dans la liste des registres ;-)
-		cycles += Register.costExtendedST[Register.S];
+		cycles += 5; // RTS
+		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		return cycles;
 	}
 
 	public int getCodeFrame3Size() {
 		int size = 0;
 		size += Register.sizeImmediateLD[Register.S];
-		size += Register.sizeImmediatePULPSH;
-		size += Register.sizeExtendedST[Register.S];
+		size += 1; // RTS
+		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
 		return size;
 	}
 
@@ -323,40 +317,21 @@ public class AssemblyGenerator{
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
-		asm.add("ERASE_DATA_" + spriteName + "_1");
 		return asm;
 	}
 
 	public int getCodeFrame5Cycles() {
 		int cycles = 0;
 		cycles += Register.costImmediateLD[Register.S];
-		cycles += 5;
+		cycles += 5; // RTS
 		return cycles;
 	}
 
 	public int getCodeFrame5Size() {
 		int size = 0;
 		size += Register.sizeImmediateLD[Register.S];
-		size += 1;
+		size += 1; // RTS
 		return size;
-	}
-
-	public void generateDataFDB(int size, List<String> spriteData) {
-
-		// **************************************************************
-		// Construit un tableau de donn�es vide en assembleur
-		// **************************************************************
-		int i = 0;
-
-		while (i < size) {
-			if (i < size - 1) {
-				spriteData.add("\tFDB $0000");
-				i += 2;
-			} else {
-				spriteData.add("\tFCB $00");
-				i += 1;
-			}
-		}
 	}
 
 	public int getCycles() {

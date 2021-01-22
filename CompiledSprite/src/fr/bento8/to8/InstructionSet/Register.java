@@ -1,7 +1,7 @@
 package fr.bento8.to8.InstructionSet;
 
 public class Register {
-	// Les registres sont ordonnés dans le sens du PUL
+	// Les registres sont ordonnï¿½s dans le sens du PUL
 	public static final String[] name = new String[] {"A", "B", "D", "X", "Y", "U", "S"};
 	public static final int[] size = new int[] {1, 1, 2, 2, 2, 2, 2};
 	
@@ -69,6 +69,9 @@ public class Register {
 	public static final int[] rangeMinIndexedOffset = new int[] {0, -16, -128, -32768};
 	public static final int[] rangeMaxIndexedOffset = new int[] {0, 15, 127, 32767};
 	
+	public static final int costIndexedOffsetPCR = 5;
+	public static final int sizeIndexedOffsetPCR = 2;	
+	
 	public static final int sizeImmediatePULPSH = 2;
 	public static int getCostImmediatePULPSH(int nbByte) {
 		return 5+nbByte;
@@ -84,7 +87,7 @@ public class Register {
 		}
 
 		if (cost < 0) {
-			throw new Exception("Offset: "+offset+" en dehors de la plage autorisée.");
+			throw new Exception("Offset: "+offset+" en dehors de la plage autorisï¿½e.");
 		}
 
 		return cost;
@@ -100,7 +103,7 @@ public class Register {
 		}
 
 		if (size < 0) {
-			throw new Exception("Offset: "+offset+" en dehors de la plage autorisée.");
+			throw new Exception("Offset: "+offset+" en dehors de la plage autorisï¿½e.");
 		}
 
 		return size;

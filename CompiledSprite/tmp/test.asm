@@ -2,9 +2,13 @@
    org $6200
    setdp $90
 
-render_xmirror_mask           equ $0001 ; (bit 0) tell display engine to mirror sprite on horizontal axis
-render_ymirror_mask           equ $0002 ; (bit 1) tell display engine to mirror sprite on vertical axis
+Glb_Sprite_Screen_Pos_PartA           equ $0001 ; (bit 0) tell display engine to mirror sprite on horizontal axis
+Glb_Sprite_Screen_Pos_PartB           equ $0002 ; (bit 1) tell display engine to mirror sprite on vertical axis
 
+        ldy   #Glb_Sprite_Screen_Pos_PartA  ; Glb_Sprite_Screen_Pos_PartB must follow PartA
+        ldd   Glb_Sprite_Screen_Pos_PartB   
 
-           lda render_xmirror_mask
-           ldb #render_ymirror_mask
+   std dyn+2,pcr
+   lds ,y
+   
+dyn 

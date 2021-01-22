@@ -258,65 +258,48 @@ public class BuildDisk
 		String[] imageParam;
 		int nbAllSubImages=0;
 		
-		// Map contenant l'ensemble du code ASM pour chaque image
-		HashMap<String, AssemblyGenerator> asmImages = new HashMap<String, AssemblyGenerator>();
-		HashMap<String, AssemblyGenerator> asmImagesFlipX = new HashMap<String, AssemblyGenerator>();
-		HashMap<String, AssemblyGenerator> asmImagesFlipY = new HashMap<String, AssemblyGenerator>();
-		HashMap<String, AssemblyGenerator> asmImagesFlipXY = new HashMap<String, AssemblyGenerator>();		
+		// Map contenant l'ensemble du code ASM pour chaque image (<SpriteTag, <flip, asmGen>>)
+		HashMap<String, HashMap<String, AssemblyGenerator>> asmImages = new HashMap<String,HashMap<String, AssemblyGenerator>>();
 		AssemblyGenerator asm;
 		
-		// Initialise un item pour chaque image utile
-		Item[] items = new Item[nbAllSubImages];
-		int itemIdx = 0;
-		int binaryLength = 0;
-
 		// génération du sprite compilé
 		String spriteFile;
 		String[] flip;
+		
+		// Parcours de tous les objets du jeu
 		for (Entry<String, HashMap<String, String[]>> object : objectSprite.entrySet()) {
+			
+			// Parcours des images de l'objet
 			for (String spriteTag : object.getValue().keySet()) {
+				
 				spriteFile = object.getValue().get(spriteTag)[0];
 				flip = object.getValue().get(spriteTag)[1].split(",");
+				HashMap<String, AssemblyGenerator> asmImage= new HashMap<String, AssemblyGenerator>();
+				
+				// Parcours des modes mirroir demandés pour chaque image
 				for (String curFlip : flip) {
-					logger.debug("\nGénération du code ASM du sprite: " + spriteTag + " image:" + spriteFile);
+					logger.info("\nGénération du code ASM du sprite: " + spriteTag + " image:" + spriteFile);
 					asm = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 1);
 					
-					// Sauvegarde du code généré
-					asmImages.put(spriteTag, asm);
+					logger.info("Compilation de l'image");
+					binary = asm.getCompiledCode("$0000");
 					
 					
-					//TODO save dans bonne structure de flip
+					// Sauvegarde du code généré pour le mode mirroir courant
+					asmImage.put(curFlip, asm);
+
 					// TODO compilation sans background !
-					
 				}
-
-
-				// Calcul de la taille du binaire a partir du code ASM
-				binaryLength = asm.getSize();
-
-				// Création de l'item pour l'algo sac é dos
-				items[itemIdx++] = new Item(currentImage, 1, binaryLength); // id, priority, bytes
-
-				logger.debug(currentImage + " octets: " + binaryLength);
-
-				// Une image compilée doit tenir sur une page de 16Ko pour pouvoir étre exécutée
-				if (binaryLength > 16384)
-					logger.fatal("Image " + currentImage + " trop grande, code compilé :" + binaryLength
-							+ " octets (max 16384)");
+				
+				// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
+				asmImages.put(spriteTag, asmImage);
 			}
 		}
 		
 		
+		// exomize
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+		// Ecrire sur disquette des images
 		
 		
 		
@@ -388,7 +371,7 @@ public class BuildDisk
 			// fdb Img_1_star
 			// fdb Img_2_star
 			// fcb _resetAnim
-
+			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (curGameMode.getKey().contentEquals(gameModeBoot)) {
 				gmeData.addLabel("gmboot * @globals");

@@ -185,6 +185,8 @@ DRS_ProcessEachPriorityLevelB1
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         leau  ,y                            ; cell_end for background data
         stx   DRS_dyn3B1+1                  ; save x reg
+        ldy   #Glb_Sprite_Screen_Pos_PartA  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_PartB   ; to be used with compiled sprites in a single program
         jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
