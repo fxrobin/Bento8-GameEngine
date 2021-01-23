@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,9 +28,10 @@ public class AssemblyGenerator{
 
 	boolean FORWARD = true;
 	public String spriteName;
-	public String eraseAddress;
-	private int cyclesFrameCode;
-	private int sizeFrameCode;
+	private int cyclesDFrameCode;
+	private int sizeDFrameCode;
+	private int cyclesEFrameCode;
+	private int sizeEFrameCode;
 
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
@@ -48,25 +48,39 @@ public class AssemblyGenerator{
 	private int sizeSpriteECode2;
 	private int sizeSpriteEData1;
 	private int sizeSpriteEData2;
-	private int sizeCache, cycleCache;
+	private int sizeDCache, cycleDCache, sizeECache, cycleECache;
+	
+	// Binary
+	private byte[] content;
+	private String asmBckDrawFileName, lstBckDrawFileName, binBckDrawFileName;
+	private String asmEraseFileName, lstEraseFileName, binEraseFileName;
+	private Path asmDFile, lstDFile, binDFile;
+	private Path asmEFile, lstEFile, binEFile;	
 
 	public AssemblyGenerator(SpriteSheet spriteSheet, int imageNum) throws Exception {
-		spriteName = spriteSheet.getName().toUpperCase().replaceAll("[^A-Za-z0-9]", "")+imageNum;
+		spriteName = spriteSheet.getName();
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
-		String asmFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".ASM";
-		Path asmFile = Paths.get(asmFileName);
-		String lstFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".lst";
-		Path lstFile = Paths.get(lstFileName);
-		String binFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".BIN";
-		Path binFile = Paths.get(binFileName);
+		asmBckDrawFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_BckDraw.ASM";
+		asmDFile = Paths.get(asmBckDrawFileName);
+		lstBckDrawFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_BckDraw.lst";
+		lstDFile = Paths.get(lstBckDrawFileName);
+		binBckDrawFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_BckDraw.BIN";
+		binDFile = Paths.get(binBckDrawFileName);
+		
+		asmEraseFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_Erase.ASM";
+		asmEFile = Paths.get(asmEraseFileName);
+		lstEraseFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_Erase.lst";
+		lstEFile = Paths.get(lstEraseFileName);
+		binEraseFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_Erase.BIN";
+		binEFile = Paths.get(binEraseFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
 		// on passe la génération du code de sprite compilé
-		if (!(BuildDisk.useCache && Files.exists(binFile) && Files.exists(asmFile) && Files.exists(lstFile))) {
+		if (!(BuildDisk.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile) && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(FORWARD);
@@ -115,107 +129,170 @@ public class AssemblyGenerator{
 			logger.debug("Taille de la zone data 2: "+sizeSpriteEData2);
 
 			// Calcul des cycles et taille du code de cadre
-			sizeFrameCode = 0;
-			sizeFrameCode += getCodeFrame1Size();
-			sizeFrameCode += getCodeFrame2Size();
-			sizeFrameCode += getCodeFrame3Size();
-			sizeFrameCode += getCodeFrame5Size();
+			sizeDFrameCode = 0;
+			sizeDFrameCode += getCodeFrameBckDrawStartSize();
+			sizeDFrameCode += getCodeFrameBckDrawMidSize();
+			sizeDFrameCode += getCodeFrameBckDrawEndSize();
+			
+			sizeEFrameCode = 0;
+			sizeEFrameCode += getCodeFrameEraseStartSize();			
+			sizeEFrameCode += getCodeFrameEraseEndSize();
 
-			cyclesFrameCode = 0;
-			cyclesFrameCode += getCodeFrame1Cycles();
-			cyclesFrameCode += getCodeFrame2Cycles();
-			cyclesFrameCode += getCodeFrame3Cycles();
-			cyclesFrameCode += getCodeFrame5Cycles();
+			cyclesEFrameCode = 0;
+			cyclesEFrameCode += getCodeFrameBckDrawStartCycles();
+			cyclesEFrameCode += getCodeFrameBckDrawMidCycles();
+			cyclesEFrameCode += getCodeFrameBckDrawEndCycles();
+			
+			cyclesEFrameCode = 0;
+			cyclesEFrameCode += getCodeFrameEraseStartCycles();			
+			cyclesEFrameCode += getCodeFrameEraseEndCycles();
 		} else {
 			// Utilisation du .BIN existant
-			byte[] content = Files.readAllBytes(Paths.get(binFileName));	
-			sizeCache = content.length;
+			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length;
 			// Utilisation du .lst existant
-			cycleCache = C6809Util.countCycles(lstFileName);
+			cycleDCache = C6809Util.countCycles(lstBckDrawFileName);
+			
+			// Utilisation du .BIN existant
+			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length;
+			// Utilisation du .lst existant
+			cycleECache = C6809Util.countCycles(lstEraseFileName);			
 		}
 	}
 
-	public byte[] getCompiledCode(String org) {
-		byte[]  content = {};
-		String asmFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".ASM";
-		String binFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".BIN";
-		String lstFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+".lst";
+	public byte[] getCompiledCode() {
+		return content;
+	}
+		
+	public String getBckDrawBINFile() {
+		return binBckDrawFileName;
+	}
 
-		Path asmFile = Paths.get(asmFileName);
-		Path lstFile = Paths.get(lstFileName);
-		Path binFile = Paths.get(binFileName);
+	public String getEraseBINFile() {
+		return binEraseFileName;
+	}		
 
+	public String getDrawBINFile() {
+		return binBckDrawFileName;
+	}
+	
+	public void compileCode(String org) {		
 		try
 		{
-			if (!(BuildDisk.useCache && Files.exists(binFile) && Files.exists(asmFile) && Files.exists(lstFile))) {
-				Files.deleteIfExists(asmFile);
-				Files.createFile(asmFile);
+			Pattern pt = Pattern.compile("[ \t]*ORG[ \t]*\\$[a-fA-F0-9]{4}");
+			Process pr;
+			BufferedReader br;
+			String line;
+			File f;
+			
+			// Process BckDraw Code
+			// ****************************************************************			
+			if (!(BuildDisk.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
+				Files.deleteIfExists(asmDFile);
+				Files.createFile(asmDFile);
 
-				Files.write(asmFile, getCodeFrame1("IMG.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, getCodeFrame2(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, getCodeFrame3(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmFile, getCodeFrame5(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameBckDrawStart("IMGD.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameBckDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameBckDrawEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			} else {
 				// change ORG adress in existing ASM file
-				String str = new String(Files.readAllBytes(asmFile), StandardCharsets.UTF_8);
-				Pattern p = Pattern.compile("[ \t]*ORG[ \t]*\\$[a-fA-F0-9]{4}");
-				Matcher m = p.matcher(str);
+				String str = new String(Files.readAllBytes(asmDFile), StandardCharsets.UTF_8);
+				Matcher m = pt.matcher(str);
 				if (m.find()) {
 				    str = m.replaceFirst("\tORG \\$"+org);
 				}
-				Files.write(asmFile, str.getBytes(StandardCharsets.UTF_8));
+				Files.write(asmDFile, str.getBytes(StandardCharsets.UTF_8));
 			}
 
 			// Delete binary file
-			Files.deleteIfExists(binFile);
+			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			Process p = new ProcessBuilder(BuildDisk.c6809, "-bd", asmFileName, binFileName).start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line;
+			pr = new ProcessBuilder(BuildDisk.c6809, "-bl", asmBckDrawFileName, binBckDrawFileName).start();
+			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
 			while((line=br.readLine())!=null){
 				System.out.println(line);
 			}
-			p.waitFor();
+			pr.waitFor();
 
 			// Load binary code
-			content = Files.readAllBytes(Paths.get(binFileName));	
+			content = Files.readAllBytes(Paths.get(binBckDrawFileName));	
 
 			// Rename .lst File
-			File f = new File("codes.lst"); 
-			Files.deleteIfExists(lstFile);
-			f.renameTo(new File(lstFileName));
+			f = new File("codes.lst"); 
+			Files.deleteIfExists(lstDFile);
+			f.renameTo(new File(lstBckDrawFileName));
 
 			// Compte le nombre de cycles du .lst
-			int compilerCycles = C6809Util.countCycles(lstFileName);
-			int computedCycles = getCycles();
-			int computedSize = getSize();
-			logger.debug(lstFileName + " c6809.exe cycles: " + compilerCycles + " computed cycles: " + computedCycles);
-			logger.debug(lstFileName + " c6809.exe size: " + content.length + " computed size: " + computedSize);
+			int compilerDCycles = C6809Util.countCycles(lstBckDrawFileName);
+			int computedDCycles = getDCycles();
+			int computedDSize = getDSize();
+			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
+			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW size: " + content.length + " computed size: " + computedDSize);
 
-			if (computedCycles != compilerCycles || content.length != computedSize) {
-				logger.fatal(lstFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+			if (computedDCycles != compilerDCycles || content.length != computedDSize) {
+				logger.fatal(lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 
-			// Récupère l'adresse de la routine d'effacement
-			Pattern pattern = Pattern.compile(".*Label (.*) ERASE_"+spriteName);
-			try (Stream<String> lines = Files.lines(lstFile, Charset.forName("ISO-8859-1"))) {
-				lines.map(pattern::matcher)
-				.filter(Matcher::matches)
-				.findFirst()
-				.ifPresent(matcher -> eraseAddress = matcher.group(1));
+			// Process Erase Code
+			// ****************************************************************
+			if (!(BuildDisk.useCache && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
+				Files.deleteIfExists(asmEFile);
+				Files.createFile(asmEFile);
+				
+				Files.write(asmEFile, getCodeFrameEraseStart("IMGE.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmEFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmEFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmEFile, getCodeFrameEraseEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+			} else {
+				// change ORG adress in existing ASM file
+				String str = new String(Files.readAllBytes(asmEFile), StandardCharsets.UTF_8);
+				Matcher m = pt.matcher(str);
+				if (m.find()) {
+				    str = m.replaceFirst("\tORG \\$"+org);
+				}
+				Files.write(asmEFile, str.getBytes(StandardCharsets.UTF_8));
+			}			
+			
+			// Delete binary file
+			Files.deleteIfExists(binEFile);
+
+			// Generate binary code from assembly code
+			pr = new ProcessBuilder(BuildDisk.c6809, "-bl", asmEraseFileName, binEraseFileName).start();
+			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+			
+			while((line=br.readLine())!=null){
+				System.out.println(line);
 			}
+			pr.waitFor();
+
+			// Load binary code
+			content = Files.readAllBytes(Paths.get(binEraseFileName));	
+
+			// Rename .lst File
+			f = new File("codes.lst"); 
+			Files.deleteIfExists(lstEFile);
+			f.renameTo(new File(lstEraseFileName));
+
+			// Compte le nombre de cycles du .lst
+			int compilerECycles = C6809Util.countCycles(lstEraseFileName);
+			int computedECycles = getECycles();
+			int computedESize = getESize();
+			logger.debug(lstEraseFileName + " c6809.exe ERASE cycles: " + compilerECycles + " computed cycles: " + computedECycles);
+			logger.debug(lstEraseFileName + " c6809.exe ERASE size: " + content.length + " computed size: " + computedESize);
+
+			if (computedECycles != compilerECycles || content.length != computedESize) {
+				logger.fatal(lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+			}			
+			
 		} 
 		catch (Exception e)
 		{
 			e.printStackTrace(); 
 			System.out.println(e); 
 		}
-		return content;
 	}
 
 	public static String debug80Col(byte[] b1) {
@@ -235,22 +312,19 @@ public class AssemblyGenerator{
 		return strBuilder.toString();
 	}
 
-	public String getEraseAddress() {
-		return eraseAddress;
-	}
-
-	public List<String> getCodeFrame1(String fileName, String org) {
+	public List<String> getCodeFrameBckDrawStart(String fileName, String org) {
 		List<String> asm = new ArrayList<String>();
 		asm.add("(main)" + fileName + "");
 		asm.add("\tORG $" + org + "");
-		asm.add("DRAW_" + spriteName + "");
+		asm.add("\tSETDP $FF");
+		asm.add("BCKDRAW_" + spriteName + "");
 		asm.add("\tSTS SSAV_" + spriteName + "+2,PCR\n");
 		asm.add("\tSTD DYN_POS+2,PCR");		
 		asm.add("\tLDS ,Y");
 		return asm;
 	}
 
-	public int getCodeFrame1Cycles() {
+	public int getCodeFrameBckDrawStartCycles() {
 		int cycles = 0;
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
@@ -258,7 +332,7 @@ public class AssemblyGenerator{
 		return cycles;
 	}
 
-	public int getCodeFrame1Size() {
+	public int getCodeFrameBckDrawStartSize() {
 		int size = 0;
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
 		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
@@ -266,53 +340,71 @@ public class AssemblyGenerator{
 		return size;
 	}
 
-	public List<String> getCodeFrame2() {
+	public List<String> getCodeFrameBckDrawMid() {
 		List<String> asm = new ArrayList<String>();
 		asm.add("DYN_POS");
 		asm.add("\n\tLDS #$0000");		
 		return asm;
 	}
 
-	public int getCodeFrame2Cycles() {
+	public int getCodeFrameBckDrawMidCycles() {
 		int cycles = 0;
-		cycles += Register.costDirectLD[Register.S];
+		cycles += Register.costImmediateLD[Register.S];
 		return cycles;
 	}
 
-	public int getCodeFrame2Size() {
+	public int getCodeFrameBckDrawMidSize() {
 		int size = 0;
-		size += Register.sizeDirectLD[Register.S];
+		size += Register.costImmediateLD[Register.S];
 		return size;
 	}
 
-	public List<String> getCodeFrame3() {
+	public List<String> getCodeFrameBckDrawEnd() {
 		List<String> asm = new ArrayList<String>();
 		asm.add("SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
+		return asm;
+	}
+
+	public int getCodeFrameBckDrawEndCycles() {
+		int cycles = 0;
+		cycles += Register.costImmediateLD[Register.S];
+		cycles += 5; // RTS
+		return cycles;
+	}
+
+	public int getCodeFrameBckDrawEndSize() {
+		int size = 0;
+		size += Register.sizeImmediateLD[Register.S];
+		size += 1; // RTS
+		return size;
+	}
+
+	public List<String> getCodeFrameEraseStart(String fileName, String org) {
+		List<String> asm = new ArrayList<String>();
+		asm.add("(main)" + fileName + "");
+		asm.add("\tORG $" + org + "");
+		asm.add("\tSETDP $FF");
 		asm.add("ERASE_" + spriteName + "");
 		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2,PCR\n");
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;
 	}
 
-	public int getCodeFrame3Cycles() {
+	public int getCodeFrameEraseStartCycles() {
 		int cycles = 0;
-		cycles += Register.costImmediateLD[Register.S];
-		cycles += 5; // RTS
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		return cycles;
 	}
 
-	public int getCodeFrame3Size() {
+	public int getCodeFrameEraseStartSize() {
 		int size = 0;
-		size += Register.sizeImmediateLD[Register.S];
-		size += 1; // RTS
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
 		return size;
-	}
-
-	public List<String> getCodeFrame5() {
+	}	
+	
+	public List<String> getCodeFrameEraseEnd() {
 		List<String> asm = new ArrayList<String>();
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
@@ -320,26 +412,34 @@ public class AssemblyGenerator{
 		return asm;
 	}
 
-	public int getCodeFrame5Cycles() {
+	public int getCodeFrameEraseEndCycles() {
 		int cycles = 0;
 		cycles += Register.costImmediateLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
 	}
 
-	public int getCodeFrame5Size() {
+	public int getCodeFrameEraseEndSize() {
 		int size = 0;
 		size += Register.sizeImmediateLD[Register.S];
 		size += 1; // RTS
 		return size;
 	}
 
-	public int getCycles() {
-		return cyclesFrameCode + cyclesSpriteCode1 + cyclesSpriteCode2 + cyclesSpriteECode1 + cyclesSpriteECode2 + cycleCache;
+	public int getDCycles() {
+		return cyclesDFrameCode + cyclesSpriteCode1 + cyclesSpriteCode2 + cycleDCache;
 	}
 
-	public int getSize() {
-		return sizeFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeSpriteECode1 + sizeSpriteECode2 + sizeCache;
+	public int getDSize() {
+		return sizeDFrameCode + sizeSpriteCode1 + sizeSpriteCode2 + sizeDCache;
+	}
+	
+	public int getECycles() {
+		return cyclesEFrameCode + cyclesSpriteECode1 + cyclesSpriteECode2 + cycleECache;
+	}
+
+	public int getESize() {
+		return sizeEFrameCode + sizeSpriteECode1 + sizeSpriteECode2 + sizeECache;
 	}
 
 	public int getSizeData1() {

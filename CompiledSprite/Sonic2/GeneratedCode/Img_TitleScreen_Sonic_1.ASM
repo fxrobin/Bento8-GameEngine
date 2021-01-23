@@ -1,0 +1,2461 @@
+(main)IMG.ASM
+	ORG $A000
+	SETDP $FF
+DRAW_Img_TitleScreen_Sonic_1
+	STS SSAV_Img_TitleScreen_Sonic_1+2,PCR
+
+	STD DYN_POS+2,PCR
+	LDS ,Y
+	LEAS 4417,S
+
+	LDD -40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$cc
+	STD -40,S
+	LDA -38,S
+	STB -38,S
+	PULS B,X
+	PSHU S,X,B,A
+	LDA #$ce
+	LDX #$ffff
+	PSHS A,X
+	LEAS 40,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$ff
+	STD 39,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$efff
+	LDX #$ffcc
+	PSHS D,X
+	LEAS 41,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$ff
+	LDX #$ffff
+	PSHS A,X
+	LEAS 38,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	LDA 38,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 38,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ce
+	LDX #$ffff
+	LDY #$ffff
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDA 38,S
+	PSHU A
+	LDA #$c3
+	STA 38,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$efff
+	LDX #$ffff
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	LDA #$fc
+	ANDB #$F0
+	ORB #$0c
+	STD 38,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$fccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ff
+	LDX #$ffff
+	LDY #$ffcc
+	PSHS A,X,Y
+	LEAS 38,S
+
+	LDD 6,S
+	PSHU D
+	LDA #$cc
+	ANDB #$0F
+	ORB #$c0
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$fcce
+	LDX #$ffff
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$cc
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ff3f
+	LDX #$ffff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$cc
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffcf
+	LDX #$ffff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$cc
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffcc
+	LDX #$ffff
+	LDY #$fccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$c3
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5fcf
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5fff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5fff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5cff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5cff
+	LDX #$ffff
+	LDY #$fccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5cff
+	LDX #$ffff
+	LDY #$ffc3
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3fff
+	LDX #$ffff
+	LDY #$ff33
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$ff33
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffef
+	LDY #$ff33
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffaf
+	LDY #$ffc3
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffae
+	LDY #$ffcf
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$ff
+	STD 39,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffee
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 41,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$ff
+	STD 38,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDX #$ffee
+	LDY #$ffcc
+	PSHS B,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0f
+	LDB #$ff
+	STD 38,S
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDX #$ffef
+	LDY #$fffc
+	PSHS B,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0f
+	LDB #$1f
+	STD 38,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$efff
+	LDY #$fcfc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0f
+	LDB #$0f
+	STD 38,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$fcff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$fccf
+	PSHS D,X,Y
+	LEAS 38,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fccf
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfa1
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfa0
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$f0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfaa
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$f0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfaa
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfaa
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 6,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$fc
+	LDX #$ccfc
+	PSHS A,X
+	LEAS 34,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfaa
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 6,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$fc
+	LDX #$ccff
+	PSHS A,X
+	LEAS 34,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfaa
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 6,S
+
+	LDD 34,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0f
+	LDB #$aa
+	STD 34,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$fc
+	LDX #$ccff
+	PSHS A,X
+	LEAS 36,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0f
+	LDB #$aa
+	STD 38,S
+	LDA 6,S
+	PSHU A
+	LDA #$ff
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$fccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0f
+	LDB #$aa
+	STD 38,S
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$fccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$aa
+	STD 38,S
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$aa
+	STD 38,S
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ff5f
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$aa
+	STD 38,S
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ff55
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$cc
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ff55
+	LDX #$ffff
+	LDY #$cccc
+	PSHS D,X,Y
+	LEAS 39,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$3333
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$aaf5
+	LDX #$55ff
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$33
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$aaf5
+	LDX #$55ff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$33
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$aa55
+	LDX #$55ff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$ec
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$aa55
+	LDX #$65ff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$fe
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$aa55
+	LDX #$55ff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 39,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fffe
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$010a
+	LDX #$5555
+	LDY #$ccff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ffff
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$1015
+	LDX #$5555
+	LDY #$ccff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ffff
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3365
+	LDX #$5555
+	LDY #$ccff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ffff
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3365
+	LDX #$5555
+	LDY #$8cff
+	PSHS D,X,Y
+	LEAS 41,S
+
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$55
+	STD 40,S
+	LDA 6,S
+	PSHU A
+	LDA #$ff
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$6555
+	LDX #$556c
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 42,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$06
+	LDB #$55
+	STD 38,S
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$56
+	LDX #$58ff
+	LDY #$fccf
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$58
+	LDX #$58ff
+	LDY #$fccc
+	PSHS A,X,Y
+	LEAS 39,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5565
+	LDX #$58ff
+	LDY #$f3cc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$06
+	LDB #$55
+	STD 40,S
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$f0
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$6585
+	LDX #$58ff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 42,S
+
+	LDA 4,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 4,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$58ff
+	LDX #$ffcc
+	PSHS D,X
+	LEAS 39,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$5cff
+	LDY #$ff33
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDA 4,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 4,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$558c
+	LDX #$ffff
+	PSHS D,X
+	LEAS 40,S
+
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$553c
+	LDX #$ffff
+	PSHS D,X
+	LEAS 40,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$08
+	LDB #$55
+	STD 39,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$553c
+	LDX #$ffcf
+	PSHS D,X
+	LEAS 41,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$55
+	STD 38,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$8c
+	LDX #$cfcc
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$6c
+	LDX #$cccc
+	PSHS A,X
+	LEAS 38,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$65
+	LDX #$556c
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$565c
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$585c
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$685c
+	LDY #$cccc
+	PSHS A,X,Y
+DYN_POS
+
+	LDS #$0000
+	LEAS 4457,S
+
+	LDX -79,S
+	LDD #$cccc
+	STD -79,S
+	LDY -38,S
+	PSHU Y,X
+	LDA #$ff
+	STD -38,S
+	LDD -40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$ef
+	STD -40,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$cfff
+	LDX #$ffff
+	PSHS D,X
+	LEAS 40,S
+
+	LDA 37,S
+	LDB 4,S
+	PSHU B,A
+	ANDB #$0F
+	ORB #$c0
+	STB 4,S
+	LDA #$33
+	STA 37,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$efff
+	LDX #$ffff
+	PSHS D,X
+	LEAS 40,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0c
+	LDB #$ff
+	STD 39,S
+	LDA 37,S
+	PSHU A
+	LDA #$cc
+	STA 37,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDX #$ffff
+	LDY #$fffc
+	PSHS B,X,Y
+	LEAS 41,S
+
+	LDA 36,S
+	PSHU A
+	LDA #$cf
+	STA 36,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$ffff
+	LDX #$ffff
+	PSHS D,X
+	LEAS 38,S
+
+	LDD 38,S
+	PSHU D
+	LDA #$6f
+	ANDB #$0F
+	ORB #$30
+	STD 38,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ceff
+	LDX #$ffff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$efff
+	LDX #$ffff
+	LDY #$fccc
+	PSHS D,X,Y
+	LEAS 38,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$6fc3
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$06
+	LDB #$cc
+	STD 40,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$66cc
+	LDX #$ffff
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 42,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$cc
+	STD 38,S
+	LDA 5,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 5,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$fc
+	STD 38,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$fc
+	STD 38,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ff
+	LDX #$ffff
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$06
+	LDB #$fc
+	STD 38,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ff
+	LDX #$fffc
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$ff
+	LDX #$fffc
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 38,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$c3
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$36cf
+	LDX #$ffff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$c3
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$36ff
+	LDX #$ffff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$33
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$33ff
+	LDX #$ffff
+	LDY #$ff3c
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$33
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$33ff
+	LDX #$ffff
+	LDY #$ffc3
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$33
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$33ff
+	LDX #$fffe
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$33
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfff
+	LDX #$fffe
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3fff
+	LDX #$ffee
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$30
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffee
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$cfff
+	LDX #$ffee
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$fc
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$ffee
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$fffe
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ffff
+	LDX #$fffe
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 6,S
+	PSHU D
+	LDA #$cc
+	ANDB #$0F
+	ORB #$c0
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$fcff
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ccfc
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$f1ff
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ccfc
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$f0ff
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ccff
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$f0ff
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$ccff
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$c0ff
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccf
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca1f
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccf
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca0f
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$caaf
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca0f
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca13
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$f0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca13
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$f0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca03
+	LDX #$ffff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$cccc
+	STD 6,S
+	LDA 8,S
+	PSHU A
+	ANDA #$0F
+	ORA #$f0
+	STA 8,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca03
+	LDX #$f5ff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca13
+	LDX #$55ff
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 6,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$cc
+	LDX #$ccfc
+	PSHS A,X
+	LEAS 34,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$ca13
+	LDX #$5aff
+	LDY #$fffc
+	PSHS D,X,Y
+	LEAS 6,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$cc
+	LDX #$ccfc
+	PSHS A,X
+	LEAS 34,S
+
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$caa3
+	LDX #$aa5f
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 6,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$33
+	LDX #$3333
+	PSHS A,X
+	LEAS 34,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$c3
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$caa3
+	LDX #$555f
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$aa
+	STD 40,S
+	LDA 6,S
+	PSHU A
+	LDA #$fc
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$caa3
+	LDX #$555f
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 42,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$a1
+	STD 38,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$5ffc
+	LDY #$ffff
+	PSHS A,X,Y
+	LEAS 40,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$56cf
+	LDY #$ffff
+	PSHS A,X,Y
+	LEAS 39,S
+
+	LDA 6,S
+	PSHU A
+	ANDA #$0F
+	ORA #$c0
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$a555
+	LDX #$56cf
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 39,S
+
+	LDD 6,S
+	PSHU D
+	LDA #$ff
+	ANDB #$0F
+	ORB #$e0
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3355
+	LDX #$5656
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fffc
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3355
+	LDX #$6556
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDX 6,S
+	PSHU X
+	LDD #$fffc
+	STD 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$3355
+	LDX #$5558
+	LDY #$ffff
+	PSHS D,X,Y
+	LEAS 41,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$ff
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5555
+	LDX #$85ff
+	LDY #$ffcf
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$ff
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5555
+	LDX #$5aff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDA 6,S
+	PSHU A
+	LDA #$ff
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$5555
+	LDX #$5aff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 40,S
+
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$06
+	LDB #$56
+	STD 40,S
+	LDA 6,S
+	PSHU A
+	LDA #$cf
+	STA 6,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$6555
+	LDX #$aaff
+	LDY #$ffcc
+	PSHS D,X,Y
+	LEAS 42,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$a5
+	LDX #$ffff
+	LDY #$cccc
+	PSHS A,X,Y
+	LEAS 39,S
+
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$08
+	LDB #$55
+	STD 40,S
+	PULS D,X,Y
+	PSHU S,Y,X,D
+	LDD #$6855
+	LDX #$cfff
+	LDY #$33cc
+	PSHS D,X,Y
+	LEAS 42,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$55
+	STD 38,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$cfff
+	LDX #$3333
+	PSHS D,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$cf
+	LDX #$ff33
+	PSHS A,X
+	LEAS 38,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$85
+	LDX #$55cf
+	LDY #$ffc3
+	PSHS A,X,Y
+	LEAS 40,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$56cc
+	LDY #$fff3
+	PSHS A,X,Y
+	LEAS 40,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$53cc
+	LDY #$fffc
+	PSHS A,X,Y
+	LEAS 40,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$63cc
+	LDY #$ccff
+	PSHS A,X,Y
+	LEAS 40,S
+
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDA #$55
+	LDX #$88cc
+	LDY #$ccff
+	PSHS A,X,Y
+	LEAS 40,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$06
+	LDB #$55
+	STD 39,S
+	PULS A,X,Y
+	PSHU S,Y,X,A
+	LDX #$86cc
+	LDY #$cccf
+	PSHS B,X,Y
+	LEAS 41,S
+
+	LDD 38,S
+	PSHU D
+	ANDA #$F0
+	ORA #$05
+	LDB #$55
+	STD 38,S
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$66cc
+	LDX #$cccf
+	PSHS D,X
+	LEAS 40,S
+
+	PULS X,Y
+	PSHU S,Y,X
+	LDD #$65cc
+	LDX #$cccc
+	PSHS D,X
+SSAV_Img_TitleScreen_Sonic_1
+	LDS #$0000
+	RTS
+
+ERASE_Img_TitleScreen_Sonic_1
+	STS ERASE_SSAV_Img_TitleScreen_Sonic_1+2,PCR
+
+ERASE_CODE_Img_TitleScreen_Sonic_1_1
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D
+	STD 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D
+	STD 39,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 40,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 40,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 40,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X
+	STA 5,S
+	STX 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X
+	STD 40,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU A
+	STA 36,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X
+	STA 37,S
+	STX 39,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU A,B
+	STA 37,S
+	STB 4,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,Y
+	STD -40,S
+	STX -79,S
+	STY -38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A
+	STA 5,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A
+	STA 5,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A
+	STA 5,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D
+	STD 39,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU A
+	STA 4,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A
+	STA 5,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU A
+	STA 4,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 40,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A
+	STA 5,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X
+	STA 5,S
+	STX 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 40,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 6,S
+	STX 38,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D
+	STD 34,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A,X
+	STA 8,S
+	STX 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,X
+	STA 5,S
+	STX 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 39,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 6,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 6,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A
+	STA 5,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU D
+	STD 38,S
+
+	PULU D,X,Y,S
+	PSHS D,X,Y
+
+	PULU A
+	STA 38,S
+
+	PULU A,X,Y,S
+	PSHS A,X,Y
+
+	PULU A,B
+	STA 38,S
+	STB 5,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D
+	STD 39,S
+
+	PULU A,B,X,S
+	PSHS B,X
+	STA -38,S
+
+	PULU D
+	STD -40,S
+
+ERASE_SSAV_Img_TitleScreen_Sonic_1
+	LDS #$0000
+	RTS
+

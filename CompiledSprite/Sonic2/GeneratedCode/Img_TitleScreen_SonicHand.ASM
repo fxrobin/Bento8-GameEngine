@@ -1,0 +1,843 @@
+(main)IMG.ASM
+	ORG $A000
+	SETDP $FF
+DRAW_Img_TitleScreen_SonicHand
+	STS SSAV_Img_TitleScreen_SonicHand+2,PCR
+
+	STD DYN_POS+2,PCR
+	LDS ,Y
+	LEAS 3855,S
+
+	LDA ,S
+	PSHU S,A
+	ANDA #$0F
+	ORA #$10
+	STA ,S
+	LEAS 159,S
+
+	LDA -119,S
+	LDX -40,S
+	PSHU X,A
+	LDA #$01
+	STA -119,S
+	LDA -117,S
+	PSHU A
+	ANDA #$0F
+	ORA #$10
+	STA -117,S
+	LDA -77,S
+	PSHU A
+	ANDA #$0F
+	ORA #$00
+	STA -77,S
+	LDA 3,S
+	PSHU A
+	ANDA #$0F
+	ORA #$00
+	STA 3,S
+	LDD -38,S
+	PSHU D
+	ANDA #$F0
+	ANDB #$0F
+	ADDD #$0100
+	STD -38,S
+	LDD #$00a0
+	STD -40,S
+	LDA -79,S
+	STB -79,S
+	PULS B,X
+	PSHU S,X,B,A
+	LDA #$00
+	LDX #$aa1a
+	PSHS A,X
+	LEAS 40,S
+
+	LDA 3,S
+	PSHU A
+	ANDA #$0F
+	ORA #$10
+	STA 3,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$a0
+	LDX #$aa1a
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aaa0
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa10
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa10
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa10
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa00
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa00
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa00
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$aa
+	LDX #$aa01
+	PSHS A,X
+	LEAS 40,S
+
+	LDX 40,S
+	LDY 80,S
+	PSHU Y,X
+	LDA 42,S
+	PSHU A
+	ANDA #$0F
+	ORA #$00
+	STA 42,S
+	LDA 82,S
+	PSHU A
+	ANDA #$0F
+	ORA #$00
+	STA 82,S
+	LDA 122,S
+	PSHU A
+	ANDA #$0F
+	ORA #$00
+	STA 122,S
+	LDX 120,S
+	PSHU X
+	LDD #$aaaa
+	STD 40,S
+	STD 80,S
+	STD 120,S
+	PULS A,X
+	PSHU S,X,A
+	LDX #$aa01
+	PSHS B,X
+	LEAS 161,S
+
+	LDX -1,S
+	PSHU X
+	LDD #$aaa0
+	STD -1,S
+	LDA 1,S
+	PSHU S,A
+	ANDA #$0F
+	ORA #$00
+	STA 1,S
+	LEAS 159,S
+
+	LDA 122,S
+	LDB 42,S
+	LDX -40,S
+	LDY -80,S
+	PSHU Y,X,B,A
+	LDD -120,S
+	PSHU D
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$00
+	STD 40,S
+	LDD 80,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$00
+	STD 80,S
+	LDD 120,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$00
+	STD 120,S
+	LDD #$0000
+	STD -40,S
+	LDA #$0a
+	STD -80,S
+	LDD #$aaa0
+	STD -120,S
+	LDA 82,S
+	LDB -118,S
+	PSHU B,A
+	ANDB #$0F
+	ORB #$10
+	STB -118,S
+	LDA -78,S
+	PSHU A
+	ANDA #$0F
+	ORA #$10
+	STA -78,S
+	LDA -38,S
+	PSHU A
+	ANDA #$0F
+	ORA #$10
+	STA -38,S
+	LDA #$01
+	STA 42,S
+	STA 82,S
+	STA 122,S
+	PULS A,X
+	PSHU S,X,A
+	LDX #$0001
+	PSHS B,X
+	LEAS 281,S
+
+	LDD -121,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$aa
+	STD -121,S
+	LDD -81,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$aa
+	STD -81,S
+	LDD -41,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$aa
+	STD -41,S
+	LDD -1,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$00
+	STD -1,S
+	LDA 40,S
+	LDB -119,S
+	PSHU B,A
+	ANDB #$0F
+	ORB #$00
+	STB -119,S
+	LDA -79,S
+	PSHU A
+	ANDA #$0F
+	ORA #$10
+	STA -79,S
+	STB 40,S
+	LDA 80,S
+	LDB 120,S
+	PSHU S,B,A
+	LDA #$11
+	STA 80,S
+	LDA #$88
+	STA 120,S
+	LEAS 280,S
+
+	LDD -120,S
+	PSHU D
+	LDA #$66
+	ANDB #$0F
+	ORB #$60
+	STD -120,S
+	LDD -80,S
+	PSHU D
+	LDA #$66
+	ANDB #$0F
+	ORB #$60
+	STD -80,S
+	LDD -40,S
+	PSHU D
+	LDA #$85
+	ANDB #$0F
+	ORB #$60
+	STD -40,S
+	LDD ,S
+	PSHU D
+	LDA #$85
+	ANDB #$0F
+	ORB #$60
+	STD ,S
+	LDD 40,S
+	PSHU D
+	LDA #$85
+	ANDB #$0F
+	ORB #$50
+	STD 40,S
+	LDD 80,S
+	PSHU D
+	LDA #$65
+	ANDB #$0F
+	ORB #$50
+	STD 80,S
+	LDD 120,S
+	PSHU S,D
+	LDA #$66
+	ANDB #$0F
+	ORB #$50
+	STD 120,S
+	LEAS 200,S
+
+	LDD -40,S
+	PSHU D
+	ANDA #$F0
+	ANDB #$0F
+	ADDD #$0650
+	STD -40,S
+	LDD ,S
+	PSHU D
+	ANDA #$F0
+	ANDB #$0F
+	ADDD #$0860
+	STD ,S
+	LDA 40,S
+	PSHU S,A
+	ANDA #$F0
+	ORA #$08
+	STA 40,S
+DYN_POS
+
+	LDS #$0000
+	LEAS 3855,S
+
+	LDA ,S
+	PSHU S,A
+	ANDA #$F0
+	ORA #$00
+	STA ,S
+	LEAS 160,S
+
+	LDA -120,S
+	PSHU A
+	ANDA #$F0
+	ORA #$00
+	STA -120,S
+	LDA -118,S
+	PSHU A
+	ANDA #$F0
+	ORA #$01
+	STA -118,S
+	LDD -80,S
+	PSHU D
+	LDA #$00
+	ANDB #$0F
+	ORB #$10
+	STD -80,S
+	LDD -40,S
+	PSHU D
+	LDA #$0a
+	ANDB #$0F
+	ORB #$00
+	STD -40,S
+	LDA -78,S
+	LDB -38,S
+	PSHU B,A
+	LDA #$1a
+	STA -78,S
+	LDA #$a0
+	STA -38,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$0100
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$0100
+	PSHS A,X
+	LEAS 40,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$aa
+	STD 39,S
+	LDD 79,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$aa
+	STD 79,S
+	LDD 119,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0a
+	LDB #$aa
+	STD 119,S
+	LDX 41,S
+	PSHU X
+	LDD #$0001
+	STD 41,S
+	LDD 81,S
+	PSHU D
+	LDA #$00
+	ANDB #$0F
+	ORB #$00
+	STD 81,S
+	LDD 121,S
+	PSHU D
+	LDA #$a0
+	ANDB #$0F
+	ORB #$10
+	STD 121,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$0000
+	PSHS A,X
+	LEAS 199,S
+
+	LDD -40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0a
+	LDB #$aa
+	STD -40,S
+	LDA -38,S
+	PSHU A
+	LDA #$a0
+	STA -38,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$aaa0
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$aaa0
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$aaa0
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$aaa0
+	PSHS A,X
+	LEAS 40,S
+
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$aa00
+	PSHS A,X
+	LEAS 40,S
+
+	LDD 40,S
+	PSHU D
+	ANDA #$F0
+	ORA #$0a
+	LDB #$aa
+	STD 40,S
+	LDD 80,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$aa
+	STD 80,S
+	LDD 120,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$aa
+	STD 120,S
+	LDA 42,S
+	LDB 82,S
+	PSHU B,A
+	LDA 122,S
+	PSHU A
+	LDA #$00
+	STA 42,S
+	STA 82,S
+	STA 122,S
+	PULS A,X
+	PSHU S,X,A
+	LDA #$0a
+	LDX #$aa00
+	PSHS A,X
+	LEAS 281,S
+
+	LDA -119,S
+	LDX 120,S
+	LDY -40,S
+	PSHU Y,X,A
+	LDD -121,S
+	PSHU D
+	ANDA #$F0
+	ORA #$00
+	LDB #$aa
+	STD -121,S
+	LDD #$aaa0
+	STD 120,S
+	LDX 40,S
+	LDY -80,S
+	PSHU Y,X
+	LDD ,S
+	LDX 80,S
+	PSHU S,X,D
+	LDD #$1010
+	STD 80,S
+	LDD #$a000
+	STD -80,S
+	STB -119,S
+	LDA #$00
+	STD -40,S
+	STD 40,S
+	LDB #$01
+	STD ,S
+	LEAS 281,S
+
+	LDD 39,S
+	PSHU D
+	ANDA #$F0
+	ORA #$01
+	LDB #$88
+	STD 39,S
+	LDD 79,S
+	PSHU D
+	ANDA #$F0
+	ORA #$08
+	LDB #$65
+	STD 79,S
+	LDA 120,S
+	STB 120,S
+	LDX -1,S
+	LDY -41,S
+	PSHU Y,X,A
+	LDD -121,S
+	LDX -81,S
+	PSHU S,X,D
+	LDD #$0aa0
+	STD -121,S
+	LDB #$00
+	STD -81,S
+	LDD #$0008
+	STD -1,S
+	LDB #$01
+	STD -41,S
+	LEAS 280,S
+
+	LDA -120,S
+	LDB -80,S
+	PSHU B,A
+	LDA -40,S
+	LDB ,S
+	PSHU B,A
+	LDA 40,S
+	LDB 80,S
+	PSHU B,A
+	LDA 120,S
+	PSHU S,A
+	LDA #$55
+	STA -120,S
+	STA -80,S
+	STA -40,S
+	STA ,S
+	STA 40,S
+	STA 80,S
+	STA 120,S
+	LEAS 180,S
+
+	LDA -20,S
+	LDB 20,S
+	PSHU S,B,A
+	LDA #$55
+	STA -20,S
+	LDA #$66
+	STA 20,S
+SSAV_Img_TitleScreen_SonicHand
+	LDS #$0000
+	RTS
+
+ERASE_Img_TitleScreen_SonicHand
+	STS ERASE_SSAV_Img_TitleScreen_SonicHand+2,PCR
+
+ERASE_CODE_Img_TitleScreen_SonicHand_1
+	PULU A,B,S
+	STA -20,S
+	STB 20,S
+
+	PULU A,S
+	STA 120,S
+
+	PULU A,B
+	STA 40,S
+	STB 80,S
+
+	PULU A,B
+	STA -40,S
+	STB ,S
+
+	PULU A,B
+	STA -120,S
+	STB -80,S
+
+	PULU D,X,S
+	STD -121,S
+	STX -81,S
+
+	PULU A,X,Y
+	STA 120,S
+	STX -1,S
+	STY -41,S
+
+	PULU D,X
+	STD 79,S
+	STX 39,S
+
+	PULU D,X,S
+	STD ,S
+	STX 80,S
+
+	PULU D,X,Y
+	STD 40,S
+	STX -80,S
+	STY -121,S
+
+	PULU A,X,Y
+	STA -119,S
+	STX 120,S
+	STY -40,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,B
+	STA 122,S
+	STB 42,S
+
+	PULU A,X,Y
+	STA 82,S
+	STX 120,S
+	STY 80,S
+
+	PULU D
+	STD 40,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X
+	STA -38,S
+	STX -40,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D,X,Y
+	STD 121,S
+	STX 81,S
+	STY 41,S
+
+	PULU D,X,Y
+	STD 119,S
+	STX 79,S
+	STY 39,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,B,X,Y
+	STA -78,S
+	STB -38,S
+	STX -40,S
+	STY -80,S
+
+	PULU A,B
+	STA -118,S
+	STB -120,S
+
+	PULU A,S
+	STA ,S
+
+	PULU A,S
+	STA 40,S
+
+	PULU D,X
+	STD ,S
+	STX -40,S
+
+	PULU D,S
+	STD 120,S
+
+	PULU D,X,Y
+	STD 80,S
+	STX 40,S
+	STY ,S
+
+	PULU D,X,Y
+	STD -40,S
+	STX -80,S
+	STY -120,S
+
+	PULU A,B,S
+	STA 80,S
+	STB 120,S
+
+	PULU A,B
+	STA -79,S
+	STB 40,S
+
+	PULU A,X,Y
+	STA -119,S
+	STX -1,S
+	STY -41,S
+
+	PULU D,X
+	STD -81,S
+	STX -121,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,B
+	STA -38,S
+	STB -78,S
+
+	PULU A,B,X,Y
+	STA 82,S
+	STB -118,S
+	STX 120,S
+	STY 80,S
+
+	PULU D,X
+	STD 40,S
+	STX -120,S
+
+	PULU A,B,X,Y
+	STA 122,S
+	STB 42,S
+	STX -40,S
+	STY -80,S
+
+	PULU A,S
+	STA 1,S
+
+	PULU D
+	STD -1,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D
+	STD 120,S
+
+	PULU A,B
+	STA 122,S
+	STB 82,S
+
+	PULU A,X,Y
+	STA 42,S
+	STX 40,S
+	STY 80,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,B,X,S
+	PSHS B,X
+	STA -79,S
+
+	PULU D
+	STD -38,S
+
+	PULU A,B
+	STA 3,S
+	STB -77,S
+
+	PULU A,B,X
+	STA -117,S
+	STB -119,S
+	STX -40,S
+
+	PULU A,S
+	STA ,S
+
+ERASE_SSAV_Img_TitleScreen_SonicHand
+	LDS #$0000
+	RTS
+

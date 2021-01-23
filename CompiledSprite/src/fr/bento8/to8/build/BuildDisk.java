@@ -35,6 +35,7 @@ import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.AssemblyGenerator;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
+import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.util.ByteUtil;
 import fr.bento8.to8.util.C6809Util;
@@ -254,12 +255,9 @@ public class BuildDisk
 		}
 		
 		// Génération des sprites compilés pour l'ensemble des game modes
-		String key;
-		String[] imageParam;
-		int nbAllSubImages=0;
 		
-		// Map contenant l'ensemble du code ASM pour chaque image (<SpriteTag, <flip, asmGen>>)
-		HashMap<String, HashMap<String, AssemblyGenerator>> asmImages = new HashMap<String,HashMap<String, AssemblyGenerator>>();
+		// Map contenant l'ensemble des données pour chaque image (<SpriteTag, Sprite>)
+		HashMap<String, Sprite> binImages = new HashMap<String, Sprite>();		
 		AssemblyGenerator asm;
 		
 		// génération du sprite compilé
@@ -274,37 +272,52 @@ public class BuildDisk
 				
 				spriteFile = object.getValue().get(spriteTag)[0];
 				flip = object.getValue().get(spriteTag)[1].split(",");
-				HashMap<String, AssemblyGenerator> asmImage= new HashMap<String, AssemblyGenerator>();
+				Sprite sprite = new Sprite();
 				
 				// Parcours des modes mirroir demandés pour chaque image
 				for (String curFlip : flip) {
-					logger.info("\nGénération du code ASM du sprite: " + spriteTag + " image:" + spriteFile);
-					asm = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 1);
-					
-					logger.info("Compilation de l'image");
-					binary = asm.getCompiledCode("$0000");
-					
+					logger.info("\nGénération du code ASM du sprite: " + spriteTag + " image:" + spriteFile + " flip:" + curFlip);
+					asm = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 0);
 					
 					// Sauvegarde du code généré pour le mode mirroir courant
-					asmImage.put(curFlip, asm);
-
-					// TODO compilation sans background !
+					logger.info("Compilation de l'image");
+					asm.compileCode("A000");
+					
+					logger.info("Exomize Draw code");
+					switch (curFlip) {
+					case "N":
+						sprite.subSprite.binBckDraw = exomize(asm.getBckDrawBINFile());
+						sprite.subSprite.binErase = exomize(asm.getEraseBINFile());
+						// sprite.subSprite.binDraw = exomize(asm.getDrawBINFile());
+						break;
+					case "X":
+						sprite.subSpriteX.binBckDraw = exomize(asm.getBckDrawBINFile());
+						sprite.subSpriteX.binErase = exomize(asm.getEraseBINFile());
+						// sprite.subSpriteX.binDraw = exomize(asm.getDrawBINFile());
+						break;
+					case "Y":
+						sprite.subSpriteY.binBckDraw = exomize(asm.getBckDrawBINFile());
+						sprite.subSpriteY.binErase = exomize(asm.getEraseBINFile());
+						// sprite.subSpriteY.binDraw = exomize(asm.getDrawBINFile());
+						break;
+					case "XY":
+						sprite.subSpriteXY.binBckDraw = exomize(asm.getBckDrawBINFile());
+						sprite.subSpriteXY.binErase = exomize(asm.getEraseBINFile());
+						// sprite.subSpriteXY.binDraw = exomize(asm.getDrawBINFile());
+						break;
+					}
 				}
-				
+
 				// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
-				asmImages.put(spriteTag, asmImage);
+				binImages.put(spriteTag, sprite);
 			}
 		}
-		
-		
-		// exomize
-		
-		// Ecrire sur disquette des images
+
 		
 		
 		
-		
-		
+
+
 		
 		
 
@@ -349,6 +362,9 @@ public class BuildDisk
 			// ImgMeta_size fcb 14
 			// Img_Emblem
 			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4 (x_mirror)
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4 (y_mirror)
+			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4 (y_mirror, x_mirror)			
 			// Img_EmblemFront
 			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
 			// Img_IslandLand
@@ -387,19 +403,19 @@ public class BuildDisk
 			logger.info("\nCompilation du code de Main Engine");
 			logger.info("**************************************************************************\n");
 
-			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
-
-			compileLIN(mainEngineTmpFile);
-			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
-			int binBytesSize = binBytes.length-10;
-
-			if (binBytesSize > 16384) {
-				throw new Exception("Le fichier "+engineAsmMainEngine+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
-			}
-			
-			exomize(getBINFileName(mainEngineTmpFile));
-			mainEXOBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
-			logger.info("Exomize : "+mainEXOBytes.length+" bytes");			
+//			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
+//
+//			compileLIN(mainEngineTmpFile);
+//			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
+//			int binBytesSize = binBytes.length-10;
+//
+//			if (binBytesSize > 16384) {
+//				throw new Exception("Le fichier "+engineAsmMainEngine+" est trop volumineux:"+binBytesSize+" octets (max:16384)");
+//			}
+//			
+//			exomize(getBINFileName(mainEngineTmpFile));
+//			mainEXOBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
+//			logger.info("Exomize : "+mainEXOBytes.length+" bytes");			
 		}
 	}
 
@@ -427,7 +443,7 @@ public class BuildDisk
 		}
 		
 		engineAsmGameModeEngine = prop.getProperty("engine.asm.gameModeEngine");
-		if (engineAsmMainEngine == null) {
+		if (engineAsmGameModeEngine == null) {
 			throw new Exception("Paramètre engine.asm.gameModeEngine manquant dans le fichier "+file);
 		}
 
@@ -673,7 +689,7 @@ public class BuildDisk
 	 * @param binFile fichier contenant le code assembleur a compiler
 	 * @return
 	 */
-	private static int exomize(String binFile) {
+	private static byte[] exomize(String binFile) {
 		try {
 			String basename = FileUtil.removeExtension(Paths.get(binFile).getFileName().toString());
 			String destFileName = generatedCodeDirName+"/"+basename+".EXO";
@@ -694,12 +710,12 @@ public class BuildDisk
 			if (p.waitFor() != 0) {
 				throw new Exception ("Erreur de compilation "+binFile);
 			}
-			return 0;
+			return Files.readAllBytes(Paths.get(destFileName));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.debug(e); 
-			return -1;
+			return null;
 		}
 	}
 
