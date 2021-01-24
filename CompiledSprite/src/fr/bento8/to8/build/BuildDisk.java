@@ -34,9 +34,11 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.AssemblyGenerator;
 import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.disk.FileIndex;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
+import fr.bento8.to8.image.SubSprite;
 import fr.bento8.to8.util.ByteUtil;
 import fr.bento8.to8.util.C6809Util;
 import fr.bento8.to8.util.FileUtil;
@@ -56,8 +58,8 @@ public class BuildDisk
 
 	// Game Mode
 	private static String gameModeBoot;
-	private static HashMap<String, String[]> gameMode;
-	private static HashMap<String, HashMap<String, String[]>> GameModeObjectProperties = new HashMap<String, HashMap<String, String[]>>();
+	private static HashMap<String, String[]> gameMode; // <Game Mode name, Game Mode properties file name[0]>
+	private static HashMap<String, HashMap<String, String[]>> GameModeObjectProperties = new HashMap<String, HashMap<String, String[]>>(); // <Game Mode name, <Object name, Object properties file name[0]>  
 	private static HashMap<String, HashMap<String, HashMap<String, String[]>>> GameModeActProperties = new HashMap<String, HashMap<String, HashMap<String, String[]>>>();
 
 	// Object
@@ -244,20 +246,25 @@ public class BuildDisk
 		GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
 		
 		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes (numérotation commune)
+		// ----------------------------------------------------------------------------------------------------		
 		logger.info("\nGénération des identifiants objets:");
 		int objIndex = 1;
 		for(Entry<String, HashMap<String, String[]>> entry : GameModeObjectProperties.entrySet()) {
 			for (String key : entry.getValue().keySet()) {
-				glb.addConstant("ObjID_"+key, Integer.toString(objIndex++));
-				logger.info("ObjID_"+key+": "+Integer.toString(objIndex++));		
-				readObjectProperties(key, entry.getValue().get(key)[0]);
+				if (!objectSprite.containsKey(key)) { 
+					readObjectProperties(key, entry.getValue().get(key)[0]);
+					glb.addConstant("ObjID_"+key, Integer.toString(objIndex++));
+					logger.info("ObjID_"+key+": "+Integer.toString(objIndex++));
+				}
 			}
 		}
 		
-		// Génération des sprites compilés pour l'ensemble des game modes
+		// GAME MODE DATA - Génération des sprites compilés pour l'ensemble des game modes
+		// ----------------------------------------------------------------------------
+		logger.info("\nGénération des sprites compilés:");
 		
 		// Map contenant l'ensemble des données pour chaque image (<SpriteTag, Sprite>)
-		HashMap<String, Sprite> binImages = new HashMap<String, Sprite>();		
+		HashMap<String, Sprite> allSprites = new HashMap<String, Sprite>();		
 		AssemblyGenerator asm;
 		
 		// génération du sprite compilé
@@ -286,21 +293,25 @@ public class BuildDisk
 					logger.info("Exomize Draw code");
 					switch (curFlip) {
 					case "N":
+						sprite.subSprite = new SubSprite();
 						sprite.subSprite.binBckDraw = exomize(asm.getBckDrawBINFile());
 						sprite.subSprite.binErase = exomize(asm.getEraseBINFile());
 						// sprite.subSprite.binDraw = exomize(asm.getDrawBINFile());
 						break;
 					case "X":
+						sprite.subSpriteX = new SubSprite();						
 						sprite.subSpriteX.binBckDraw = exomize(asm.getBckDrawBINFile());
 						sprite.subSpriteX.binErase = exomize(asm.getEraseBINFile());
 						// sprite.subSpriteX.binDraw = exomize(asm.getDrawBINFile());
 						break;
 					case "Y":
+						sprite.subSpriteY = new SubSprite();						
 						sprite.subSpriteY.binBckDraw = exomize(asm.getBckDrawBINFile());
 						sprite.subSpriteY.binErase = exomize(asm.getEraseBINFile());
 						// sprite.subSpriteY.binDraw = exomize(asm.getDrawBINFile());
 						break;
 					case "XY":
+						sprite.subSpriteXY = new SubSprite();						
 						sprite.subSpriteXY.binBckDraw = exomize(asm.getBckDrawBINFile());
 						sprite.subSpriteXY.binErase = exomize(asm.getEraseBINFile());
 						// sprite.subSpriteXY.binDraw = exomize(asm.getDrawBINFile());
@@ -309,35 +320,52 @@ public class BuildDisk
 				}
 
 				// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
-				binImages.put(spriteTag, sprite);
+				allSprites.put(spriteTag, sprite);
 			}
 		}
 
+		// TODO : valorisation des positions RAM et DISK pour toutes les images
+		// ...
+		// --------------------------------------------------------------------
 		
-		
-		
-
-
-		
-		
-
 		// Construction des données de chaque Game Mode
 		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
+			
 			logger.info("Traitement du Game Mode : " + curGameMode.getKey());
+			gmeData.addLabel("gm_" + curGameMode.getKey());
+//	        fdb   $0000 * destination : valeur a calculer par le builder (current_game_mode_data + longueur des données ci dessous 1+((x+1)*7)) le 1+ est pour balise de fin ecrite dans le code
+			
+			// Parcours des objets du Game Mode
+			for (Map.Entry<String, String[]> curObject : GameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
+				
+				// Parcours des des sprites de l'objet				
+				for (Entry<String, String[]> sprite : objectSprite.get(curObject.getKey()).entrySet()) {
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSprite, gmeData, allSprites.get(sprite.getKey()).spriteTag);
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteX, gmeData, allSprites.get(sprite.getKey()).spriteTag+"X");
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteY, gmeData, allSprites.get(sprite.getKey()).spriteTag+"Y");
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteXY, gmeData, allSprites.get(sprite.getKey()).spriteTag+"XY");
+				}
+			}
+			
+			gmeData.addFcb(new String[] { "$FF" });			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			
 			// MAIN
 			// ****
 			
 			// Générer les fichiers ASM :
 //          PALETTE
-//	        OBJINDEX
-//	        IMAGEIDX
-//	        ANIMSCPT		
-	        // et les ajouter à la liste des include
 
-			//GameModeActProperties.get(curGameMode.getKey()).;
-//			gmeData.addLabel("Pal_TitleScreen * @globals");
-//			spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma);
 			
 			// * Données de palette
 			// * ------------------
@@ -345,12 +373,24 @@ public class BuildDisk
 			// fdb $0000
 			// ...
 			
+			//GameModeActProperties.get(curGameMode.getKey()).;
+//			gmeData.addLabel("Pal_TitleScreen * @globals");
+//			spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma);			
+			
+			
+//	        OBJINDEX
+			
+
 			// * Adresse du code des objets (Obj_Index: ObjPtr_Sonic, ...)
 			// * --------------------------
 			// Obj_Index
 			// fcb $05,$A0,$00 ; Objet $01 main code
 			// fcb $05,$A5,$02 ; Objet $02 main code
-			// ...
+			// ...			
+			
+			
+//	        IMAGEIDX
+			
 
 			// * Adresse des images de l'objet
 			// * -----------------------------
@@ -371,7 +411,10 @@ public class BuildDisk
 			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
 			// Img_IslandWater
 			// fcb $07,$B0,$20,$07,$B0,$20,$08,$27,$32,$10,$10,$5,$5,$4
-			// ...			
+			// ...				
+			
+			
+//	        ANIMSCPT		
 			
 			// Ani_TitleScreen_LargeStar
 			// fcb $01 ; frame duration
@@ -386,17 +429,22 @@ public class BuildDisk
 			// fcb $03 ; frame duration
 			// fdb Img_1_star
 			// fdb Img_2_star
-			// fcb _resetAnim
+			// fcb _resetAnim			
+			
+			
+			
+			
+			
 			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (curGameMode.getKey().contentEquals(gameModeBoot)) {
 				gmeData.addLabel("gmboot * @globals");
 			}
 
-			gmeData.addLabel("gm_" + curGameMode.getKey());
-//	        fdb   $0000 * destination : valeur a calculer par le builder (current_game_mode_data + longueur des données ci dessous 1+((x+1)*7)) le 1+ est pour balise de fin ecrite dans le code
-//			fcb   $00,$00,$3,$23,$01,$61,$00 * b: DRV/TRK, b: SEC, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse			
-			gmeData.addFcb(new String[] { "$FF" });
+			gmeData.flush();
+			
+			
+			
 			
 			// récupérer l'engine dans properties et le compiler
 			
@@ -419,6 +467,27 @@ public class BuildDisk
 		}
 	}
 
+	private static void extractSubSpriteFileIndex(SubSprite sub, GameModeEngineData gmeData, String spriteTag) throws Exception {
+		if (sub != null) {
+			processFileIndex(sub.fileIndexBckDraw, gmeData, spriteTag+"BckDraw");
+			processFileIndex(sub.fileIndexDraw, gmeData, spriteTag+"Draw");
+			processFileIndex(sub.fileIndexErase, gmeData, spriteTag+"Erase");
+		}
+	}
+
+	private static void processFileIndex(FileIndex fi, GameModeEngineData gmeData, String spriteTag) throws Exception {
+		if (fi != null) {
+			String driveNTrack = String.format("%1$02X", (fi.drive << 7)+fi.track);
+			String sector = String.format("%1$02X", fi.sector);
+			String nbSector = String.format("%1$02X", fi.nbSector);
+			String endOffset = String.format("%1$02X", fi.endOffset);
+			String page = String.format("%1$02X", fi.page);			
+			String addressH = String.format("%1$02X", fi.address >> 8);			
+			String addressL = String.format("%1$02X", fi.address & 0x00FF);			
+			gmeData.addFcb(new String[] {driveNTrack, sector, nbSector, endOffset, page, addressH, addressL});		
+			gmeData.appendComment(spriteTag);
+		}
+	}
 
 	private static void readProperties(String file) throws Exception {
 		Properties prop = new Properties();

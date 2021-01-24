@@ -129,23 +129,23 @@ public class AssemblyGenerator{
 			logger.debug("Taille de la zone data 2: "+sizeSpriteEData2);
 
 			// Calcul des cycles et taille du code de cadre
+			cyclesDFrameCode = 0;
+			cyclesDFrameCode += getCodeFrameBckDrawStartCycles();
+			cyclesDFrameCode += getCodeFrameBckDrawMidCycles();
+			cyclesDFrameCode += getCodeFrameBckDrawEndCycles();
+
 			sizeDFrameCode = 0;
 			sizeDFrameCode += getCodeFrameBckDrawStartSize();
 			sizeDFrameCode += getCodeFrameBckDrawMidSize();
-			sizeDFrameCode += getCodeFrameBckDrawEndSize();
-			
-			sizeEFrameCode = 0;
-			sizeEFrameCode += getCodeFrameEraseStartSize();			
-			sizeEFrameCode += getCodeFrameEraseEndSize();
-
-			cyclesEFrameCode = 0;
-			cyclesEFrameCode += getCodeFrameBckDrawStartCycles();
-			cyclesEFrameCode += getCodeFrameBckDrawMidCycles();
-			cyclesEFrameCode += getCodeFrameBckDrawEndCycles();
+			sizeDFrameCode += getCodeFrameBckDrawEndSize();			
 			
 			cyclesEFrameCode = 0;
 			cyclesEFrameCode += getCodeFrameEraseStartCycles();			
 			cyclesEFrameCode += getCodeFrameEraseEndCycles();
+
+			sizeEFrameCode = 0;
+			sizeEFrameCode += getCodeFrameEraseStartSize();			
+			sizeEFrameCode += getCodeFrameEraseEndSize();			
 		} else {
 			// Utilisation du .BIN existant
 			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length;
@@ -227,12 +227,13 @@ public class AssemblyGenerator{
 
 			// Compte le nombre de cycles du .lst
 			int compilerDCycles = C6809Util.countCycles(lstBckDrawFileName);
+			int compilerDSize = content.length - 10;			
 			int computedDCycles = getDCycles();
 			int computedDSize = getDSize();
 			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
-			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW size: " + content.length + " computed size: " + computedDSize);
+			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
-			if (computedDCycles != compilerDCycles || content.length != computedDSize) {
+			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
 				logger.fatal(lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 
@@ -278,12 +279,13 @@ public class AssemblyGenerator{
 
 			// Compte le nombre de cycles du .lst
 			int compilerECycles = C6809Util.countCycles(lstEraseFileName);
+			int compilerESize = content.length - 10;
 			int computedECycles = getECycles();
 			int computedESize = getESize();
 			logger.debug(lstEraseFileName + " c6809.exe ERASE cycles: " + compilerECycles + " computed cycles: " + computedECycles);
-			logger.debug(lstEraseFileName + " c6809.exe ERASE size: " + content.length + " computed size: " + computedESize);
+			logger.debug(lstEraseFileName + " c6809.exe ERASE size: " + compilerESize + " computed size: " + computedESize);
 
-			if (computedECycles != compilerECycles || content.length != computedESize) {
+			if (computedECycles != compilerECycles || compilerESize != computedESize) {
 				logger.fatal(lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}			
 			

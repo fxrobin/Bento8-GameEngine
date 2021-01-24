@@ -27,8 +27,5 @@ public class SubSprite {
 	public FileIndex fileIndexErase;	
 
 	public SubSprite() {
-		fileIndexBckDraw = new FileIndex();
-		fileIndexDraw = new FileIndex();
-		fileIndexErase = new FileIndex();
 	}
 }

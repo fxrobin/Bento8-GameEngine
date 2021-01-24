@@ -25,12 +25,12 @@ ERASE_CODE_Img_TitleScreen_SonicHand_1
 	STB -80,S
 
 	PULU D,X,S
-	STD -1,S
+	STD -81,S
 	STX -41,S
 
 	PULU A,X,Y
 	STA 120,S
-	STX -81,S
+	STX -1,S
 	STY -121,S
 
 	PULU D,X
@@ -38,20 +38,20 @@ ERASE_CODE_Img_TitleScreen_SonicHand_1
 	STX 39,S
 
 	PULU D,S
-	STD 120,S
+	STD 80,S
 
 	PULU D,X,Y
 	STD -121,S
-	STX 80,S
-	STY 40,S
+	STX -40,S
+	STY -80,S
 
 	PULU D
-	STD -80,S
+	STD 40,S
 
 	PULU A,X,Y
 	STA -119,S
 	STX ,S
-	STY -40,S
+	STY 120,S
 
 	PULU A,X,S
 	PSHS A,X
@@ -164,20 +164,20 @@ ERASE_CODE_Img_TitleScreen_SonicHand_1
 	STB -78,S
 
 	PULU A,B,X,Y
-	STA 122,S
+	STA 42,S
 	STB -118,S
 	STX -80,S
 	STY -120,S
 
-	PULU A,B,X,Y
-	STA 82,S
-	STB 42,S
-	STX -40,S
-	STY 120,S
+	PULU D,X,Y
+	STD 120,S
+	STX 80,S
+	STY 40,S
 
-	PULU D,X
-	STD 80,S
-	STX 40,S
+	PULU A,B,X
+	STA 82,S
+	STB 122,S
+	STX -40,S
 
 	PULU A,S
 	STA 1,S

@@ -23,6 +23,14 @@ public class GameModeEngineData
 		new AsmFile(gameModeEngineData);
 	}
 
+	public void appendComment(String comment) {
+		content += " * "+comment;
+	}
+	
+	public void addCommentLine(String comment) {
+		content += "\n* "+comment;
+	}		
+	
 	public void addConstant(String name, String value) {
 		content += "\n" + name + " equ " + value; 
 	}

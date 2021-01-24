@@ -16,34 +16,34 @@ ERASE_CODE_Img_TitleScreen_TailsHand_1
 	STA -80,S
 	STB 79,S
 
-	PULU A,S
-	STA -120,S
-
-	PULU A,B
-	STA 120,S
-	STB 40,S
-
-	PULU A,B
-	STA ,S
-	STB 80,S
-
-	PULU A,B
-	STA -80,S
-	STB -40,S
-
-	PULU A,S
-	STA -80,S
-
-	PULU A,B
-	STA 120,S
-	STB ,S
-
-	PULU A,B
+	PULU A,B,S
 	STA 40,S
 	STB -40,S
 
 	PULU A,B
+	STA -80,S
+	STB 120,S
+
+	PULU A,B
+	STA 80,S
+	STB ,S
+
+	PULU A
 	STA -120,S
+
+	PULU A,S
+	STA -40,S
+
+	PULU A,B
+	STA -80,S
+	STB ,S
+
+	PULU A,B
+	STA -120,S
+	STB 40,S
+
+	PULU A,B
+	STA 120,S
 	STB 80,S
 
 	PULU A,B,S
@@ -56,31 +56,31 @@ ERASE_CODE_Img_TitleScreen_TailsHand_1
 
 	PULU D,X,S
 	STD -80,S
-	STX -120,S
+	STX -40,S
 
 	PULU A,X,Y
 	STA 120,S
-	STX ,S
-	STY -40,S
+	STX -120,S
+	STY ,S
 
 	PULU D,X
 	STD 80,S
 	STX 40,S
 
 	PULU D,S
-	STD -40,S
-
-	PULU D,X,Y
-	STD 40,S
-	STX 80,S
-	STY 120,S
+	STD -80,S
 
 	PULU D
-	STD ,S
+	STD -40,S
 
-	PULU A,X
+	PULU A,X,Y
 	STA -120,S
-	STX -80,S
+	STX 80,S
+	STY 40,S
+
+	PULU D,X
+	STD ,S
+	STX 120,S
 
 ERASE_SSAV_Img_TitleScreen_TailsHand
 	LDS #$0000

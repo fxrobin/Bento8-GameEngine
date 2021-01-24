@@ -366,3 +366,7 @@ ObjID_TitleScreen equ 1
 
 (include)GMEDATA
 * Generated Code
+
+gm_TITLESCR
+        fcb   $FF
+gmboot * @globals
