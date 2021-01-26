@@ -163,8 +163,15 @@ BCKDRAW_Img_TitleScreen_SonicHand
 
 	LDA 82,S
 	LDB 122,S
-	LDX -40,S
-	PSHU X,B,A
+	LDX -120,S
+	LDY -40,S
+	PSHU Y,X,B,A
+	LDD -80,S
+	PSHU D
+	LDD #$0a00
+	STD -80,S
+	LDA #$00
+	STD -40,S
 	LDD 40,S
 	PSHU D
 	ANDA #$F0
@@ -183,15 +190,8 @@ BCKDRAW_Img_TitleScreen_SonicHand
 	ORA #$00
 	LDB #$00
 	STD 120,S
-	LDX -80,S
-	LDY -120,S
-	PSHU Y,X
 	LDD #$aaa0
 	STD -120,S
-	LDD #$0a00
-	STD -80,S
-	LDA #$00
-	STD -40,S
 	LDA 42,S
 	LDB -118,S
 	PSHU B,A
@@ -500,33 +500,33 @@ DYN_POS
 	LEAS 281,S
 
 	LDA -119,S
-	LDX ,S
-	LDY 120,S
-	PSHU Y,X,A
-	LDD -40,S
-	LDX -80,S
+	LDX 120,S
 	LDY 40,S
-	PSHU Y,X,D
+	PSHU Y,X,A
+	LDD 80,S
+	LDX -40,S
+	PSHU X,D
 	LDD -121,S
 	PSHU D
 	ANDA #$F0
 	ORA #$00
 	LDB #$aa
 	STD -121,S
-	LDD #$aaa0
-	STD 120,S
+	LDD #$1010
+	STD 80,S
+	LDX ,S
+	LDY -80,S
+	PSHU S,Y,X
 	LDD #$a000
 	STD -80,S
-	LDX 80,S
-	PSHU S,X
+	STB -119,S
 	LDA #$00
 	STD -40,S
 	STD 40,S
 	LDB #$01
 	STD ,S
-	STA -119,S
-	LDD #$1010
-	STD 80,S
+	LDD #$aaa0
+	STD 120,S
 	LEAS 281,S
 
 	LDD 39,S
@@ -546,17 +546,17 @@ DYN_POS
 	LDY -121,S
 	PSHU Y,X,A
 	STB 120,S
-	LDD -81,S
-	LDX -41,S
+	LDD -41,S
+	LDX -81,S
 	PSHU S,X,D
-	LDD #$0001
-	STD -41,S
-	LDB #$08
-	STD -1,S
-	LDD #$0a00
-	STD -81,S
-	LDB #$a0
+	LDD #$0aa0
 	STD -121,S
+	LDB #$00
+	STD -81,S
+	LDD #$0008
+	STD -1,S
+	LDB #$01
+	STD -41,S
 	LEAS 280,S
 
 	LDA -120,S

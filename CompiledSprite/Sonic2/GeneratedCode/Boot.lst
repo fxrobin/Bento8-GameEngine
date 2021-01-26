@@ -4,19 +4,19 @@
  * Fichier source      : .\Sonic2\GeneratedCode\Boot.asm
  * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
  * Contenu :
- *     Main     0:BOOT.ASM     3441
+ *     Main     0:BOOT.ASM     3525
  *     Include  0:GLOBALS.ASM  129
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-    205                                   INCLUD GLOBALS
-    206                           * Generated Code
-    207                  41B9     current_game_mode_data equ $41B9
-    208                  0001     ObjID_TitleScreen equ 1
-    209                  A1FC     gmboot equ $A1FC
-    210                  A100     boot_dernier_bloc equ $A100
+    210                                   INCLUD GLOBALS
+    211                           * Generated Code
+    212                  41C0     current_game_mode_data equ $41C0
+    213                  0001     ObjID_TitleScreen equ 1
+    214                  A2E5     gmboot equ $A2E5
+    215                  A200     boot_dernier_bloc equ $A200
      15        6200                       org   $6200
      16
      17                           *****************************************>>
@@ -47,16 +47,16 @@ Pass2
      42                           *****************************************>>
      43
      44        6200               PalInit
-     45  3     6200 8E   62DD             ldx   #pal_len                 * >>
-     46  4     6203 108E 62D1             ldy   #pal_from                * >>
+     45  3     6200 8E   62E7             ldx   #pal_len                 * >>
+     46  4     6203 108E 62DB             ldy   #pal_from                * >>
      47        6207               PalRun
      48  4+0   6207 A6   A4               lda   ,y                         >>
-     49  5     6209 B4   62E4             anda  pal_mask                 * >>
+     49  5     6209 B4   62EE             anda  pal_mask                 * >>
      50  2     620C C6   FF               ldb   #$FF                     * >>
-     51  5     620E F4   62E4             andb  pal_mask                 * >>
+     51  5     620E F4   62EE             andb  pal_mask                 * >>
      52  5     6211 F7   6278             stb   pal_buffer               * >>
      53  2     6214 C6   11               ldb   #$11                     * >>
-     54  5     6216 F4   62E4             andb  pal_mask                 * >>
+     54  5     6216 F4   62EE             andb  pal_mask                 * >>
      55  5     6219 F7   6279             stb   pal_buffer+1             * >>
      56  5     621C B1   6278             cmpa  pal_buffer               * >>
      57  3     621F 27   10               beq   PalVRSuivante            * >>
@@ -70,7 +70,7 @@ Pass2
      65        622F               PalVRSave
      66  4+0   622F A7   A4               sta   ,y                       * >>
      67        6231               PalVRSuivante
-     68  7     6231 73   62E4             com   pal_mask                 * >>
+     68  7     6231 73   62EE             com   pal_mask                 * >>
      69  3     6234 2B   D1               bmi   PalRun                   * >>
      70                            
      71        6236               SetPalBleu
@@ -98,7 +98,7 @@ Pass2
      93  3     625C 26   E6               bne   SetPalNext               * >>
      94  4+1   625E 31   22               leay  2,y                      * >>
      95  4+1   6260 30   01               leax  1,x                      * >>
-     96  4     6262 8C   62E3             cmpx  #end_pal_len             * >>
+     96  4     6262 8C   62ED             cmpx  #end_pal_len             * >>
      97  3     6265 26   A0               bne   PalRun                   * >>
      98                            
      99        6267               Vsync_1
@@ -108,7 +108,7 @@ Pass2
     103  7     626C 7D   E7E7             tst   $E7E7                    * >>
     104  3     626F 2B   FB               bmi   Vsync_2                  * >>
     105                            
-    106  7     6271 7A   62E3             dec   pal_cycles               * >>
+    106  7     6271 7A   62ED             dec   pal_cycles               * >>
     107  3     6274 26   8A               bne   PalInit                  * >>
     108  3     6276 20   08               bra   InitVideo                * >>
     109                            
@@ -168,57 +168,62 @@ Pass2
     163  6     62B3 0C   4C               inc   <$604C                   * >>
     164  4     62B5 96   4C               lda   <$604C                   * >>
     165  2     62B7 81   10               cmpa  #$10                     * >>
-    166  3     62B9 23   06               bls   DKContinue               * >>
+    166  3     62B9 23   10               bls   DKContinue               * >>
     167  2     62BB 86   01               lda   #$01                     * >>
     168  4     62BD 97   4C               sta   <$604C                   * >>
     169  6     62BF 0C   4B               inc   <$604B                   * >>
-    170        62C1               DKContinue
-    171  6     62C1 0C   4F               inc   <$604F                   * >>
-    172  5     62C3 DC   4F               ldd   <$604F                   * >>
-    173        62C5               dk_dernier_bloc
-    174  5     62C5 1083 A100             cmpd  #boot_dernier_bloc       * >>
-    175  3     62C9 23   E5               bls   DKCO                     * >>
-    176  3     62CB CE   A1FC             ldu   #gmboot
-    177  4     62CE 7E   A000             jmp   $A000
-    178
-    179                           * donnees pour le fondu de palette
-    180                           *****************************************>>
-    181
-    182        62D1               pal_from
-    183        62D1 0000                  fdb   $0000                    * >>
-    184        62D3 F00F                  fdb   $F00F                    * >>
-    185        62D5 FF0F                  fdb   $FF0F                    * >>
-    186        62D7 7707                  fdb   $7707                    * >>
-    187        62D9 AA03                  fdb   $AA03                    * >>
-    188        62DB 330A                  fdb   $330A                    * >>
-    189                            
-    190        62DD               pal_len
-    191        62DD 0C                    fcb   $0C                      * >>
-    192        62DE 0E                    fcb   $0E                      * >>
-    193        62DF 10                    fcb   $10                      * >>
-    194        62E0 16                    fcb   $16                      * >>
-    195        62E1 18                    fcb   $18                      * >>
-    196        62E2 20                    fcb   $20                      * >>
-    197        62E3               end_pal_len
-    198                            
-    199        62E3               pal_cycles
-    200        62E3 0F                    fcb   $0F                      * >>
-    201                            
-    202        62E4               pal_mask
-    203        62E4 0F                    fcb   $0F                      * >>
-    204
+    170  4     62C1 96   4B               lda   <$604B
+    171  2     62C3 81   4F               cmpa  #$4F                     * >>
+    172  3     62C5 23   04               bls   DKContinue               * >>
+    173  6     62C7 0F   4B               clr   <$604B                   * >>
+    174  6     62C9 0C   49               inc   <$6049                   * >>
+    175        62CB               DKContinue
+    176  6     62CB 0C   4F               inc   <$604F                   * >>
+    177  5     62CD DC   4F               ldd   <$604F                   * >>
+    178        62CF               dk_dernier_bloc
+    179  5     62CF 1083 A200             cmpd  #boot_dernier_bloc       * >>
+    180  3     62D3 23   DB               bls   DKCO                     * >>
+    181  3     62D5 CE   A2E5             ldu   #gmboot
+    182  4     62D8 7E   A000             jmp   $A000
+    183
+    184                           * donnees pour le fondu de palette
+    185                           *****************************************>>
+    186
+    187        62DB               pal_from
+    188        62DB 0000                  fdb   $0000                    * >>
+    189        62DD F00F                  fdb   $F00F                    * >>
+    190        62DF FF0F                  fdb   $FF0F                    * >>
+    191        62E1 7707                  fdb   $7707                    * >>
+    192        62E3 AA03                  fdb   $AA03                    * >>
+    193        62E5 330A                  fdb   $330A                    * >>
+    194                            
+    195        62E7               pal_len
+    196        62E7 0C                    fcb   $0C                      * >>
+    197        62E8 0E                    fcb   $0E                      * >>
+    198        62E9 10                    fcb   $10                      * >>
+    199        62EA 16                    fcb   $16                      * >>
+    200        62EB 18                    fcb   $18                      * >>
+    201        62EC 20                    fcb   $20                      * >>
+    202        62ED               end_pal_len
+    203                            
+    204        62ED               pal_cycles
+    205        62ED 0F                    fcb   $0F                      * >>
+    206                            
+    207        62EE               pal_mask
+    208        62EE 0F                    fcb   $0F                      * >>
+    209
 
 000000 Total Errors
 
 000027 Total Symbols
-     1x          Equ   A100 boot_dernier_bloc
-     0x          Equ   41B9 current_game_mode_data
+     1x          Equ   A200 boot_dernier_bloc
+     0x          Equ   41C0 current_game_mode_data
      1x          Label 62B0 DKCO
-     1x          Label 62C1 DKContinue
+     2x          Label 62CB DKContinue
      0x          Label 629B DKLecture
-     0x          Label 62C5 dk_dernier_bloc
-     1x          Label 62E3 end_pal_len
-     1x          Equ   A1FC gmboot
+     0x          Label 62CF dk_dernier_bloc
+     1x          Label 62ED end_pal_len
+     1x          Equ   A2E5 gmboot
      1x          Label 6280 InitVideo
      0x          Equ   0001 ObjID_TitleScreen
      1x          Label 6200 PalInit
@@ -227,11 +232,11 @@ Pass2
      1x          Label 622F PalVRSave
      1x          Label 6231 PalVRSuivante
      5x          Label 6278 pal_buffer
-     1x          Label 62E3 pal_cycles
-     1x          Label 62D1 pal_from
+     1x          Label 62ED pal_cycles
+     1x          Label 62DB pal_from
      3x          Label 627E pal_idx
-     1x          Label 62DD pal_len
-     4x          Label 62E4 pal_mask
+     1x          Label 62E7 pal_len
+     4x          Label 62EE pal_mask
      0x          Label 6236 SetPalBleu
      1x          Label 6241 SetPalBleudec
      2x          Label 6244 SetPalNext

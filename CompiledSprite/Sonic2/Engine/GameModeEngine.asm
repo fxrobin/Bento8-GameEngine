@@ -61,13 +61,18 @@ DKLecture
         sta   <$6048                   * DK.OPC $02 Operation - lecture d'un secteur
 DKCO
         jsr   $E82A                    * DKCO Appel Moniteur - lecture d'un secteur
-        inc   <$604C                   * increment du registre Moniteur DK.SEC
-        lda   <$604C                   * chargement de DK.SEC
+        inc   <dk_secteur              * increment du registre Moniteur DK.SEC
+        lda   <dk_secteur              * chargement de DK.SEC
         cmpa  #$10                     * si DK.SEC est inferieur ou egal a 16
         bls   DKContinue               * on continue le traitement
         lda   #$01                     * sinon on a depasse le secteur 16
-        sta   <$604C                   * positionnement du secteur a 1
-        inc   <$604B                   * increment du registre Moniteur DK.TRK
+        sta   <dk_secteur              * positionnement du secteur a 1
+        inc   <dk_pisteL               * increment du registre Moniteur DK.TRK
+        lda   <dk_pisteL
+        cmpa  #$4F                     * si DK.SEC est inferieur ou egal a 79
+        bls   DKContinue               * on continue le traitement
+        clr   <dk_pisteL               * positionnement de la piste a 0
+        inc   <dk_lecteur              * increment du registre Moniteur DK.DRV
 DKContinue                            
         inc   <$604F                   * increment de 256 octets de la zone a ecrire DK.BUF
         ldu   <$604F                   * chargement de la zone a ecrire DK.BUF

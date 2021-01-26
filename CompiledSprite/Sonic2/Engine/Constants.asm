@@ -14,6 +14,7 @@
 
 dk_lecteur                    equ $6049
 dk_piste                      equ $604A
+dk_pisteL                     equ $604B
 dk_secteur                    equ $604C
 dk_destination                equ $604F
 

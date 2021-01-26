@@ -58,6 +58,30 @@ public class FdUtil
 	public int getIndex() {
 		return index;
 	}	
+
+	/**
+	 * Récupère l'unité
+	 * 
+	 */
+	public int getUnit() {
+		return index/327680;
+	}	
+	
+	/**
+	 * Récupère la piste
+	 * 
+	 */
+	public int getTrack() {
+		return (index-(getUnit()*327680))/4096;
+	}	
+	
+	/**
+	 * Récupère le secteur
+	 * 
+	 */
+	public int getSector() {
+		return ((index-(getTrack()*4096)-(getUnit()*327680))/256)+1;
+	}		
 	
 	/**
 	 * Positionne l'index d'écriture au secteur suivant

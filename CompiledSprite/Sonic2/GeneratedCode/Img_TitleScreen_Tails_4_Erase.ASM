@@ -89,12 +89,12 @@ ERASE_CODE_Img_TitleScreen_Tails_4_1
 	PULU D,X,Y
 	STD 38,S
 	STX 40,S
-	STY 83,S
+	STY 120,S
 
 	PULU A,X,Y
 	STA 44,S
-	STX 80,S
-	STY 120,S
+	STX 83,S
+	STY 80,S
 
 	PULU A,X,Y,S
 	PSHS A,X,Y
@@ -569,9 +569,9 @@ ERASE_CODE_Img_TitleScreen_Tails_4_1
 	PSHS D,X
 
 	PULU D,X,Y
-	STD 119,S
-	STX 80,S
-	STY 40,S
+	STD 80,S
+	STX 40,S
+	STY 119,S
 
 	PULU A,B
 	STA 84,S
@@ -579,13 +579,13 @@ ERASE_CODE_Img_TitleScreen_Tails_4_1
 
 	PULU A,X,Y
 	STA 4,S
-	STX 82,S
-	STY 77,S
+	STX 77,S
+	STY 37,S
 
 	PULU D,X,Y
 	STD 42,S
-	STX 117,S
-	STY 37,S
+	STX 82,S
+	STY 117,S
 
 	PULU A,X,Y,S
 	PSHS A,X,Y
@@ -680,16 +680,16 @@ ERASE_CODE_Img_TitleScreen_Tails_4_1
 	STD 3,S
 
 	PULU A,B
+	STA -120,S
+	STB -80,S
+
+	PULU A,B
 	STA -76,S
 	STB -38,S
 
 	PULU A,B
-	STA -120,S
-	STB -116,S
-
-	PULU A,B
 	STA -40,S
-	STB -80,S
+	STB -116,S
 
 	PULU A,B,S
 	STA 2,S

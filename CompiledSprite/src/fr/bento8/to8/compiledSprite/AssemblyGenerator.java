@@ -148,12 +148,12 @@ public class AssemblyGenerator{
 			sizeEFrameCode += getCodeFrameEraseEndSize();			
 		} else {
 			// Utilisation du .BIN existant
-			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length;
+			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length-10;
 			// Utilisation du .lst existant
 			cycleDCache = C6809Util.countCycles(lstBckDrawFileName);
 			
 			// Utilisation du .BIN existant
-			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length;
+			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length-10;
 			// Utilisation du .lst existant
 			cycleECache = C6809Util.countCycles(lstEraseFileName);			
 		}
@@ -213,7 +213,7 @@ public class AssemblyGenerator{
 			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
 			while((line=br.readLine())!=null){
-				System.out.println(line);
+				logger.debug(line);
 			}
 			pr.waitFor();
 
@@ -265,7 +265,7 @@ public class AssemblyGenerator{
 			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			
 			while((line=br.readLine())!=null){
-				System.out.println(line);
+				logger.debug(line);
 			}
 			pr.waitFor();
 

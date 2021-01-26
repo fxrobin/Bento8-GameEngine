@@ -167,6 +167,11 @@ DKCO
         lda   #$01                     * sinon on a depasse le secteur 16
         sta   <$604C                   * positionnement du secteur a 1
         inc   <$604B                   * increment du registre Moniteur DK.TRK
+        lda   <$604B
+        cmpa  #$4F                     * si DK.SEC est inferieur ou egal a 79
+        bls   DKContinue               * on continue le traitement
+        clr   <$604B                   * positionnement de la piste a 0
+        inc   <$6049                   * increment du registre Moniteur DK.DRV
 DKContinue                            
         inc   <$604F                   * increment de 256 octets de la zone a ecrire DK.BUF
         ldd   <$604F                   * chargement de la zone a ecrire DK.BUF
@@ -204,7 +209,7 @@ pal_mask
 
 (include)GLOBALS
 * Generated Code
-current_game_mode_data equ $41B9
+current_game_mode_data equ $41C0
 ObjID_TitleScreen equ 1
-gmboot equ $A1FC
-boot_dernier_bloc equ $A100
+gmboot equ $A2E5
+boot_dernier_bloc equ $A200

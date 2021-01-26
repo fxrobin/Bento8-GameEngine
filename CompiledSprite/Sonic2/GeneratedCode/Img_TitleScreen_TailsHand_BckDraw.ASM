@@ -8,13 +8,11 @@ BCKDRAW_Img_TitleScreen_TailsHand
 	LDS ,Y
 	LEAS 4214,S
 
-	LDX ,S
-	LDY 120,S
+	LDX 120,S
+	LDY 40,S
 	PSHU Y,X
-	LDD #$ddad
-	STD ,S
 	LDD 80,S
-	LDX 40,S
+	LDX ,S
 	PSHU X,D
 	LDA -120,S
 	PSHU A
@@ -27,17 +25,19 @@ BCKDRAW_Img_TitleScreen_TailsHand
 	ANDB #$0F
 	ORB #$a0
 	STD -40,S
+	LDD #$adab
+	STD 40,S
+	LDA #$ba
+	STD 80,S
+	STD 120,S
+	LDD #$ddad
+	STD ,S
 	LDD -80,S
 	PSHU S,D
 	ANDA #$F0
 	ANDB #$0F
 	ADDD #$0ad0
 	STD -80,S
-	LDD #$adab
-	STD 40,S
-	LDA #$ba
-	STD 80,S
-	STD 120,S
 	LEAS 280,S
 
 	LDD 40,S
@@ -53,21 +53,21 @@ BCKDRAW_Img_TitleScreen_TailsHand
 	ORB #$d0
 	STD 80,S
 	LDA 120,S
-	LDX -120,S
-	LDY ,S
-	PSHU Y,X,A
-	LDD -80,S
 	LDX -40,S
+	LDY -80,S
+	PSHU Y,X,A
+	LDD -120,S
+	LDX ,S
 	PSHU S,X,D
+	LDD #$ddbb
+	STD -80,S
+	LDB #$bd
+	STD -40,S
+	LDA #$bd
+	STD ,S
 	LDD #$dbab
 	STD -120,S
 	STA 120,S
-	LDD #$bdbd
-	STD ,S
-	LDA #$dd
-	STD -40,S
-	LDB #$bb
-	STD -80,S
 	LEAS 220,S
 
 	LDA -60,S
@@ -89,52 +89,52 @@ DYN_POS
 	LDS #$0000
 	LEAS 4175,S
 
-	LDA 120,S
-	LDB 80,S
-	PSHU B,A
 	LDA -120,S
-	LDB 40,S
+	LDB -40,S
 	PSHU B,A
 	LDA -80,S
-	LDB ,S
+	LDB 120,S
 	PSHU B,A
-	LDA #$ba
-	STA ,S
-	LDA #$ab
-	STA 120,S
-	LDA -40,S
-	PSHU S,A
 	LDA #$dd
 	STA -120,S
+	LDA ,S
+	PSHU A
+	LDA #$ba
+	STA ,S
+	LDA 40,S
+	LDB 80,S
+	PSHU S,B,A
 	LDA #$aa
 	STA -80,S
 	STA -40,S
 	STA 40,S
 	STA 80,S
+	LDA #$ab
+	STA 120,S
 	LEAS 280,S
 
-	LDA ,S
-	LDB -120,S
-	PSHU B,A
-	LDA 120,S
-	LDB 80,S
-	PSHU B,A
-	LDA -80,S
-	PSHU A
-	LDA #$dd
-	STA 80,S
-	STA 120,S
 	LDA 40,S
-	LDB -40,S
-	PSHU S,B,A
+	LDB 120,S
+	PSHU B,A
+	LDA -40,S
+	LDB ,S
+	PSHU B,A
+	LDA 80,S
+	LDB -80,S
+	PSHU B,A
 	LDA #$db
 	STA -40,S
 	STA ,S
 	STA 40,S
-	LDA #$da
-	STA -80,S
+	LDA #$dd
+	STA 80,S
+	STA 120,S
+	LDA -120,S
+	PSHU S,A
 	LDA #$ba
 	STA -120,S
+	LDA #$da
+	STA -80,S
 	LEAS 240,S
 
 	LDA -80,S

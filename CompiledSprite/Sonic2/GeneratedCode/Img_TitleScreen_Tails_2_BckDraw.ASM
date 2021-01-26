@@ -36,31 +36,6 @@ BCKDRAW_Img_TitleScreen_Tails_2
 	STA 54,S
 	LEAS 217,S
 
-	LDX -83,S
-	LDY -39,S
-	PSHU Y,X
-	LDD -43,S
-	LDX 37,S
-	LDY -3,S
-	PSHU Y,X,D
-	LDD #$6499
-	STD -43,S
-	LDB #$94
-	STD -83,S
-	LDB #$d4
-	STD 37,S
-	LDB #$49
-	STD -3,S
-	LDA -77,S
-	PSHU A
-	ANDA #$0F
-	ORA #$60
-	STA -77,S
-	LDA -37,S
-	PSHU A
-	ANDA #$0F
-	ORA #$40
-	STA -37,S
 	LDD -123,S
 	PSHU D
 	LDA #$67
@@ -73,8 +48,25 @@ BCKDRAW_Img_TitleScreen_Tails_2
 	ANDB #$0F
 	ORB #$60
 	STD -118,S
+	LDA -77,S
+	PSHU A
+	ANDA #$0F
+	ORA #$60
+	STA -77,S
+	LDA -37,S
+	PSHU A
+	ANDA #$0F
+	ORA #$40
+	STA -37,S
+	LDX -39,S
 	LDD #$69d6
 	STD -39,S
+	LDY 37,S
+	PSHU Y,X
+	LDD -3,S
+	LDX -83,S
+	LDY -43,S
+	PSHU Y,X,D
 	LDD -79,S
 	PSHU D
 	ANDA #$F0
@@ -87,6 +79,14 @@ BCKDRAW_Img_TitleScreen_Tails_2
 	ORA #$40
 	LDB #$99
 	STD 39,S
+	LDD #$6499
+	STD -43,S
+	LDB #$49
+	STD -3,S
+	LDB #$94
+	STD -83,S
+	LDB #$d4
+	STD 37,S
 	PULS X,Y
 	PSHU S,Y,X
 	LDD #$6669
@@ -790,19 +790,13 @@ DYN_POS
 	LEAS 218,S
 
 	LDA -83,S
-	LDB -123,S
 	LDX -119,S
-	LDY -79,S
-	PSHU Y,X,B,A
-	LDD -39,S
-	LDX -3,S
-	PSHU X,D
-	LDD #$99ab
-	STD -79,S
-	LDD #$69bb
-	STD -119,S
-	LDA #$49
-	STA -83,S
+	LDY -39,S
+	PSHU Y,X,A
+	LDA -123,S
+	LDX -79,S
+	LDY -3,S
+	PSHU Y,X,A
 	LDD #$bd94
 	STD -3,S
 	LDA 3,S
@@ -810,20 +804,27 @@ DYN_POS
 	ANDA #$0F
 	ORA #$40
 	STA 3,S
+	LDD #$99ab
+	STD -79,S
+	LDB #$66
+	STD -39,S
+	LDA #$49
+	STA -83,S
 	LDD -43,S
 	PSHU D
 	LDA #$d4
 	ANDB #$0F
 	ORB #$40
 	STD -43,S
-	LDD #$9966
-	STD -39,S
 	LDA #$74
 	STA -123,S
+	LDD #$69bb
+	STD -119,S
 	PULS A,X
 	PSHU S,X,A
+	LDA #$66
 	LDX #$9499
-	PSHS B,X
+	PSHS A,X
 	LEAS 37,S
 
 	LDA 6,S

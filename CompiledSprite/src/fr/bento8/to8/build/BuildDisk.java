@@ -59,6 +59,7 @@ public class BuildDisk
 	// Game Mode
 	private static String gameModeBoot;
 	private static HashMap<String, String[]> gameMode; // <Game Mode name, Game Mode properties file name[0]>
+	private static HashMap<String, Integer> gameModeDataSize = new HashMap<String, Integer>(); // <Game Mode name, Game Mode DataSize>	
 	private static HashMap<String, HashMap<String, String[]>> GameModeObjectProperties = new HashMap<String, HashMap<String, String[]>>(); // <Game Mode name, <Object name, Object properties file name[0]>  
 	private static HashMap<String, HashMap<String, HashMap<String, String[]>>> GameModeActProperties = new HashMap<String, HashMap<String, HashMap<String, String[]>>>();
 
@@ -127,7 +128,7 @@ public class BuildDisk
 	{
 		try {
 			logger.info("Initialisation");
-			logger.info("**************************************************************************\n");		
+			logger.info("**************************************************************************");		
 
 			// Chargement du fichier de configuration principal
 			logger.info("Chargement du fichier de configuration: "+args[0]);
@@ -160,7 +161,7 @@ public class BuildDisk
 			glb = new Globals(engineAsmIncludes);
 
 			logger.info("\nCompilation du Game Mode Engine et encodage du binaire (GMENGINE)");
-			logger.info("**************************************************************************\n");			
+			logger.info("**************************************************************************");			
 
 			String engineAsmIncludeTmpFile = duplicateFile(engineAsmGameModeEngine);
 			compileRAW(engineAsmIncludeTmpFile);
@@ -186,22 +187,10 @@ public class BuildDisk
 						+ ioExceptionObj.getMessage());
 			}
 
-			processGameModes();			
-			
-			logger.info("\nCompilation du code de Game Mode (contient GMENGINE et GMEDATA)");
-			logger.info("**************************************************************************\n");			
-
-			String gameModeTmpFile = duplicateFile(engineAsmGameMode);
-			compileRAW(gameModeTmpFile);
-			byte[] engineAsmGameModeBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
-
-			if (engineAsmGameModeBytes.length > 0x4000) {
-				throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+engineAsmGameModeBytes.length+" octets (max:"+0x4000+")");
-			}
-			int dernierBloc = 0xA000 + engineAsmGameModeBytes.length;
+			int dernierBloc = processGameModes();
 
 			logger.info("\nCompilation du code de boot");
-			logger.info("**************************************************************************\n");			
+			logger.info("**************************************************************************");			
 			
 			String bootTmpFile = duplicateFile(engineAsmBoot);
 			glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", dernierBloc >> 8)+"00"); // On tronque l'octet de poids faible
@@ -210,22 +199,13 @@ public class BuildDisk
 			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
 			Bootloader bootLoader = new Bootloader();
 			bootLoaderBytes = bootLoader.encodeBootLoader(getBINFileName(bootTmpFile));
+			
+			// Ecriture disquette du boot
+			fd.setIndex(0, 0, 1);
+			fd.write(bootLoaderBytes);			
 
 			logger.info("\nGénération des images de disquettes");
-			logger.info("**************************************************************************\n");
-
-			// Ecriture sur disquette
-			fd.setIndex(0, 0, 2);
-			fd.write(engineAsmGameModeBytes);
-			
-			// TODO all game modes
-			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			fd.setIndex(0, 0, 3);
-			fd.write(mainEXOBytes);	
-			
-			// boot
-			fd.setIndex(0, 0, 1);
-			fd.write(bootLoaderBytes);
+			logger.info("**************************************************************************");
 			
 			fd.save(outputDiskName);
 			fd.saveToSd(outputDiskName);
@@ -237,10 +217,10 @@ public class BuildDisk
 		}
 	}
 
-	private static void processGameModes() throws Exception {
+	private static int processGameModes() throws Exception {
 		
 		logger.info("\nCompilation des données de Game Mode (GMEDATA)");
-		logger.info("**************************************************************************\n");
+		logger.info("**************************************************************************");
 		
 		// Initialisation des fichiers source générés
 		GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
@@ -269,7 +249,8 @@ public class BuildDisk
 		
 		// génération du sprite compilé
 		String spriteFile;
-		String[] flip;
+		String[] flip, type;
+		SubSprite curSubSprite;
 		
 		// Parcours de tous les objets du jeu
 		for (Entry<String, HashMap<String, String[]>> object : objectSprite.entrySet()) {
@@ -279,6 +260,7 @@ public class BuildDisk
 				
 				spriteFile = object.getValue().get(spriteTag)[0];
 				flip = object.getValue().get(spriteTag)[1].split(",");
+				type = object.getValue().get(spriteTag)[2].split(",");
 				Sprite sprite = new Sprite();
 				
 				// Parcours des modes mirroir demandés pour chaque image
@@ -287,67 +269,156 @@ public class BuildDisk
 					asm = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 0);
 					
 					// Sauvegarde du code généré pour le mode mirroir courant
-					logger.info("Compilation de l'image");
-					asm.compileCode("A000");
-					
-					logger.info("Exomize Draw code");
-					switch (curFlip) {
-					case "N":
-						sprite.subSprite = new SubSprite();
-						sprite.subSprite.binBckDraw = exomize(asm.getBckDrawBINFile());
-						sprite.subSprite.binErase = exomize(asm.getEraseBINFile());
-						// sprite.subSprite.binDraw = exomize(asm.getDrawBINFile());
-						break;
-					case "X":
-						sprite.subSpriteX = new SubSprite();						
-						sprite.subSpriteX.binBckDraw = exomize(asm.getBckDrawBINFile());
-						sprite.subSpriteX.binErase = exomize(asm.getEraseBINFile());
-						// sprite.subSpriteX.binDraw = exomize(asm.getDrawBINFile());
-						break;
-					case "Y":
-						sprite.subSpriteY = new SubSprite();						
-						sprite.subSpriteY.binBckDraw = exomize(asm.getBckDrawBINFile());
-						sprite.subSpriteY.binErase = exomize(asm.getEraseBINFile());
-						// sprite.subSpriteY.binDraw = exomize(asm.getDrawBINFile());
-						break;
-					case "XY":
-						sprite.subSpriteXY = new SubSprite();						
-						sprite.subSpriteXY.binBckDraw = exomize(asm.getBckDrawBINFile());
-						sprite.subSpriteXY.binErase = exomize(asm.getEraseBINFile());
-						// sprite.subSpriteXY.binDraw = exomize(asm.getDrawBINFile());
-						break;
+					curSubSprite = new SubSprite();
+					for (String curType : type) {
+						if (curType.equals("B")) {
+							logger.info("Compilation de l'image (Backup Background/Draw/Erase) ...");
+							asm.compileCode("A000");
+
+							logger.info("Exomize ...");
+							curSubSprite.binBckDraw = exomize(asm.getBckDrawBINFile());
+							curSubSprite.fileIndexBckDraw = new FileIndex();
+							curSubSprite.binErase = exomize(asm.getEraseBINFile());
+							curSubSprite.fileIndexErase = new FileIndex();			
+						}
+
+						if (curType.equals("D")) {
+							logger.info("Compilation de l'image (Draw) ...");
+							//asm.compileDraw("A000");
+							
+							logger.info("Exomize ...");							
+							curSubSprite.binDraw = exomize(asm.getDrawBINFile());
+							curSubSprite.fileIndexDraw = new FileIndex();
+						}
 					}
+					
+					sprite.setSubSprite(curFlip, curSubSprite);
 				}
 
 				// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
 				allSprites.put(spriteTag, sprite);
 			}
 		}
-
-		// TODO : valorisation des positions RAM et DISK pour toutes les images
-		// ...
-		// --------------------------------------------------------------------
 		
-		// Construction des données de chaque Game Mode
+		// Parcours des objets de tous les Game Mode pour calculer la taille de Game Mode Data
+		int cur_gmd_size, gmd_size = 0;
+
+		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
+			cur_gmd_size = 0;
+			for (Map.Entry<String, String[]> curObject : GameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
+
+				// Parcours des des sprites de l'objet
+				for (Entry<String, String[]> sprite : objectSprite.get(curObject.getKey()).entrySet()) {
+					if (allSprites.get(sprite.getKey()).subSprite != null) {
+						if (allSprites.get(sprite.getKey()).subSprite.binBckDraw != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSprite.binErase != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSprite.binDraw != null) {
+							cur_gmd_size += 7;
+						}						
+					}
+					if (allSprites.get(sprite.getKey()).subSpriteX != null) {
+						if (allSprites.get(sprite.getKey()).subSpriteX.binBckDraw != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSpriteX.binErase != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSpriteX.binDraw != null) {
+							cur_gmd_size += 7;
+						}	
+					}
+					if (allSprites.get(sprite.getKey()).subSpriteY != null) {
+						if (allSprites.get(sprite.getKey()).subSpriteY.binBckDraw != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSpriteY.binErase != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSpriteY.binDraw != null) {
+							cur_gmd_size += 7;
+						}							
+					}		
+					if (allSprites.get(sprite.getKey()).subSpriteXY != null) {
+						if (allSprites.get(sprite.getKey()).subSpriteXY.binBckDraw != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSpriteXY.binErase != null) {
+							cur_gmd_size += 7;
+						}
+						if (allSprites.get(sprite.getKey()).subSpriteXY.binDraw != null) {
+							cur_gmd_size += 7;
+						}	
+					}					
+				}
+			}
+			cur_gmd_size += 1; // Balise de fin $FF
+			gmd_size += cur_gmd_size;
+			gameModeDataSize.put(curGameMode.getKey(), cur_gmd_size);
+		}
+
+		// GAME MODE - compilation pour connaitre la taille Gmae Mode + Game Mode Engine sans les DATA
+		// -------------------------------------------------------------------------------------------
+		
+		String gameModeTmpFile = duplicateFile(engineAsmGameMode);
+		compileRAW(gameModeTmpFile);
+		byte[] engineAsmGameModeBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
+		int gme_totalSize = engineAsmGameModeBytes.length + gmd_size;
+
+		if (gme_totalSize > 0x4000) {
+			throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+gme_totalSize+" octets (max:"+0x4000+")");
+		}		
+		
+		// Toutes les images ont été compilées, compressées, on connait maintenant la taille des données
+		// Game Mode Data, on réserve l'espace sur la disquette
+		
+		fd.setIndex(0, 0, 2);
+		fd.setIndex(fd.getIndex() + gme_totalSize);
+		
+		// GAME MODE DATA - Ecriture sur disquette des images de sprite
+		// ------------------------------------------------------------
+		for (Entry<String, Sprite> curSprite : allSprites.entrySet()) {
+			curSprite.getValue().setAllFileIndex(fd);
+		}
+		
+		// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
+		// ---------------------------------------------------------------------------------------
 		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
 			
 			logger.info("Traitement du Game Mode : " + curGameMode.getKey());
 			gmeData.addLabel("gm_" + curGameMode.getKey());
-//	        fdb   $0000 * destination : valeur a calculer par le builder (current_game_mode_data + longueur des données ci dessous 1+((x+1)*7)) le 1+ est pour balise de fin ecrite dans le code
+			gmeData.addFdb(new String[] { "current_game_mode_data+"+gameModeDataSize.get(curGameMode.getKey())});		
 			
 			// Parcours des objets du Game Mode
 			for (Map.Entry<String, String[]> curObject : GameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
 				
 				// Parcours des des sprites de l'objet				
 				for (Entry<String, String[]> sprite : objectSprite.get(curObject.getKey()).entrySet()) {
-					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSprite, gmeData, allSprites.get(sprite.getKey()).spriteTag);
-					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteX, gmeData, allSprites.get(sprite.getKey()).spriteTag+"X");
-					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteY, gmeData, allSprites.get(sprite.getKey()).spriteTag+"Y");
-					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteXY, gmeData, allSprites.get(sprite.getKey()).spriteTag+"XY");
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSprite, gmeData, sprite.getKey());
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteX, gmeData, sprite.getKey()+" X");
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteY, gmeData, sprite.getKey()+" Y");
+					extractSubSpriteFileIndex(allSprites.get(sprite.getKey()).subSpriteXY, gmeData, sprite.getKey()+" XY");
 				}
 			}
 			
 			gmeData.addFcb(new String[] { "$FF" });			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+	
+			
+			
+			
 			
 			
 			
@@ -449,7 +520,7 @@ public class BuildDisk
 			// récupérer l'engine dans properties et le compiler
 			
 			logger.info("\nCompilation du code de Main Engine");
-			logger.info("**************************************************************************\n");
+			logger.info("**************************************************************************");
 
 //			String mainEngineTmpFile = duplicateFile(engineAsmMainEngine);
 //
@@ -463,27 +534,48 @@ public class BuildDisk
 //			
 //			exomize(getBINFileName(mainEngineTmpFile));
 //			mainEXOBytes = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
-//			logger.info("Exomize : "+mainEXOBytes.length+" bytes");			
+//			logger.info("Exomize : "+mainEXOBytes.length+" bytes");		
+//			fd.write(mainEXOBytes);				
+			
+			
+
 		}
+		
+		logger.info("\nCompilation du code de Game Mode (contient GMENGINE et GMEDATA)");
+		logger.info("**************************************************************************");			
+
+		gameModeTmpFile = duplicateFile(engineAsmGameMode);
+		compileRAW(gameModeTmpFile);
+		engineAsmGameModeBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
+
+		if (engineAsmGameModeBytes.length > 0x4000) {
+			throw new Exception("Le fichier "+engineAsmGameMode+" est trop volumineux:"+engineAsmGameModeBytes.length+" octets (max:"+0x4000+")");
+		}
+		
+		// Ecriture sur disquette
+		fd.setIndex(0, 0, 2);		
+		fd.write(engineAsmGameModeBytes);		
+		
+		return 0xA000 + engineAsmGameModeBytes.length;
 	}
 
 	private static void extractSubSpriteFileIndex(SubSprite sub, GameModeEngineData gmeData, String spriteTag) throws Exception {
 		if (sub != null) {
-			processFileIndex(sub.fileIndexBckDraw, gmeData, spriteTag+"BckDraw");
-			processFileIndex(sub.fileIndexDraw, gmeData, spriteTag+"Draw");
-			processFileIndex(sub.fileIndexErase, gmeData, spriteTag+"Erase");
+			processFileIndex(sub.fileIndexBckDraw, gmeData, spriteTag+" BckDraw");
+			processFileIndex(sub.fileIndexDraw, gmeData, spriteTag+" Draw");
+			processFileIndex(sub.fileIndexErase, gmeData, spriteTag+" Erase");
 		}
 	}
 
 	private static void processFileIndex(FileIndex fi, GameModeEngineData gmeData, String spriteTag) throws Exception {
 		if (fi != null) {
-			String driveNTrack = String.format("%1$02X", (fi.drive << 7)+fi.track);
-			String sector = String.format("%1$02X", fi.sector);
-			String nbSector = String.format("%1$02X", fi.nbSector);
-			String endOffset = String.format("%1$02X", fi.endOffset);
-			String page = String.format("%1$02X", fi.page);			
-			String addressH = String.format("%1$02X", fi.address >> 8);			
-			String addressL = String.format("%1$02X", fi.address & 0x00FF);			
+			String driveNTrack = String.format("$%1$02X", (fi.drive << 7)+fi.track);
+			String sector = String.format("$%1$02X", fi.sector);
+			String nbSector = String.format("$%1$02X", fi.nbSector);
+			String endOffset = String.format("$%1$02X", fi.endOffset);
+			String page = String.format("$%1$02X", fi.page);			
+			String addressH = String.format("$%1$02X", fi.address >> 8);			
+			String addressL = String.format("$%1$02X", fi.address & 0x00FF);			
 			gmeData.addFcb(new String[] {driveNTrack, sector, nbSector, endOffset, page, addressH, addressL});		
 			gmeData.appendComment(spriteTag);
 		}

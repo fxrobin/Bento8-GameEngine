@@ -123,6 +123,7 @@ GameModeEngineBin
 
 dk_lecteur                    equ $6049
 dk_piste                      equ $604A
+dk_pisteL                     equ $604B
 dk_secteur                    equ $604C
 dk_destination                equ $604F
 
@@ -294,27 +295,28 @@ buf_onscreen                  equ 13 ;
 
 (include)GLOBALS
 * Generated Code
-current_game_mode_data equ $41B9
+current_game_mode_data equ $41C0
 ObjID_TitleScreen equ 1
 
 
 (include)GMENGINE
 
-        fcb   $00,$00,$00,$00,$00,$00,$00
-        fcb   $BD,$40,$00,$35,$40,$20,$A2
-        fcb   $FF,$00,$86,$00,$B7,$E7,$E5
-        fcb   $83,$00,$00,$23,$E5,$33,$C9
-        fcb   $0C,$4B,$0C,$4F,$DE,$4F,$11
-        fcb   $10,$23,$06,$86,$01,$97,$4C
+        fcb   $40,$20,$98,$00,$00,$00,$00
+        fcb   $B7,$E7,$E5,$BD,$40,$00,$35
+        fcb   $DB,$33,$C9,$FF,$00,$86,$00
+        fcb   $DE,$4F,$11,$83,$00,$00,$23
+        fcb   $04,$0F,$4B,$0C,$49,$0C,$4F
+        fcb   $0C,$4B,$96,$4B,$81,$4F,$23
+        fcb   $10,$23,$10,$86,$01,$97,$4C
         fcb   $E8,$2A,$0C,$4C,$96,$4C,$81
         fcb   $34,$40,$86,$02,$97,$48,$BD
-        fcb   $26,$B7,$41,$A4,$F7,$41,$A7
-        fcb   $00,$97,$4C,$F7,$41,$9E,$37
+        fcb   $26,$B7,$41,$AE,$F7,$41,$B1
+        fcb   $00,$97,$4C,$F7,$41,$A8,$37
         fcb   $07,$10,$FE,$9F,$FF,$7E,$61
         fcb   $C6,$00,$DD,$4F,$EC,$C1,$2A
         fcb   $80,$97,$49,$86,$00,$DD,$4A
         fcb   $8B,$E6,$C0,$1D,$84,$01,$C4
-        fcb   $41,$C0,$34,$40,$86,$60,$1F
+        fcb   $41,$C7,$34,$40,$86,$60,$1F
         fcb   $00,$00,$00,$00,$00,$00,$CE
         fcb   $00,$00,$00,$00,$00,$00,$00
         fcb   $00,$00,$00,$00,$00,$00,$00
@@ -368,5 +370,38 @@ ObjID_TitleScreen equ 1
 * Generated Code
 
 gm_TITLESCR
+        fdb   current_game_mode_data+225
+        fcb   $00,$04,$07,$62,$00,$00,$00 * Img_TitleScreen_Sonic_2 BckDraw
+        fcb   $00,$0A,$07,$A7,$00,$00,$00 * Img_TitleScreen_Sonic_2 Erase
+        fcb   $00,$10,$06,$84,$00,$00,$00 * Img_TitleScreen_Sonic_3 BckDraw
+        fcb   $01,$05,$06,$61,$00,$00,$00 * Img_TitleScreen_Sonic_3 Erase
+        fcb   $01,$0A,$06,$85,$00,$00,$00 * Img_TitleScreen_Sonic_4 BckDraw
+        fcb   $01,$0F,$06,$A9,$00,$00,$00 * Img_TitleScreen_Sonic_4 Erase
+        fcb   $02,$04,$06,$B4,$00,$00,$00 * Img_TitleScreen_Sonic_5 BckDraw
+        fcb   $02,$09,$06,$BF,$00,$00,$00 * Img_TitleScreen_Sonic_5 Erase
+        fcb   $02,$0E,$07,$43,$00,$00,$00 * Img_TitleScreen_Tails_5 BckDraw
+        fcb   $03,$04,$08,$C7,$00,$00,$00 * Img_TitleScreen_Tails_5 Erase
+        fcb   $03,$0B,$07,$D2,$00,$00,$00 * Img_TitleScreen_Tails_3 BckDraw
+        fcb   $04,$01,$07,$DD,$00,$00,$00 * Img_TitleScreen_Tails_3 Erase
+        fcb   $04,$07,$07,$D6,$00,$00,$00 * Img_TitleScreen_Tails_4 BckDraw
+        fcb   $04,$0D,$07,$CF,$00,$00,$00 * Img_TitleScreen_Tails_4 Erase
+        fcb   $05,$03,$01,$7F,$00,$00,$00 * Img_TitleScreen_Star_1 BckDraw
+        fcb   $05,$03,$01,$2F,$00,$00,$00 * Img_TitleScreen_Star_1 Erase
+        fcb   $05,$03,$02,$81,$00,$00,$00 * Img_TitleScreen_Star_3 BckDraw
+        fcb   $05,$04,$02,$D3,$00,$00,$00 * Img_TitleScreen_Star_3 Erase
+        fcb   $05,$05,$01,$6A,$00,$00,$00 * Img_TitleScreen_Star_2 BckDraw
+        fcb   $05,$05,$01,$01,$00,$00,$00 * Img_TitleScreen_Star_2 Erase
+        fcb   $05,$05,$03,$FD,$00,$00,$00 * Img_TitleScreen_Star_4 BckDraw
+        fcb   $05,$07,$02,$F9,$00,$00,$00 * Img_TitleScreen_Star_4 Erase
+        fcb   $05,$08,$05,$AC,$00,$00,$00 * Img_TitleScreen_Sonic_1 BckDraw
+        fcb   $05,$0C,$05,$5F,$00,$00,$00 * Img_TitleScreen_Sonic_1 Erase
+        fcb   $05,$10,$04,$AB,$00,$00,$00 * Img_TitleScreen_SonicHand BckDraw
+        fcb   $06,$03,$04,$F7,$00,$00,$00 * Img_TitleScreen_SonicHand Erase
+        fcb   $06,$06,$05,$78,$00,$00,$00 * Img_TitleScreen_Tails_1 BckDraw
+        fcb   $06,$0A,$06,$F9,$00,$00,$00 * Img_TitleScreen_Tails_1 Erase
+        fcb   $06,$0F,$06,$82,$00,$00,$00 * Img_TitleScreen_Tails_2 BckDraw
+        fcb   $07,$04,$06,$0B,$00,$00,$00 * Img_TitleScreen_Tails_2 Erase
+        fcb   $07,$09,$03,$DF,$00,$00,$00 * Img_TitleScreen_TailsHand BckDraw
+        fcb   $07,$0B,$02,$B3,$00,$00,$00 * Img_TitleScreen_TailsHand Erase
         fcb   $FF
 gmboot * @globals

@@ -1,0 +1,207 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_Sonic_065
+	STS ERASE_SSAV_Img_Sonic_065+2,PCR
+
+ERASE_CODE_Img_Sonic_065_1
+	PULU A,S
+	STA -78,S
+
+	PULU D,X,Y
+	STD 80,S
+	STX ,S
+	STY 40,S
+
+	PULU D,X
+	STD -80,S
+	STX -40,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,Y
+	STD 122,S
+	STX 42,S
+	STY 82,S
+
+	PULU D,X,Y
+	STD 120,S
+	STX 80,S
+	STY 40,S
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,S
+	PSHS D,X
+
+	PULU D,X,Y
+	STD -78,S
+	STX -118,S
+	STY -38,S
+
+	PULU D,X,Y
+	STD -40,S
+	STX -80,S
+	STY -120,S
+
+	PULU A,S
+	STA 81,S
+
+	PULU D,X,Y
+	STD 39,S
+	STX 79,S
+	STY -41,S
+
+	PULU D,X
+	STD -1,S
+	STX -81,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,B,X,Y
+	STA 121,S
+	STB 42,S
+	STX 81,S
+	STY 40,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A
+	STA 3,S
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU A,X,S
+	PSHS A,X
+
+	PULU D
+	STD -40,S
+
+	PULU A,B,X
+	STA -119,S
+	STB -38,S
+	STX -79,S
+
+ERASE_SSAV_Img_Sonic_065
+	LDS #$0000
+	RTS
+
