@@ -5,29 +5,21 @@ import fr.bento8.to8.disk.FileIndex;
 
 public class SubSprite {
 
-	String SpriteTag;
+	public Sprite parent;
+	public String name = "";
 
-	public byte[] binBckDraw;
-	public byte[] binErase;
-	public byte[] binDraw;
+	public SubSpriteBin bckDraw;
+	public SubSpriteBin erase;
+	public SubSpriteBin draw;
 
-	public int page_bckdraw_routine;
-	public int bckdraw_routine;
-	public int page_draw_routine;
-	public int draw_routine;
-	public int page_erase_routine;
-	public int erase_routine;
 	public int nb_cell;
 	public int x_offset;
 	public int y_offset;
 	public int x_size;
 	public int y_size;
 
-	public FileIndex fileIndexBckDraw;
-	public FileIndex fileIndexErase;
-	public FileIndex fileIndexDraw;
-
-	public SubSprite() {
+	public SubSprite(Sprite p) {
+		parent = p;
 	}
 
 	public void setFileIndex(FileIndex fi, FdUtil fd) {
@@ -37,15 +29,25 @@ public class SubSprite {
 			fi.track = fd.getTrack();
 			fi.sector = fd.getSector();
 			index = (fd.getIndex() / 256) * 256; // round to start sector
-			fd.write(binBckDraw);
+			fd.write(bckDraw.bin);
 			fi.nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
 			fi.endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
 		}
 	}
 	
-	public void setAllFileIndex(FdUtil fd) {	
-		setFileIndex(fileIndexBckDraw, fd);			
-		setFileIndex(fileIndexErase, fd);
-		setFileIndex(fileIndexDraw, fd);
+	public void setAllFileIndex(FdUtil fd) {
+		if (bckDraw != null && bckDraw.fileIndex != null) {
+			setFileIndex(bckDraw.fileIndex, fd);			
+		}
+		if (erase != null && erase.fileIndex != null) {
+			setFileIndex(erase.fileIndex, fd);
+		}
+		if (draw != null && draw.fileIndex != null) {
+			setFileIndex(draw.fileIndex, fd);
+		}
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

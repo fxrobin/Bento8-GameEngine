@@ -236,6 +236,10 @@ public class AssemblyGenerator{
 			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
 				logger.fatal(lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
+			
+			if (compilerDSize > 16384) {
+				logger.fatal(lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
+			}			
 
 			// Process Erase Code
 			// ****************************************************************
@@ -287,6 +291,10 @@ public class AssemblyGenerator{
 
 			if (computedECycles != compilerECycles || compilerESize != computedESize) {
 				logger.fatal(lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+			}
+			
+			if (compilerDSize > 16384) {
+				logger.fatal(lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
 			}			
 			
 		} 

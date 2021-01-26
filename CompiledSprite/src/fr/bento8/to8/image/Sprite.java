@@ -4,7 +4,7 @@ import fr.bento8.to8.disk.FdUtil;
 
 public class Sprite {
 
-	public String spriteTag;
+	public String name = "";
 	
 	public SubSprite subSprite;
 	public SubSprite subSpriteX;

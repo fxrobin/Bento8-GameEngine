@@ -39,6 +39,7 @@ import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
+import fr.bento8.to8.image.SubSpriteBin;
 import fr.bento8.to8.util.ByteUtil;
 import fr.bento8.to8.util.C6809Util;
 import fr.bento8.to8.util.FileUtil;
@@ -75,6 +76,7 @@ public class BuildDisk
 	private static String outputDiskName;
 	public  static String generatedCodeDirName;
 	private static boolean memoryExtension;
+	private static int nbMaxPagesRAM;
 	public static boolean useCache;
 	public  static int maxTries;
 
@@ -244,7 +246,8 @@ public class BuildDisk
 		logger.info("\nGénération des sprites compilés:");
 		
 		// Map contenant l'ensemble des données pour chaque image (<SpriteTag, Sprite>)
-		HashMap<String, Sprite> allSprites = new HashMap<String, Sprite>();		
+		HashMap<String, Sprite> allSprites = new HashMap<String, Sprite>();
+		List<SubSpriteBin> allSubSpriteBin = new ArrayList<SubSpriteBin>();
 		AssemblyGenerator asm;
 		
 		// génération du sprite compilé
@@ -269,26 +272,37 @@ public class BuildDisk
 					asm = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 0);
 					
 					// Sauvegarde du code généré pour le mode mirroir courant
-					curSubSprite = new SubSprite();
+					curSubSprite = new SubSprite(sprite);
+					curSubSprite.setName(curFlip);
 					for (String curType : type) {
 						if (curType.equals("B")) {
 							logger.info("Compilation de l'image (Backup Background/Draw/Erase) ...");
 							asm.compileCode("A000");
 
 							logger.info("Exomize ...");
-							curSubSprite.binBckDraw = exomize(asm.getBckDrawBINFile());
-							curSubSprite.fileIndexBckDraw = new FileIndex();
-							curSubSprite.binErase = exomize(asm.getEraseBINFile());
-							curSubSprite.fileIndexErase = new FileIndex();			
+							curSubSprite.bckDraw = new SubSpriteBin(curSubSprite);
+							curSubSprite.bckDraw.setName("bckDraw");
+							curSubSprite.bckDraw.bin = exomize(asm.getBckDrawBINFile());
+							curSubSprite.bckDraw.fileIndex = new FileIndex();
+							allSubSpriteBin.add(curSubSprite.bckDraw);
+							
+							curSubSprite.erase = new SubSpriteBin(curSubSprite);
+							curSubSprite.erase.setName("erase");
+							curSubSprite.erase.bin = exomize(asm.getEraseBINFile());
+							curSubSprite.erase.fileIndex = new FileIndex();
+							allSubSpriteBin.add(curSubSprite.erase);
 						}
 
 						if (curType.equals("D")) {
 							logger.info("Compilation de l'image (Draw) ...");
 							//asm.compileDraw("A000");
 							
-							logger.info("Exomize ...");							
-							curSubSprite.binDraw = exomize(asm.getDrawBINFile());
-							curSubSprite.fileIndexDraw = new FileIndex();
+							logger.info("Exomize ...");
+							curSubSprite.draw = new SubSpriteBin(curSubSprite);
+							curSubSprite.draw.setName("draw");
+							curSubSprite.draw.bin = exomize(asm.getDrawBINFile());
+							curSubSprite.draw.fileIndex = new FileIndex();
+							allSubSpriteBin.add(curSubSprite.draw);
 						}
 					}
 					
@@ -302,57 +316,16 @@ public class BuildDisk
 		
 		// Parcours des objets de tous les Game Mode pour calculer la taille de Game Mode Data
 		int cur_gmd_size, gmd_size = 0;
-
 		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
 			cur_gmd_size = 0;
 			for (Map.Entry<String, String[]> curObject : GameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
-
 				// Parcours des des sprites de l'objet
 				for (Entry<String, String[]> sprite : objectSprite.get(curObject.getKey()).entrySet()) {
-					if (allSprites.get(sprite.getKey()).subSprite != null) {
-						if (allSprites.get(sprite.getKey()).subSprite.binBckDraw != null) {
+					for (SubSpriteBin curSubSpriteBin : allSubSpriteBin) {
+						if (curSubSpriteBin.parent.parent.name.equals(sprite.getKey())) {
 							cur_gmd_size += 7;
 						}
-						if (allSprites.get(sprite.getKey()).subSprite.binErase != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSprite.binDraw != null) {
-							cur_gmd_size += 7;
-						}						
 					}
-					if (allSprites.get(sprite.getKey()).subSpriteX != null) {
-						if (allSprites.get(sprite.getKey()).subSpriteX.binBckDraw != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSpriteX.binErase != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSpriteX.binDraw != null) {
-							cur_gmd_size += 7;
-						}	
-					}
-					if (allSprites.get(sprite.getKey()).subSpriteY != null) {
-						if (allSprites.get(sprite.getKey()).subSpriteY.binBckDraw != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSpriteY.binErase != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSpriteY.binDraw != null) {
-							cur_gmd_size += 7;
-						}							
-					}		
-					if (allSprites.get(sprite.getKey()).subSpriteXY != null) {
-						if (allSprites.get(sprite.getKey()).subSpriteXY.binBckDraw != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSpriteXY.binErase != null) {
-							cur_gmd_size += 7;
-						}
-						if (allSprites.get(sprite.getKey()).subSpriteXY.binDraw != null) {
-							cur_gmd_size += 7;
-						}	
-					}					
 				}
 			}
 			cur_gmd_size += 1; // Balise de fin $FF
@@ -383,6 +356,64 @@ public class BuildDisk
 		for (Entry<String, Sprite> curSprite : allSprites.entrySet()) {
 			curSprite.getValue().setAllFileIndex(fd);
 		}
+		
+		// GAME MODE DATA - Répartition des sprites en RAM
+		// -----------------------------------------------		
+		
+		logger.info("\nGAME MODE DATA - Répartition des sprites en RAM");
+		logger.info("-----------------------------------------------");
+		
+		// Initialise un item pour chaque image utile
+		Item[] items = new Item[allSubSpriteBin.size()];
+		int itemIdx = 0;
+
+		for (SubSpriteBin curSubSpriteBin : allSubSpriteBin) {
+			items[itemIdx++] = new Item(curSubSpriteBin, 1); // element, priority
+		}
+		
+		int page = 5; // Première page disponible pour les données de Game Mode
+		
+		while (items.length>0) {
+
+			int address = 0xA000; // Position dans la page
+
+			// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, 0x4000); //Sac à dos de poids max 16Ko
+			knapsack.display();
+			
+			Solution solution = knapsack.solve();
+			solution.display();
+			
+			logger.info("Page : " + page);
+
+			// Parcours de la solution
+			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
+				Item currentItem = iter.next();
+				currentItem.ssbin.fileIndex.page = page;
+				currentItem.ssbin.fileIndex.address = address;
+				address += currentItem.ssbin.bin.length;
+
+				// construit la liste des éléments restants à organiser
+				for (int i=0; i<items.length; i++) {
+					if (items[i].ssbin == currentItem.ssbin) {
+						Item[] newItems = new Item[items.length-1];
+						for (int l=0; l<i; l++) {
+							newItems[l]=items[l];
+						}
+						for (int j=i; j<items.length-1; j++) {
+							newItems[j]=items[j+1];
+						}
+						items = newItems;
+						break;
+					}
+				}
+			}
+			logger.info("Espace libre non alloué : " + (0xDFFF - address) + " octets");			
+			page++;
+			if (page > nbMaxPagesRAM) {
+				logger.fatal("Pas assez d'espace disponible dans la RAM !");
+			}			
+		}		
 		
 		// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
 		// ---------------------------------------------------------------------------------------
@@ -561,21 +592,21 @@ public class BuildDisk
 
 	private static void extractSubSpriteFileIndex(SubSprite sub, GameModeEngineData gmeData, String spriteTag) throws Exception {
 		if (sub != null) {
-			processFileIndex(sub.fileIndexBckDraw, gmeData, spriteTag+" BckDraw");
-			processFileIndex(sub.fileIndexDraw, gmeData, spriteTag+" Draw");
-			processFileIndex(sub.fileIndexErase, gmeData, spriteTag+" Erase");
+			processFileIndex(sub.bckDraw, gmeData, spriteTag+" BckDraw");
+			processFileIndex(sub.draw, gmeData, spriteTag+" Draw");
+			processFileIndex(sub.erase, gmeData, spriteTag+" Erase");
 		}
 	}
 
-	private static void processFileIndex(FileIndex fi, GameModeEngineData gmeData, String spriteTag) throws Exception {
-		if (fi != null) {
-			String driveNTrack = String.format("$%1$02X", (fi.drive << 7)+fi.track);
-			String sector = String.format("$%1$02X", fi.sector);
-			String nbSector = String.format("$%1$02X", fi.nbSector);
-			String endOffset = String.format("$%1$02X", fi.endOffset);
-			String page = String.format("$%1$02X", fi.page);			
-			String addressH = String.format("$%1$02X", fi.address >> 8);			
-			String addressL = String.format("$%1$02X", fi.address & 0x00FF);			
+	private static void processFileIndex(SubSpriteBin ssBin, GameModeEngineData gmeData, String spriteTag) throws Exception {
+		if (ssBin != null && ssBin.fileIndex != null) {
+			String driveNTrack = String.format("$%1$02X", (ssBin.fileIndex.drive << 7)+ssBin.fileIndex.track);
+			String sector = String.format("$%1$02X", ssBin.fileIndex.sector);
+			String nbSector = String.format("$%1$02X", ssBin.fileIndex.nbSector);
+			String endOffset = String.format("$%1$02X", ssBin.fileIndex.endOffset);
+			String page = String.format("$%1$02X", ssBin.fileIndex.page);			
+			String addressH = String.format("$%1$02X", ssBin.fileIndex.address >> 8);			
+			String addressL = String.format("$%1$02X", ssBin.fileIndex.address & 0x00FF);			
 			gmeData.addFcb(new String[] {driveNTrack, sector, nbSector, endOffset, page, addressH, addressL});		
 			gmeData.appendComment(spriteTag);
 		}
@@ -660,7 +691,12 @@ public class BuildDisk
 		if (prop.getProperty("builder.to8.memoryExtension") == null) {
 			throw new Exception("Paramètre builder.to8.memoryExtension manquant dans le fichier "+file);
 		}
-		memoryExtension = (prop.getProperty("builder.to8.memoryExtension").contentEquals("Y")?true:false);		
+		memoryExtension = (prop.getProperty("builder.to8.memoryExtension").contentEquals("Y")?true:false);
+		if (memoryExtension) {
+			nbMaxPagesRAM = 31;
+		} else {
+			nbMaxPagesRAM = 15;
+		}
 
 		if (prop.getProperty("builder.compilatedSprite.useCache") == null) {
 			throw new Exception("Paramètre builder.compilatedSprite.useCache manquant dans le fichier "+file);
@@ -930,8 +966,6 @@ public class BuildDisk
 	}
 }
 
-//replaceTag(bootTmpFile, "<DERNIER_BLOC>", String.format("%1$02X", uReg >> 8));
-
 // Traitement de l'image pour l'écran de démarrage
 // ***********************************************
 
@@ -941,150 +975,11 @@ public class BuildDisk
 //				fd.setIndex(0, 4, 1);
 //				fd.write(initVideoBIN);
 
-//				// Génération des sprites compilés et organisation en pages de 16Ko par l'algorithme du sac é dos
-//				// **********************************************************************************************
-//				
-//				// Map contenant tous les planches de sprites
-//				HashMap<String, SpriteSheet> spriteSheets = new HashMap<String, SpriteSheet>();
-//				
-//				// List contenant toutes les images distinctes utilisées dans les scripts d'animation
-//				List<String> singleImages = new ArrayList<String>();
-//				
-//				String key;
-//				String[] imageParam;
-//				int nbAllSubImages=0;
-//				
-//				// Parcours de toutes les animations é la recherche des planches utilisées
-//				for (String[] scriptLine : animationScripts.values())
-//				{
-//					// Debut des références images en index 3 dans le script d'animation
-//					for (int i = 3; !scriptLine[i].contentEquals("GO") && !scriptLine[i].contentEquals("RET"); i++) {
-//						
-//						// Charge toutes les planches utiles
-//						key = scriptLine[i].split(":")[0];
-//						if (!spriteSheets.containsKey(key)) {
-//							imageParam = animationImages.get(key);
-//							
-//							// Paramètres : tag, fichier, nombre d'images, flip
-//							spriteSheets.put(key, new SpriteSheet(imageParam[0], imageParam[1], Integer.parseInt(imageParam[2]), imageParam[3]));
-//						}
-//						
-//						// Enregistre et compte le nombre total d'images distinctes utilisées
-//						if (!singleImages.contains(scriptLine[i])) {
-//							singleImages.add(scriptLine[i]);
-//							nbAllSubImages++;
-//						}
-//					}
-//				}
-//				
-//				// Map contenant l'ensemble du code ASM pour chaque image
-//				HashMap<String, AssemblyGenerator> asmImages = new HashMap<String, AssemblyGenerator>();
-//				AssemblyGenerator asm;
-//				
-//				// Initialise un item pour chaque image utile
-//				Item[] items = new Item[nbAllSubImages];
-//				int itemIdx = 0;
-//				int binaryLength = 0;
-//
-//				// génération du sprite compilé
-//				for (String currentImage : singleImages) {
-//					
-//					logger.debug("**************** Génération du code ASM de l'image " + currentImage + " ****************");
-//					asm = new AssemblyGenerator (spriteSheets.get(currentImage.split(":")[0]), Integer.parseInt(currentImage.split(":")[1]));
-//					
-//					// Sauvegarde du code généré
-//					asmImages.put(currentImage, asm);
-//					
-//					// Calcul de la taille du binaire a partir du code ASM
-//					binaryLength = asm.getSize();
-//					
-//					// Création de l'item pour l'algo sac é dos
-//					items[itemIdx++] = new Item(currentImage, 1, binaryLength); // id, priority, bytes
-//
-//					logger.debug(currentImage+" octets: "+binaryLength);
-//					
-//					// Une image compilée doit tenir sur une page de 16Ko pour pouvoir étre exécutée
-//					if (binaryLength>16384)
-//						logger.fatal("Image "+currentImage+" trop grande, code compilé :"+binaryLength+" octets (max 16384)");
-//				}
-//
-//				// Ecriture des sprites en pages de 16Ko sur disquette
-//				// ***************************************************
-//				face = 0; // 0-1
-//				track = 8; // 0-79
-//				sector = 1; // 1-16
-//				fd.setIndex(face, track, sector);
-//				
-//				int orgOffset, org = 40960; // org = A000
-//				int currentPageIndex = 0;
-//				
-//				// Map constenant l'ensemble des adresses d'appel a chaque image
-//				HashMap<String, String> imageAddress = new HashMap<String, String>();
-//
-//				while (items.length>0) {
-//
-//					logger.debug("**************** Page : " + memoryPages[currentPageIndex] + " ****************");
-//					orgOffset = 0;
-//
-//					if (currentPageIndex >= memoryPages.length)
-//						logger.fatal("Plus de pages disponibles.");
-//
-//					// les données sont réparties en pages en fonction de leur taille par un algorithme "sac é dos"
-//					Knapsack knapsack = new Knapsack(items, 16384); //Sac é dos de poids max 16Ko
-//					knapsack.display();
-//					
-//					Solution solution = knapsack.solve();
-//					solution.display();
-//
-//					// Parcours de la solution
-//					for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext(); ) {
-//						Item currentItem = iter.next();
-//
-//						// Pour la solution obtenue, compilation des sprites avec l'adresse mémoire cible
-//						logger.debug("**************** Compilation de l'image " + currentItem.name + " é l'adresse "+String.format("%1$04X",org+orgOffset)+"****************");
-//						asm = asmImages.get(currentItem.name);
-//						binary = asm.getCompiledCode(String.format("%1$04X",org+orgOffset));
-//
-//						// Sauvegarde de la référence des adresses pour la construction des scripts d'animation
-//						imageAddress.put(currentItem.name, "\n\tFCB $" + String.format("%1$02X",memoryPages[currentPageIndex]) +
-//														   "\n\tFDB $" + String.format("%1$04X",org+orgOffset) +
-//														   "\n\tFDB $" + asm.getEraseAddress());
-//						
-//						// Avance de l'ORG
-//						orgOffset += binary.length;
-//
-//						// Ecriture sur disquette du sprite compilé é l'adresse cible
-//						fd.write(binary);
-//
-//						// construit la liste des éléments restants é organiser
-//						for (int itemIndex=0; itemIndex<items.length; itemIndex++) {
-//							if (items[itemIndex].name.contentEquals(currentItem.name)) {
-//								Item[] newItems = new Item[items.length-1];
-//								for (int l=0; l<itemIndex; l++) {
-//									newItems[l]=items[l];
-//								}
-//								for (int j=itemIndex; j<items.length-1; j++) {
-//									newItems[j]=items[j+1];
-//								}
-//								items = newItems;
-//								break;
-//							}
-//						}
-//					}
-//					
-//					// Avance des curseurs de page et pointeurs sur disquette
-//					currentPageIndex++;
-//					track += 4;
-//					if (track > 79) {
-//						face += 1;
-//						track = 0;
-//
-//						if (face>1) {
-//							logger.fatal("Plus d'espace dans l'image de disquette.");
-//						}
-//					}
-//					fd.setIndex(face, track, sector);
-//				}
+
+
+
+
+
 //
 //
 //				// Construction des scripts d'animation
