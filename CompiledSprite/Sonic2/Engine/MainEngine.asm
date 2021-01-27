@@ -130,7 +130,7 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
 * Level Specific Generated Data
 * ==============================================================================
-        INCLUD OBJINDEX
+        INCLUD PALETTE
         INCLUD IMAGEIDX
         INCLUD ANIMSCPT
         INCLUD OBJINDEX

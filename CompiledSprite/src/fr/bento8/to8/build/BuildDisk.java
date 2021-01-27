@@ -61,8 +61,8 @@ public class BuildDisk
 	private static String gameModeBoot;
 	private static HashMap<String, String[]> gameMode; // <Game Mode name, Game Mode properties file name[0]>
 	private static HashMap<String, Integer> gameModeDataSize = new HashMap<String, Integer>(); // <Game Mode name, Game Mode DataSize>	
-	private static HashMap<String, HashMap<String, String[]>> GameModeObjectProperties = new HashMap<String, HashMap<String, String[]>>(); // <Game Mode name, <Object name, Object properties file name[0]>  
-	private static HashMap<String, HashMap<String, HashMap<String, String[]>>> GameModeActProperties = new HashMap<String, HashMap<String, HashMap<String, String[]>>>();
+	private static HashMap<String, HashMap<String, String[]>> gameModeObjectProperties = new HashMap<String, HashMap<String, String[]>>(); // <Game Mode name, <Object name, Object properties file name[0]>>  
+	private static HashMap<String, HashMap<String, HashMap<String, String[]>>> gameModeActProperties = new HashMap<String, HashMap<String, HashMap<String, String[]>>>(); // <Game Mode name, <Act Name, <Property, values[]>>>
 
 	// Object
 	private static HashMap<String, HashMap<String, String[]>> objectSprite = new HashMap<String, HashMap<String, String[]>>();
@@ -95,6 +95,10 @@ public class BuildDisk
 	// Tags
 	private static String tag_Globals = "GLOBALS";
 	private static String tag_GmeData = "GMEDATA";
+	private static String tag_Palette = "PALETTE";
+	private static String tag_ObjectIndex = "OBJINDEX";
+	private static String tag_ImageIndex = "IMAGEIDX";
+	private static String tag_AnimationScript = "ANIMSCPT";
 
 	//	private static String animationPalette;
 	//	private static double animationPaletteGamma;
@@ -229,14 +233,11 @@ public class BuildDisk
 		logger.info("\nCompilation des données de Game Mode (GMEDATA)");
 		logger.info("**************************************************************************");
 		
-		// Initialisation des fichiers source générés
-		AsmSourceCode gmeData = new AsmSourceCode(getIncludeFilePath(tag_GmeData));
-		
 		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes (numérotation commune)
 		// ----------------------------------------------------------------------------------------------------		
 		logger.info("\nGénération des identifiants objets:");
 		int objIndex = 1;
-		for(Entry<String, HashMap<String, String[]>> entry : GameModeObjectProperties.entrySet()) {
+		for(Entry<String, HashMap<String, String[]>> entry : gameModeObjectProperties.entrySet()) {
 			for (String key : entry.getValue().keySet()) {
 				if (!objectSprite.containsKey(key)) { 
 					readObjectProperties(key, entry.getValue().get(key)[0]);
@@ -325,7 +326,7 @@ public class BuildDisk
 		int cur_gmd_size, gmd_size = 0;
 		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
 			cur_gmd_size = 0;
-			for (Map.Entry<String, String[]> curObject : GameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
+			for (Map.Entry<String, String[]> curObject : gameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
 				// Parcours des des sprites de l'objet
 				for (Entry<String, String[]> sprite : objectSprite.get(curObject.getKey()).entrySet()) {
 					for (SubSpriteBin curSubSpriteBin : allSubSpriteBin) {
@@ -422,16 +423,28 @@ public class BuildDisk
 			}			
 		}		
 		
-		// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
-		// ---------------------------------------------------------------------------------------
+		// Génération du code source
+		// ---------------------------------------------------------------------------------------				
+
 		for (Map.Entry<String, String[]> curGameMode : gameMode.entrySet()) {
 			
 			logger.info("Traitement du Game Mode : " + curGameMode.getKey());
+			
+			// Initialisation des fichiers source générés
+			AsmSourceCode gmeData = new AsmSourceCode(getIncludeFilePath(tag_GmeData));			
+			AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(tag_Palette, "_"+curGameMode.getKey()));
+			AsmSourceCode asmObjIndex = new AsmSourceCode(getIncludeFilePath(tag_ObjectIndex, "_"+curGameMode.getKey()));
+			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(tag_ImageIndex, "_"+curGameMode.getKey()));
+			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(tag_AnimationScript, "_"+curGameMode.getKey()));			
+			
+			// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
+			// ---------------------------------------------------------------------------------------			
+			
 			gmeData.addLabel("gm_" + curGameMode.getKey());
 			gmeData.addFdb(new String[] { "current_game_mode_data+"+gameModeDataSize.get(curGameMode.getKey())});		
 			
 			// Parcours des objets du Game Mode
-			for (Map.Entry<String, String[]> curObject : GameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
+			for (Map.Entry<String, String[]> curObject : gameModeObjectProperties.get(curGameMode.getKey()).entrySet()) {
 				
 				// Parcours des des sprites de l'objet				
 				for (Entry<String, String[]> sprite : objectSprite.get(curObject.getKey()).entrySet()) {
@@ -444,47 +457,25 @@ public class BuildDisk
 			
 			gmeData.addFcb(new String[] { "$FF" });			
 			
+			// MAIN ENGINE - Construction des données palette pour chaque Acte de Game Mode
+			// ----------------------------------------------------------------------------
 			
+			for (Map.Entry<String, HashMap<String, String[]>> curAct : gameModeActProperties.get(curGameMode.getKey()).entrySet()) {
+				if (curAct.getValue().containsKey("palette")) {
+					logger.info("Traitement de la palette de l'acte : " + curAct.getKey());
+					asmPalette.addLabel(curAct.getValue().get("palette")[0] + " * @globals");
+					
+					//AssemblyGenerator palette = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 0);
+					//asmPalette.add(spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma));	
+					asmPalette.flush();
+				}
+			}
 			
-			
-			
-			
-			
+
 			
 			
 			
 	
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			// MAIN
-			// ****
-			
-			// Générer les fichiers ASM :
-//          PALETTE
-
-			
-			// * Données de palette
-			// * ------------------
-			// Pal_TitleScreen
-			// fdb $0000
-			// ...
-			
-			//GameModeActProperties.get(curGameMode.getKey()).;
-//			gmeData.addLabel("Pal_TitleScreen * @globals");
-//			spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma);			
 			
 			
 //	        OBJINDEX
@@ -728,7 +719,7 @@ public class BuildDisk
 		// Objects
 		// ********************************************************************
 
-		GameModeObjectProperties.put(gameMode.getKey(), getPropertyList(prop, "object"));
+		gameModeObjectProperties.put(gameMode.getKey(), getPropertyList(prop, "object"));
 
 		// Act Sequence
 		// ********************************************************************
@@ -741,11 +732,11 @@ public class BuildDisk
 		// Act Definition
 		// ********************************************************************		
 
-		HashMap<String, HashMap<String, String[]>> ActProperties = new HashMap<String, HashMap<String, String[]>>();
+		HashMap<String, HashMap<String, String[]>> actProperties = new HashMap<String, HashMap<String, String[]>>();
 		for (int i = 0; i < gameModeActSequence.length; i++) {
-			ActProperties.put(gameModeActSequence[i], getPropertyList(prop, gameModeActSequence[i]));
+			actProperties.put(gameModeActSequence[i], getPropertyList(prop, gameModeActSequence[i]));
 		}
-		GameModeActProperties.put(gameMode.getKey(), ActProperties);
+		gameModeActProperties.put(gameMode.getKey(), actProperties);
 	}
 
 	private static void readObjectProperties(String objectName, String objectProperties) throws Exception {
@@ -979,6 +970,13 @@ public class BuildDisk
 		}		
 		return Paths.get(engineAsmIncludes.get(tag)[0]);
 	}
+	
+	public static Path getIncludeFilePath (String tag, String suffixe) throws Exception {	
+		if (engineAsmIncludes.get(tag) == null) {
+			throw new Exception (tag+" not found in include declaration.");
+		}		
+		return Paths.get(engineAsmIncludes.get(tag)[0]+suffixe);
+	}	
 	
 }
 

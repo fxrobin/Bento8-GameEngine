@@ -16,6 +16,10 @@ public class AsmSourceCode
 		this.path = path;
 		Files.write(path, content.getBytes(StandardCharsets.ISO_8859_1));
 	}	
+	
+	public void add(String text) {
+		content += "\n"+text+"\n";
+	}		
 
 	public void appendComment(String comment) {
 		content += " * "+comment;
