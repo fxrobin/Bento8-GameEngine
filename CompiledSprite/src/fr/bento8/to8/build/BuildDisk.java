@@ -86,11 +86,15 @@ public class BuildDisk
 	private static Charset charset = StandardCharsets.UTF_8;
 	
 	public static FdUtil fd;
-	public static Globals glb;
+	public static AsmSourceCode glb;
 	
 	public static byte[] engineAsmGameModeBytes;	
 	public static byte[] mainEXOBytes;
 	public static byte[] bootLoaderBytes;
+	
+	// Tags
+	private static String tag_Globals = "GLOBALS";
+	private static String tag_GmeData = "GMEDATA";
 
 	//	private static String animationPalette;
 	//	private static double animationPaletteGamma;
@@ -160,7 +164,7 @@ public class BuildDisk
 			fd = new FdUtil();
 
 			// Initialisation des variables globales
-			glb = new Globals(engineAsmIncludes);
+			glb = new AsmSourceCode(getIncludeFilePath(tag_Globals));
 
 			logger.info("\nCompilation du Game Mode Engine et encodage du binaire (GMENGINE)");
 			logger.info("**************************************************************************");			
@@ -196,6 +200,7 @@ public class BuildDisk
 			
 			String bootTmpFile = duplicateFile(engineAsmBoot);
 			glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", dernierBloc >> 8)+"00"); // On tronque l'octet de poids faible
+			glb.flush();
 			compileRAW(bootTmpFile);
 
 			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
@@ -225,7 +230,7 @@ public class BuildDisk
 		logger.info("**************************************************************************");
 		
 		// Initialisation des fichiers source générés
-		GameModeEngineData gmeData = new GameModeEngineData(engineAsmIncludes);
+		AsmSourceCode gmeData = new AsmSourceCode(getIncludeFilePath(tag_GmeData));
 		
 		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes (numérotation commune)
 		// ----------------------------------------------------------------------------------------------------		
@@ -240,6 +245,7 @@ public class BuildDisk
 				}
 			}
 		}
+		glb.flush();
 		
 		// GAME MODE DATA - Génération des sprites compilés pour l'ensemble des game modes
 		// ----------------------------------------------------------------------------
@@ -265,6 +271,7 @@ public class BuildDisk
 				flip = object.getValue().get(spriteTag)[1].split(",");
 				type = object.getValue().get(spriteTag)[2].split(",");
 				Sprite sprite = new Sprite();
+				sprite.name = spriteTag;
 				
 				// Parcours des modes mirroir demandés pour chaque image
 				for (String curFlip : flip) {
@@ -328,7 +335,7 @@ public class BuildDisk
 					}
 				}
 			}
-			cur_gmd_size += 1; // Balise de fin $FF
+			cur_gmd_size += 3; // Entete +2 et Balise de fin +1
 			gmd_size += cur_gmd_size;
 			gameModeDataSize.put(curGameMode.getKey(), cur_gmd_size);
 		}
@@ -590,7 +597,7 @@ public class BuildDisk
 		return 0xA000 + engineAsmGameModeBytes.length;
 	}
 
-	private static void extractSubSpriteFileIndex(SubSprite sub, GameModeEngineData gmeData, String spriteTag) throws Exception {
+	private static void extractSubSpriteFileIndex(SubSprite sub, AsmSourceCode gmeData, String spriteTag) throws Exception {
 		if (sub != null) {
 			processFileIndex(sub.bckDraw, gmeData, spriteTag+" BckDraw");
 			processFileIndex(sub.draw, gmeData, spriteTag+" Draw");
@@ -598,7 +605,7 @@ public class BuildDisk
 		}
 	}
 
-	private static void processFileIndex(SubSpriteBin ssBin, GameModeEngineData gmeData, String spriteTag) throws Exception {
+	private static void processFileIndex(SubSpriteBin ssBin, AsmSourceCode gmeData, String spriteTag) throws Exception {
 		if (ssBin != null && ssBin.fileIndex != null) {
 			String driveNTrack = String.format("$%1$02X", (ssBin.fileIndex.drive << 7)+ssBin.fileIndex.track);
 			String sector = String.format("$%1$02X", ssBin.fileIndex.sector);
@@ -856,6 +863,7 @@ public class BuildDisk
 						glb.addConstant(m.group(1), "$"+m2.group(2));
 					}
 				}
+				glb.flush();
 
 				// Purge et remplacement de l'ancien fichier bin
 				File binFile = new File(binTmpFile); 
@@ -964,6 +972,14 @@ public class BuildDisk
 	public static String getEXOFileName (String name) {
 		return generatedCodeDirName+"/"+FileUtil.removeExtension(Paths.get(name).getFileName().toString())+".EXO";
 	}
+	
+	public static Path getIncludeFilePath (String tag) throws Exception {	
+		if (engineAsmIncludes.get(tag) == null) {
+			throw new Exception (tag+" not found in include declaration.");
+		}		
+		return Paths.get(engineAsmIncludes.get(tag)[0]);
+	}
+	
 }
 
 // Traitement de l'image pour l'écran de démarrage

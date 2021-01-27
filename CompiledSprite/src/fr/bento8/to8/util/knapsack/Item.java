@@ -11,7 +11,7 @@ public class Item {
 	public int weight;
 	
 	public Item(SubSpriteBin ssbin, int value) {
-		this.name = ssbin.parent.parent.name + ssbin.parent.name + ssbin.name;
+		this.name = ssbin.parent.parent.name + " " + ssbin.parent.name + " " + ssbin.name;
 		this.ssbin = ssbin;
 		this.value = value;
 		this.weight = ssbin.bin.length;

@@ -19,7 +19,7 @@ public class Globals
 		}
 
 		globals = Paths.get(includes.get(key)[0]);
-		new AsmFile(globals);
+		new AsmSourceCode(globals);
 	}
 
 	public void addConstant(String name, String value) {

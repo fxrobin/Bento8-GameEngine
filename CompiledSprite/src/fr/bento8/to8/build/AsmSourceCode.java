@@ -4,24 +4,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
 
-public class GameModeEngineData
+public class AsmSourceCode
 {
-	private Path gameModeEngineData;
+	private Path path;
 	private String content = "";
 
-	public GameModeEngineData(HashMap<String, String[]> includes) throws Exception {
-		String key = "GMEDATA";
-		if (includes.get(key) == null) {
-			throw new Exception (key + " not found in include declaration.");
-		}
-
-		gameModeEngineData = Paths.get(includes.get(key)[0]);
-		new AsmFile(gameModeEngineData);
-	}
+	public AsmSourceCode(Path path) throws Exception {
+		String content = "* Generated Code\n";
+		this.path = path;
+		Files.write(path, content.getBytes(StandardCharsets.ISO_8859_1));
+	}	
 
 	public void appendComment(String comment) {
 		content += " * "+comment;
@@ -66,15 +60,15 @@ public class GameModeEngineData
 	}
 
 	public void flush() {
-		if(Files.exists(gameModeEngineData)) {
+		if(Files.exists(path)) {
 			try {
-				Files.write(gameModeEngineData, content.getBytes(StandardCharsets.ISO_8859_1), StandardOpenOption.APPEND);
+				Files.write(path, content.getBytes(StandardCharsets.ISO_8859_1), StandardOpenOption.APPEND);
 				content = "";
 			} catch (IOException ioExceptionObj) {
-				System.out.println("Problème à l'écriture du fichier "+gameModeEngineData.getFileName()+": " + ioExceptionObj.getMessage());
+				System.out.println("Problème à l'écriture du fichier "+path.getFileName()+": " + ioExceptionObj.getMessage());
 			}
 		} else {
-			System.out.println(gameModeEngineData.getFileName()+" introuvable.");
+			System.out.println(path.getFileName()+" introuvable.");
 		}   
 	}
 }
