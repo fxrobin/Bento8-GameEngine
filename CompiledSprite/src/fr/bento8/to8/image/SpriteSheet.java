@@ -170,39 +170,11 @@ public class SpriteSheet {
 		return data[position][ramPage];
 	}
 
-	public String getCodePalette(double gamma) {
-		// std gamma: 3
-		// suggestion : 2 ou 2.2
-		
-		String code = "\n";
-		code += "\nTABPALETTE";
-		
-		// Construction de la palette de couleur
-		for (int j = 1; j < 17; j++) {
-			Color couleur = new Color(colorModel.getRGB(j));
-			code += "\n\tFDB $0"
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getBlue() / 255.0), gamma)))
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getGreen() / 255.0), gamma)))
-					+ Integer.toHexString((int) Math.round(15 * Math.pow((couleur.getRed() / 255.0), gamma)))
-					+ "\t* index:"
-					+ String.format("%-2.2s", j)
-					+ " R:" + String.format("%-3.3s", couleur.getRed())
-					+ " V:" + String.format("%-3.3s", couleur.getGreen())
-					+ " B:" + String.format("%-3.3s", couleur.getBlue());
-		}
-		code += "\nFINTABPALETTE";
-
-		logger.debug(code);
-
-		return code;
-	}
-
 	public int getSize() {
 		return subImageNb;
 	}
 
 	public String getName() {
 		return name;
-	}	
-
+	}
 }

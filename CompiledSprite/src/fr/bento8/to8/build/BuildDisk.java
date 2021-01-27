@@ -1,5 +1,6 @@
 package fr.bento8.to8.build;
 
+import java.awt.image.ColorModel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +24,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +38,7 @@ import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.AssemblyGenerator;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.disk.FileIndex;
+import fr.bento8.to8.image.PaletteTO8;
 import fr.bento8.to8.image.PngToBottomUpBinB16;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
@@ -344,6 +348,9 @@ public class BuildDisk
 		// GAME MODE - compilation pour connaitre la taille Gmae Mode + Game Mode Engine sans les DATA
 		// -------------------------------------------------------------------------------------------
 		
+		// Nécessite d'avoir un fichier gmeData vide mais présent
+		AsmSourceCode gmeData = new AsmSourceCode(getIncludeFilePath(tag_GmeData));
+		
 		String gameModeTmpFile = duplicateFile(engineAsmGameMode);
 		compileRAW(gameModeTmpFile);
 		byte[] engineAsmGameModeBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeTmpFile)));
@@ -431,11 +438,10 @@ public class BuildDisk
 			logger.info("Traitement du Game Mode : " + curGameMode.getKey());
 			
 			// Initialisation des fichiers source générés
-			AsmSourceCode gmeData = new AsmSourceCode(getIncludeFilePath(tag_GmeData));			
-			AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(tag_Palette, "_"+curGameMode.getKey()));
-			AsmSourceCode asmObjIndex = new AsmSourceCode(getIncludeFilePath(tag_ObjectIndex, "_"+curGameMode.getKey()));
-			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(tag_ImageIndex, "_"+curGameMode.getKey()));
-			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(tag_AnimationScript, "_"+curGameMode.getKey()));			
+			AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(tag_Palette, curGameMode.getKey()));
+			AsmSourceCode asmObjIndex = new AsmSourceCode(getIncludeFilePath(tag_ObjectIndex, curGameMode.getKey()));
+			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(tag_ImageIndex, curGameMode.getKey()));
+			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(tag_AnimationScript, curGameMode.getKey()));			
 			
 			// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
 			// ---------------------------------------------------------------------------------------			
@@ -464,9 +470,8 @@ public class BuildDisk
 				if (curAct.getValue().containsKey("palette")) {
 					logger.info("Traitement de la palette de l'acte : " + curAct.getKey());
 					asmPalette.addLabel(curAct.getValue().get("palette")[0] + " * @globals");
-					
-					//AssemblyGenerator palette = new AssemblyGenerator(new SpriteSheet(spriteTag, spriteFile, 1, curFlip), 0);
-					//asmPalette.add(spriteSheets.get(animationPalette).getCodePalette(animationPaletteGamma));	
+
+					asmPalette.add(PaletteTO8.getPaletteData(curAct.getValue().get("palette")[1]));	
 					asmPalette.flush();
 				}
 			}
@@ -975,7 +980,7 @@ public class BuildDisk
 		if (engineAsmIncludes.get(tag) == null) {
 			throw new Exception (tag+" not found in include declaration.");
 		}		
-		return Paths.get(engineAsmIncludes.get(tag)[0]+suffixe);
+		return Paths.get(engineAsmIncludes.get(tag)[0].substring(0, engineAsmIncludes.get(tag)[0].length()-4)+"_"+suffixe+".asm");
 	}	
 	
 }
