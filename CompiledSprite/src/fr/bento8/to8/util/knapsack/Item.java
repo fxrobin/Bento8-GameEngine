@@ -1,20 +1,17 @@
 package fr.bento8.to8.util.knapsack;
 
-import fr.bento8.to8.image.SubSpriteBin;
-
 public class Item {
 	
 	public String name;
-	public String fullName;
-	public SubSpriteBin ssbin;
+	public ItemBin bin;
 	public int value;
 	public int weight;
 	
-	public Item(SubSpriteBin ssbin, int value) {
-		this.name = ssbin.parent.parent.name + " " + ssbin.parent.name + " " + ssbin.name;
-		this.ssbin = ssbin;
+	public Item(ItemBin bin, int value) {
+		this.name = bin.getFullName();
+		this.bin = bin;
 		this.value = value;
-		this.weight = ssbin.bin.length;
+		this.weight = bin.bin.length;
 	}
 	
 	public String str() {

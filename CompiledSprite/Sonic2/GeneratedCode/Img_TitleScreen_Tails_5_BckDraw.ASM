@@ -38,34 +38,34 @@ BCKDRAW_Img_TitleScreen_Tails_5
 	STD 79,S
 	LEAS 238,S
 
+	LDA -43,S
+	LDX -79,S
+	LDY -39,S
+	PSHU Y,X,A
+	LDD #$bb69
+	STD -39,S
+	LDA #$64
+	STA -43,S
+	LDA -117,S
+	LDX -3,S
+	PSHU X,A
+	LDD #$9944
+	STD -3,S
+	LDA -83,S
+	PSHU A
+	ANDA #$0F
+	ORA #$40
+	STA -83,S
 	LDD -119,S
 	PSHU D
 	LDA #$9d
 	ANDB #$0F
 	ORB #$90
 	STD -119,S
-	LDA -43,S
-	LDX -39,S
-	PSHU X,A
-	LDA -117,S
-	LDX -79,S
-	LDY -3,S
-	PSHU Y,X,A
-	LDD #$9944
-	STD -3,S
 	LDA #$66
 	STA -117,S
-	LDA #$64
-	STA -43,S
-	LDA -83,S
-	PSHU A
-	ANDA #$0F
-	ORA #$40
-	STA -83,S
 	LDD #$4b96
 	STD -79,S
-	LDD #$bb69
-	STD -39,S
 	PULS A,X
 	PSHU S,X,A
 	LDA #$66
@@ -821,19 +821,14 @@ DYN_POS
 	STA 40,S
 	LEAS 199,S
 
-	LDA -119,S
-	LDX 40,S
-	LDY 36,S
-	PSHU Y,X,A
-	LDD 76,S
 	LDX -38,S
-	PSHU X,D
-	LDD #$a944
-	STD 36,S
-	LDD #$79bd
-	STD 40,S
-	LDA #$4d
-	STA -119,S
+	LDY 36,S
+	PSHU Y,X
+	LDA -4,S
+	LDB -119,S
+	LDX 76,S
+	LDY 40,S
+	PSHU Y,X,B,A
 	LDD -80,S
 	PSHU D
 	ANDA #$F0
@@ -846,18 +841,23 @@ DYN_POS
 	ORA #$07
 	LDB #$bd
 	STD -40,S
-	LDA -4,S
-	LDB 42,S
-	PSHU B,A
-	ANDB #$0F
-	ORB #$40
-	STB 42,S
-	LDD #$6666
-	STD -38,S
-	LDA #$79
-	STD 76,S
+	LDD #$a944
+	STD 36,S
 	LDA #$64
 	STA -4,S
+	LDA #$4d
+	STA -119,S
+	LDA 42,S
+	PSHU A
+	ANDA #$0F
+	ORA #$40
+	STA 42,S
+	LDD #$79bd
+	STD 40,S
+	LDB #$66
+	STD 76,S
+	LDA #$66
+	STD -38,S
 	PULS A,X
 	PSHU S,X,A
 	LDA #$69
@@ -1602,28 +1602,6 @@ DYN_POS
 	PSHS D,X
 	LEAS 40,S
 
-	LDX 42,S
-	LDY 122,S
-	PSHU Y,X
-	LDD 82,S
-	LDX 46,S
-	LDY 126,S
-	PSHU Y,X,D
-	LDD 86,S
-	LDX 6,S
-	PSHU X,D
-	LDD #$6aab
-	STD 46,S
-	LDB #$aa
-	STD 86,S
-	LDA #$9b
-	STD 126,S
-	LDA #$aa
-	STD 6,S
-	LDD #$9999
-	STD 42,S
-	STD 82,S
-	STD 122,S
 	LDD 4,S
 	PSHU D
 	ANDA #$F0
@@ -1666,6 +1644,28 @@ DYN_POS
 	ORA #$04
 	LDB #$99
 	STD 124,S
+	LDX 42,S
+	LDY 86,S
+	PSHU Y,X
+	LDD 82,S
+	LDX 6,S
+	LDY 46,S
+	PSHU Y,X,D
+	LDD 122,S
+	LDX 126,S
+	PSHU X,D
+	LDD #$6aab
+	STD 46,S
+	LDB #$aa
+	STD 86,S
+	LDA #$aa
+	STD 6,S
+	LDA #$9b
+	STD 126,S
+	LDD #$9999
+	STD 42,S
+	STD 82,S
+	STD 122,S
 	PULS X,Y
 	PSHU S,Y,X
 	LDD #$ddbb

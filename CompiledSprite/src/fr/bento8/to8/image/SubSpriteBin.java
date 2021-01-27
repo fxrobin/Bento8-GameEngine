@@ -1,14 +1,11 @@
 package fr.bento8.to8.image;
 
-import fr.bento8.to8.disk.FileIndex;
+import fr.bento8.to8.util.knapsack.ItemBin;
 
-public class SubSpriteBin {
+public class SubSpriteBin extends ItemBin{
 
 	public SubSprite parent;
 	public String name = "";
-	
-	public byte[] bin;
-	public FileIndex fileIndex;
 
 	public SubSpriteBin(SubSprite p) {
 		parent = p;
@@ -16,5 +13,10 @@ public class SubSpriteBin {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public String getFullName() {
+		return "SpriteBin "+this.parent.parent.name + " " + this.parent.name + " " + this.name;
 	}	
+	
 }
