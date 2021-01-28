@@ -6,7 +6,7 @@
 * palette doit etre refresh avant le tracage avec les donnees de la precedente frame pas la nouvelle
 
 cpt            fcb   $00
-Ptr_palette    equ   Normal_palette
+Ptr_palette    fdb   Normal_palette
 Normal_palette rmb   $20,0   *@globals
 Black_palette  rmb   $20,0   *@globals
 White_palette  rmb   $20,$FF *@globals

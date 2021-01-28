@@ -5,7 +5,7 @@ package fr.bento8.to8.disk;
  * @version 1.0
  *
  */
-public class FileIndex
+public class ImgIndex
 {
 	
 	public int drive;
@@ -15,7 +15,12 @@ public class FileIndex
 	public int endOffset;
 	public int page;
 	public int address;	
+	public int nbCell;
+	public int xOffset;
+	public int yOffset;
+	public int xSize;
+	public int ySize;
 	
-	public FileIndex() {
+	public ImgIndex() {
 	}
 }

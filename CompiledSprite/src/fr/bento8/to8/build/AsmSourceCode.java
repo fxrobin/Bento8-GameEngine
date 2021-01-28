@@ -18,7 +18,7 @@ public class AsmSourceCode
 	}	
 	
 	public void add(String text) {
-		content += "\n"+text+"\n";
+		content += "\n"+text;
 	}		
 
 	public void appendComment(String comment) {

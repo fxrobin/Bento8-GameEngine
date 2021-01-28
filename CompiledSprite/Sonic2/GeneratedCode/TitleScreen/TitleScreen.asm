@@ -156,7 +156,7 @@ Sonic                                            *Obj0E_Sonic:
         std   w_TitleScr_time_frame_count,u
         cmpd  #$120                              *        cmpi.w  #$120,objoff_34(a0)
         bhs   Sonic_NotFinalState                *        bhs.s   +
-        bsr   TitleScreen_SetFinalState
+        lbsr  TitleScreen_SetFinalState
                                                  *        bsr.w   TitleScreen_SetFinalState
 Sonic_NotFinalState                              *+
                                                  *        moveq   #0,d0
@@ -204,7 +204,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
 Sonic_PaletteFade                                *loc_12EC2:
         ldd   w_TitleScr_time_frame_count,u
         cmpd  #$38                               *        cmpi.w  #$38,objoff_34(a0)
-        bhs   Sonic_PaletteAfterWait             *        bhs.s   +
+        bhs   Sonic_PaletteFadeAfterWait         *        bhs.s   +
         rts                                      *        rts
                                                  *; ===========================================================================
 Sonic_PaletteFadeAfterWait                       *+
@@ -264,7 +264,7 @@ TitleScreen_MoveObjects                          *loc_12F20:
         addd  #4                                 *        addq.w  #4,d1
 dyn_01
         cmpd  #$0000                             *        cmp.w   d2,d1
-        bhs   TitleScreen_NextSubRoutineAndDisplay
+        lbhs  TitleScreen_NextSubRoutineAndDisplay
                                                  *        bhs.w   loc_1310A
         std   w_TitleScr_xy_data_index,u         *        move.w  d1,objoff_2C(a0)
         leax  d,x                                *        move.l  -4(a1,d1.w),d0
@@ -277,8 +277,8 @@ MoveObjects_KeepPosition                         *+
                                                  *; ===========================================================================
                                                  *
 TitleScreen_Animate                              *loc_12F52:
-        ; no more offset table                   *        lea     (Ani_obj0E).l,a1
-        bsr   AnimateSprite                      *        bsr.w   AnimateSprite
+        * no more offset table                   *        lea     (Ani_obj0E).l,a1
+        jsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *
@@ -351,8 +351,8 @@ Sonic_CreateSmallStar                            *loc_12FD6:
         * not implemented                        *        bra.w   DisplaySprite
                                                  *; ===========================================================================
 Sonic_CreateSmallStar_AfterWait                  *+
-        ldx   #IntroSmallStar2                   *        lea     (IntroSmallStar2).w,a1
-        lda   #ObjID_IntroStars
+        ldx   #Obj_SmallStar                     *        lea     (IntroSmallStar2).w,a1
+        lda   #ObjID_TitleScreen
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB440
         lda   #Sub_SmallStar
         sta   subtype,x                          *        move.b  #$C,subtype(a1)                         ; small star
@@ -368,7 +368,7 @@ CyclingPal                                       *loc_13014:
         anda  #7 * every 8 frames                *        andi.b  #7,d0
         bne   CyclingPal_NotYet                  *        bne.s   ++
         ldx   w_TitleScr_color_data_index        *        move.w  objoff_2C(a0),d0
-        leax  #2,x                               *        addq.w  #2,d0
+        leax  2,x                                *        addq.w  #2,d0
         cmpx  #CyclingPal_TitleScreen_end-CyclingPal_TitleScreen
                                                  *        cmpi.w  #CyclingPal_TitleStar_End-CyclingPal_TitleStar,d0
         blo   CyclingPal_Continue                *        blo.s   +
@@ -447,7 +447,7 @@ Tails_CreateHand                                 *loc_130A2:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldx   #Obj_TailsHand                     *        lea     (IntroTailsHand).w,a1
-        lda   #ObjID_IntroStars                  *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB200
+        lda   #ObjID_TitleScreen                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB200
         sta   id,x
         lda   #Sub_TailsHand
         sta   subtype,x                          *        move.b  #$10,subtype(a1)                        ; Tails' hand
@@ -691,8 +691,8 @@ TailsHand_Routines                               *off_1325A:      offsetTable
 TailsHand_Init                                   *Obj0E_TailsHand_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldd   #Img_tailsHand
-        std   mapping_frame,u                    *        move.b  #$13,mapping_frame(a0)
+        lda   #Img_tailsHand
+        sta   mapping_frame,u                    *        move.b  #$13,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
         ldd   #$10F
@@ -763,8 +763,8 @@ SmallStar_MoveContinue
         ldd   y_pixel,u
         addd  #1                                 *        addq.w  #1,y_pixel(a0)
         std   y_pixel,u
-        ; no more offset table                   *        lea     (Ani_obj0E).l,a1
-        bsr   AnimateSprite                      *        bsr.w   AnimateSprite
+        * no more offset table                   *        lea     (Ani_obj0E).l,a1
+        jsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
 
@@ -777,22 +777,22 @@ SmallStar_MoveContinue
                                                  *
 TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         tst   b_TitleScr_final_state,u           *        tst.b   objoff_2F(a0)
-        bne   TitleScreen_SetFinalState_rts      *        bne.w   +       ; rts
+        lbne  TitleScreen_SetFinalState_rts      *        bne.w   +       ; rts
         lda   Fire_Press                         *        move.b  (Ctrl_1_Press).w,d0
                                                  *        or.b    (Ctrl_2_Press).w,d0
         anda  #c1_button_A_mask|c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
                                                  *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_2_Press).w
                                                  *        andi.b  #button_start_mask,d0
-        beq  TitleScreen_SetFinalState_rts       *        beq.w   +       ; rts
+        lbeq  TitleScreen_SetFinalState_rts      *        beq.w   +       ; rts
         ldd   #$FF
         std   b_TitleScr_final_state             *        st.b    objoff_2F(a0)
                                                  *        move.b  #$10,routine_secondary(a0)
         lda   #Img_sonic_5
         sta   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
         ldd   #$108
-        std   x_pixels,u                         *        move.w  #$108,x_pixel(a0)
+        std   x_pixel,u                          *        move.w  #$108,x_pixel(a0)
         ldd   #$98
-        std   y_pixels,u                         *        move.w  #$98,y_pixel(a0)
+        std   y_pixel,u                          *        move.w  #$98,y_pixel(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
         * not implemented                        *        bsr.w   TitleScreen_InitSprite
         lda   #ObjID_TitleScreen                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0

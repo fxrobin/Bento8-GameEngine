@@ -14,11 +14,11 @@ c2_button_A_mask             equ   $80 *@globals
 
 Joypads
 Joypads_Held
-Dpad_Held                    fcb   $00
-Fire_Held                    fcb   $00
+Dpad_Held                    fcb   $00 *@globals
+Fire_Held                    fcb   $00 *@globals
 Joypads_Press
-Dpad_Press                   fcb   $00
-Fire_Press                   fcb   $00
+Dpad_Press                   fcb   $00 *@globals
+Fire_Press                   fcb   $00 *@globals
 
 ********************************************************************************
 * Get joystick parameters

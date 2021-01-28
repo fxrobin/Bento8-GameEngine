@@ -22,7 +22,7 @@ nextSubRoutine         equ $FA
                                             *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                             *
                                             *; sub_16544:
-AnimateSprite                               *AnimateSprite:
+AnimateSprite * @globals                    *AnimateSprite:
                                             *    moveq   #0,d0
         ldx   anim,u                        *    move.b  anim(a0),d0      ; move animation number to d0
         cmpx  prev_anim,u                   *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
