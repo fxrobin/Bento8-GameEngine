@@ -1,3 +1,0 @@
-* Generated Code
-
-Obj_Index
