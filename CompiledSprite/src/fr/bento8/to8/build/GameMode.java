@@ -44,6 +44,10 @@ public class GameMode extends AsmInclude{
 		for (Map.Entry<String, String[]> curInclude : engineAsmIncludesTmp.entrySet()) {
 			asmIncludes.put(curInclude.getKey(), curInclude.getValue()[0]);
 		}
+		HashMap<String, String[]> engineLoaderAsmGenIncludes = PropertyList.get(prop, "engine.asm.gen.includ");
+		for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
+			asmIncludes.put(include.getKey(), Game.generatedCodeDirName+"/"+name+"/"+include.getValue()[0]);
+		}		
 
 		// Objects
 		// ********************************************************************
@@ -56,7 +60,7 @@ public class GameMode extends AsmInclude{
 		// Chargement des fichiers de configuration des Objets
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
-			objects.put(curObject.getKey(), new Object(curObject.getKey(), curObject.getValue()[0]));
+			objects.put(curObject.getKey(), new Object(name, curObject.getKey(), curObject.getValue()[0]));
 		}	
 
 		// Act Sequence

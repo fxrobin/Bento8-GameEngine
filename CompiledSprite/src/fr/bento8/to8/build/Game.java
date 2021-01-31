@@ -18,21 +18,21 @@ public class Game{
 	
 	// Engine Loader
 	public String engineAsmBoot;
-	public String engineAsmGameMode;
-	public String engineAsmGameModeEngine;	
+	public String engineAsmGameModeManager;
+	public String engineAsmGameModeLoader;	
 	public HashMap<String, String[]> engineLoaderAsmIncludes;	
 	
 	// Game Mode
 	public String gameModeBoot;
-	public HashMap<String, GameMode> gameModes;
+	public HashMap<String, GameMode> gameModes = new HashMap<String, GameMode>();
 
 	// Build
-	public String c6809;
+	public static String c6809;
 	public static String exobin;
 	public boolean debug;
 	public boolean logToConsole;	
 	public String outputDiskName;
-	public String generatedCodeDirName;
+	public static String generatedCodeDirName;
 	public boolean memoryExtension;
 	public int nbMaxPagesRAM;	
 	public static boolean useCache;
@@ -41,7 +41,7 @@ public class Game{
 	public FdUtil fd = new FdUtil();
 	public AsmSourceCode glb;
 	
-	public byte[] engineAsmGameModeBytes;	
+	public byte[] engineAsmGameModeManagerBytes;	
 	public byte[] mainEXOBytes;
 	public byte[] bootLoaderBytes;
 	
@@ -63,17 +63,27 @@ public class Game{
 				throw new Exception("engine.asm.boot not found in "+file);
 			}
 
-			engineAsmGameMode = prop.getProperty("engine.asm.gameMode");
-			if (engineAsmGameMode == null) {
-				throw new Exception("engine.asm.gameMode not found in "+file);
+			engineAsmGameModeManager = prop.getProperty("engine.asm.gameModeManager");
+			if (engineAsmGameModeManager == null) {
+				throw new Exception("engine.asm.gameModeManager not found in "+file);
 			}
 			
-			engineAsmGameModeEngine = prop.getProperty("engine.asm.gameModeEngine");
-			if (engineAsmGameModeEngine == null) {
-				throw new Exception("engine.asm.gameModeEngine not found in "+file);
+			engineAsmGameModeLoader = prop.getProperty("engine.asm.gameModeLoader");
+			if (engineAsmGameModeLoader == null) {
+				throw new Exception("engine.asm.gameModeLoader not found in "+file);
 			}
+			
+			generatedCodeDirName = prop.getProperty("builder.generatedCode");
+			if (generatedCodeDirName == null) {
+				throw new Exception("builder.generatedCode not found in "+file);
+			}
+			BuildDisk.binTmpFile = generatedCodeDirName + "/" + BuildDisk.binTmpFile;
 
 			engineLoaderAsmIncludes = PropertyList.get(prop, "engine.asm.includ");		
+			HashMap<String, String[]> engineLoaderAsmGenIncludes = PropertyList.get(prop, "engine.asm.gen.includ");
+			for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
+				engineLoaderAsmGenIncludes.put(include.getKey(), new String[] {generatedCodeDirName+"/"+include.getValue()});
+			}
 
 			// Game Definition
 			// ********************************************************************		
@@ -121,12 +131,6 @@ public class Game{
 			if (outputDiskName == null) {
 				throw new Exception("builder.diskName not found in "+file);
 			}
-
-			generatedCodeDirName = prop.getProperty("builder.generatedCode");
-			if (generatedCodeDirName == null) {
-				throw new Exception("builder.generatedCode not found in "+file);
-			}
-			BuildDisk.binTmpFile = generatedCodeDirName + "/" + BuildDisk.binTmpFile;
 
 			if (prop.getProperty("builder.to8.memoryExtension") == null) {
 				throw new Exception("builder.to8.memoryExtension not found in "+file);
