@@ -5,13 +5,17 @@ import fr.bento8.to8.disk.FdUtil;
 public class Sprite {
 
 	public String name = "";
+	public String spriteFile;
+	public String[] flip;
+	public String[] type;	
 	
 	public SubSprite subSprite;
 	public SubSprite subSpriteX;
 	public SubSprite subSpriteY;
 	public SubSprite subSpriteXY;	
 
-	public Sprite() {	
+	public Sprite (String name) {
+		this.name = name;
 	}
 	
 	public void setSubSprite(String flip, SubSprite ss) {

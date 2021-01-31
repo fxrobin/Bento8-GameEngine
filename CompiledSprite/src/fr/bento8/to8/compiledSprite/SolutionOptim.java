@@ -54,7 +54,7 @@ public class SolutionOptim{
 	}
 
 	private void saveState() {
-		// Sauvegarde de l'état des registres
+		// Sauvegarde de l'ï¿½tat des registres
 		for (int i = 0; i < regSet.length; i++) {
 			regSetSave[i] = regSet[i];
 		}
@@ -77,7 +77,7 @@ public class SolutionOptim{
 		regE.clear();
 		offsetE.clear();
 
-		// Rétablissement de l'état des registres
+		// Rï¿½tablissement de l'ï¿½tat des registres
 		for (int i = 0; i < regSet.length; i++) {
 			regSet[i] = regSetSave[i];
 		}
@@ -132,13 +132,13 @@ public class SolutionOptim{
 			bestSolution.add(processPatternDraw(lastPattern, s));
 		}
 
-		// flush du précédent pattern et purge des registres
+		// flush du prï¿½cï¿½dent pattern et purge des registres
 		for (int i = regBBSet.length-1; i >= 0; i--) {
 			if (regBBSet[i]) {
 				s.addRegisterPSH(i);
 
-				// Pour chaque registre sauvegardé dans les données du fond
-				// On enregistre l'id du registre et l'offset associé
+				// Pour chaque registre sauvegardï¿½ dans les donnï¿½es du fond
+				// On enregistre l'id du registre et l'offset associï¿½
 				// dans le cas d'un stack blast, on enregistre un index null
 				regE.add(i);
 				offsetE.add(offsetBBSet[i]);
@@ -159,7 +159,7 @@ public class SolutionOptim{
 		while(has_next) {
 			has_next = false;
 
-			// Vérification des contraintes
+			// Vï¿½rification des contraintes
 			for (List<Integer[]> pl : pattern) {
 				for (Integer[] p : pl) {
 					if (p[0] != null) {
@@ -195,13 +195,13 @@ public class SolutionOptim{
 					testSolution.add(processPatternDraw(lastPattern, s));
 				}
 
-				// flush du précédent pattern et purge des registres
+				// flush du prï¿½cï¿½dent pattern et purge des registres
 				for (int i = regBBSet.length-1; i >= 0; i--) {
 					if (regBBSet[i]) {
 						s.addRegisterPSH(i);
 
-						// Pour chaque registre sauvegardé dans les données du fond
-						// On enregistre l'id du registre et l'offset associé
+						// Pour chaque registre sauvegardï¿½ dans les donnï¿½es du fond
+						// On enregistre l'id du registre et l'offset associï¿½
 						// dans le cas d'un stack blast, on enregistre un index null
 						regE.add(i);
 						offsetE.add(offsetBBSet[i]);
@@ -236,12 +236,12 @@ public class SolutionOptim{
 			constaints.clear();
 			isValidSolution = true;
 
-			// Génération de combinaisons uniques
-			// Ne permute pas les éléments d'un même groupe
+			// Gï¿½nï¿½ration de combinaisons uniques
+			// Ne permute pas les ï¿½lï¿½ments d'un mï¿½me groupe
 			for(int tail = ind.length - 1;tail > 0;tail--) {
 				if (ind[tail - 1] < ind[tail]) {
 
-					// trouve le dernier élément qui ne dépasse pas ind[tail-1]
+					// trouve le dernier ï¿½lï¿½ment qui ne dï¿½passe pas ind[tail-1]
 					int l = ind.length - 1;
 					while(ind[tail-1] >= ind[l])
 						l--;
@@ -301,13 +301,13 @@ public class SolutionOptim{
 			bestSolution.add(processPatternDraw(lastPattern, s));
 		}
 
-		// flush du précédent pattern et purge des registres
+		// flush du prï¿½cï¿½dent pattern et purge des registres
 		for (int i = regBBSet.length-1; i >= 0; i--) {
 			if (regBBSet[i]) {
 				s.addRegisterPSH(i);
 
-				// Pour chaque registre sauvegardé dans les données du fond
-				// On enregistre l'id du registre et l'offset associé
+				// Pour chaque registre sauvegardï¿½ dans les donnï¿½es du fond
+				// On enregistre l'id du registre et l'offset associï¿½
 				// dans le cas d'un stack blast, on enregistre un index null
 				regE.add(i);
 				offsetE.add(offsetBBSet[i]);
@@ -337,7 +337,7 @@ public class SolutionOptim{
 				Collections.swap(pattern, a, b);
 			}
 
-			// Vérification des contraintes
+			// Vï¿½rification des contraintes
 			for (List<Integer[]> pl : pattern) {
 				for (Integer[] p : pl) {
 					if (p[0] != null) {
@@ -373,13 +373,13 @@ public class SolutionOptim{
 					testSolution.add(processPatternDraw(lastPattern, s));
 				}
 
-				// flush du précédent pattern et purge des registres
+				// flush du prï¿½cï¿½dent pattern et purge des registres
 				for (int i = regBBSet.length-1; i >= 0; i--) {
 					if (regBBSet[i]) {
 						s.addRegisterPSH(i);
 
-						// Pour chaque registre sauvegardé dans les données du fond
-						// On enregistre l'id du registre et l'offset associé
+						// Pour chaque registre sauvegardï¿½ dans les donnï¿½es du fond
+						// On enregistre l'id du registre et l'offset associï¿½
 						// dans le cas d'un stack blast, on enregistre un index null
 						regE.add(i);
 						offsetE.add(offsetBBSet[i]);
@@ -406,14 +406,14 @@ public class SolutionOptim{
 					offsetEBest.clear();
 					offsetEBest.addAll(offsetE);
 				} else {
-					// Meilleurs résultats si ligne suivante commentée
+					// Meilleurs rï¿½sultats si ligne suivante commentï¿½e
 					// Collections.swap(pattern, a, b);
 				}
 
 				testSolution.clear();
 				restoreState();
 			} else {
-				// Meilleurs résultats si ligne suivante commentée
+				// Meilleurs rï¿½sultats si ligne suivante commentï¿½e
 				// Collections.swap(pattern, a, b);
 			}
 
@@ -453,7 +453,7 @@ public class SolutionOptim{
 			// Parcours de tous les patterns
 			int i = 0;
 
-			// Au début de l'image on sauvegarde S même s'il n'y a pas de LEAS
+			// Au dï¿½but de l'image on sauvegarde S mï¿½me s'il n'y a pas de LEAS
 			saveS = true;
 			Integer hash;
 
@@ -468,7 +468,7 @@ public class SolutionOptim{
 				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
 
 					// Ecriture du LEAS				
-					if (currentNode != lastLeas // le noeud courant est différent de celui du dernier LEAS
+					if (currentNode != lastLeas // le noeud courant est diffï¿½rent de celui du dernier LEAS
 							&& solution.computedLeas.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAS
 							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
 						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
@@ -476,11 +476,11 @@ public class SolutionOptim{
 						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeas.get(solution.computedNodes.get(i)));
 						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeas.get(solution.computedNodes.get(i)));
 						lastLeas = solution.computedNodes.get(i);
-						saveS = true; // On enregistre le fait qu'un LEAS a été produit pour ce noeud
+						saveS = true; // On enregistre le fait qu'un LEAS a ï¿½tï¿½ produit pour ce noeud
 					}
 
 					// Parcours des patterns et assignation d'un groupe
-					// Split des patterns en deux (sauvegadre fond et écriture)
+					// Split des patterns en deux (sauvegadre fond et ï¿½criture)
 					if (!solution.patterns.get(i).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(i).useIndexedAddressing()) {
 						value1 = null;
 						value2 = null;
@@ -499,10 +499,10 @@ public class SolutionOptim{
 						patterns.get(n).add(new Integer[] {i, i});
 
 					} else if (!solution.patterns.get(i).useIndexedAddressing()) {
-						// Le stack blast doit être positionné en fin de noeud pour être exécuté en début de rétablissement de fond
-						// en particulier il doit être joué juste après le premier PULU ...,S car le PSHS va décaler le pointeur S
-						// et le poisitonner correctement pour les accès mémoire indexées.
-						// Si on veut le positionner ailleurs il faut recalculer les offsets : c'est réalisable ... mais risque d'être long à coder
+						// Le stack blast doit ï¿½tre positionnï¿½ en fin de noeud pour ï¿½tre exï¿½cutï¿½ en dï¿½but de rï¿½tablissement de fond
+						// en particulier il doit ï¿½tre jouï¿½ juste aprï¿½s le premier PULU ...,S car le PSHS va dï¿½caler le pointeur S
+						// et le poisitonner correctement pour les accï¿½s mï¿½moire indexï¿½es.
+						// Si on veut le positionner ailleurs il faut recalculer les offsets : c'est rï¿½alisable ... mais risque d'ï¿½tre long ï¿½ coder
 						lastPattern = i;
 					} else {
 						value1 = null;
@@ -571,7 +571,7 @@ public class SolutionOptim{
 				if (saveS)
 					sizeSaveS += 2;
 
-				// Execution de la solution optimisée
+				// Execution de la solution optimisï¿½e
 				for (Snippet s : bestSolution) {
 					asmCode.addAll(s.call());
 					asmCodeCycles += s.getCycles();
@@ -607,11 +607,11 @@ public class SolutionOptim{
 		int maxIdx = -1;
 		boolean isValid = true;
 
-		// TODO gestion erase de registres en fonction des instructions passées
+		// TODO gestion erase de registres en fonction des instructions passï¿½es
 
 		// Parcours des combinaisons possibles
-		// Selection de la combinaison qui satisfait les registres déjà occupés
-		// et laisse un maximum de registres libres à droite
+		// Selection de la combinaison qui satisfait les registres dï¿½jï¿½ occupï¿½s
+		// et laisse un maximum de registres libres ï¿½ droite
 		for (int j = 0; j < solution.patterns.get(id).getRegisterCombi().size() ; j++) {
 			for (int k = 0; k < solution.patterns.get(id).getRegisterCombi().get(j).length; k++) {
 				if (solution.patterns.get(id).getRegisterCombi().get(j)[k]) {
@@ -639,15 +639,15 @@ public class SolutionOptim{
 
 		if (bestCombi == -1) {
 			// Il n'y plus la place pour une nouvelle combinaison
-			// On rejoue la sélection mais sans la contrainte des précédents registres
+			// On rejoue la sï¿½lection mais sans la contrainte des prï¿½cï¿½dents registres
 
-			// flush du précédent pattern et purge des registres
+			// flush du prï¿½cï¿½dent pattern et purge des registres
 			for (int i = regBBSet.length-1; i >= 0; i--) {
 				if (regBBSet[i]) {
 					lastSnippet.addRegisterPSH(i);
 
-					// Pour chaque registre sauvegardé dans les données du fond
-					// On enregistre l'id du registre et l'offset associé
+					// Pour chaque registre sauvegardï¿½ dans les donnï¿½es du fond
+					// On enregistre l'id du registre et l'offset associï¿½
 					// dans le cas d'un stack blast, on enregistre un index null
 					regE.add(i);
 					offsetE.add(offsetBBSet[i]);
@@ -683,17 +683,17 @@ public class SolutionOptim{
 		// Parcours des registres de la combinaison
 		for (int k = 0; k < solution.patterns.get(id).getRegisterCombi().get(bestCombi).length; k++) {
 			if (solution.patterns.get(id).getRegisterCombi().get(bestCombi)[k]) {
-				// Le registre est utilisé dans la combinaison
+				// Le registre est utilisï¿½ dans la combinaison
 				selectedRegPUL.add(k);
 				regBBSet[k] = true;
 				offsetBBSet[k] = solution.computedOffsets.get(id);
 			}
 		}
 
-		// Sauvegarde de la méthode a exécuter
+		// Sauvegarde de la mï¿½thode a exï¿½cuter
 		snippet = new Snippet(solution.patterns.get(id), selectedRegPUL, selectedRegPSH, solution.computedOffsets.get(id), bestCombi);
 
-		// Réinitialisation des registres utilisés par l'écriture du fond
+		// Rï¿½initialisation des registres utilisï¿½s par l'ï¿½criture du fond
 		for (int r : selectedRegPUL) {
 			regSet[r] = false;
 			if (r == Register.A || r == Register.B) {
@@ -711,7 +711,7 @@ public class SolutionOptim{
 	public Snippet processPatternDraw(int id, Snippet lastSnippet) throws Exception {
 
 		// Recherche pour chaque combinaison de registres d'un pattern,
-		// celle qui a le cout le moins élevé en fonction des registres déjà chargés
+		// celle qui a le cout le moins ï¿½levï¿½ en fonction des registres dï¿½jï¿½ chargï¿½s
 
 		int cycles, selectedCombi, minCycles, pos;
 		byte b1, b2, b3 = 0x00, b4 = 0x00;
@@ -727,8 +727,8 @@ public class SolutionOptim{
 
 		// Parcours des combinaisons possibles de registres pour le pattern
 		// Cas particulier:
-		// Gestion des patterns non dissociables, on doit utiliser la même
-		// combinaison que celle utilisée pour la sauvegarde du fond
+		// Gestion des patterns non dissociables, on doit utiliser la mï¿½me
+		// combinaison que celle utilisï¿½e pour la sauvegarde du fond
 		if (!solution.patterns.get(id).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(id).useIndexedAddressing()) {
 			combiList.add(solution.patterns.get(id).getRegisterCombi().get(lastSnippet.getCombiIdx()));
 		} else {
@@ -745,14 +745,14 @@ public class SolutionOptim{
 			for (int k = 0; k < combiList.get(j).length; k++) {
 
 				if (combiList.get(j)[k]) {
-					// Le registre est utilisé dans la combinaison
+					// Le registre est utilisï¿½ dans la combinaison
 
 					currentReg.add(k);
 
 					if (regSet[k] && (solution.patterns.get(id).getResetRegisters().size() <= j || (solution.patterns.get(id).getResetRegisters().size() > j && solution.patterns.get(id).getResetRegisters().get(j)[k] == false))) {
-						// Le registre contient une valeur et n'est pas concerné par un reset dans le pattern
+						// Le registre contient une valeur et n'est pas concernï¿½ par un reset dans le pattern
 
-						// Chargement des données du sprite
+						// Chargement des donnï¿½es du sprite
 						b1 = data[pos++];
 						b2 = data[pos++];
 						if (Register.size[k] == 2) {
@@ -773,11 +773,11 @@ public class SolutionOptim{
 							currentLoadMask.add(null);
 
 						} else if (regVal[k][0] == b1 && regVal[k][1] == b2 && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == b3 && regVal[k][3] == b4))){
-							// Le registre contient déjà la valeur, on ne charge rien
+							// Le registre contient dï¿½jï¿½ la valeur, on ne charge rien
 							currentLoadMask.add(false);
 
 						} else {
-							// Le registre contient une valeur différente, on le charge
+							// Le registre contient une valeur diffï¿½rente, on le charge
 							currentLoadMask.add(true);
 						}
 					} else {
@@ -785,7 +785,7 @@ public class SolutionOptim{
 						currentLoadMask.add(true);
 					}
 				} else {
-					// Le registre n'est pas utilisé dans la combinaison
+					// Le registre n'est pas utilisï¿½ dans la combinaison
 					currentLoadMask.add(null);
 				}
 			}
@@ -808,10 +808,10 @@ public class SolutionOptim{
 			logger.fatal("Aucune combinaison de registres pour le pattern en position: "+solution.positions.get(id));
 		}
 
-		// Sauvegarde de la méthode a exécuter
+		// Sauvegarde de la mï¿½thode a exï¿½cuter
 		snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id), selectedCombi);
 
-		// Sauvegarde les valeurs chargées en cache
+		// Sauvegarde les valeurs chargï¿½es en cache
 		pos = solution.positions.get(id)*2;
 		for (int j = 0; j < combiList.get(selectedCombi).length; j++) {
 
@@ -821,7 +821,7 @@ public class SolutionOptim{
 							!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[j]))) {
 
 				// On ne charge qui si le registre est dans la combinaison
-				// et qu'il n'a pas été réinitialisé dans le pattern
+				// et qu'il n'a pas ï¿½tï¿½ rï¿½initialisï¿½ dans le pattern
 
 				regSet[j] = true;
 				regVal[j][0] = data[pos++];
@@ -877,8 +877,8 @@ public class SolutionOptim{
 		}
 
 		boolean flush = false;
-		// Réinitialisation des registres écrasés par le pattern
-		// Nécessaire si le dernier pattern a bénéficié du cache mais écrase les registres
+		// Rï¿½initialisation des registres ï¿½crasï¿½s par le pattern
+		// Nï¿½cessaire si le dernier pattern a bï¿½nï¿½ficiï¿½ du cache mais ï¿½crase les registres
 		if (solution.patterns.get(id).getResetRegisters().size() > selectedCombi) {
 			for (int j = 0; j < solution.patterns.get(id).getResetRegisters().get(selectedCombi).length; j++) {
 				if (solution.patterns.get(id).getResetRegisters().get(selectedCombi)[j]) {
@@ -897,13 +897,13 @@ public class SolutionOptim{
 		}
 
 		if (flush) {
-			// flush du précédent pattern et purge des registres
+			// flush du prï¿½cï¿½dent pattern et purge des registres
 			for (int i = regBBSet.length-1; i >= 0; i--) {
 				if (regBBSet[i]) {
 					lastSnippet.addRegisterPSH(i);
 
-					// Pour chaque registre sauvegardé dans les données du fond
-					// On enregistre l'id du registre et l'offset associé
+					// Pour chaque registre sauvegardï¿½ dans les donnï¿½es du fond
+					// On enregistre l'id du registre et l'offset associï¿½
 					// dans le cas d'un stack blast, on enregistre un index null
 					regE.add(i);
 					offsetE.add(offsetBBSet[i]);

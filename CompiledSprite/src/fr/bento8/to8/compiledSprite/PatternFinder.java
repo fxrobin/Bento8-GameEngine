@@ -9,9 +9,9 @@ import org.apache.logging.log4j.Logger;
 import fr.bento8.to8.compiledSprite.patterns.*;
 
 public class PatternFinder {
-	// Recherche les patterns applicables à une image
-	// Créée une solution avec ces patterns
-	// Chaque pattern est associé un un code ASM
+	// Recherche les patterns applicables ï¿½ une image
+	// Crï¿½ï¿½e une solution avec ces patterns
+	// Chaque pattern est associï¿½ un un code ASM
 	
 	private static final Logger logger = LogManager.getLogger("log");
 	
@@ -28,7 +28,7 @@ public class PatternFinder {
 			logger.debug("Recherche de motifs, lecture vers l'avant.");
 			this.solutions = buildCodeForward(0);
 		} else {
-			logger.debug("Recherche de motifs, lecture vers l'arrière.");
+			logger.debug("Recherche de motifs, lecture vers l'arriï¿½re.");
 			this.solutions = buildCodeRearward(this.image.length-2); // -1 (fin de tableau) + -1 (pixel par paire)
 		}
 	}
@@ -55,8 +55,8 @@ public class PatternFinder {
 					}
 				}
 				// retirer ce return permet d'avoir toutes les combinaisons possibles au lieu de une seule
-				// trop de combinaisons, implémenter une méthode pour éliminer les combinaisons non viables
-				// dès le départ afin de réduire leur nombre
+				// trop de combinaisons, implï¿½menter une mï¿½thode pour ï¿½liminer les combinaisons non viables
+				// dï¿½s le dï¿½part afin de rï¿½duire leur nombre
 				return localSolution;
 			}
 		}
@@ -85,8 +85,8 @@ public class PatternFinder {
 					}
 				}
 				// retirer ce return permet d'avoir toutes les combinaisons possibles au lieu de une seule
-				// trop de combinaisons, implémenter une méthode pour éliminer les combinaisons non viables
-				// dès le départ afin de réduire leur nombre
+				// trop de combinaisons, implï¿½menter une mï¿½thode pour ï¿½liminer les combinaisons non viables
+				// dï¿½s le dï¿½part afin de rï¿½duire leur nombre
 				return localSolution;
 			}
 		}

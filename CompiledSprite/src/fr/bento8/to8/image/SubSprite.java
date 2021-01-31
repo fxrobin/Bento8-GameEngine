@@ -1,7 +1,7 @@
 package fr.bento8.to8.image;
 
 import fr.bento8.to8.disk.FdUtil;
-import fr.bento8.to8.disk.ImgIndex;
+import fr.bento8.to8.disk.DataIndex;
 
 public class SubSprite {
 
@@ -22,7 +22,7 @@ public class SubSprite {
 		parent = p;
 	}
 
-	public void setFileIndex(ImgIndex fi, FdUtil fd) {
+	public void setFileIndex(DataIndex fi, FdUtil fd) {
 		int index;
 		if (fi != null) {
 			fi.drive = fd.getUnit();

@@ -182,7 +182,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         lda   #Img_sonic_1
         sta   mapping_frame,u                    *        move.b  #5,mapping_frame(a0)
-        ldd   #Ani_TitleScreen_Sonic             ; in original code, anim is an index in offset table (1 byte) that is implicitly initialized to 0
+        ldd   #Ani_sonic                         ; in original code, anim is an index in offset table (1 byte) that is implicitly initialized to 0
         std   anim,u                             ; so added init code to anim address here because it is not an index anymore
         ldd   #$0110
         std   x_pixel,u                          *        move.w  #$110,x_pixel(a0)
@@ -431,7 +431,7 @@ Tails_Init                                       *Obj0E_Tails_Init:
         ldd   #$D8
         std   x_pixel,u                          *        move.w  #$D8,x_pixel(a0)
         std   y_pixel,u                          *        move.w  #$D8,y_pixel(a0)
-        ldd   #Ani_TitleScreen_Tails
+        ldd   #Ani_tails
         std   anim,u                             *        move.b  #1,anim(a0)
         rts                                      *        rts
                                                  *; ===========================================================================
@@ -488,7 +488,7 @@ EmblemTop_Init                                   *Obj0E_LogoTop_Init:
         * not implemented                        *        move.b  #$B,mapping_frame(a0)
         * trademark logo for PAL                 *        tst.b   (Graphics_Flags).w
         * game version                           *        bmi.s   +
-        lda   #Img_EmblemFront                   *        move.b  #$A,mapping_frame(a0)
+        * lda   #Img_emblemFront                 *        move.b  #$A,mapping_frame(a0)
         sta   mapping_frame,u                    *+
         lda   #2
         sta   priority,u                         *        move.b  #2,priority(a0)
@@ -558,10 +558,10 @@ LargeStar_Routines                               *off_13158:      offsetTable
 LargeStar_Init                                   *Obj0E_LargeStar_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_2_star
+        lda   #Img_star_2
         sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         * not implemented                        *        ori.w   #high_priority,art_tile(a0)
-        ldd   #Ani_TitleScreen_LargeStar
+        ldd   #Ani_largeStar
         std   anim,u                             *        move.b  #2,anim(a0)
         ldb   #$01
         stb   priority,u                         *        move.b  #1,priority(a0)
@@ -735,7 +735,7 @@ SmallStar_Routines                               *off_132A2:      offsetTable
 SmallStar_Init                                   *Obj0E_SmallStar_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_2_star
+        lda   #Img_star_2
         sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         lda   #5
         sta   priority,u                         *        move.b  #5,priority(a0)
@@ -743,7 +743,7 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
         std   x_pixel,u                          *        move.w  #$170,x_pixel(a0)
         ldd   #$80
         std   y_pixel,u                          *        move.w  #$80,y_pixel(a0)
-        ldd   #Ani_TitleScreen_SmallStar
+        ldd   #Ani_smallStar
         std   anim,u                             *        move.b  #3,anim(a0)
         ldd   #$8C
         std   w_TitleScr_time_frame_countdown,u  *        move.w  #$8C,objoff_2A(a0)
@@ -840,15 +840,15 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   x_pixel,x                          *        move.w  #$10D,x_pixel(a1)
         ldd   #$D1
         std   y_pixel,x                          *        move.w  #$D1,y_pixel(a1)
-        ldx   Obj_EmblemTop                      *        lea     (IntroEmblemTop).w,a1
-        lda   #ObjID_TitleScreen        
-        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
-        lda   #Sub_EmblemTop
-        sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
+        * ldx   Obj_EmblemTop                    *        lea     (IntroEmblemTop).w,a1
+        * lda   #ObjID_TitleScreen        
+        * sta   id,x                             *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        * lda   #Sub_EmblemTop
+        * sta   subtype,x                        *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
         * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
-        *ldx   #Obj_PaletteHandler                *        lea     (TitleScreenPaletteChanger).w,a1
-        *jsr   DeleteObject2                      *        bsr.w   DeleteObject2
+        *ldx   #Obj_PaletteHandler               *        lea     (TitleScreenPaletteChanger).w,a1
+        *jsr   DeleteObject2                     *        bsr.w   DeleteObject2
                                                  *        lea_    Pal_1342C,a1
                                                  *        lea     (Normal_palette_line4).w,a2
                                                  *

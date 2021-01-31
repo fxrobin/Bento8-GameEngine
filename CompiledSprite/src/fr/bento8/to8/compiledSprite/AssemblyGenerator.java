@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import fr.bento8.to8.InstructionSet.Register;
 import fr.bento8.to8.build.BuildDisk;
+import fr.bento8.to8.build.Game;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.util.C6809Util;
 
@@ -64,23 +65,23 @@ public class AssemblyGenerator{
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 
-		asmBckDrawFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_BckDraw.ASM";
+		asmBckDrawFileName = Game.generatedCodeDirName+"/"+spriteName+"_BckDraw.ASM";
 		asmDFile = Paths.get(asmBckDrawFileName);
-		lstBckDrawFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_BckDraw.lst";
+		lstBckDrawFileName = Game.generatedCodeDirName+"/"+spriteName+"_BckDraw.lst";
 		lstDFile = Paths.get(lstBckDrawFileName);
-		binBckDrawFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_BckDraw.BIN";
+		binBckDrawFileName = Game.generatedCodeDirName+"/"+spriteName+"_BckDraw.BIN";
 		binDFile = Paths.get(binBckDrawFileName);
 		
-		asmEraseFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_Erase.ASM";
+		asmEraseFileName = Game.generatedCodeDirName+"/"+spriteName+"_Erase.ASM";
 		asmEFile = Paths.get(asmEraseFileName);
-		lstEraseFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_Erase.lst";
+		lstEraseFileName = Game.generatedCodeDirName+"/"+spriteName+"_Erase.lst";
 		lstEFile = Paths.get(lstEraseFileName);
-		binEraseFileName = BuildDisk.generatedCodeDirName+"/"+spriteName+"_Erase.BIN";
+		binEraseFileName = Game.generatedCodeDirName+"/"+spriteName+"_Erase.BIN";
 		binEFile = Paths.get(binEraseFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
 		// on passe la génération du code de sprite compilé
-		if (!(BuildDisk.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile) && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
+		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile) && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(FORWARD);
@@ -89,7 +90,7 @@ public class AssemblyGenerator{
 			PatternCluster cluster = new PatternCluster(solution);
 			cluster.cluster(FORWARD);
 
-			SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0), BuildDisk.maxTries);
+			SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0), Game.maxTries);
 			regOpt.build();
 
 			spriteCode1 = regOpt.getAsmCode();
@@ -113,7 +114,7 @@ public class AssemblyGenerator{
 			cluster = new PatternCluster(solution);
 			cluster.cluster(FORWARD);
 
-			regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1), BuildDisk.maxTries);
+			regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1), Game.maxTries);
 			regOpt.build();
 
 			spriteCode2 = regOpt.getAsmCode();	
@@ -186,7 +187,7 @@ public class AssemblyGenerator{
 			
 			// Process BckDraw Code
 			// ****************************************************************			
-			if (!(BuildDisk.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
+			if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 				Files.deleteIfExists(asmDFile);
 				Files.createFile(asmDFile);
 
@@ -209,7 +210,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pr = new ProcessBuilder(BuildDisk.c6809, "-bl", asmBckDrawFileName, binBckDrawFileName).start();
+			pr = new ProcessBuilder(Game.c6809, "-bl", asmBckDrawFileName, binBckDrawFileName).start();
 			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 
 			while((line=br.readLine())!=null){
@@ -243,7 +244,7 @@ public class AssemblyGenerator{
 
 			// Process Erase Code
 			// ****************************************************************
-			if (!(BuildDisk.useCache && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
+			if (!(Game.useCache && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
 				Files.deleteIfExists(asmEFile);
 				Files.createFile(asmEFile);
 				
@@ -265,7 +266,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binEFile);
 
 			// Generate binary code from assembly code
-			pr = new ProcessBuilder(BuildDisk.c6809, "-bl", asmEraseFileName, binEraseFileName).start();
+			pr = new ProcessBuilder(Game.c6809, "-bl", asmEraseFileName, binEraseFileName).start();
 			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 			
 			while((line=br.readLine())!=null){

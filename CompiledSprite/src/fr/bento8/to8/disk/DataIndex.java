@@ -5,7 +5,7 @@ package fr.bento8.to8.disk;
  * @version 1.0
  *
  */
-public class ImgIndex
+public class DataIndex
 {
 	
 	public int drive;
@@ -21,6 +21,6 @@ public class ImgIndex
 	public int xSize;
 	public int ySize;
 	
-	public ImgIndex() {
+	public DataIndex() {
 	}
 }

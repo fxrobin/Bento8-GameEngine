@@ -4,7 +4,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.ColorModel;
-import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import javax.imageio.ImageIO;
@@ -17,8 +16,8 @@ public class SpriteSheet {
 	// Thomson TO8/TO9+
 	// Mode 160x200 en seize couleurs sans contraintes
 	
-	private static final Logger logger = LogManager.getLogger("log");
-
+	private static final Logger logger = LogManager.getLogger("log");	
+	
 	private BufferedImage image;
 	private String name;
 	ColorModel colorModel;
@@ -77,14 +76,14 @@ public class SpriteSheet {
 					prepareImages();
 
 				} else {
-					System.out.println("Le format de fichier de " + file + " n'est pas supporté.");
-					System.out.println("Resolution: " + subImageWidth + "x" + height + "px (doit être inférieur ou égal à 160x200)");
-					System.out.println("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
+					logger.info("Le format de fichier de " + file + " n'est pas supporté.");
+					logger.info("Resolution: " + subImageWidth + "x" + height + "px (doit être inférieur ou égal à 160x200)");
+					logger.info("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
 					// System.out.println("Nombre de composants: "+numComponents+" (doit être 3)");
 				}
 			}
 			else {
-				System.out.println("La largeur d'image :" + width + " n'est pas divisible par le nombre d'images :" +  nbImages);
+				logger.info("La largeur d'image :" + width + " n'est pas divisible par le nombre d'images :" +  nbImages);
 			}
 
 		} catch (Exception e) {

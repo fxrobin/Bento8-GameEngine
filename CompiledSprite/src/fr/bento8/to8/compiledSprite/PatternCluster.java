@@ -27,14 +27,14 @@ public class PatternCluster{
 		initAssignmentStep();
 		clusterPatternsToExistingNodes(isForward);
 		createNewNodesAndClusterRemainingPatterns(isForward);
-		setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incrément du LEA impacte le calcul : A corriger
+		setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incrï¿½ment du LEA impacte le calcul : A corriger
 		displayDebug();
 	}
 
 	private boolean initAssignmentStep() {
 		boolean result = false;
 
-		// Initialisation à -1 des patterns utilisant l'adressage indexé
+		// Initialisation ï¿½ -1 des patterns utilisant l'adressage indexï¿½
 		// Initialisation avec la valeur d'offset pour les autres patterns
 
 		for (int i=0; i<solution.patterns.size(); i++) {
@@ -53,18 +53,18 @@ public class PatternCluster{
 	private void clusterPatternsToExistingNodes(boolean isForward) {	   
 		int distance, nodeStart = -1;
 
-		// Traite les noeuds fixes imposés par les patterns n'utilisant pas l'indexation
-		// Cherche pour chacun tous les pattern indexés pouvant s'y rattacher (-128 +127)
+		// Traite les noeuds fixes imposï¿½s par les patterns n'utilisant pas l'indexation
+		// Cherche pour chacun tous les pattern indexï¿½s pouvant s'y rattacher (-128 +127)
 		for (int i = 0; i < solution.computedNodes.size(); i++) {
 			if (!solution.patterns.get(i).useIndexedAddressing()) {
-				// Noeud imposé on recherche les patterns pouvant y etre rattachés
+				// Noeud imposï¿½ on recherche les patterns pouvant y etre rattachï¿½s
 				for (int j = 0; j < solution.computedNodes.size(); j++) {
-					// On arrête la recherche lorsqu'un noeud imposé est rencontré
+					// On arrï¿½te la recherche lorsqu'un noeud imposï¿½ est rencontrï¿½
 					if (j >= i+1 && !solution.patterns.get(j).useIndexedAddressing()) {
 						break;
 					}
 
-					// On cherche des patterns indexés non affectés
+					// On cherche des patterns indexï¿½s non affectï¿½s
 					if (solution.patterns.get(j).useIndexedAddressing() && AssignedPatterns.get(j) == -1) {
 						if (isForward) {
 							distance = solution.computedNodes.get(j) - solution.computedNodes.get(i);
@@ -86,7 +86,7 @@ public class PatternCluster{
 					}
 				}
 
-				// s'il n'y a pas de pattern avant le noeud imposé, on utilisé le noeud imposé comme noeud de départ
+				// s'il n'y a pas de pattern avant le noeud imposï¿½, on utilisï¿½ le noeud imposï¿½ comme noeud de dï¿½part
 				if (nodeStart == -1 || i < nodeStart) {
 					nodeStart = i;
 				}
@@ -102,7 +102,7 @@ public class PatternCluster{
 		List<Integer> minMaxI = new ArrayList<Integer>();
 		int i = 0, j;
 
-		//  Séléction des patterns à regrouper en noeuds
+		//  Sï¿½lï¿½ction des patterns ï¿½ regrouper en noeuds
 		while (i < solution.computedNodes.size()) {
 			while (i < solution.computedNodes.size() && AssignedPatterns.get(i) != -1) {
 				i++;
@@ -147,7 +147,7 @@ public class PatternCluster{
 	}
 
 	public void setLEAOffsetRelativeToEachOthers() {
-		// Remplace les valeurs d'offset des LEA relatives au départ par des valeurs relatives entre les LEA
+		// Remplace les valeurs d'offset des LEA relatives au dï¿½part par des valeurs relatives entre les LEA
 		int curOffset = 0, newOffset = 0, lastOffset = 0;
 		for (int i = 0; i < solution.patterns.size(); i++) {
 			if (solution.computedLeas.containsKey(i)) {
