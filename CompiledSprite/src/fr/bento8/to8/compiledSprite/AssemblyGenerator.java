@@ -99,7 +99,7 @@ public class AssemblyGenerator{
 			cs.buildCode(FORWARD);
 			Solution solution = cs.getSolutions().get(0);
 
-			PatternCluster cluster = new PatternCluster(solution);
+			PatternCluster cluster = new PatternCluster(solution, spriteSheet.getCenter());
 			cluster.cluster(FORWARD);
 
 			SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0), Game.maxTries);
@@ -123,7 +123,7 @@ public class AssemblyGenerator{
 			cs.buildCode(FORWARD);
 			solution = cs.getSolutions().get(0);
 
-			cluster = new PatternCluster(solution);
+			cluster = new PatternCluster(solution, spriteSheet.getCenter());
 			cluster.cluster(FORWARD);
 
 			regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1), Game.maxTries);

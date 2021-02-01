@@ -34,6 +34,7 @@ public class SpriteSheet {
 	int[] y_offset; // position haut gauche de l'image par rapport au centre		
 	int[] x_size; // largeur de l'image en pixel (sans les pixels transparents)		
 	int[] y_size; // hauteur de l'image en pixel (sans les pixels transparents)		
+	int center; // position du centre de l'image (dans le référentiel pixels)	
 
 	public SpriteSheet(String tag, String file, int nbImages, String flip) {
 		try {
@@ -106,6 +107,8 @@ public class SpriteSheet {
 		y_offset = new int[subImageNb];		
 		x_size = new int[subImageNb];		
 		y_size = new int[subImageNb];
+		int size = (80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2);
+		center = ((size-((size/80)*80))/2+((size/80)/2)*80)/2;
 
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		
@@ -247,5 +250,9 @@ public class SpriteSheet {
 
 	public int getSubImageYSize(int subImagePos) {
 		return y_size[subImagePos];
+	}
+	
+	public int getCenter() {
+		return center;
 	}
 }

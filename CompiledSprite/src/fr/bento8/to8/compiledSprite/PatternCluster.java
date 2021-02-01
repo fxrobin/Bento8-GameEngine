@@ -17,9 +17,11 @@ public class PatternCluster{
 
 	public Solution solution;
 	private List<Integer> AssignedPatterns;
+	int center;
 
-	public PatternCluster(Solution solution) {
+	public PatternCluster(Solution solution, int center) {
 		this.solution = solution;
+		this.center = center;
 		AssignedPatterns = new ArrayList<Integer>();
 	}
 
@@ -148,7 +150,7 @@ public class PatternCluster{
 
 	public void setLEAOffsetRelativeToEachOthers() {
 		// Remplace les valeurs d'offset des LEA relatives au d�part par des valeurs relatives entre les LEA
-		int curOffset = 0, newOffset = 0, lastOffset = 0;
+		int curOffset = 0, newOffset = 0, lastOffset = center;
 		for (int i = 0; i < solution.patterns.size(); i++) {
 			if (solution.computedLeas.containsKey(i)) {
 				curOffset = solution.computedLeas.get(i);
