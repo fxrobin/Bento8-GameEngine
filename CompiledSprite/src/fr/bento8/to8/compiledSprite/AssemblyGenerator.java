@@ -33,6 +33,11 @@ public class AssemblyGenerator{
 	private int sizeDFrameCode;
 	private int cyclesEFrameCode;
 	private int sizeEFrameCode;
+	
+	private int x_offset;
+	private int y_offset;
+	private int x_size;
+	private int y_size;
 
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
@@ -60,6 +65,10 @@ public class AssemblyGenerator{
 
 	public AssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName();
+		x_offset = spriteSheet.getSubImageXOffset(imageNum);
+		y_offset = spriteSheet.getSubImageYOffset(imageNum);
+		x_size = spriteSheet.getSubImageXSize(imageNum);
+		y_size = spriteSheet.getSubImageYSize(imageNum);		
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
@@ -463,4 +472,24 @@ public class AssemblyGenerator{
 	public int getSizeData2() {
 		return sizeSpriteEData2;
 	}
+	
+	public int getEraseDataSize() {
+		return sizeSpriteEData1+sizeSpriteEData2;
+	}
+
+	public int getX_offset() {
+		return x_offset;
+	}
+
+	public int getY_offset() {
+		return y_offset;
+	}
+
+	public int getX_size() {
+		return x_size;
+	}
+
+	public int getY_size() {
+		return y_size;
+	}	
 }

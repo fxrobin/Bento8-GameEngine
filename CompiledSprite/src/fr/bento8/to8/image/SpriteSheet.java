@@ -30,6 +30,10 @@ public class SpriteSheet {
 
 	private byte[][][] pixels;
 	private byte[][][] data;
+	int[] x_offset; // position haut gauche de l'image par rapport au centre			
+	int[] y_offset; // position haut gauche de l'image par rapport au centre		
+	int[] x_size; // largeur de l'image en pixel (sans les pixels transparents)		
+	int[] y_size; // hauteur de l'image en pixel (sans les pixels transparents)		
 
 	public SpriteSheet(String tag, String file, int nbImages, String flip) {
 		try {
@@ -98,12 +102,22 @@ public class SpriteSheet {
 		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de même taille
 		pixels = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 		data = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
+		x_offset = new int[subImageNb];
+		y_offset = new int[subImageNb];		
+		x_size = new int[subImageNb];		
+		y_size = new int[subImageNb];
 
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		
 			int indexDest = 0;
 			int curLine = 0;
-			int page = 0;
+			int page = 0;		
+			int x_Min = 160;
+			int x_Max = -1;
+			int y_Min = 200;
+			int y_Max = -1;			
+			boolean firstPixel = true;
+			
 			while (index<subImageWidth*(position+1) + width*(height-1)) { // Parcours de tous les pixels de l'image
 				// Ecriture des pixels 2 à 2
 				pixels[position][page][indexDest] = (byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(index));
@@ -111,6 +125,27 @@ public class SpriteSheet {
 					data[position][page][indexDest] = 0;
 				} else {
 					data[position][page][indexDest] = (byte) (pixels[position][page][indexDest]-1);
+					
+					// Calcul des offset et size de l'image
+					if (firstPixel) {
+						firstPixel = false;
+						x_offset[position] = indexDest*2+page*2-(160*curLine)-(width/2);
+						y_offset[position] = curLine-((height-1)/2);
+					}
+					if (indexDest*2+page*2-(160*curLine) < x_Min) {
+						x_Min = indexDest*2+page*2-(160*curLine);
+					}
+					if (indexDest*2+page*2-(160*curLine) > x_Max) {
+						x_Max = indexDest*2+page*2-(160*curLine);
+					}
+					if (curLine < y_Min) {
+						y_Min = curLine;
+					}
+					if (curLine > y_Max) {
+						y_Max = curLine;
+					}
+					x_size[position] = x_Max-x_Min+1;
+					y_size[position] = y_Max-y_Min+1;
 				}
 				index++;
 
@@ -125,6 +160,27 @@ public class SpriteSheet {
 						data[position][page][indexDest+1] = 0;
 					} else {
 						data[position][page][indexDest+1] = (byte) (pixels[position][page][indexDest+1]-1);
+						
+						// Calcul des offset et size de l'image
+						if (firstPixel) {
+							firstPixel = false;
+							x_offset[position] = indexDest*2+page*2+1-(160*curLine)-(width/2);
+							y_offset[position] = curLine-((height-1)/2);				
+						}
+						if (indexDest*2+page*2+1-(160*curLine) < x_Min) {
+							x_Min = indexDest*2+page*2+1-(160*curLine);
+						}
+						if (indexDest*2+page*2+1-(160*curLine) > x_Max) {
+							x_Max = indexDest*2+page*2+1-(160*curLine);
+						}
+						if (curLine < y_Min) {
+							y_Min = curLine;						
+						}
+						if (curLine > y_Max) {
+							y_Max = curLine;
+						}		
+						x_size[position] = x_Max-x_Min+1;
+						y_size[position] = y_Max-y_Min+1;	
 					}
 					index++;
 
@@ -175,5 +231,21 @@ public class SpriteSheet {
 
 	public String getName() {
 		return name;
+	}
+
+	public int getSubImageXOffset(int subImagePos) {
+		return x_offset[subImagePos];
+	}
+
+	public int getSubImageYOffset(int subImagePos) {
+		return y_offset[subImagePos];
+	}
+
+	public int getSubImageXSize(int subImagePos) {
+		return x_size[subImagePos];
+	}
+
+	public int getSubImageYSize(int subImagePos) {
+		return y_size[subImagePos];
 	}
 }

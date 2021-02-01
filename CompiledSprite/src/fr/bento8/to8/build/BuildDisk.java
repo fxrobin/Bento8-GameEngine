@@ -251,6 +251,11 @@ public class BuildDisk
 							if (curType.equals("B")) {
 								logger.info("\t\t- BackupBackground/Draw/Erase");
 								asm.compileCode("A000");
+								curSubSprite.nb_cell = (asm.getEraseDataSize()/64)+1; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
+								curSubSprite.x_offset = asm.getX_offset();
+								curSubSprite.y_offset = asm.getY_offset();
+								curSubSprite.x_size = asm.getX_size();
+								curSubSprite.y_size = asm.getY_size();
 
 								logger.info("Exomize ...");
 								curSubSprite.bckDraw = new SubSpriteBin(curSubSprite);
@@ -269,7 +274,12 @@ public class BuildDisk
 							if (curType.equals("D")) {
 								logger.info("\t\t- Draw");
 								// asm.compileDraw("A000");
-
+								curSubSprite.nb_cell = (asm.getEraseDataSize()/64)+1; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
+								curSubSprite.x_offset = asm.getX_offset();
+								curSubSprite.y_offset = asm.getY_offset();
+								curSubSprite.x_size = asm.getX_size();
+								curSubSprite.y_size = asm.getY_size();
+								
 								logger.info("Exomize ...");
 								curSubSprite.draw = new SubSpriteBin(curSubSprite);
 								curSubSprite.draw.setName("draw");
@@ -317,21 +327,23 @@ public class BuildDisk
 		// GAME MODE DATA - Compilation du code de chaque objet pour déterminer sa taille
 		// ------------------------------------------------------------------------------
 
-		for (Entry<String, Object> object : allObjects.entrySet()) {
-			ObjectBin objectCode = new ObjectBin();
-			String objectCodeTmpFile = duplicateFile(object.getValue().codeFileName, object.getKey());
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+				ObjectBin objectCode = new ObjectBin();
+				String objectCodeTmpFile = duplicateFile(object.getValue().codeFileName, gameMode.getKey()+"/"+object.getKey());
 
-			compileLIN(objectCodeTmpFile, object.getValue());
-			objectCode.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
-			objectCode.size = objectCode.bin.length-10;
+				compileLIN(objectCodeTmpFile, object.getValue());
+				objectCode.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
+				objectCode.size = objectCode.bin.length-10;
 			
-			if (objectCode.size > 0x4000) {
-				throw new Exception("file "+objectCodeTmpFile+" is too large:"+objectCode.size+" bytes (max:"+0x4000+")");
+				if (objectCode.size > 0x4000) {
+					throw new Exception("file "+objectCodeTmpFile+" is too large:"+objectCode.size+" bytes (max:"+0x4000+")");
+				}
+
+				object.getValue().code = objectCode;
+				object.getValue().code.fileIndex = new DataIndex();
 			}
-			
-			object.getValue().code = objectCode;
-			object.getValue().code.fileIndex = new DataIndex();
-		}			
+		}
 	}
 	
 	private static void computeGameModeManagerSize() throws Exception {
@@ -437,10 +449,6 @@ public class BuildDisk
 					logger.fatal("No more space Left on RAM !");
 				}
 			}
-
-			// Game Mode Main Engine
-			gameMode.getValue().fileIndex.page = 1;
-			gameMode.getValue().fileIndex.address = 0x6100;
 		}
 	}
 	
@@ -487,7 +495,6 @@ public class BuildDisk
 				
 				exomize(getBINFileName(objectCodeTmpFile));
 				object.getValue().code.bin = Files.readAllBytes(Paths.get(getEXOFileName(objectCodeTmpFile)));
-				object.getValue().code.fileIndex = new DataIndex();
 			}
 		}
 	}
@@ -545,6 +552,8 @@ public class BuildDisk
 			gameMode.getValue().code = new ObjectBin();
 			gameMode.getValue().code.bin = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
 			gameMode.getValue().code.fileIndex = new DataIndex();
+			gameMode.getValue().code.fileIndex.page = 1;
+			gameMode.getValue().code.fileIndex.address = 0x6100;			
 		}
 	}
 	
@@ -749,11 +758,11 @@ public class BuildDisk
 			line [8] = "$00";	
 		}
 		
-		line [9] = String.format("$%1$02X", s.erase.fileIndex.nbCell);
-		line [10] = String.format("$%1$02X", s.erase.fileIndex.xOffset);
-		line [11] = String.format("$%1$02X", s.erase.fileIndex.yOffset);
-		line [12] = String.format("$%1$02X", s.erase.fileIndex.xSize);
-		line [13] = String.format("$%1$02X", s.erase.fileIndex.ySize);
+		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
+		line [10] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
+		line [11] = String.format("$%1$02X", s.y_offset & 0xFF); // signed value
+		line [12] = String.format("$%1$02X", s.x_size); // unsigned value
+		line [13] = String.format("$%1$02X", s.y_size); // unsigned value
 		return line;
 	}
 
