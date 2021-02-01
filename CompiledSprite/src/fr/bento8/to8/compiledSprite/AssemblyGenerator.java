@@ -58,25 +58,28 @@ public class AssemblyGenerator{
 	private Path asmDFile, lstDFile, binDFile;
 	private Path asmEFile, lstEFile, binEFile;	
 
-	public AssemblyGenerator(SpriteSheet spriteSheet, int imageNum) throws Exception {
+	public AssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName();
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
-
-		asmBckDrawFileName = Game.generatedCodeDirName+"/"+spriteName+"_BckDraw.ASM";
+		
+		destDir += "/"+spriteName;
+		asmBckDrawFileName = destDir+"_BckDraw.ASM";
+		File file = new File (asmBckDrawFileName);
+		file.getParentFile().mkdirs();		
 		asmDFile = Paths.get(asmBckDrawFileName);
-		lstBckDrawFileName = Game.generatedCodeDirName+"/"+spriteName+"_BckDraw.lst";
+		lstBckDrawFileName = destDir+"_BckDraw.lst";
 		lstDFile = Paths.get(lstBckDrawFileName);
-		binBckDrawFileName = Game.generatedCodeDirName+"/"+spriteName+"_BckDraw.BIN";
+		binBckDrawFileName = destDir+"_BckDraw.BIN";
 		binDFile = Paths.get(binBckDrawFileName);
 		
-		asmEraseFileName = Game.generatedCodeDirName+"/"+spriteName+"_Erase.ASM";
+		asmEraseFileName = destDir+"_Erase.ASM";
 		asmEFile = Paths.get(asmEraseFileName);
-		lstEraseFileName = Game.generatedCodeDirName+"/"+spriteName+"_Erase.lst";
+		lstEraseFileName = destDir+"_Erase.lst";
 		lstEFile = Paths.get(lstEraseFileName);
-		binEraseFileName = Game.generatedCodeDirName+"/"+spriteName+"_Erase.BIN";
+		binEraseFileName = destDir+"_Erase.BIN";
 		binEFile = Paths.get(binEraseFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM

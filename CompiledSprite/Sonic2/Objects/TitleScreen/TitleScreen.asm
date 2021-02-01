@@ -64,7 +64,7 @@
 (main)TITLESCR
         INCLUD GLOBALS
         INCLUD CONSTANT
-        org   $0000
+        org   $A000
 
 * ---------------------------------------------------------------------------
 * Object Status Table index
@@ -180,8 +180,8 @@ Sonic_Routines                                   *off_12E76:      offsetTable
 Sonic_Init                                       *Obj0E_Sonic_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_sonic_1
-        sta   mapping_frame,u                    *        move.b  #5,mapping_frame(a0)
+        ldd   #Img_sonic_1
+        std   mapping_frame,u                    *        move.b  #5,mapping_frame(a0)
         ldd   #Ani_sonic                         ; in original code, anim is an index in offset table (1 byte) that is implicitly initialized to 0
         std   anim,u                             ; so added init code to anim address here because it is not an index anymore
         ldd   #$0110
@@ -285,8 +285,8 @@ TitleScreen_Animate                              *loc_12F52:
 Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_sonic_5
-        sta   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
+        ldd   #Img_sonic_5
+        std   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
         lda   #ObjID_TitleScreen
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
@@ -558,8 +558,8 @@ LargeStar_Routines                               *off_13158:      offsetTable
 LargeStar_Init                                   *Obj0E_LargeStar_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_star_2
-        sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
+        ldd   #Img_star_2
+        std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         * not implemented                        *        ori.w   #high_priority,art_tile(a0)
         ldd   #Ani_largeStar
         std   anim,u                             *        move.b  #2,anim(a0)
@@ -645,8 +645,8 @@ SonicHand_Routines                               *off_1320E:      offsetTable
 SonicHand_Init                                   *Obj0E_SonicHand_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_sonicHand
-        sta   mapping_frame,u                    *        move.b  #9,mapping_frame(a0)
+        ldd   #Img_sonicHand
+        std   mapping_frame,u                    *        move.b  #9,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
         ldd   #$145
@@ -691,8 +691,8 @@ TailsHand_Routines                               *off_1325A:      offsetTable
 TailsHand_Init                                   *Obj0E_TailsHand_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_tailsHand
-        sta   mapping_frame,u                    *        move.b  #$13,mapping_frame(a0)
+        ldd   #Img_tailsHand
+        std   mapping_frame,u                    *        move.b  #$13,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
         ldd   #$10F
@@ -735,8 +735,8 @@ SmallStar_Routines                               *off_132A2:      offsetTable
 SmallStar_Init                                   *Obj0E_SmallStar_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        lda   #Img_star_2
-        sta   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
+        ldd   #Img_star_2
+        std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         lda   #5
         sta   priority,u                         *        move.b  #5,priority(a0)
         ldd   #$170
@@ -787,8 +787,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         ldd   #$FF
         std   b_TitleScr_final_state             *        st.b    objoff_2F(a0)
                                                  *        move.b  #$10,routine_secondary(a0)
-        lda   #Img_sonic_5
-        sta   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
+        ldd   #Img_sonic_5
+        std   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
         ldd   #$108
         std   x_pixel,u                          *        move.w  #$108,x_pixel(a0)
         ldd   #$98
@@ -801,8 +801,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         sta   routine,x                          *        move.b  #$A,routine(a1)                         ; Sonic's hand
         lda   #2
         sta   priority,x                         *        move.b  #2,priority(a1)
-        lda   #Img_sonicHand
-        sta   mapping_frame,x                    *        move.b  #9,mapping_frame(a1)
+        ldd   #Img_sonicHand
+        std   mapping_frame,x                    *        move.b  #9,mapping_frame(a1)
         lda   #4
         sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
         ldd   #$141
@@ -815,8 +815,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
         lda   #4
         sta   routine,x                          *        move.b  #4,routine(a1)                          ; Tails
-        lda   #Img_tails_5
-        sta   mapping_frame,x                    *        move.b  #4,mapping_frame(a1)
+        ldd   #Img_tails_5
+        std   mapping_frame,x                    *        move.b  #4,mapping_frame(a1)
         lda   #6
         sta   routine_secondary,x                *        move.b  #6,routine_secondary(a1)
         lda   #3
@@ -832,8 +832,8 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         ldd   #$1002
         sta   routine,x                          *        move.b  #$10,routine(a1)                        ; Tails' hand
         stb   priority,x                         *        move.b  #2,priority(a1)
-        lda   #Img_tailsHand
-        sta   mapping_frame,x                    *        move.b  #$13,mapping_frame(a1)
+        ldd   #Img_tailsHand
+        std   mapping_frame,x                    *        move.b  #$13,mapping_frame(a1)
         lda   #4
         sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
         ldd   #$10D

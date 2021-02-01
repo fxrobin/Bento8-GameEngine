@@ -8,7 +8,6 @@
 (main)MAIN
         INCLUD CONSTANT
         org   $6100
-        setdp $00
 
         jsr   LoadAct
 

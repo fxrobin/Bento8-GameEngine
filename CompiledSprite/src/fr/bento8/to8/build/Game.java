@@ -14,13 +14,12 @@ import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SubSpriteBin;
 
-public class Game{
+public class Game extends AsmInclude{
 	
 	// Engine Loader
 	public String engineAsmBoot;
 	public String engineAsmGameModeManager;
-	public String engineAsmGameModeLoader;	
-	public HashMap<String, String[]> engineLoaderAsmIncludes;	
+	public String engineAsmGameModeLoader;
 	
 	// Game Mode
 	public String gameModeBoot;
@@ -47,6 +46,7 @@ public class Game{
 	
 	public Game(String file) throws Exception {	
 			Properties prop = new Properties();
+			this.name = "Game";
 			
 			try {
 				InputStream input = new FileInputStream(file);
@@ -79,11 +79,14 @@ public class Game{
 			}
 			BuildDisk.binTmpFile = generatedCodeDirName + "/" + BuildDisk.binTmpFile;
 
-			engineLoaderAsmIncludes = PropertyList.get(prop, "engine.asm.includ");		
+			HashMap<String, String[]> engineAsmIncludesTmp = PropertyList.get(prop, "engine.asm.includ");
+			for (Map.Entry<String, String[]> curInclude : engineAsmIncludesTmp.entrySet()) {
+				asmIncludes.put(curInclude.getKey(), curInclude.getValue()[0]);
+			}			
 			HashMap<String, String[]> engineLoaderAsmGenIncludes = PropertyList.get(prop, "engine.asm.gen.includ");
 			for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
-				engineLoaderAsmGenIncludes.put(include.getKey(), new String[] {generatedCodeDirName+"/"+include.getValue()});
-			}
+				asmIncludes.put(include.getKey(), Game.generatedCodeDirName+"/"+include.getValue()[0]);
+			}			
 
 			// Game Definition
 			// ********************************************************************		

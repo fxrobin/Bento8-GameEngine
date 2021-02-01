@@ -66,7 +66,7 @@ public class GameMode extends AsmInclude{
 		// Act Sequence
 		// ********************************************************************
 
-		String actBoot = prop.getProperty("actBoot");
+		actBoot = prop.getProperty("actBoot");
 		if (actBoot == null) {
 			throw new Exception("actBoot not found in " + fileName);
 		}
