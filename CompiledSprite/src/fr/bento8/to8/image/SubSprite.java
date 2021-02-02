@@ -22,28 +22,28 @@ public class SubSprite {
 		parent = p;
 	}
 
-	public void setFileIndex(DataIndex fi, FdUtil fd) {
+	public void setFileIndex(SubSpriteBin ss, FdUtil fd) {
 		int index;
-		if (fi != null) {
-			fi.drive = fd.getUnit();
-			fi.track = fd.getTrack();
-			fi.sector = fd.getSector();
+		if (ss.fileIndex != null) {
+			ss.fileIndex.drive = fd.getUnit();
+			ss.fileIndex.track = fd.getTrack();
+			ss.fileIndex.sector = fd.getSector();
 			index = (fd.getIndex() / 256) * 256; // round to start sector
-			fd.write(bckDraw.bin);
-			fi.nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
-			fi.endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
+			fd.write(ss.bin);
+			ss.fileIndex.nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
+			ss.fileIndex.endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
 		}
 	}
 	
 	public void setAllFileIndex(FdUtil fd) {
 		if (bckDraw != null && bckDraw.fileIndex != null) {
-			setFileIndex(bckDraw.fileIndex, fd);			
+			setFileIndex(bckDraw, fd);			
 		}
 		if (erase != null && erase.fileIndex != null) {
-			setFileIndex(erase.fileIndex, fd);
+			setFileIndex(erase, fd);
 		}
 		if (draw != null && draw.fileIndex != null) {
-			setFileIndex(draw.fileIndex, fd);
+			setFileIndex(draw, fd);
 		}
 	}
 

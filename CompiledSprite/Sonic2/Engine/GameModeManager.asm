@@ -92,7 +92,7 @@ CopyCode3
         
 * Execution du Game Mode Engine en page 0a
 ************************************************************         
-        jmp   $4000      
+        jmp   GameModeLoader     
 
 * ==============================================================================
 * GameModeEngine

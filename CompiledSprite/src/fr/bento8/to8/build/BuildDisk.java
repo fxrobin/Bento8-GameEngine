@@ -262,12 +262,14 @@ public class BuildDisk
 								curSubSprite.bckDraw.setName("bckDraw");
 								curSubSprite.bckDraw.bin = exomize(asm.getBckDrawBINFile());
 								curSubSprite.bckDraw.fileIndex = new DataIndex();
+								curSubSprite.bckDraw.uncompressedSize = asm.getDSize();
 								object.getValue().subSpritesBin.add(curSubSprite.bckDraw);
 
 								curSubSprite.erase = new SubSpriteBin(curSubSprite);
 								curSubSprite.erase.setName("erase");
 								curSubSprite.erase.bin = exomize(asm.getEraseBINFile());
 								curSubSprite.erase.fileIndex = new DataIndex();
+								curSubSprite.erase.uncompressedSize = asm.getESize();
 								object.getValue().subSpritesBin.add(curSubSprite.erase);
 							}
 
@@ -285,6 +287,7 @@ public class BuildDisk
 								curSubSprite.draw.setName("draw");
 								curSubSprite.draw.bin = exomize(asm.getDrawBINFile());
 								curSubSprite.draw.fileIndex = new DataIndex();
+								//curSubSprite.draw.uncompressedSize = asm.get_Size();
 								object.getValue().subSpritesBin.add(curSubSprite.draw);
 							}
 						}
@@ -334,10 +337,10 @@ public class BuildDisk
 
 				compileLIN(objectCodeTmpFile, object.getValue());
 				objectCode.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
-				objectCode.size = objectCode.bin.length-10;
+				objectCode.uncompressedSize = objectCode.bin.length-10;
 			
-				if (objectCode.size > 0x4000) {
-					throw new Exception("file "+objectCodeTmpFile+" is too large:"+objectCode.size+" bytes (max:"+0x4000+")");
+				if (objectCode.uncompressedSize > 0x4000) {
+					throw new Exception("file "+objectCodeTmpFile+" is too large:"+objectCode.uncompressedSize+" bytes (max:"+0x4000+")");
 				}
 
 				object.getValue().code = objectCode;
@@ -425,8 +428,8 @@ public class BuildDisk
 				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
 					Item currentItem = iter.next();
 					currentItem.bin.fileIndex.page = page;
-					currentItem.bin.fileIndex.address = address;
-					address += currentItem.bin.bin.length;
+					address += currentItem.bin.uncompressedSize;
+					currentItem.bin.fileIndex.address = address;					
 
 					// construit la liste des éléments restants à organiser
 					for (int i = 0; i < items.length; i++) {
@@ -487,10 +490,10 @@ public class BuildDisk
 
 				compileLIN(objectCodeTmpFile, object.getValue());
 				byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
-				int size = bin.length-10;
+				object.getValue().code.uncompressedSize = bin.length-10;
 				
-				if (size > 0x4000) {
-					throw new Exception("file "+objectCodeTmpFile+" is too large:"+size+" bytes (max:"+0x4000+")");
+				if (object.getValue().code.uncompressedSize > 0x4000) {
+					throw new Exception("file "+objectCodeTmpFile+" is too large:"+object.getValue().code.uncompressedSize+" bytes (max:"+0x4000+")");
 				}
 				
 				exomize(getBINFileName(objectCodeTmpFile));
@@ -553,7 +556,7 @@ public class BuildDisk
 			gameMode.getValue().code.bin = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
 			gameMode.getValue().code.fileIndex = new DataIndex();
 			gameMode.getValue().code.fileIndex.page = 1;
-			gameMode.getValue().code.fileIndex.address = 0x6100;			
+			gameMode.getValue().code.fileIndex.address = 0x6100 + binBytes.length - 10;			
 		}
 	}
 	
@@ -597,7 +600,7 @@ public class BuildDisk
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
 			gmeData.addLabel("gm_" + gameMode.getKey());
-			gmeData.addFdb(new String[] { "current_game_mode_data+"+(gameMode.getValue().dataSize-2+6)}); // -2 index, +6 balise FF (lecture par groupe de 7 octets		
+			gmeData.addFdb(new String[] { "current_game_mode_data+"+(gameMode.getValue().dataSize-2+6+1)}); // -2 index, +6 balise FF (lecture par groupe de 7 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
 			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
@@ -615,10 +618,10 @@ public class BuildDisk
 				
 				// Code de l'objet
 				gmeData.addFcb(new String[] {
-				String.format("$%1$02X", (object.getValue().code.fileIndex.drive << 7)+object.getValue().code.fileIndex.track),
 				String.format("$%1$02X", object.getValue().code.fileIndex.sector),
-				String.format("$%1$02X", object.getValue().code.fileIndex.nbSector),
-				String.format("$%1$02X", object.getValue().code.fileIndex.endOffset),
+				String.format("$%1$02X", object.getValue().code.fileIndex.nbSector-1),
+				String.format("$%1$02X", (object.getValue().code.fileIndex.drive << 7)+object.getValue().code.fileIndex.track),				
+				String.format("$%1$02X", -object.getValue().code.fileIndex.endOffset & 0xFF),
 				String.format("$%1$02X", object.getValue().code.fileIndex.page),	
 				String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8),			
 				String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF)});			
@@ -627,10 +630,10 @@ public class BuildDisk
 			
 			// Code main engine
 			gmeData.addFcb(new String[] {
-			String.format("$%1$02X", (gameMode.getValue().code.fileIndex.drive << 7)+gameMode.getValue().code.fileIndex.track),
 			String.format("$%1$02X", gameMode.getValue().code.fileIndex.sector),
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.nbSector),
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.endOffset),
+			String.format("$%1$02X", gameMode.getValue().code.fileIndex.nbSector-1),
+			String.format("$%1$02X", (gameMode.getValue().code.fileIndex.drive << 7)+gameMode.getValue().code.fileIndex.track),			
+			String.format("$%1$02X", -gameMode.getValue().code.fileIndex.endOffset & 0xFF),
 			String.format("$%1$02X", gameMode.getValue().code.fileIndex.page),	
 			String.format("$%1$02X", gameMode.getValue().code.fileIndex.address >> 8),			
 			String.format("$%1$02X", gameMode.getValue().code.fileIndex.address & 0x00FF)});			
@@ -695,10 +698,10 @@ public class BuildDisk
 	private static void processFileIndex(SubSpriteBin ssBin, AsmSourceCode gmeData, String spriteTag) throws Exception {
 		if (ssBin != null && ssBin.fileIndex != null) {
 			String[] line = new String[7];			
-			line [0] = String.format("$%1$02X", (ssBin.fileIndex.drive << 7)+ssBin.fileIndex.track);
-			line [1] = String.format("$%1$02X", ssBin.fileIndex.sector);
-			line [2] = String.format("$%1$02X", ssBin.fileIndex.nbSector);
-			line [3] = String.format("$%1$02X", ssBin.fileIndex.endOffset);
+			line [0] = String.format("$%1$02X", ssBin.fileIndex.sector);
+			line [1] = String.format("$%1$02X", ssBin.fileIndex.nbSector-1);
+			line [2] = String.format("$%1$02X", (ssBin.fileIndex.drive << 7)+ssBin.fileIndex.track);			
+			line [3] = String.format("$%1$02X", -ssBin.fileIndex.endOffset & 0xFF);
 			line [4] = String.format("$%1$02X", ssBin.fileIndex.page);			
 			line [5] = String.format("$%1$02X", ssBin.fileIndex.address >> 8);			
 			line [6] = String.format("$%1$02X", ssBin.fileIndex.address & 0x00FF);			

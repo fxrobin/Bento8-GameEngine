@@ -23,25 +23,15 @@
         setdp $40
         INCLUD EXOMIZER  
 
+GameModeLoader *@globals
         ldu   #current_game_mode_data+7 * on saute la balise de fin du GameMode
         pshs  u
         
-GameModeLoader
+GameModeLoader_continue
         setdp $60
         lda   #$60
         tfr   a,dp                     * positionne la direct page a 60
-        
-        ldb   ,u+                      * lecture du lecteur et du secteur
-        sex                            * encodes dans un octet :
-        anda  #$01                     * d7: lecteur (0-1)
-        andb  #$80                     * d6-d0: piste (0-79)
-        sta   <dk_lecteur
-        lda   #$00
-        std   <dk_piste
-        
-        ldb   #$00                     * le buffer DKCO est toujours positionne a $0000
-        std   <dk_destination
-        
+
         ldd   ,u++
         bpl   GMEContinue              * valeur negative de secteur signifie fin du tableau de donnee
         lds   $9FFF                    * reinit de la pile systeme
@@ -50,8 +40,19 @@ GMEContinue
         sta   <dk_secteur              * secteur (1-16)
         stb   DKDernierBloc+2          * nombre de secteurs a lire
         
+        ldb   ,u+                      * lecture du lecteur et du secteur
+        sex                            * encodes dans un octet :
+        anda  #$01                     * d7: lecteur (0-1)
+        andb  #$7F                     * d6-d0: piste (0-79)
+        sta   <dk_lecteur
+        lda   #$00
+        std   <dk_piste
+        
+        ldb   #$00                     * le buffer DKCO est toujours positionne a $0000
+        std   <dk_destination
+        
         pulu  d,y                      * y adresse de fin des donnees de destination
-        sta   NegOffset+2              * nombre d'octets inutilises dans le dernier secteur disquette
+        sta   NegOffset+3              * nombre d'octets inutilises dans le dernier secteur disquette
         stb   Page+1
         
         pshs  u        
@@ -79,14 +80,17 @@ DKContinue
 DKDernierBloc                        
         cmpu  #0                       * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO                     * si DK.BUF inferieur ou egal a la limite alors DKCO
-NegOffset
-        leau  $FF00,u                  * adresse de fin des donnees compressees - offset
+        lda   NegOffset+3              * charge l'offset
+        beq   Page                     * on ne traite que si offset > 0
+        leau  $0100,u                  * astuce pour conserver un code de meme taille sur l'instruction ci dessous peu importe la taille du leau
+NegOffset        
+        leau  $FE00,u                  * adresse de fin des donnees compressees - offset - 256 (astuce ci dessus)
 Page
         lda   #0                       * page memoire
         sta   $E7E5                    * selection de la page en RAM Donnees (A000-DFFF)
         jsr   exo2                     * decompresse les donnees
         puls  u
-        bra   GameModeLoader
+        bra   GameModeLoader_continue
 fill        
         rmb   7-((fill-exo2)%7),0      * le code est un multilpe de 7 octets (pour la copie)
         
