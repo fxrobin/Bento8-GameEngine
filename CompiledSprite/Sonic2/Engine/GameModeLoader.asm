@@ -34,7 +34,7 @@ GameModeLoader_continue
 
         ldd   ,u++
         bpl   GMEContinue              * valeur negative de secteur signifie fin du tableau de donnee
-        lds   $9FFF                    * reinit de la pile systeme
+        lds   #$9FFF                   * reinit de la pile systeme
         jmp   $6100                    * on lance le mode de jeu en page 1
 GMEContinue        
         sta   <dk_secteur              * secteur (1-16)
