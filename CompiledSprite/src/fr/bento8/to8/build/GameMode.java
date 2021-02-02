@@ -67,9 +67,6 @@ public class GameMode extends AsmInclude{
 		// ********************************************************************
 
 		actBoot = prop.getProperty("actBoot");
-		if (actBoot == null) {
-			throw new Exception("actBoot not found in " + fileName);
-		}
 
 		// Act Definition
 		// ********************************************************************

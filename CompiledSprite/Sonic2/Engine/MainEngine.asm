@@ -16,7 +16,6 @@
 * ==============================================================================
 LevelMainLoop
         jsr   WaitVBL
-        jsr   UpdatePalette
         jsr   ReadJoypads
         jsr   RunObjects
         jsr   CheckSpritesRefresh
@@ -134,7 +133,6 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * Routines
 * ==============================================================================
         INCLUD WAITVBL
-        INCLUD UPDTPAL
         INCLUD READJPDS
         INCLUD RUNOBJTS
         INCLUD MRKOBJGN        
@@ -154,7 +152,5 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
 * Level Specific Generated Data
 * ==============================================================================
-        INCLUD PALETTE
         INCLUD OBJINDEX
         INCLUD LOADACT
-(info)

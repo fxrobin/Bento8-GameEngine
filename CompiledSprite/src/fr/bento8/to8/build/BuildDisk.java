@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -191,16 +192,13 @@ public class BuildDisk
 		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {	
 
 			// Initialisation a vide des fichiers source générés
-			AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));			
-			asmPalette.flush();			
-			
 			AsmSourceCode asmObjIndex = new AsmSourceCode(getIncludeFilePath(Tags.OBJECT_INDEX, gameMode.getValue()));			
 			asmObjIndex.addLabel("Obj_Index");
-			asmObjIndex.flush();
+			asmObjIndex.flush();		
 			
-			AsmSourceCode asmLoadAct = new AsmSourceCode(getIncludeFilePath(Tags.LOAD_ACT, gameMode.getValue()));			
-			asmLoadAct.addLabel("LoadAct");
-			asmLoadAct.flush();			
+			AsmSourceCode asmLoadAct = new AsmSourceCode(getIncludeFilePath(Tags.LOAD_ACT, gameMode.getValue()));
+			asmLoadAct.add("LoadAct");
+			asmLoadAct.flush();		
 			
 			// Compilation du Main Engine sans données
 			String mainEngineTmpFile = duplicateFile(gameMode.getValue().engineAsmMainEngine, gameMode.getKey());
@@ -523,27 +521,70 @@ public class BuildDisk
 			}
 			asmObjIndex.flush();		
 
-			// MAIN ENGINE - Construction des données palette
+			// MAIN ENGINE - Dynamic code
 			// --------------------------------------------------------------------------------------			
-			AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));
-			Act act = gameMode.getValue().acts.get(gameMode.getValue().actBoot);
-			asmPalette.addLabel(act.paletteName + " * @globals");
-			asmPalette.add(PaletteTO8.getPaletteData(act.paletteFileName));
-			asmPalette.flush();
+			String mainEngineTmpFile = duplicateFile(gameMode.getValue().engineAsmMainEngine, gameMode.getKey());
+			String content = "\n";
 			
 			// MAIN ENGINE - Code d'initialisation de l'Acte
 			// --------------------------------------------------------------------------------------
 			AsmSourceCode asmLoadAct = new AsmSourceCode(getIncludeFilePath(Tags.LOAD_ACT, gameMode.getValue()));
-			asmLoadAct.add("LoadAct");			
-			asmLoadAct.add("        ldd   #"+act.paletteName);
-			asmLoadAct.add("        std   Ptr_palette");
-			asmLoadAct.add("        rts");			
-			asmLoadAct.flush();		
-		
+			asmLoadAct.add("LoadAct");
+			
+			if (gameMode.getValue().actBoot != null) {
+				Act act = gameMode.getValue().acts.get(gameMode.getValue().actBoot);
+
+				if (act != null) {
+					if (act.paletteFileName != null) {
+						AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));
+						asmPalette.addLabel(act.paletteName + " * @globals");
+						asmPalette.add(PaletteTO8.getPaletteData(act.paletteFileName));
+						asmPalette.flush();
+
+						asmLoadAct.add("        ldd   #" + act.paletteName);
+						asmLoadAct.add("        std   Ptr_palette");
+						asmLoadAct.add("        jsr   UpdatePalette");
+
+						content += "        INCLUD PALETTE\n";
+						content += "        INCLUD UPDTPAL\n";
+					}
+
+					if (act.screenBorder != null) {
+						asmLoadAct.add("        lda   $E7DD                    * set border color");
+						asmLoadAct.add("        anda  #$F0");
+						asmLoadAct.add("        adda  #$03                     * color ref");
+						asmLoadAct.add("        sta   $E7DD");
+						asmLoadAct.add("        sta   screen_border_color+1    * maj WaitVBL");
+					}
+
+					if (act.bgColorIndex != null) {
+						asmLoadAct.add("        ldx   #$3333                   * set Background solid color");
+						asmLoadAct.add("        ldb   #$62                     * load page 2");
+						asmLoadAct.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
+						asmLoadAct.add("        jsr   ClearCartMem");
+						asmLoadAct.add("        ldb   #$63                     * load page 3");
+						asmLoadAct.add("        stb   $E7E6                    * in cardtridge space ($0000-$3FFF)");
+						asmLoadAct.add("        jsr   ClearCartMem");
+
+						content += "        INCLUD CLRCARTM\n";
+					}
+
+					if (act.bgFileName != null) {
+						asmLoadAct.add("        ldu   #$0000");
+						asmLoadAct.add("        jsr   CopyImageToCart");
+
+						content += "        INCLUD CPYIMG\n";
+					}
+				}
+			}
+			
+			asmLoadAct.add("        rts");
+			asmLoadAct.flush();			
+			
 			// MAIN ENGINE - Compilation des Main Engines
 			// --------------------------------------------------------------------------------------			
-			String mainEngineTmpFile = duplicateFile(gameMode.getValue().engineAsmMainEngine, gameMode.getKey());
-
+			Files.write(Paths.get(mainEngineTmpFile), content.getBytes(StandardCharsets.ISO_8859_1), StandardOpenOption.APPEND);
+			
 			compileLIN(mainEngineTmpFile, gameMode.getValue());
 			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
 

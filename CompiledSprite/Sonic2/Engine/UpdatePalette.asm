@@ -18,7 +18,7 @@ UpdatePalette
 SetColor
     	asla				           * multiplication par deux de A 
     	sta   $E7DB			           * determine l'indice de couleur (x2): 0=0, 1=2, 2=4, .. 15=30
-    	ldd   ,y++			           * chargement de la couleur et increment du poiteur Y
+    	ldd   ,x++			           * chargement de la couleur et increment du poiteur Y
     	stb   $E7DA			           * set de la couleur Vert et Rouge
     	sta   $E7DA                    * set de la couleur Bleu
     	inc   cpt			           * et increment de A

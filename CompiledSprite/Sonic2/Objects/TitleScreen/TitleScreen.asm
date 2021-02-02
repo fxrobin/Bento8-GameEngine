@@ -364,6 +364,7 @@ Sonic_CreateSmallStar_AfterWait                  *+
                                                  *; ===========================================================================
                                                  *
 CyclingPal                                       *loc_13014:
+        bra   CyclingPal_NotYet
         lda   Vint_runcount+1                    *        move.b  (Vint_runcount+3).w,d0
         anda  #7 * every 8 frames                *        andi.b  #7,d0
         bne   CyclingPal_NotYet                  *        bne.s   ++
@@ -377,7 +378,7 @@ CyclingPal_Continue                              *+
         stx   w_TitleScr_color_data_index,u      *        move.w  d0,objoff_2C(a0)
         leax  CyclingPal_TitleScreen,pcr         *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
         ldd   ,x
-        std   Normal_palette+$E
+        *std   Normal_palette+$E
 CyclingPal_NotYet                                *+
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
