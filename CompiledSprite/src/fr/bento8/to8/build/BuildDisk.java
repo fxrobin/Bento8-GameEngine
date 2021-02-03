@@ -193,7 +193,8 @@ public class BuildDisk
 
 			// Initialisation a vide des fichiers source générés
 			AsmSourceCode asmObjIndex = new AsmSourceCode(getIncludeFilePath(Tags.OBJECT_INDEX, gameMode.getValue()));			
-			asmObjIndex.addLabel("Obj_Index");
+			asmObjIndex.addLabel("Obj_Index_Page");
+			asmObjIndex.addLabel("Obj_Index_Address");
 			asmObjIndex.flush();		
 			
 			AsmSourceCode asmLoadAct = new AsmSourceCode(getIncludeFilePath(Tags.LOAD_ACT, gameMode.getValue()));
@@ -247,7 +248,7 @@ public class BuildDisk
 						curSubSprite.setName(curFlip);
 						for (String curType : sprite.type) {
 							if (curType.equals("B")) {
-								logger.info("\t\t- BackupBackground/Draw/Erase");
+								logger.debug("\t\t- BackupBackground/Draw/Erase");
 								asm.compileCode("A000");
 								curSubSprite.nb_cell = (asm.getEraseDataSize()/64)+1; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
@@ -255,7 +256,7 @@ public class BuildDisk
 								curSubSprite.x_size = asm.getX_size();
 								curSubSprite.y_size = asm.getY_size();
 
-								logger.info("Exomize ...");
+								logger.debug("Exomize ...");
 								curSubSprite.bckDraw = new SubSpriteBin(curSubSprite);
 								curSubSprite.bckDraw.setName("bckDraw");
 								curSubSprite.bckDraw.bin = exomize(asm.getBckDrawBINFile());
@@ -272,7 +273,7 @@ public class BuildDisk
 							}
 
 							if (curType.equals("D")) {
-								logger.info("\t\t- Draw");
+								logger.debug("\t\t- Draw");
 								// asm.compileDraw("A000");
 								curSubSprite.nb_cell = (asm.getEraseDataSize()/64)+1; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
@@ -280,7 +281,7 @@ public class BuildDisk
 								curSubSprite.x_size = asm.getX_size();
 								curSubSprite.y_size = asm.getY_size();
 								
-								logger.info("Exomize ...");
+								logger.debug("Exomize ...");
 								curSubSprite.draw = new SubSpriteBin(curSubSprite);
 								curSubSprite.draw.setName("draw");
 								curSubSprite.draw.bin = exomize(asm.getDrawBINFile());
@@ -418,16 +419,15 @@ public class BuildDisk
 				knapsack.display();
 
 				Solution solution = knapsack.solve();
-				solution.display();
-
 				logger.debug("*** Find solution for page : " + page);
 
 				// Parcours de la solution
 				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
 					Item currentItem = iter.next();
 					currentItem.bin.fileIndex.page = page;
+					currentItem.bin.fileIndex.address = address;
 					address += currentItem.bin.uncompressedSize;
-					currentItem.bin.fileIndex.address = address;					
+					currentItem.bin.fileIndex.endAddress = address;					
 
 					// construit la liste des éléments restants à organiser
 					for (int i = 0; i < items.length; i++) {
@@ -512,13 +512,32 @@ public class BuildDisk
 			// Les objets non présents dans le Game Mode sont renseignées à 0 dans la table d'adresse
 			// Les ids objets doivent être une référence commune dans tout le programme
 			AsmSourceCode asmObjIndex = new AsmSourceCode(getIncludeFilePath(Tags.OBJECT_INDEX, gameMode.getValue()));			
-			asmObjIndex.addLabel("Obj_Index");
-			String[][] objIndex = new String[256][];
+
+			String[][] objIndexPage = new String[256][];
+			String[][] objIndex = new String[256][];			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				objIndex[allObjects.get(object.getValue().name).id] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.page),
-															   						String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8),
-															   						String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF)};
+				objIndexPage[allObjects.get(object.getValue().name).id] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.page)};
+				objIndex[allObjects.get(object.getValue().name).id] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8),
+   						String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF)};
+				
 			}
+			
+			asmObjIndex.addLabel("Obj_Index_Page");			
+			for (int i = 0; i < 256; i++) {
+				if (objIndexPage[i] == null) {
+					objIndexPage[i] = new String[] {"$00"};
+				}
+				asmObjIndex.addFcb(objIndexPage[i]);
+			}
+			
+			asmObjIndex.addLabel("Obj_Index_Address");
+			for (int i = 0; i < 256; i++) {
+				if (objIndex[i] == null) {
+					objIndex[i] = new String[] {"$00", "$00"};
+				}
+				asmObjIndex.addFcb(objIndex[i]);
+			}
+			
 			asmObjIndex.flush();		
 
 			// MAIN ENGINE - Dynamic code
@@ -597,7 +616,8 @@ public class BuildDisk
 			gameMode.getValue().code.bin = Files.readAllBytes(Paths.get(getEXOFileName(mainEngineTmpFile)));
 			gameMode.getValue().code.fileIndex = new DataIndex();
 			gameMode.getValue().code.fileIndex.page = 1;
-			gameMode.getValue().code.fileIndex.address = 0x6100 + binBytes.length - 10;			
+			gameMode.getValue().code.fileIndex.address = 0x6100;			
+			gameMode.getValue().code.fileIndex.endAddress = 0x6100 + binBytes.length - 10;
 		}
 	}
 	
@@ -664,8 +684,8 @@ public class BuildDisk
 				String.format("$%1$02X", (object.getValue().code.fileIndex.drive << 7)+object.getValue().code.fileIndex.track),				
 				String.format("$%1$02X", -object.getValue().code.fileIndex.endOffset & 0xFF),
 				String.format("$%1$02X", object.getValue().code.fileIndex.page),	
-				String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8),			
-				String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF)});			
+				String.format("$%1$02X", object.getValue().code.fileIndex.endAddress >> 8),			
+				String.format("$%1$02X", object.getValue().code.fileIndex.endAddress & 0x00FF)});			
 				gmeData.appendComment(object.getValue().name+ " Object code");
 			}
 			
@@ -676,8 +696,8 @@ public class BuildDisk
 			String.format("$%1$02X", (gameMode.getValue().code.fileIndex.drive << 7)+gameMode.getValue().code.fileIndex.track),			
 			String.format("$%1$02X", -gameMode.getValue().code.fileIndex.endOffset & 0xFF),
 			String.format("$%1$02X", gameMode.getValue().code.fileIndex.page),	
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.address >> 8),			
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.address & 0x00FF)});			
+			String.format("$%1$02X", gameMode.getValue().code.fileIndex.endAddress >> 8),			
+			String.format("$%1$02X", gameMode.getValue().code.fileIndex.endAddress & 0x00FF)});			
 			gmeData.appendComment(gameMode.getValue().name+ " Main Engine code");			
 		}
 		
@@ -744,8 +764,8 @@ public class BuildDisk
 			line [2] = String.format("$%1$02X", (ssBin.fileIndex.drive << 7)+ssBin.fileIndex.track);			
 			line [3] = String.format("$%1$02X", -ssBin.fileIndex.endOffset & 0xFF);
 			line [4] = String.format("$%1$02X", ssBin.fileIndex.page);			
-			line [5] = String.format("$%1$02X", ssBin.fileIndex.address >> 8);			
-			line [6] = String.format("$%1$02X", ssBin.fileIndex.address & 0x00FF);			
+			line [5] = String.format("$%1$02X", ssBin.fileIndex.endAddress >> 8);			
+			line [6] = String.format("$%1$02X", ssBin.fileIndex.endAddress & 0x00FF);			
 			gmeData.addFcb(line);		
 			gmeData.appendComment(spriteTag);
 		}

@@ -2,7 +2,13 @@
    org $6200
    setdp $90
 
-screen_border_color        
-        orb   #$80               * bit7=1, bit3 a bit0=couleur de cadre (ici 0)
+Glb_Cur_Wrk_Screen_Id fcb $00
+
+        lda   Glb_Cur_Wrk_Screen_Id
+        eora  #1
+        sta   Glb_Cur_Wrk_Screen_Id
+(info)
+        lda   #$01
+        eora  Glb_Cur_Wrk_Screen_Id
 
 (info)

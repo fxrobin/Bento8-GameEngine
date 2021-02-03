@@ -15,6 +15,7 @@ public class DataIndex
 	public int endOffset;
 	public int page;
 	public int address;	
+	public int endAddress;	
 	public int nbCell;
 	public int xOffset;
 	public int yOffset;

@@ -47,10 +47,8 @@ WaitVBL_01
         std   Vint_runcount
         
         lda   Glb_Cur_Wrk_Screen_Id
-        ora   1
-        sta   Glb_Cur_Wrk_Screen_Id
-        lsla
-        sta   Glb_Cur_Wrk_Screen_Id_x2
+        eora  #1
+        sta   Glb_Cur_Wrk_Screen_Id * alternance de 0 et 1 pour aiguiller le code en fonction du buffer ecran en ecriture
                 
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage

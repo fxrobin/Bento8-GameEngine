@@ -15,7 +15,7 @@
 RunObjects                                  *RunObjects:
                                             *    tst.b   (Teleport_flag).w
                                             *    bne.s   RunObjects_End  ; rts
-        ldy   #Object_RAM                   *    lea (Object_RAM).w,a0 ; a0=object
+        ldu   #Object_RAM                   *    lea (Object_RAM).w,a0 ; a0=object
                                             *
                                             *    moveq   #(Dynamic_Object_RAM_End-Object_RAM)/object_size-1,d7 ; run the first $80 objects out of levels
                                             *    moveq   #0,d0
@@ -29,7 +29,7 @@ RunObjects_01                               *+
                                             *    bne.s   RunObject ; if in 2 player competition mode, branch to RunObject
                                             *
         tst   Glb_MainCharacter_Is_Dead     *    cmpi.b  #6,(MainCharacter+routine).w
-        beq   RunObjectsWhenPlayerIsDead    *    bhs.s   RunObjectsWhenPlayerIsDead ; if dead, branch
+        bne   RunObjectsWhenPlayerIsDead    *    bhs.s   RunObjectsWhenPlayerIsDead ; if dead, branch
                                             *    ; continue straight to RunObject
                                             *; ---------------------------------------------------------------------------
                                             *
@@ -42,20 +42,24 @@ RunObjects_01                               *+
                                             *; sub_15FCC:
 RunObject                                   *RunObject:
         lda   #$00                          
-        ldb   ,y                            *    move.b  id(a0),d0   ; get the object's ID
+        ldb   ,u                            *    move.b  id(a0),d0   ; get the object's ID
         beq   RunNextObject                 *    beq.s   RunNextObject ; if it's obj00, skip it
-                                            *
+
+        ldy   #Obj_Index_Page
+        lda   d,y                           ; page memoire
+        sta   $E7E5                         ; selection de la page en RAM Donnees (A000-DFFF)
+        lda   #$00
         aslb                                *    add.w   d0,d0
         rola                                *    add.w   d0,d0   ; d0 = object ID * 4
-        ldu   #Obj_Index                    *    movea.l Obj_Index-4(pc,d0.w),a1 ; load the address of the object's code
-        jsr   [d,u]                         *    jsr (a1)    ; dynamic call! to one of the the entries in Obj_Index
+        ldy   #Obj_Index_Address            *    movea.l Obj_Index-4(pc,d0.w),a1 ; load the address of the object's code
+        jsr   [d,y]                         *    jsr (a1)    ; dynamic call! to one of the the entries in Obj_Index
                                             *    moveq   #0,d0
                                             *
                                             *; loc_15FDC:
 RunNextObject                               *RunNextObject:
-        leay  next_object,y                 *    lea next_object(a0),a0 ; load 0bj address
+        leau  next_object,u                 *    lea next_object(a0),a0 ; load 0bj address
 am_RunNextObject                            
-        cmpy  #Object_RAM_End               *    dbf d7,RunObject
+        cmpu  #Object_RAM_End               *    dbf d7,RunObject
         bne   RunObject                     *; return_15FE4:
 RunObjects_End                              *RunObjects_End:
         rts                                 *    rts
@@ -64,13 +68,13 @@ RunObjects_End                              *RunObjects_End:
                                             *; this skips certain objects to make enemies and things pause when Sonic dies
                                             *; loc_15FE6:
 RunObjectsWhenPlayerIsDead                  *RunObjectsWhenPlayerIsDead:
-        ldy   #Reserved_Object_RAM
+        ldu   #Reserved_Object_RAM
         ldx   #Reserved_Object_RAM_End
         stx   am_RunNextObject+2            *    moveq   #(Reserved_Object_RAM_End-Reserved_Object_RAM)/object_size-1,d7
         bsr   RunObject                     *    bsr.s   RunObject   ; run the first $10 objects normally
                                             *    moveq   #(Dynamic_Object_RAM_End-Dynamic_Object_RAM)/object_size-1,d7
                                             *    bsr.s   RunObjectDisplayOnly ; all objects in this range are paused      
-        ldy   #LevelOnly_Object_RAM 
+        ldu   #LevelOnly_Object_RAM 
         ldx   #LevelOnly_Object_RAM_End
         stx   am_RunNextObject+2            *    moveq   #(LevelOnly_Object_RAM_End-LevelOnly_Object_RAM)/object_size-1,d7
         bsr   RunObject                     *    bra.s   RunObject   ; run the last $10 objects normally
