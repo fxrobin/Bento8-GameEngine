@@ -37,11 +37,10 @@ Anim_Run                                    *Anim_Run:
         bpl   Anim_Wait                     *    bpl.s   Anim_Wait                    ; if time remains, branch
         * no offset table                   *    add.w   d0,d0
         * anim is the address of anim       *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
-        ldb   ,x                            
+        ldb   -1,x                            
 		stb   anim_frame_duration,u         *    move.b  (a1),anim_frame_duration(a0) ; load frame duration
                                             *    moveq   #0,d1
         ldb   anim_frame,u                  *    move.b  anim_frame(a0),d1 ; load current frame number
-        incb                                
         aslb
         leay  b,x                                
         ldd   ,y                            *    move.b  1(a1,d1.w),d0 ; read sprite number from script

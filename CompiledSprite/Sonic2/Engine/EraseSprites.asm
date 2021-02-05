@@ -17,96 +17,103 @@ ESP_Start
         bne   ESP_P1B1
         
 ESP_P1B0                                    
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry ; read DPS from priority 1 to priority 8
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry ; read DPS from priority 1 to priority 8
         beq   ESP_P2B0
         lda   #$01
-        sta   ESP_CheckPriorityB0+1
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0
 ESP_P2B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+2
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+2
         beq   ESP_P3B0
-        inc   ESP_CheckPriorityB0+1
+        lda   #$02
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0   
 ESP_P3B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+4
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+4
         beq   ESP_P4B0
-        inc   ESP_CheckPriorityB0+1               
+        lda   #$03
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0   
 ESP_P4B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+6
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+6
         beq   ESP_P5B0
-        inc   ESP_CheckPriorityB0+1               
+        lda   #$04
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0   
 ESP_P5B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+8
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+8
         beq   ESP_P6B0
-        inc   ESP_CheckPriorityB0+1               
+        lda   #$05
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0               
 ESP_P6B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+10
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+10
         beq   ESP_P7B0
-        inc   ESP_CheckPriorityB0+1               
+        lda   #$06
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0      
 ESP_P7B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+12
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+12
         beq   ESP_P8B0
-        inc   ESP_CheckPriorityB0+1               
+        lda   #$07
+        sta   ESP_CheckPriorityB0+1        
         jsr   ESP_ProcessEachPriorityLevelB0  
 ESP_P8B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+14
+        ldu   #DPS_buffer_0+buf_Tbl_Priority_Last_Entry+14
         beq   ESP_rtsB0
-        inc   ESP_CheckPriorityB0+1               
+        lda   #$08
+        sta   ESP_CheckPriorityB0+1                   
         jsr   ESP_ProcessEachPriorityLevelB0
 ESP_rtsB0        
         rts
         
 ESP_P1B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry ; read DPS from priority 1 to priority 8
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry ; read DPS from priority 1 to priority 8
         beq   ESP_P2B1
-        lda   #$08
+        lda   #$01
         sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P2B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+2
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+2
         beq   ESP_P3B1
-        lda   #$07
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$02
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P3B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+4
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+4
         beq   ESP_P4B1
-        lda   #$06
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$03
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P4B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+6
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+6
         beq   ESP_P5B1
-        lda   #$05
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$04
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1   
 ESP_P5B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+8
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+8
         beq   ESP_P6B1
-        lda   #$04
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$05
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1               
 ESP_P6B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+10
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+10
         beq   ESP_P7B1
-        lda   #$03
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$06
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1      
 ESP_P7B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+12
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+12
         beq   ESP_P8B1
-        lda   #$02
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$07
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1  
 ESP_P8B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+14
+        ldu   #DPS_buffer_1+buf_Tbl_Priority_Last_Entry+14
         beq   ESP_rtsB1
-        lda   #$01
-        sta   ESP_CheckPriorityB1+1               
+        lda   #$08
+        sta   ESP_CheckPriorityB1+1        
         jsr   ESP_ProcessEachPriorityLevelB1
 ESP_rtsB1        
         rts

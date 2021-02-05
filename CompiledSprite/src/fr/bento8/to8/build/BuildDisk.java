@@ -303,14 +303,13 @@ public class BuildDisk
 				asmImgIndex.flush();
 
 				// Génération des scripts d'animation
-				AsmSourceCode asmAnimScript = new AsmSourceCode(
-						getIncludeFilePath(Tags.ANIMATION_SCRIPT, object.getValue()));
+				AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, object.getValue()));
 
 				for (Entry<String, String[]> animationProperties : object.getValue().animationsProperties.entrySet()) {
-					asmAnimScript.addLabel(animationProperties.getKey());
 					int i = 0;
 					asmAnimScript.addFcb(new String[] {"00"});
 					object.getValue().animationsRefSize += 1;
+					asmAnimScript.addLabel(animationProperties.getKey());					
 					for (i = 1; i < animationProperties.getValue().length - 1; i++) {
 						asmAnimScript.addFdb(new String[] { animationProperties.getValue()[i] });
 						object.getValue().animationsRefSize += 2;
@@ -416,7 +415,6 @@ public class BuildDisk
 				// les données sont réparties en pages en fonction de leur taille par un
 				// algorithme "sac à dos"
 				Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
-				knapsack.display();
 
 				Solution solution = knapsack.solve();
 				logger.debug("*** Find solution for page : " + page);
@@ -470,10 +468,10 @@ public class BuildDisk
 				// Génération des index de scripts d'animation
 				AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, object.getValue()));
 				for (Entry<String, String[]> animationProperties : object.getValue().animationsProperties.entrySet()) {
-					asmAnimScript.addLabel(animationProperties.getKey());
 					int i = 0;
 					asmAnimScript.addFcb(new String[] {animationProperties.getValue()[i]});
 					object.getValue().animationsRefSize += 1;
+					asmAnimScript.addLabel(animationProperties.getKey());					
 					for (i = 1; i < animationProperties.getValue().length - 1; i++) {
 						asmAnimScript.addFdb(new String[] { animationProperties.getValue()[i] });
 						object.getValue().animationsRefSize += 2;

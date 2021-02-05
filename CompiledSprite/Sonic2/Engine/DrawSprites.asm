@@ -17,70 +17,70 @@ DRS_Start
         bne   DRS_P8B1
         
 DRS_P8B0                                    
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
         beq   DRS_P7B0
         jsr   DRS_ProcessEachPriorityLevelB0   
 DRS_P7B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
         beq   DRS_P6B0
         jsr   DRS_ProcessEachPriorityLevelB0  
 DRS_P6B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
         beq   DRS_P5B0
         jsr   DRS_ProcessEachPriorityLevelB0  
 DRS_P5B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
         beq   DRS_P4B0
         jsr   DRS_ProcessEachPriorityLevelB0  
 DRS_P4B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
         beq   DRS_P3B0
         jsr   DRS_ProcessEachPriorityLevelB0              
 DRS_P3B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
         beq   DRS_P2B0
         jsr   DRS_ProcessEachPriorityLevelB0     
 DRS_P2B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
         beq   DRS_P1B0
         jsr   DRS_ProcessEachPriorityLevelB0 
 DRS_P1B0
-        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry
+        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry
         beq   DRS_rtsB0
         jsr   DRS_ProcessEachPriorityLevelB0
 DRS_rtsB0        
         rts
         
 DRS_P8B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
         beq   DRS_P7B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P7B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
         beq   DRS_P6B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P6B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
         beq   DRS_P5B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P5B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
         beq   DRS_P4B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P4B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
         beq   DRS_P3B1
         jsr   DRS_ProcessEachPriorityLevelB1             
 DRS_P3B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
         beq   DRS_P2B1
         jsr   DRS_ProcessEachPriorityLevelB1    
 DRS_P2B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
         beq   DRS_P1B1
         jsr   DRS_ProcessEachPriorityLevelB1
 DRS_P1B1
-        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry
+        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry
         beq   DRS_rtsB1
         jsr   DRS_ProcessEachPriorityLevelB1
 DRS_rtsB1        
@@ -100,7 +100,7 @@ DRS_ProcessEachPriorityLevelB0
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB0              ; branch if no more free space
-        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
         std   rsv_prev_x_pixel_0,x          ; save previous x_pixel and y_pixel in one operation
         jsr   DRS_XYToAddress
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
@@ -123,7 +123,7 @@ DRS_NextObjectB0
         rts
         
 DRS_DrawWithoutBackupB0
-        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
         jsr   DRS_XYToAddress 
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u
@@ -136,13 +136,28 @@ DRS_dyn4B0
         bne   DRS_ProcessEachPriorityLevelB0   
         rts          
 
+********************************************************************************
+* x_pixel and y_pixel coordinate system
+* x coordinates:
+*    - off-screen left 00-2F (0-47)
+*    - on screen 30-CF (48-207)
+*    - off-screen right D0-FF (208-255)
+*
+* y coordinates:
+*    - off-screen top 00-1B (0-27)
+*    - on screen 1C-E3 (28-227)
+*    - off-screen bottom E4-FF (228-255)
+********************************************************************************
+
 DRS_XYToAddress
+*        suba  #$30
+*        subb  #$1C
         lsra                                ; x=x/2, sprites moves by 2 pixels on x axis  
         bcs   DRS_XYToAddressRAMBFirst      ; Branch if write must begin in RAMB first
 DRS_XYToAddressRAMAFirst
         sta   DRS_dyn1+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
-        ldb   y_pixel,x                     ; load y position (0-199)
+        ldb   y_pixel,x                     ; load y position (28-227)
         mul
 DRS_dyn1        
         addd  $0000                         ; (dynamic) RAMA start at $0000
@@ -153,7 +168,7 @@ DRS_dyn1
 DRS_XYToAddressRAMBFirst
         sta   DRS_dyn2+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
-        ldb   y_pixel,x                     ; load y position (0-199)
+        ldb   y_pixel,x                     ; load y position (28-227)
         mul
 DRS_dyn2        
         addd  $2000                         ; (dynamic) RAMB start at $0000
@@ -176,7 +191,7 @@ DRS_ProcessEachPriorityLevelB1
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB1              ; branch if no more free space
-        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
         std   rsv_prev_x_pixel_1,x          ; save previous x_pixel and y_pixel in one operation
         jsr   DRS_XYToAddress
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
@@ -201,7 +216,7 @@ DRS_NextObjectB1
         rts
         
 DRS_DrawWithoutBackupB1
-        ldd   x_pixel,x                     ; load x position (0-156) and y position (0-199) in one operation
+        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
         jsr   DRS_XYToAddress 
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u

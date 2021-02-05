@@ -31,12 +31,12 @@ DSP_Start
         
 DSP_SetBuffer0        
         leax  rsv_buffer_0,u                ; set x pointer to object variables that belongs to screen buffer 0
-        ldy   DPS_buffer_0                  ; set y pointer to Display Priority Structure that belongs to screen buffer 0
+        ldy   #DPS_buffer_0                 ; set y pointer to Display Priority Structure that belongs to screen buffer 0
         bra   DSP_BufferPositionned
         
 DSP_SetBuffer1       
         leax  rsv_buffer_1,u                ; set x pointer to object variables that belongs to screen buffer 1
-        ldy   DPS_buffer_1                  ; set y pointer to Display Priority Structure that belongs to screen buffer 1        
+        ldy   #DPS_buffer_1                 ; set y pointer to Display Priority Structure that belongs to screen buffer 1        
         
 DSP_BufferPositionned       
         lda   priority,u                    ; read priority set for this object
@@ -57,7 +57,7 @@ DSP_addFirstNode
         stu   a,y                           ; save object as last entry in linked list
         leay  buf_Tbl_Priority_First_Entry-buf_Tbl_Priority_Last_Entry,y
         stu   a,y                           ; save object as first entry in linked list
-        ldd   0
+        ldd   #0
         std   buf_priority_prev_obj,x       ; clear object prev and next link, it's the only object at this priority level
         std   buf_priority_next_obj,x
         bra   DSP_rts
@@ -74,7 +74,7 @@ DSP_LinkBuffer1
 DSP_LinkCurWithPrev        
         stx   buf_priority_prev_obj,u       ; link current object with previous object
         stu   a,y                           ; update last object in index
-        ldd   0
+        ldd   #0
         std   buf_priority_next_obj,x       ; clear object next link                
         bra   DSP_rts
         
@@ -84,7 +84,7 @@ DSP_ChangePriority
         leay  2,y
         sty   ,y                            ; set index to next free cell of unset list
         leay  -buf_Lst_Priority_Unset-2,y
-        cmpa  0
+        cmpa  #0
         bne   DSP_CheckLastEntry            ; priority is != 0, branch to add object to display priority list
 
 DSP_rts

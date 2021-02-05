@@ -4,11 +4,9 @@
 
 Glb_Cur_Wrk_Screen_Id fcb $00
 
-        lda   Glb_Cur_Wrk_Screen_Id
-        eora  #1
-        sta   Glb_Cur_Wrk_Screen_Id
+       ldb   -1,x
 (info)
-        lda   #$01
-        eora  Glb_Cur_Wrk_Screen_Id
-
+       ldb   ,x
+(info)
+       incb
 (info)
