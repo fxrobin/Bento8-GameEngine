@@ -17,70 +17,70 @@ DRS_Start
         bne   DRS_P8B1
         
 DRS_P8B0                                    
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+16 ; read DPS from priority 8 to priority 1
         beq   DRS_P7B0
         jsr   DRS_ProcessEachPriorityLevelB0   
 DRS_P7B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+14
         beq   DRS_P6B0
         jsr   DRS_ProcessEachPriorityLevelB0  
 DRS_P6B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
         beq   DRS_P5B0
         jsr   DRS_ProcessEachPriorityLevelB0  
 DRS_P5B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
         beq   DRS_P4B0
         jsr   DRS_ProcessEachPriorityLevelB0  
 DRS_P4B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
         beq   DRS_P3B0
         jsr   DRS_ProcessEachPriorityLevelB0              
 DRS_P3B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
         beq   DRS_P2B0
         jsr   DRS_ProcessEachPriorityLevelB0     
 DRS_P2B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
         beq   DRS_P1B0
         jsr   DRS_ProcessEachPriorityLevelB0 
 DRS_P1B0
-        ldx   #DPS_buffer_0+buf_Tbl_Priority_First_Entry
+        ldx   DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
         beq   DRS_rtsB0
         jsr   DRS_ProcessEachPriorityLevelB0
 DRS_rtsB0        
         rts
         
 DRS_P8B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+16 ; read DPS from priority 8 to priority 1
         beq   DRS_P7B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P7B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+14
         beq   DRS_P6B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P6B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
         beq   DRS_P5B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P5B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
         beq   DRS_P4B1
         jsr   DRS_ProcessEachPriorityLevelB1   
 DRS_P4B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
         beq   DRS_P3B1
         jsr   DRS_ProcessEachPriorityLevelB1             
 DRS_P3B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
         beq   DRS_P2B1
         jsr   DRS_ProcessEachPriorityLevelB1    
 DRS_P2B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
         beq   DRS_P1B1
         jsr   DRS_ProcessEachPriorityLevelB1
 DRS_P1B1
-        ldx   #DPS_buffer_1+buf_Tbl_Priority_First_Entry
+        ldx   DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
         beq   DRS_rtsB1
         jsr   DRS_ProcessEachPriorityLevelB1
 DRS_rtsB1        

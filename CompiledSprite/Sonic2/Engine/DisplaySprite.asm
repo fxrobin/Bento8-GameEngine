@@ -47,6 +47,7 @@ DSP_BufferPositionned
         
 DSP_InitPriority
         sta   buf_priority,x                ; init priority for this screen buffer with priority from object
+        asla                                ; change priority number to priority index (value x2)
         
 DSP_CheckLastEntry
         leay  buf_Tbl_Priority_Last_Entry,y

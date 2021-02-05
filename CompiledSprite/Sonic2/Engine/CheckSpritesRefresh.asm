@@ -28,49 +28,49 @@ CSR_SetBuffer0
         lda   #rsv_buffer_0                 ; set offset a to object variables that belongs to screen buffer 0
         sta   CSR_ProcessEachPriorityLevel+2    
 CSR_P8B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+16 ; read DPS from priority 8 to priority 1
         beq   CSR_P7B0
         lda   #$08
         sta   cur_priority        
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P7B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+14
         beq   CSR_P6B0
         lda   #$07
         sta   cur_priority        
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P6B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+12
         beq   CSR_P5B0
         lda   #$06
         sta   cur_priority        
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P5B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+10
         beq   CSR_P4B0
         lda   #$05
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P4B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+8
         beq   CSR_P3B0
         lda   #$04
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel               
 CSR_P3B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+6
         beq   CSR_P2B0
         lda   #$03
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel      
 CSR_P2B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+4
         beq   CSR_P1B0
         lda   #$02
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel  
 CSR_P1B0
-        ldu   #DPS_buffer_0+buf_Tbl_Priority_First_Entry
+        ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+2
         beq   CSR_rtsB0
         lda   #$01
         sta   cur_priority                       
@@ -82,49 +82,49 @@ CSR_SetBuffer1
         lda   #rsv_buffer_1                 ; set offset a to object variables that belongs to screen buffer 1
         sta   CSR_ProcessEachPriorityLevel+2        
 CSR_P8B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+14 ; read DPS from priority 8 to priority 1
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+16 ; read DPS from priority 8 to priority 1
         beq   CSR_P7B1
         lda   #$08
         sta   cur_priority        
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P7B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+14
         beq   CSR_P6B1
         lda   #$07
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P6B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+12
         beq   CSR_P5B1
         lda   #$06
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P5B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+10
         beq   CSR_P4B1
         lda   #$05
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel   
 CSR_P4B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+8
         beq   CSR_P3B1
         lda   #$04
         sta   cur_priority
         jsr   CSR_ProcessEachPriorityLevel               
 CSR_P3B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+6
         beq   CSR_P2B1
         lda   #$03
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel      
 CSR_P2B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+4
         beq   CSR_P1B1
         lda   #$02
         sta   cur_priority                       
         jsr   CSR_ProcessEachPriorityLevel  
 CSR_P1B1
-        ldu   #DPS_buffer_1+buf_Tbl_Priority_First_Entry
+        ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+2
         beq   CSR_rtsB1
         lda   #$01
         sta   cur_priority                       
@@ -209,9 +209,9 @@ CSR_NextObject
 
 CSR_CheckVerticalPosition
         ldb   y_pixel,u                     ; in screen coordinate mode, image offset is managed by object
-        addd  image_y_size,y
+        addb  image_y_size,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
-        cmpd  #screen_height
+        cmpb  #screen_height
         bgt   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
         lda   rsv_render_flags,u
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
