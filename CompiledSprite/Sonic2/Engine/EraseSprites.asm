@@ -157,12 +157,12 @@ ESP_SubEraseSearchB0
         ldy   ,--x
         
 ESP_SubEraseCheckCollisionB0
-        ldd   rsv_prev_x_pixel_0,y          ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
+        ldd   rsv_prev_xy_pixel_0,y         ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
         bhs   ESP_SubEraseSearchB0
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
         bhs   ESP_SubEraseSearchB0
-        ldd   rsv_prev_x2_pixel_0,y         ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
+        ldd   rsv_prev_xy2_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
         cmpa  x_pixel,u                     ;     entry : x_pixel
         bls   ESP_SubEraseSearchB0
         cmpb  y_pixel,u                     ;     entry : y_pixel
@@ -183,12 +183,12 @@ ESP_SubDrawSearchB0
         ldy   ,--x
 
 ESP_SubDrawCheckCollisionB0
-        ldd   x_pixel,y                     ; sub entry : x_pixel and y_pixel in one instruction
+        ldd   xy_pixel,y                    ; sub entry : x_pixel and y_pixel in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
         bhs   ESP_SubDrawSearchB0
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
         bhs   ESP_SubDrawSearchB0
-        ldd   rsv_x2_pixel,y                ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
+        ldd   rsv_xy2_pixel,y               ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
         cmpa  x_pixel,u                     ;     entry : x_pixel
         bls   ESP_SubDrawSearchB0
         cmpb  y_pixel,u                     ;     entry : y_pixel
@@ -259,12 +259,12 @@ ESP_SubEraseSearchB1
         ldy   ,--x
         
 ESP_SubEraseCheckCollisionB1
-        ldd   rsv_prev_x_pixel_1,y          ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
+        ldd   rsv_prev_xy_pixel_1,y         ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
         bhs   ESP_SubEraseSearchB1
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
         bhs   ESP_SubEraseSearchB1
-        ldd   rsv_prev_x2_pixel_1,y         ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
+        ldd   rsv_prev_xy2_pixel_1,y        ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
         cmpa  x_pixel,u                     ;     entry : x_pixel
         bls   ESP_SubEraseSearchB1
         cmpb  y_pixel,u                     ;     entry : y_pixel
@@ -285,12 +285,12 @@ ESP_SubDrawSearchB1
         ldy   ,--x
 
 ESP_SubDrawCheckCollisionB1
-        ldd   x_pixel,y                     ; sub entry : x_pixel and y_pixel in one instruction
+        ldd   xy_pixel,y                    ; sub entry : x_pixel and y_pixel in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
         bhs   ESP_SubDrawSearchB1
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
         bhs   ESP_SubDrawSearchB1
-        ldd   rsv_x2_pixel,y                ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
+        ldd   rsv_xy2_pixel,y               ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
         cmpa  x_pixel,u                     ;     entry : x_pixel
         bls   ESP_SubDrawSearchB1
         cmpb  y_pixel,u                     ;     entry : y_pixel

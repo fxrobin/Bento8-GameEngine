@@ -48,7 +48,7 @@ public class GameMode extends AsmInclude{
 		for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
 			asmIncludes.put(include.getKey(), Game.generatedCodeDirName+"/"+name+"/"+include.getValue()[0]);
 		}		
-
+		
 		// Objects
 		// ********************************************************************
 		

@@ -947,6 +947,4 @@ TitleScreen_InitSprite                           *TitleScreen_InitSprite:
                                                  *
                                                  *        align 4
                                                  *    endif
-        INCLUD IMAGEIDX
-        INCLUD ANIMSCPT
                                                          

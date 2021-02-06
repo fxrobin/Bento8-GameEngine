@@ -51,10 +51,10 @@ public class BuildDisk
 
 	private static FdUtil fd = new FdUtil();
 	
-	private static int IMAGE_META_SIZE = 14;
-	
 	public static String binTmpFile = "TMP.BIN";
 	public static String lstTmpFile = "codes.lst";
+	
+	private static int IMAGE_META_SIZE = 18;
 
 	/**
 	 * Génère une image de disquette dans les formats .fd et .sd pour 
@@ -92,8 +92,8 @@ public class BuildDisk
 			setObjectsIdAsGlobals();
 			
 			// generate compilated sprites and compute size of all asm code 
-			compileMainEnginesFirstPass();
 			compileSprites();
+			compileMainEnginesFirstPass();			
 			compileObjectsFirstPass();
 			computeGameModeManagerSize();
 			
@@ -225,9 +225,11 @@ public class BuildDisk
 
 		// Parcours de tous les objets de chaque Game Mode
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 
-				AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(Tags.IMAGE_INDEX, object.getValue()));
+			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(Tags.IMAGE_INDEX, gameMode.getValue()));
+			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, gameMode.getValue()));			
+			
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 
 				// Parcours des images de l'objet et compilation de l'image
 				for (Entry<String, String[]> spriteProperties : object.getValue().spritesProperties.entrySet()) {
@@ -241,7 +243,7 @@ public class BuildDisk
 					for (String curFlip : sprite.flip) {
 						logger.debug("\t"+gameMode.getValue()+"/"+object.getValue()+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " flip:" + curFlip);
 						asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), game.generatedCodeDirName+"/"+object.getValue().name, 0);
-						asmImgIndex.addLabel(sprite.name);
+						asmImgIndex.addLabel(sprite.name+" *@globals");
 
 						// Sauvegarde du code généré pour le mode mirroir courant
 						curSubSprite = new SubSprite(sprite);
@@ -292,33 +294,25 @@ public class BuildDisk
 						}
 
 						sprite.setSubSprite(curFlip, curSubSprite);
-						asmImgIndex.addFcb(new String[] {"00","00","00","00","00","00","00","00","00","00","00","00","00","00"});
-						object.getValue().spritesRefSize += IMAGE_META_SIZE;
-
+						asmImgIndex.addFcb(new String[] {"00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00"});
 					}
 
 					// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
 					object.getValue().sprites.put(sprite.name, sprite);
 				}
-				asmImgIndex.flush();
-
-				// Génération des scripts d'animation
-				AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, object.getValue()));
 
 				for (Entry<String, String[]> animationProperties : object.getValue().animationsProperties.entrySet()) {
 					int i = 0;
 					asmAnimScript.addFcb(new String[] {"00"});
-					object.getValue().animationsRefSize += 1;
-					asmAnimScript.addLabel(animationProperties.getKey());					
+					asmAnimScript.addLabel(animationProperties.getKey()+" *@globals");					
 					for (i = 1; i < animationProperties.getValue().length - 1; i++) {
 						asmAnimScript.addFdb(new String[] { animationProperties.getValue()[i] });
-						object.getValue().animationsRefSize += 2;
 					}
 					asmAnimScript.addFcb(new String[] {"00"});
-					object.getValue().animationsRefSize += 1;
 				}
-				asmAnimScript.flush();
 			}
+			asmImgIndex.flush();				
+			asmAnimScript.flush();			
 		}
 	}
 	
@@ -456,30 +450,6 @@ public class BuildDisk
 
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-
-				// Génération des index Images
-				AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(Tags.IMAGE_INDEX, object.getValue()));
-				asmImgIndex.add("ImgMeta_size equ "+IMAGE_META_SIZE);				
-				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
-					writeImgIndex(asmImgIndex, sprite.getValue());
-				}
-				asmImgIndex.flush();	
-				
-				// Génération des index de scripts d'animation
-				AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, object.getValue()));
-				for (Entry<String, String[]> animationProperties : object.getValue().animationsProperties.entrySet()) {
-					int i = 0;
-					asmAnimScript.addFcb(new String[] {animationProperties.getValue()[i]});
-					object.getValue().animationsRefSize += 1;
-					asmAnimScript.addLabel(animationProperties.getKey());					
-					for (i = 1; i < animationProperties.getValue().length - 1; i++) {
-						asmAnimScript.addFdb(new String[] { animationProperties.getValue()[i] });
-						object.getValue().animationsRefSize += 2;
-					}
-					asmAnimScript.addFcb(new String[] {animationProperties.getValue()[i]});
-					object.getValue().animationsRefSize += 1;
-				}
-				asmAnimScript.flush();				
 				
 				// Compilation du code Objet
 				String objectCodeTmpFile = duplicateFile(object.getValue().codeFileName, gameMode.getKey()+"/"+object.getKey());
@@ -597,6 +567,32 @@ public class BuildDisk
 			
 			asmLoadAct.add("        rts");
 			asmLoadAct.flush();			
+			
+			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(Tags.IMAGE_INDEX, gameMode.getValue()));			
+			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, gameMode.getValue()));			
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+
+				// MAIN ENGINE - Génération des index Images
+				// --------------------------------------------------------------------------------------
+				asmImgIndex.add("ImgMeta_size equ " + IMAGE_META_SIZE);
+				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
+					writeImgIndex(asmImgIndex, sprite.getValue());
+				}
+
+				// MAIN ENGINE - Génération des index de scripts d'animation
+				// --------------------------------------------------------------------------------------
+				for (Entry<String, String[]> animationProperties : object.getValue().animationsProperties.entrySet()) {
+					int i = 0;
+					asmAnimScript.addFcb(new String[] { animationProperties.getValue()[i] });
+					asmAnimScript.addLabel(animationProperties.getKey()+" *@globals");
+					for (i = 1; i < animationProperties.getValue().length - 1; i++) {
+						asmAnimScript.addFdb(new String[] { animationProperties.getValue()[i] });
+					}
+					asmAnimScript.addFcb(new String[] { animationProperties.getValue()[i] });
+				}
+			}
+			asmImgIndex.flush();
+			asmAnimScript.flush();			
 			
 			// MAIN ENGINE - Compilation des Main Engines
 			// --------------------------------------------------------------------------------------			
@@ -770,7 +766,7 @@ public class BuildDisk
 	}
 	
 	private static void writeImgIndex(AsmSourceCode asmImgIndex, Sprite sprite) {
-		asmImgIndex.addLabel(sprite.name);
+		asmImgIndex.addLabel(sprite.name+" *@globals");
 		if (sprite.subSprite != null) {
 			asmImgIndex.addFcb(getImgSubSpriteIndex(sprite.subSprite));
 		}
@@ -821,10 +817,14 @@ public class BuildDisk
 		}
 		
 		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
-		line [10] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
-		line [11] = String.format("$%1$02X", s.y_offset & 0xFF); // signed value
-		line [12] = String.format("$%1$02X", s.x_size); // unsigned value
-		line [13] = String.format("$%1$02X", s.y_size); // unsigned value
+		line [10] = String.format("$%1$02X", s.x_offset & 0xFFFF >> 8);
+		line [11] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
+		line [12] = String.format("$%1$02X", s.y_offset & 0xFFFF >> 8);		
+		line [13] = String.format("$%1$02X", s.y_offset & 0xFF); // signed value
+		line [14] = String.format("$%1$02X", s.x_size >> 8);		
+		line [15] = String.format("$%1$02X", s.x_size); // unsigned value
+		line [16] = String.format("$%1$02X", s.y_size >> 8);		
+		line [17] = String.format("$%1$02X", s.y_size); // unsigned value
 		return line;
 	}
 

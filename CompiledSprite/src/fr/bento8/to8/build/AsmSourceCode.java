@@ -52,14 +52,20 @@ public class AsmSourceCode
 
 	public void addFcb(String[] value) {
 		boolean firstpass = true;
-		content += "\n        fcb   "; 
-		for (int i = 0; i < value.length; i++ ) {
+		int i = 0;
+		while (i < value.length) {
+			if (i%14 == 0) {
+				firstpass = true;
+				content += "\n        fcb   ";
+			}
+
 			if (firstpass) {
 				firstpass = false;
 			} else {
 				content += ",";
 			}
-			content += value[i];
+			
+			content += value[i++];
 		}
 	}
 

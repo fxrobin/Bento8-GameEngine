@@ -148,10 +148,14 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD UNSETDSP
         INCLUD DRAWSPR
         INCLUD BGBALLOC
-        INCLUD BGBFREE
+        INCLUD BGBFREE        
         
 * ==============================================================================
 * Level Specific Generated Data
+* IMG and ANI should be in first position
 * ==============================================================================
+        INCLUD IMAGEIDX
+        INCLUD ANIMSCPT
         INCLUD OBJINDEX
         INCLUD LOADACT
+                                                                 

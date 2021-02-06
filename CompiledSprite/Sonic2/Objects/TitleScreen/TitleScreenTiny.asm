@@ -66,7 +66,7 @@ LargeStar_Move                                   *loc_1319E:
         addd  #2                                 *        addq.w  #4,d0
         cmpd  LargeStar_xy_data_end-LargeStar_xy_data+2
                                                  *        cmpi.w  #word_131DC_end-word_131DC+4,d0
-        blo   LargeStar_MoveContinue
+        bhs   LargeStar_MoveContinue
         jmp   DeleteObject                       *        bhs.w   DeleteObject
 LargeStar_MoveContinue
         std   w_TitleScr_xy_data_index,u                    *        move.w  d0,objoff_2C(a0)
@@ -98,7 +98,3 @@ TitleScreen_Animate                              *loc_12F52:
         jsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================                                                 
-
-        INCLUD IMAGEIDX
-        INCLUD ANIMSCPT
-                                                         

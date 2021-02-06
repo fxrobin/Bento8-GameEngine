@@ -100,8 +100,8 @@ DRS_ProcessEachPriorityLevelB0
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB0              ; branch if no more free space
-        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
-        std   rsv_prev_x_pixel_0,x          ; save previous x_pixel and y_pixel in one operation
+        ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
+        std   rsv_prev_xy_pixel_0,x         ; save previous x_pixel and y_pixel in one operation
         jsr   DRS_XYToAddress
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame 
@@ -113,8 +113,8 @@ DRS_ProcessEachPriorityLevelB0
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_0,x                ; store pointer to saved background data
-        ldd   rsv_x2_pixel,x                ; load x' and y' in one operation
-        std   rsv_prev_x2_pixel_0,x         ; save as previous x' and y'
+        ldd   rsv_xy2_pixel,x               ; load x' and y' in one operation
+        std   rsv_prev_xy2_pixel_0,x        ; save as previous x' and y'
         lda   #$01
         sta   rsv_onscreen_0,x              ; set the onscreen flag
 DRS_NextObjectB0        
@@ -123,7 +123,7 @@ DRS_NextObjectB0
         rts
         
 DRS_DrawWithoutBackupB0
-        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
+        ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         jsr   DRS_XYToAddress 
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u
@@ -191,8 +191,8 @@ DRS_ProcessEachPriorityLevelB1
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB1              ; branch if no more free space
-        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
-        std   rsv_prev_x_pixel_1,x          ; save previous x_pixel and y_pixel in one operation
+        ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
+        std   rsv_prev_xy_pixel_1,x         ; save previous x_pixel and y_pixel in one operation
         jsr   DRS_XYToAddress
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
@@ -206,8 +206,8 @@ DRS_ProcessEachPriorityLevelB1
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_1,x                ; store pointer to saved background data
-        ldd   rsv_x2_pixel,x                ; load x' and y' in one operation
-        std   rsv_prev_x2_pixel_1,x         ; save as previous x' and y'
+        ldd   rsv_xy2_pixel,x               ; load x' and y' in one operation
+        std   rsv_prev_xy2_pixel_1,x        ; save as previous x' and y'
         lda   #$01
         sta   rsv_onscreen_1,x              ; set the onscreen flag
 DRS_NextObjectB1        
@@ -216,7 +216,7 @@ DRS_NextObjectB1
         rts
         
 DRS_DrawWithoutBackupB1
-        ldd   x_pixel,x                     ; load x position (48-207) and y position (28-227) in one operation
+        ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         jsr   DRS_XYToAddress 
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u

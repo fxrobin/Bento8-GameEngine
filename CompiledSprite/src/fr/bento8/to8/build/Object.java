@@ -18,14 +18,12 @@ public class Object extends AsmInclude{
 	public String fileName;	
 	public ObjectBin code;
 	public String codeFileName;
-	public HashMap<String, String[]> spritesProperties;
-	public HashMap<String, String[]> animationsProperties;
 	
 	public HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 	public List<SubSpriteBin> subSpritesBin = new ArrayList<SubSpriteBin>();	
 	
-	public int spritesRefSize = 0;
-	public int animationsRefSize = 0;
+	public HashMap<String, String[]> spritesProperties;
+	public HashMap<String, String[]> animationsProperties;	
 	
 	public Object(String parentName, String name, String propertiesFileName) throws Exception {
 		this.name = name;

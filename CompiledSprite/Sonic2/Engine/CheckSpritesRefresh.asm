@@ -166,7 +166,7 @@ CSR_CheckPlayFieldCoord
         bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image
         bmi   CSR_SetOutOfRange             ; branch if (x_pixel < 0)
         stb   x_pixel,u
-        addb  image_x_size,y
+        addb  image_x_size_l,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         stb   rsv_x2_pixel,u
         cmpb  #screen_width
@@ -178,11 +178,11 @@ CSR_CheckPlayFieldCoord
         bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image        
         bmi   CSR_SetOutOfRange             ; branch if (y_pixel < 0)
         stb   y_pixel,u        
-        addb  image_y_size,y
+        addb  image_y_size_l,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         stb   rsv_y2_pixel,u
         cmpb  #screen_height
-        bgt   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
+        bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
         lda   rsv_render_flags,u
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
         sta   rsv_render_flags,u
@@ -209,10 +209,11 @@ CSR_NextObject
 
 CSR_CheckVerticalPosition
         ldb   y_pixel,u                     ; in screen coordinate mode, image offset is managed by object
-        addb  image_y_size,y
+        ldy   rsv_curr_mapping_frame,u        
+        addb  image_y_size_l,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         cmpb  #screen_height
-        bgt   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
+        bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
         lda   rsv_render_flags,u
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
         sta   rsv_render_flags,u
@@ -233,8 +234,8 @@ CSR_CheckErase
         
         lda   buf_onscreen,x
         beq   CSR_SetEraseFalse             ; branch if object is not on screen
-        ldd   x_pixel,u                     ; load x_pixel and y_pixel
-        cmpd  buf_prev_x_pixel,x
+        ldd   xy_pixel,u
+        cmpd  buf_prev_xy_pixel,x
         bne   CSR_SetEraseTrue              ; branch if object moved since last frame
         ldd   rsv_curr_mapping_frame,u
         cmpd  buf_prev_mapping_frame,x
