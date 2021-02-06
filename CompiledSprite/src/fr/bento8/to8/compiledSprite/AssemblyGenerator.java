@@ -341,9 +341,9 @@ public class AssemblyGenerator{
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
 		asm.add("BCKDRAW_" + spriteName + "");
-		asm.add("\tSTS SSAV_" + spriteName + "+2,PCR\n");
+		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
 		asm.add("\tSTD DYN_POS+2,PCR");		
-		asm.add("\tLDS ,Y");
+		asm.add("\tLEAS ,Y");
 		return asm;
 	}
 
@@ -351,7 +351,7 @@ public class AssemblyGenerator{
 		int cycles = 0;
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
-		cycles += Register.costIndexedLD[Register.S];
+		cycles += 4;
 		return cycles;
 	}
 
@@ -359,7 +359,7 @@ public class AssemblyGenerator{
 		int size = 0;
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
 		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-		size += Register.sizeIndexedLD[Register.S];
+		size += 2;
 		return size;
 	}
 

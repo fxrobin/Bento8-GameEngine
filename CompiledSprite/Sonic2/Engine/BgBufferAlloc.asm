@@ -46,7 +46,9 @@ BBA_dyn
         
         ldb   #cell_size
         mul
-        ora   #80                           ; set negative
+        eora  #$FF                          ; set negative
+        eorb  #$FF                          ; set negative        
+        addd  #$01
         ldx   cell_end,y
         leax  d,x                           ; cell_end = cell_end - (number of requested cells * nb of bytes in a cell)
         stx   cell_end,y                    ; update cell_end

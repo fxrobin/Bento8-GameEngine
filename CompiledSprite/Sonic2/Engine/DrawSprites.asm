@@ -107,9 +107,12 @@ DRS_ProcessEachPriorityLevelB0
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame 
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
-        leau  ,y                            ; cell_end for background data
         stx   DRS_dyn3B0+1                  ; save x reg
-        jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
+        leau  ,y                            ; cell_end for background data
+        ldx   bckdraw_routine,u        
+        ldy   #Glb_Sprite_Screen_Pos_PartA  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_PartB   ; to be used with compiled sprites in a single program
+        jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_0,x                ; store pointer to saved background data
@@ -129,7 +132,8 @@ DRS_DrawWithoutBackupB0
         lda   page_draw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn4B0+1                  ; save x reg
-        jsr   [draw_routine,x]              ; backup background and draw sprite on working screen buffer
+        ldx   bckdraw_routine,u
+        jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn4B0
         ldx   #$0000                        ; (dynamic) restore x reg
         ldx   rsv_priority_next_obj_0,x
@@ -160,7 +164,7 @@ DRS_XYToAddressRAMAFirst
         ldb   y_pixel,x                     ; load y position (28-227)
         mul
 DRS_dyn1        
-        addd  $0000                         ; (dynamic) RAMA start at $0000
+        addd  #$0000                        ; (dynamic) RAMA start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
         ora   #$20                          ; add $2000 to d register
         std   Glb_Sprite_Screen_Pos_PartB        
@@ -171,7 +175,7 @@ DRS_XYToAddressRAMBFirst
         ldb   y_pixel,x                     ; load y position (28-227)
         mul
 DRS_dyn2        
-        addd  $2000                         ; (dynamic) RAMB start at $0000
+        addd  #$2000                        ; (dynamic) RAMB start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
         subd  $1FFF
         std   Glb_Sprite_Screen_Pos_PartB
@@ -198,11 +202,12 @@ DRS_ProcessEachPriorityLevelB1
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
-        leau  ,y                            ; cell_end for background data
         stx   DRS_dyn3B1+1                  ; save x reg
+        leau  ,y                            ; cell_end for background data
+        ldx   bckdraw_routine,u        
         ldy   #Glb_Sprite_Screen_Pos_PartA  ; position is a parameter, it allows different Main engines
         ldd   Glb_Sprite_Screen_Pos_PartB   ; to be used with compiled sprites in a single program
-        jsr   [bckdraw_routine,x]           ; backup background and draw sprite on working screen buffer
+        jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_1,x                ; store pointer to saved background data

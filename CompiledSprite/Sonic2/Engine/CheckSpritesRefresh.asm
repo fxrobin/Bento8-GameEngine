@@ -248,6 +248,7 @@ CSR_CheckErase
 CSR_SetEraseTrue        
         lda   rsv_render_flags,u
         ora   #rsv_render_erasesprite_mask
+        sta   rsv_render_flags,u
         
         stu   ,y++
         sty   cur_ptr_sub_obj_erase
@@ -257,6 +258,7 @@ CSR_SetEraseTrue
 CSR_SetEraseFalse
         lda   rsv_render_flags,u
         anda  #:rsv_render_erasesprite_mask
+        sta   rsv_render_flags,u        
         
 CSR_CheckDraw
         lda   priority,u
@@ -271,13 +273,14 @@ CSR_CheckDraw
         bne   CSR_SetDrawFalse              ; branch if object image is out of range
         ldd   rsv_curr_mapping_frame,u
         beq   CSR_SetDrawFalse              ; branch if object have no image
-        lda   render_flags
+        lda   render_flags,u
         anda  #render_hide_mask
         bne   CSR_SetDrawFalse              ; branch if object is hidden
         
 CSR_SetDrawTrue 
         lda   rsv_render_flags,u
-        ora   #rsv_render_displaysprite_mask     
+        ora   #rsv_render_displaysprite_mask    
+        sta   rsv_render_flags,u         
         
         stu   ,y++
         sty   cur_ptr_sub_obj_draw
@@ -289,6 +292,7 @@ CSR_SetDrawTrue
 CSR_SetDrawFalse 
         lda   rsv_render_flags,u
         anda  #:rsv_render_displaysprite_mask
+        sta   rsv_render_flags,u
         
         ldu   buf_priority_next_obj,x
         lbne   CSR_ProcessEachPriorityLevel   

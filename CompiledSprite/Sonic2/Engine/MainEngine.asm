@@ -71,12 +71,19 @@ nb_free_cells                 equ   130
 cell_size                     equ   64     ; 64 bytes x 130 from $3F80 to $6000 (buffer limit is $3F40 to $6000)
 cell_start_adr                equ   $6000
 
-Lst_FreeCellFirstEntry_0      fdb   $0000  ; Pointer to first entry in free cell list (buffer 0)
-Lst_FreeCell_0                rmb   entry_size*(nb_free_cells/2),0 ; (buffer 0)
-
-Lst_FreeCellFirstEntry_1      fdb   $0000  ; Pointer to first entry in free cell list (buffer 1)
-Lst_FreeCell_1                rmb   entry_size*(nb_free_cells/2),0 ; (buffer 1)
-
+Lst_FreeCellFirstEntry_0      fdb   Lst_FreeCell_0 ; Pointer to first entry in free cell list (buffer 0)
+Lst_FreeCell_0                fcb   nb_free_cells ; init of first free cell
+                              fdb   cell_start_adr-cell_size*nb_free_cells
+                              fdb   cell_start_adr
+                              fdb   $0000
+                              rmb   (entry_size*(nb_free_cells/2))-1,0 ; (buffer 1)
+                              
+Lst_FreeCellFirstEntry_1      fdb   Lst_FreeCell_1 ; Pointer to first entry in free cell list (buffer 1)
+Lst_FreeCell_1                fcb   nb_free_cells ; init of first free cell
+                              fdb   cell_start_adr-cell_size*nb_free_cells
+                              fdb   cell_start_adr
+                              fdb   $0000
+                              rmb   (entry_size*(nb_free_cells/2))-1,0 ; (buffer 1)
 * ---------------------------------------------------------------------------
 * Display Priority Structure - DPS
 * ---------------------------------------------------------------------------
