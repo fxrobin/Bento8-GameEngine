@@ -50,9 +50,10 @@ BBA_dyn
         eorb  #$FF                          ; set negative        
         addd  #$01
         ldx   cell_end,y
+        stx   cell_end_return+2        
         leax  d,x                           ; cell_end = cell_end - (number of requested cells * nb of bytes in a cell)
         stx   cell_end,y                    ; update cell_end
-        leay  ,x                            ; return cell_end
-        
+cell_end_return        
+        ldy   #$0000
 BBA_rts
         puls  b,x,pc
