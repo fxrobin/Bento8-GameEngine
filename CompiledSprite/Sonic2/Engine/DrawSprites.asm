@@ -108,10 +108,10 @@ DRS_ProcessEachPriorityLevelB0
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B0+1                  ; save x reg
-        leau  ,y                            ; cell_end for background data
         ldx   bckdraw_routine,u        
-        ldy   #Glb_Sprite_Screen_Pos_PartA  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_PartB   ; to be used with compiled sprites in a single program
+        leau  ,y                            ; cell_end for background data
+        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
         jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
@@ -203,10 +203,10 @@ DRS_ProcessEachPriorityLevelB1
         lda   page_bckdraw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B1+1                  ; save x reg
-        leau  ,y                            ; cell_end for background data
         ldx   bckdraw_routine,u        
-        ldy   #Glb_Sprite_Screen_Pos_PartA  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_PartB   ; to be used with compiled sprites in a single program
+        leau  ,y                            ; cell_end for background data
+        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
         jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg

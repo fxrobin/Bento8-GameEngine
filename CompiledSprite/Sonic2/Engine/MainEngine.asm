@@ -21,7 +21,7 @@ LevelMainLoop
         jsr   CheckSpritesRefresh
         jsr   EraseSprites
         jsr   UnsetDisplayPriority
-        jsr   DrawSprites
+        jsr   DrawSprites        
         bra   LevelMainLoop
 
 * ==============================================================================

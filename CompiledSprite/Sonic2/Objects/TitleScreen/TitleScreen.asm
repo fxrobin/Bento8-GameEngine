@@ -122,7 +122,7 @@ Sub_TailsHand equ 16
 TitleScreen                                      *Obj0E:
                                                  *        moveq   #0,d0
         lda   routine,u                          *        move.b  routine(a0),d0
-        leax  TitleScreen_Routines,pcr           *        move.w  Obj0E_Index(pc,d0.w),d1
+        leax  <TitleScreen_Routines,pcr          *        move.w  Obj0E_Index(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     Obj0E_Index(pc,d1.w)
                                                  *; ===========================================================================
                                                  *; off_12E26: Obj0E_States:
@@ -165,7 +165,7 @@ Sonic                                            *Obj0E_Sonic:
 Sonic_NotFinalState                              *+
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        leax  Sonic_Routines,pcr                 *        move.w  off_12E76(pc,d0.w),d1
+        leax  <Sonic_Routines,pcr                *        move.w  off_12E76(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_12E76(pc,d1.w)
                                                  *; ===========================================================================
 Sonic_Routines                                   *off_12E76:      offsetTable
@@ -255,7 +255,7 @@ Sonic_SetPal_TitleScreenAfterWait                *+
 Sonic_Move                                       *loc_12F18:
         ldx   Sonic_xy_data_end-Sonic_xy_data+2
         stx   dyn_01+1                           *        moveq   #word_13046_end-word_13046+4,d2
-        leax  Sonic_xy_data-2,pcr                *        lea     (word_13046).l,a1
+        leax  <Sonic_xy_data-2,pcr               *        lea     (word_13046).l,a1
                                                  *
 TitleScreen_MoveObjects                          *loc_12F20:
         ldd   w_TitleScr_move_frame_count,u      *        move.w  objoff_2A(a0),d0
@@ -380,7 +380,7 @@ CyclingPal                                       *loc_13014:
         ldx   #0                                 *        moveq   #0,d0
 CyclingPal_Continue                              *+
         stx   w_TitleScr_color_data_index,u      *        move.w  d0,objoff_2C(a0)
-        leax  CyclingPal_TitleScreen,pcr         *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
+        leax  <CyclingPal_TitleScreen,pcr        *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
         ldd   ,x
         *std   Normal_palette+$E
 CyclingPal_NotYet                                *+
@@ -419,7 +419,7 @@ Tails                                            *Obj0E_Tails:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         lda   routine_secondary,u
-        leax  Tails_Routines,pcr                 *        move.w  off_13074(pc,d0.w),d1
+        leax  <Tails_Routines,pcr                *        move.w  off_13074(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_13074(pc,d1.w)
                                                  *; ===========================================================================
 Tails_Routines                                   *off_13074:      offsetTable
@@ -444,7 +444,7 @@ Tails_Init                                       *Obj0E_Tails_Init:
 Tails_Move                                       *loc_13096:
         ldx   #Tails_xy_data_end-Tails_xy_data+2
         stx   dyn_01+1                           *        moveq   #word_130B8_end-word_130B8+4,d2
-        leax  Tails_xy_data-2,pcr                *        lea     (word_130B8).l,a1
+        leax  <Tails_xy_data-2,pcr               *        lea     (word_130B8).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
                                                  *
@@ -481,7 +481,7 @@ EmblemTop                                        *Obj0E_LogoTop:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         lda   routine_secondary,u
-        leax  EmblemTop_Routines,pcr             *        move.w  off_130E2(pc,d0.w),d1
+        leax  <EmblemTop_Routines,pcr            *        move.w  off_130E2(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_130E2(pc,d1.w)
                                                  *; ===========================================================================
 EmblemTop_Routines                               *off_130E2:      offsetTable
@@ -549,7 +549,7 @@ EmblemTop_DisplaySprite                          *BranchTo11_DisplaySprite
 LargeStar                                        *Obj0E_LargeStar:
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        leax  LargeStar_Routines,pcr             *        move.w  off_13158(pc,d0.w),d1
+        leax  <LargeStar_Routines,pcr            *        move.w  off_13158(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_13158(pc,d1.w)
                                                  *; ===========================================================================
 LargeStar_Routines                               *off_13158:      offsetTable
@@ -605,7 +605,7 @@ LargeStar_Move                                   *loc_1319E:
         jmp   DeleteObject                       *        bhs.w   DeleteObject
 LargeStar_MoveContinue
         std   w_TitleScr_xy_data_index,u                    *        move.w  d0,objoff_2C(a0)
-        leax  LargeStar_xy_data-2,pcr
+        leax  <LargeStar_xy_data-2,pcr
         leax  d,x                                *        move.l  word_131DC-4(pc,d0.w),d0
         ldd   ,x
         std   x_pixel,u                          *        move.w  d0,y_pixel(a0)
@@ -636,7 +636,7 @@ LargeStar_xy_data_end                            *word_131DC_end
 SonicHand                                        *Obj0E_SonicHand:
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        leax  SonicHand_Routines,pcr             *        move.w  off_1320E(pc,d0.w),d1
+        leax  <SonicHand_Routines,pcr            *        move.w  off_1320E(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_1320E(pc,d1.w)
                                                  *; ===========================================================================
 SonicHand_Routines                               *off_1320E:      offsetTable
@@ -663,7 +663,7 @@ SonicHand_DisplaySprite                          *BranchTo13_DisplaySprite
 SonicHand_Move                                   *loc_13234:
         ldx   SonicHand_xy_data_end-SonicHand_xy_data+2
         stx   dyn_01+1                           *        moveq   #word_13240_end-word_13240+4,d2
-        leax  SonicHand_xy_data-2,pcr            *        lea     (word_13240).l,a1
+        leax  <SonicHand_xy_data-2,pcr           *        lea     (word_13240).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 SonicHand_xy_data                                *word_13240:
@@ -681,7 +681,7 @@ SonicHand_xy_data_end                            *word_13240_end
 TailsHand                                        *Obj0E_TailsHand:
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        leax  TailsHand_Routines,pcr             *        move.w  off_1325A(pc,d0.w),d1
+        leax  <TailsHand_Routines,pcr            *        move.w  off_1325A(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_1325A(pc,d1.w)
                                                  *; ===========================================================================
 TailsHand_Routines                               *off_1325A:      offsetTable
@@ -708,7 +708,7 @@ TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite
 TailsHand_Move                                   *loc_13280:
         ldx   #TailsHand_xy_data_end-TailsHand_xy_data+2
         stx   dyn_01+1                           *        moveq   #word_1328C_end-word_1328C+4,d2
-        leax  TailsHand_xy_data-2,pcr            *        lea     (word_1328C).l,a1
+        leax  <TailsHand_xy_data-2,pcr           *        lea     (word_1328C).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 TailsHand_xy_data                                *word_1328C:
@@ -725,7 +725,7 @@ TailsHand_xy_data_end                            *word_1328C_end
 SmallStar                                        *Obj0E_SmallStar:
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        leax  SmallStar_Routines,pcr             *        move.w  off_132A2(pc,d0.w),d1
+        leax  <SmallStar_Routines,pcr            *        move.w  off_132A2(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_132A2(pc,d1.w)
                                                  *; ===========================================================================
 SmallStar_Routines                               *off_132A2:      offsetTable

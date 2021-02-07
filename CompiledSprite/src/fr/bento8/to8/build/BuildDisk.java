@@ -546,11 +546,11 @@ public class BuildDisk
 
 					if (act.bgColorIndex != null) {
 						asmLoadAct.add("        ldx   #$3333                   * set Background solid color");
-						asmLoadAct.add("        ldb   #$62                     * load page 2");
-						asmLoadAct.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
-						asmLoadAct.add("        jsr   ClearCartMem");
 						asmLoadAct.add("        ldb   #$63                     * load page 3");
 						asmLoadAct.add("        stb   $E7E6                    * in cardtridge space ($0000-$3FFF)");
+						asmLoadAct.add("        jsr   ClearCartMem");						
+						asmLoadAct.add("        ldb   #$62                     * load page 2");
+						asmLoadAct.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
 						asmLoadAct.add("        jsr   ClearCartMem");
 
 						content += "        INCLUD CLRCARTM\n";

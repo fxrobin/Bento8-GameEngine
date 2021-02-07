@@ -307,7 +307,7 @@ ESP_CallEraseRoutineB1
         lda   page_erase_routine,x
         sta   $E7E5                         ; select page 04 in RAM (A000-DFFF)
         ldu   rsv_bgdata_1,u                ; cell_start background data
-        jsr   [erase_routine,x]             ; erase sprite un working screen buffer
+        jsr   [erase_routine,x]              ; erase sprite un working screen buffer
         leay  ,u                            ; cell_end background data stored in y
 ESP_CallEraseRoutineB1_00        
         ldu   #$0000                        ; restore u (pointer to object)

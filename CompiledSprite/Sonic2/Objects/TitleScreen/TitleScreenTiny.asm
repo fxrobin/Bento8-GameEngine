@@ -14,12 +14,12 @@ w_TitleScr_xy_data_index        equ ext_variables+4
 LargeStar                                        *Obj0E_LargeStar:
                                                  *        moveq   #0,d0
         lda   routine,u                          *        move.b  routine_secondary(a0),d0
-        leax  LargeStar_Routines,pcr             *        move.w  off_13158(pc,d0.w),d1
+        leax  <LargeStar_Routines,pcr            *        move.w  off_13158(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_13158(pc,d1.w)
                                                  *; ===========================================================================
 LargeStar_Routines                               *off_13158:      offsetTable
         fdb   LargeStar_Init                     *                offsetTableEntry.w Obj0E_LargeStar_Init ; 0
-        fdb   TitleScreen_Animate                *                offsetTableEntry.w loc_12F52    ; 2
+        fdb   TitleScreen_Animate                *                offsetTableEntry.w loc_12F52    ; 2   
         fdb   LargeStar_Wait                     *                offsetTableEntry.w loc_13190    ; 4
         fdb   LargeStar_Move                     *                offsetTableEntry.w loc_1319E    ; 6
                                                  *; ===========================================================================
@@ -39,9 +39,15 @@ LargeStar_Init                                   *Obj0E_LargeStar_Init:
                                                  *        move.w  #$A8,y_pixel(a0)
         ldd   #4
         std   w_TitleScr_move_frame_count,u      *        move.w  #4,objoff_2A(a0)
-        rts                                      *        rts
+                                                 *        rts
                                                  *; ===========================================================================
-                                                 *
+
+TitleScreen_Animate                              *loc_12F52:
+        * no more offset table                   *        lea     (Ani_obj0E).l,a1
+        jsr   AnimateSprite                      *        bsr.w   AnimateSprite
+        jmp   DisplaySprite                      *        bra.w   DisplaySprite
+                                                 *; ===========================================================================      
+        
 LargeStar_Wait                                   *loc_13190:
         ldd   w_TitleScr_move_frame_count,u
         subd  #1                                 *        subq.w  #1,objoff_2A(a0)
@@ -70,7 +76,7 @@ LargeStar_Move                                   *loc_1319E:
         jmp   DeleteObject                       *        bhs.w   DeleteObject
 LargeStar_MoveContinue
         std   w_TitleScr_xy_data_index,u                    *        move.w  d0,objoff_2C(a0)
-        leax  LargeStar_xy_data-2,pcr
+        leax  <LargeStar_xy_data-2,pcr
         leax  d,x                                *        move.l  word_131DC-4(pc,d0.w),d0
         ldd   ,x
         std   x_pixel,u                          *        move.w  d0,y_pixel(a0)
@@ -93,8 +99,4 @@ LargeStar_xy_data                                *word_131DC:
 LargeStar_xy_data_end                            *word_131DC_end
                                                  *; ===========================================================================
 
-TitleScreen_Animate                              *loc_12F52:
-        * no more offset table                   *        lea     (Ani_obj0E).l,a1
-        jsr   AnimateSprite                      *        bsr.w   AnimateSprite
-        jmp   DisplaySprite                      *        bra.w   DisplaySprite
-                                                 *; ===========================================================================                                                 
+                                           

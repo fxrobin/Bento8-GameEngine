@@ -343,7 +343,7 @@ public class AssemblyGenerator{
 		asm.add("BCKDRAW_" + spriteName + "");
 		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
 		asm.add("\tSTD DYN_POS+2,PCR");		
-		asm.add("\tLEAS ,Y");
+		asm.add("\tLDS ,Y");
 		return asm;
 	}
 
@@ -351,7 +351,7 @@ public class AssemblyGenerator{
 		int cycles = 0;
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
-		cycles += 4;
+		cycles += Register.costIndexedLD[Register.S];
 		return cycles;
 	}
 
@@ -359,7 +359,7 @@ public class AssemblyGenerator{
 		int size = 0;
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
 		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-		size += 2;
+		size += Register.sizeIndexedLD[Register.S];
 		return size;
 	}
 
@@ -410,7 +410,7 @@ public class AssemblyGenerator{
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
 		asm.add("ERASE_" + spriteName + "");
-		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2,PCR\n");
+		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+1,PCR\n");
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;
 	}
