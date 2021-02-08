@@ -282,6 +282,10 @@ CSR_SetDrawTrue
         ora   #rsv_render_displaysprite_mask    
         sta   rsv_render_flags,u         
         
+        lda   render_flags,u
+        ora   #render_hide_mask             ; set hide flag
+        sta   render_flags,u        
+        
         stu   ,y++
         sty   cur_ptr_sub_obj_draw
         

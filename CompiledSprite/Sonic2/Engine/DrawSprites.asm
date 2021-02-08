@@ -161,7 +161,6 @@ DRS_XYToAddress
 DRS_XYToAddressRAMAFirst
         sta   DRS_dyn1+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
-        ldb   y_pixel,x                     ; load y position (28-227)
         mul
 DRS_dyn1        
         addd  #$0000                        ; (dynamic) RAMA start at $0000
@@ -172,12 +171,11 @@ DRS_dyn1
 DRS_XYToAddressRAMBFirst
         sta   DRS_dyn2+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
-        ldb   y_pixel,x                     ; load y position (28-227)
         mul
 DRS_dyn2        
         addd  #$2000                        ; (dynamic) RAMB start at $0000
         std   Glb_Sprite_Screen_Pos_PartA
-        subd  $1FFF
+        subd  #$1FFF
         std   Glb_Sprite_Screen_Pos_PartB
         rts
         
