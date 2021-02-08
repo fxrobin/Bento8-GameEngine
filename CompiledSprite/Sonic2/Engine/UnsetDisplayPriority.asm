@@ -31,7 +31,6 @@ UDP_CheckPrioPrevB0
         bne   UDP_ChainPrevB0
         
         lda   rsv_priority_0,u
-        deca
         lsla
         ldy   #Tbl_Priority_First_Entry_0
         leay  a,y
@@ -49,11 +48,10 @@ UDP_CheckPrioNextB0
         bne   UDP_ChainNextB0
 
         lda   rsv_priority_0,u
-        deca
         lsla
         ldy   #Tbl_Priority_Last_Entry_0
         leay  a,y
-        ldd   rsv_priority_next_obj_0,u
+        ldd   rsv_priority_prev_obj_0,u
         std   ,y
         bra   UDP_CheckDeleteB0
                 
@@ -96,7 +94,6 @@ UDP_CheckPrioPrevB1
         bne   UDP_ChainPrevB1
         
         lda   rsv_priority_1,u
-        deca
         lsla
         ldy   #Tbl_Priority_First_Entry_1
         leay  a,y
@@ -114,11 +111,10 @@ UDP_CheckPrioNextB1
         bne   UDP_ChainNextB1
 
         lda   rsv_priority_1,u
-        deca
         lsla
         ldy   #Tbl_Priority_Last_Entry_1
         leay  a,y
-        ldd   rsv_priority_next_obj_1,u
+        ldd   rsv_priority_prev_obj_1,u
         std   ,y
         bra   UDP_CheckDeleteB1
                 

@@ -44,14 +44,90 @@ DOB_Unset1
         stu   ,x
         leax  2,x
         stx   Lst_Priority_Unset_1
-        bra  DOB_ToDeleteFlag 
+        
+DOB_ToDeleteFlag                                       
+        lda   render_flags,u
+        ora   #render_todelete_mask
+        sta   render_flags,u           ; set todelete flag, object will be deleted after sprite erase on all screen buffers
+                                               
+DOB_rts
+        puls  d,x,u,pc                 *    rts
+                                       *; End of function DeleteObject2           
         
 DOB_TestOnscreen1Delete
         lda   rsv_onscreen_1,u
         bne   DOB_Unset1               ; branch if onscreen on buffer 1        
+        
+DOB_RemoveFromDPSB0
+        ldd   rsv_priority_prev_obj_0,u
+        bne   DOB_ChainPrevB0
+        
+        lda   rsv_priority_0,u
+        lsla
+        ldy   #Tbl_Priority_First_Entry_0
+        leay  a,y
+        ldd   rsv_priority_next_obj_0,u
+        std   ,y
+        bra   DOB_CheckPrioNextB0
+                
+DOB_ChainPrevB0
+        ldd   rsv_priority_next_obj_0,u
+        ldy   rsv_priority_prev_obj_0,u        
+        std   rsv_priority_next_obj_0,y        
 
+DOB_CheckPrioNextB0       
+        ldd   rsv_priority_next_obj_0,u
+        bne   DOB_ChainNextB0
+
+        lda   rsv_priority_0,u
+        lsla
+        ldy   #Tbl_Priority_Last_Entry_0
+        leay  a,y
+        ldd   rsv_priority_prev_obj_0,u
+        std   ,y
+        bra   DOB_RemoveFromDPSB1
+                
+DOB_ChainNextB0
+        ldd   rsv_priority_prev_obj_0,u
+        ldy   rsv_priority_next_obj_0,u        
+        std   rsv_priority_prev_obj_0,y
+
+DOB_RemoveFromDPSB1
+        ldd   rsv_priority_prev_obj_1,u
+        bne   DOB_ChainPrevB1
+        
+        lda   rsv_priority_1,u
+        lsla
+        ldy   #Tbl_Priority_First_Entry_1
+        leay  a,y
+        ldd   rsv_priority_next_obj_1,u
+        std   ,y
+        bra   DOB_CheckPrioNextB1
+                
+DOB_ChainPrevB1
+        ldd   rsv_priority_next_obj_1,u
+        ldy   rsv_priority_prev_obj_1,u        
+        std   rsv_priority_next_obj_1,y        
+
+DOB_CheckPrioNextB1       
+        ldd   rsv_priority_next_obj_1,u
+        bne   DOB_ChainNextB1
+
+        lda   rsv_priority_1,u
+        lsla
+        ldy   #Tbl_Priority_Last_Entry_1
+        leay  a,y
+        ldd   rsv_priority_prev_obj_1,u
+        std   ,y
+        bra   DOB_ClearObj
+                
+DOB_ChainNextB1
+        ldd   rsv_priority_prev_obj_1,u
+        ldy   rsv_priority_next_obj_1,u        
+        std   rsv_priority_prev_obj_1,y
+
+DOB_ClearObj
         jsr   ClearObj                 ; this object is not onscreen anymore, clear this object now
-        bra   DOB_rts
                                        *    moveq   #0,d1
                                        *
                                        *    moveq   #bytesToLcnt(next_object),d0 ; we want to clear up to the next object
@@ -62,11 +138,5 @@ DOB_TestOnscreen1Delete
                                        *    move.w  d1,(a1)+
                                        *    endif
                                        *
-DOB_ToDeleteFlag                                       
-        lda   render_flags,u
-        ora   #render_todelete_mask
-        sta   render_flags,u           ; set todelete flag, object will be deleted after sprite erase on all screen buffers
-                                               
-DOB_rts
         puls  d,x,u,pc                 *    rts
-                                       *; End of function DeleteObject2
+                                       *; End of function DeleteObject2                                            

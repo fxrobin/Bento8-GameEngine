@@ -9,7 +9,7 @@
 
 ClearObj *@globals
         sts   CLO_1+2
-        stx   CLO_2+2        
+        stx   CLO_2+1        
         ldd   #$0000
         ldx   #$0000
         leay  ,x
