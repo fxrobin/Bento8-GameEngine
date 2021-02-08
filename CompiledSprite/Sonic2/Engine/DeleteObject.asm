@@ -64,7 +64,7 @@ DOB_TestOnscreen1Delete
                                        *
 DOB_ToDeleteFlag                                       
         lda   render_flags,u
-        ora   render_todelete_mask
+        ora   #render_todelete_mask
         sta   render_flags,u           ; set todelete flag, object will be deleted after sprite erase on all screen buffers
                                                
 DOB_rts

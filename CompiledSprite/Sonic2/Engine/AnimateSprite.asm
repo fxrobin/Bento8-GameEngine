@@ -72,7 +72,7 @@ Anim_End_FF                                 *Anim_End_FF:
         bne   Anim_End_FE                   *    bne.s   Anim_End_FE ; if not, branch
 		ldb   #0                            
         stb   anim_frame,u                  *    move.b  #0,anim_frame(a0) ; restart the animation
-        ldd   1,x                           *    move.b  1(a1),d0          ; read sprite number
+        ldd   ,x                            *    move.b  1(a1),d0          ; read sprite number
         bra   Anim_Next                     *    bra.s   Anim_Next
                                             *; ===========================================================================
                                             *; loc_165AC:

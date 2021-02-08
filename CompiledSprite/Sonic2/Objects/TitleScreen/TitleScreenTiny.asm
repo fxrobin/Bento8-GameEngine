@@ -70,16 +70,16 @@ LargeStar_Move                                   *loc_1319E:
         std   w_TitleScr_move_frame_count,u      *        move.w  #6,objoff_2A(a0)
         ldd   w_TitleScr_xy_data_index,u         *        move.w  objoff_2C(a0),d0
         addd  #2                                 *        addq.w  #4,d0
-        cmpd  LargeStar_xy_data_end-LargeStar_xy_data+2
+        cmpd  #LargeStar_xy_data_end-LargeStar_xy_data
                                                  *        cmpi.w  #word_131DC_end-word_131DC+4,d0
-        bhs   LargeStar_MoveContinue
+        blo   LargeStar_MoveContinue
         jmp   DeleteObject                       *        bhs.w   DeleteObject
 LargeStar_MoveContinue
         std   w_TitleScr_xy_data_index,u                    *        move.w  d0,objoff_2C(a0)
         leax  <LargeStar_xy_data-2,pcr
         leax  d,x                                *        move.l  word_131DC-4(pc,d0.w),d0
         ldd   ,x
-        std   x_pixel,u                          *        move.w  d0,y_pixel(a0)
+        std   xy_pixel,u                         *        move.w  d0,y_pixel(a0)
                                                  *        swap    d0
                                                  *        move.w  d0,x_pixel(a0)
         * sound unused                           *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
@@ -87,15 +87,15 @@ LargeStar_MoveContinue
                                                  *; ===========================================================================
                                                  *; unknown
 LargeStar_xy_data                                *word_131DC:
-        fcb   $2D,$39                            *        dc.w   $DA, $F2
-        fcb   $78,$3C                            *        dc.w  $170, $F8 ; 2
-        fcb   $59,$58                            *        dc.w  $132,$131 ; 4
-        fcb   $8F,$11                            *        dc.w  $19E, $A2 ; 6
-        fcb   $20,$31                            *        dc.w   $C0, $E3 ; 8
-        fcb   $80,$30                            *        dc.w  $180, $E0 ; $A
-        fcb   $46,$5D                            *        dc.w  $10D,$13B ; $C
-        fcb   $20,$15                            *        dc.w   $C0, $AB ; $E
-        fcb   $72,$43                            *        dc.w  $165, $107        ; $10
+        fcb   $2D,$66                            *        dc.w   $DA, $F2
+        fcb   $78,$6C                            *        dc.w  $170, $F8 ; 2
+        fcb   $59,$A5                            *        dc.w  $132,$131 ; 4
+        fcb   $8F,$16                            *        dc.w  $19E, $A2 ; 6
+        fcb   $20,$57                            *        dc.w   $C0, $E3 ; 8
+        fcb   $80,$54                            *        dc.w  $180, $E0 ; $A
+        fcb   $46,$AF                            *        dc.w  $10D,$13B ; $C
+        fcb   $20,$1F                            *        dc.w   $C0, $AB ; $E
+        fcb   $72,$7B                            *        dc.w  $165, $107        ; $10
 LargeStar_xy_data_end                            *word_131DC_end
                                                  *; ===========================================================================
 

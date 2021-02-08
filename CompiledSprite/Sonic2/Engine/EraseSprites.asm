@@ -152,7 +152,7 @@ ESP_SubEraseSpriteSearchInitB0
         ldx   rsv_ptr_sub_object_erase,u
         
 ESP_SubEraseSearchB0
-        cmpx  cur_ptr_sub_obj_erase
+        cmpx  #Tbl_Sub_Object_Erase
         beq   ESP_SubDrawSpriteSearchInitB0 ; branch if no more sub objects
         ldy   ,--x
         
@@ -178,7 +178,7 @@ ESP_SubDrawSpriteSearchInitB0
         ldx   rsv_ptr_sub_object_draw,u
         
 ESP_SubDrawSearchB0
-        cmpx  cur_ptr_sub_obj_draw
+        cmpx  #Tbl_Sub_Object_Draw
         beq   ESP_SubCheckOverlayB0         ; branch if no more sub objects
         ldy   ,--x
 
@@ -254,7 +254,7 @@ ESP_SubEraseSpriteSearchInitB1
         ldx   rsv_ptr_sub_object_erase,u
         
 ESP_SubEraseSearchB1
-        cmpx  cur_ptr_sub_obj_erase
+        cmpx  #Tbl_Sub_Object_Erase
         beq   ESP_SubDrawSpriteSearchInitB1 ; branch if no more sub objects
         ldy   ,--x
         
@@ -280,7 +280,7 @@ ESP_SubDrawSpriteSearchInitB1
         ldx   rsv_ptr_sub_object_draw,u
         
 ESP_SubDrawSearchB1
-        cmpx  cur_ptr_sub_obj_draw
+        cmpx  #Tbl_Sub_Object_Draw
         beq   ESP_SubCheckOverlayB1         ; branch if no more sub objects
         ldy   ,--x
 
