@@ -817,9 +817,9 @@ public class BuildDisk
 		}
 		
 		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
-		line [10] = String.format("$%1$02X", s.x_offset & 0xFFFF >> 8);
+		line [10] = String.format("$%1$02X", s.x_offset >> 8 & 0xFF);
 		line [11] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
-		line [12] = String.format("$%1$02X", s.y_offset & 0xFFFF >> 8);		
+		line [12] = String.format("$%1$02X", s.y_offset >> 8 & 0xFF);		
 		line [13] = String.format("$%1$02X", s.y_offset & 0xFF); // signed value
 		line [14] = String.format("$%1$02X", s.x_size >> 8);		
 		line [15] = String.format("$%1$02X", s.x_size); // unsigned value
