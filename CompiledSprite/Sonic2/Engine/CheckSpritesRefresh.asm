@@ -211,7 +211,7 @@ CSR_CheckVerticalPosition
         ldb   y_pixel,u                     ; in screen coordinate mode, image offset is managed by object
         ldy   rsv_curr_mapping_frame,u        
         addb  image_y_size_l,y
-        bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
+        bcs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         cmpb  #screen_height
         bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
         lda   rsv_render_flags,u

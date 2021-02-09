@@ -45,11 +45,7 @@ WaitVBL_01
         ldd   Vint_runcount
         addd  #1
         std   Vint_runcount
-        
-        lda   Glb_Cur_Wrk_Screen_Id
-        eora  #1
-        sta   Glb_Cur_Wrk_Screen_Id * alternance de 0 et 1 pour aiguiller le code en fonction du buffer ecran en ecriture
-                
+                        
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage
         andb  #$40               * alterne bit6=0 et bit6=1 (suivant la valeur B $00 ou $FF)
@@ -60,15 +56,12 @@ screen_border_color *@globals
 am_SwapVideoPage
         ldb   #$00
         andb  #$01               * alterne bit0=0 et bit0=1 (suivant la valeur B $00 ou $FF)
+        stb   Glb_Cur_Wrk_Screen_Id
         orb   #$62               * bit6=1, bit5=1, bit1=1
         stb   $E7E6              * changement page (2 ou 3) visible dans l'espace cartouche
-        ldb   $E7C3              * charge l'identifiant de la Demi-Page 0 configuree en espace ecran
-        andb  #$01
-        bne   SwapVideoPage_01   * si bit0==1, branch
-        inc   $E7C3              * bit0=1 changement demi-page RAMB de la page 0 visible dans l'espace ecran
-        rts
-SwapVideoPage_01
-        dec   $E7C3              * bit0=0 changement demi-page RAMA de la page 0 visible dans l'espace ecran
+        ldb   $E7C3              * charge l'identifiant de la demi-page 0 configuree en espace ecran
+        eorb  #$01               * alterne bit0 = 0 ou 1 changement demi-page de la page 0 visible dans l'espace ecran
+        stb   $E7C3
         rts
         
 Vint_runcount rmb   $2,0 *@globals

@@ -75,13 +75,13 @@
 * - objects with a dedicated adress (no dynamic allocation)
 * ---------------------------------------------------------------------------
 TitleScr_Object_RAM     equ Object_RAM
-Obj_SmallStar           equ Object_RAM
-Obj_Sonic               equ Object_RAM+(object_size*1)
-Obj_Tails               equ Object_RAM+(object_size*2)
-Obj_SonicHand           equ Object_RAM+(object_size*3)
-Obj_TailsHand           equ Object_RAM+(object_size*4)
-Obj_EmblemTop           equ Object_RAM+(object_size*5)
-Obj_LargeStar           equ Object_RAM+(object_size*6)
+Obj_Sonic               equ Object_RAM
+Obj_Tails               equ Object_RAM+(object_size*1)
+Obj_LargeStar           equ Object_RAM+(object_size*2)
+Obj_SmallStar           equ Object_RAM+(object_size*3)
+Obj_SonicHand           equ Object_RAM+(object_size*4)
+Obj_TailsHand           equ Object_RAM+(object_size*5)
+Obj_EmblemTop           equ Object_RAM+(object_size*6)
 Obj_PaletteHandler      equ Object_RAM+(object_size*7)
 Obj_PaletteHandler2     equ Object_RAM+(object_size*8)
 Obj_PaletteHandler3     equ Object_RAM+(object_size*9)
@@ -134,7 +134,7 @@ TitleScreen_Routines                             *Obj0E_Index:    offsetTable
         fdb   LargeStar                          *                offsetTableEntry.w Obj0E_LargeStar      ;   8
         fdb   SonicHand                          *                offsetTableEntry.w Obj0E_SonicHand      ;  $A
         fdb   SmallStar                          *                offsetTableEntry.w Obj0E_SmallStar      ;  $C
-                                                 *                offsetTableEntry.w Obj0E_SkyPiece       ;  $E
+        fdb   $0000                              *                offsetTableEntry.w Obj0E_SkyPiece       ;  $E
         fdb   TailsHand                          *                offsetTableEntry.w Obj0E_TailsHand      ; $10
                                                  *; ===========================================================================
                                                  *; loc_12E38:
@@ -196,10 +196,10 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFB0C0
         ldb   #Sub_LargeStar
         stb   subtype,x                          *        move.b  #8,subtype(a1)                          ; large star
-        *ldx   #Obj_EmblemTop                     *        lea     (IntroEmblemTop).w,a1
-        *sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
+        *ldx   #Obj_EmblemTop                    *        lea     (IntroEmblemTop).w,a1
+        *sta   id,x                              *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
         *ldb   #Sub_EmblemTop
-        *stb   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
+        *stb   subtype,x                         *        move.b  #6,subtype(a1)                          ; logo top
         * sound unused                           *        moveq   #SndID_Sparkle,d0
         rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
@@ -380,7 +380,7 @@ CyclingPal                                       *loc_13014:
         ldx   #0                                 *        moveq   #0,d0
 CyclingPal_Continue                              *+
         stx   w_TitleScr_color_data_index,u      *        move.w  d0,objoff_2C(a0)
-        leax  <CyclingPal_TitleScreen,pcr        *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
+        leax  <CyclingPal_TitleScreen-2,pcr      *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
         ldd   ,x
         *std   Normal_palette+$E
 CyclingPal_NotYet                                *+
@@ -436,6 +436,8 @@ Tails_Init                                       *Obj0E_Tails_Init:
                                                  *        move.w  #$D8,y_pixel(a0)
         ldd   #Ani_tails
         std   anim,u                             *        move.b  #1,anim(a0)
+        ldd   #Img_tails_1                       ; in original code, mapping_frame is an index in offset table (1 byte) that is implicitly initialized to 0
+        std   mapping_frame,u                    ; so added init code to mapping_frame address here because it is not an index anymore
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
@@ -694,7 +696,7 @@ TailsHand_Init                                   *Obj0E_TailsHand_Init:
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
         ldd   #$2349
-        std   xy_pixel                           *        move.w  #$10F,x_pixel(a0)
+        std   xy_pixel,u                         *        move.w  #$10F,x_pixel(a0)
                                                  *        move.w  #$D5,y_pixel(a0)
                                                  *
 TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite

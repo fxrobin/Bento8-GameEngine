@@ -541,6 +541,8 @@ public class BuildDisk
 						asmLoadAct.add("        anda  #$F0");
 						asmLoadAct.add("        adda  #$03                     * color ref");
 						asmLoadAct.add("        sta   $E7DD");
+						asmLoadAct.add("        anda  #$0F");
+						asmLoadAct.add("        adda  #$80");
 						asmLoadAct.add("        sta   screen_border_color+1    * maj WaitVBL");
 					}
 

@@ -65,23 +65,28 @@ DSP_addFirstNode
         ldd   #0
         std   buf_priority_prev_obj,x       ; clear object prev and next link, it's the only object at this priority level
         std   buf_priority_next_obj,x
-        bra   DSP_rts
+        
+DSP_rts
+        puls  d,x,u,pc                      ; rts        
         
 DSP_addToExistingNode
-        ldx   [a,y]                         ; x register now store last object at the priority level of current object
+        ldx   a,y                           ; x register now store last object at the priority level of current object
         ldb   Glb_Cur_Wrk_Screen_Id
         bne   DSP_LinkBuffer1
         stu   rsv_priority_next_obj_0,x     ; link last object with current object if active screen buffer 0
+        stx   rsv_priority_prev_obj_0,u     ; link current object with previous object
+        clr   rsv_priority_next_obj_0,u     ; clear object next link        
+        clr   rsv_priority_next_obj_0+1,u   ; clear object next link        
         bra   DSP_LinkCurWithPrev        
 DSP_LinkBuffer1        
         stu   rsv_priority_next_obj_1,x     ; link last object with current object if active screen buffer 1
+        stx   rsv_priority_prev_obj_1,u     ; link current object with previous object
+        clr   rsv_priority_next_obj_1,u     ; clear object next link        
+        clr   rsv_priority_next_obj_1+1,u   ; clear object next link        
         
 DSP_LinkCurWithPrev        
-        stx   buf_priority_prev_obj,u       ; link current object with previous object
         stu   a,y                           ; update last object in index
-        ldd   #0
-        std   buf_priority_next_obj,x       ; clear object next link                
-        bra   DSP_rts
+        puls  d,x,u,pc                      ; rts
         
 DSP_ChangePriority
         leay  buf_Lst_Priority_Unset,y
@@ -91,9 +96,8 @@ DSP_ChangePriority
         leay  -buf_Lst_Priority_Unset-2,y
         cmpa  #0
         bne   DSP_CheckLastEntry            ; priority is != 0, branch to add object to display priority list
+        puls  d,x,u,pc                      ; rts
 
-DSP_rts
-        puls  d,x,u,pc
         
                                        *; ---------------------------------------------------------------------------
                                        *; Subroutine to display a sprite/object, when a0 is the object RAM
