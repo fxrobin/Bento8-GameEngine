@@ -18,16 +18,20 @@ BgBufferFree
 BBF0
         ldu   rsv_prev_mapping_frame_0,u    ; get sprite last image for this buffer
         lda   erase_nb_cell,u               ; get nb of cell to free
+        ldu   #Lst_FreeCellFirstEntry_0        
+        stu   BBF_SetNewEntryPrevLink+1     ; init prev address destination as Lst_FreeCellFirstEntry
         ldu   #Lst_FreeCell_0               ; get cell table for this buffer
-        stu   BBF_AddNewEntryAtEnd+4        ; auto-modification to access cell table later
+        stu   BBF_AddNewEntryAtEnd+1        ; auto-modification to access cell table later
         ldu   Lst_FreeCellFirstEntry_0      ; load first cell for screen buffer 0
         bra   BBF_Next
         
 BBF1        
         ldu   rsv_prev_mapping_frame_1,u
         lda   erase_nb_cell,u        
+        ldu   #Lst_FreeCellFirstEntry_1        
+        stu   BBF_SetNewEntryPrevLink+1        
         ldu   #Lst_FreeCell_1
-        stu   BBF_AddNewEntryAtEnd+4        
+        stu   BBF_AddNewEntryAtEnd+1        
         ldu   Lst_FreeCellFirstEntry_1
         
 BBF_Next        
@@ -36,16 +40,17 @@ BBF_Next
         beq   BBF_ExpandAtStart             ; branch if current cell_start equals input param cell_end
         bhi   BBF_ExpandAtEnd               ; branch if current cell_start < input param cell_end
         ldu   next_entry,u                  ; move to next entry
+        tfr   u,d
+        addd  #next_entry                   ; there is a previous entry, save next_entry address
+        std   BBF_SetNewEntryPrevLink+1
         bra   BBF_Next
-          
+
 BBF_AddNewEntry
         stu   BBF_SetNewEntryNextentry+1
-        leau  next_entry,u                  ; there is a previous entry, save next_entry adress to store new entry
 BBF_AddNewEntryAtEnd
-        stu   BBF_SetNewEntryPrevLink+1     ; if no previous entry we will be using Lst_FreeCellFirstEntry from BBF
-        ldu   #$0000                        ; (dynamic) Lst_FreeCell_0 or Lst_FreeCell_1
+        ldu   #$0000                        ; (dynamic) first element of the table (Lst_FreeCell_0 or Lst_FreeCell_1)
 BBF_FindFreeSlot        
-        ldb   nb_cells,u                    ; read Lst_FreeCell
+        ldb   nb_cells,u                    ; read Lst_FreeCell as a table (not a linked list)
         beq   BBF_SetNewEntry               ; branch if empty entry
         leau  entry_size,u                  ; move to next entry
         bra   BBF_FindFreeSlot              ; loop     
