@@ -57,7 +57,7 @@ BBF_SetNewEntryNextentry
         ldx   #$0000                        ; (dynamic) value is dynamically set
         stx   next_entry,u                  ; link to 0000 if no more entry or next_entry
 BBF_SetNewEntryPrevLink        
-        stu   $0000                         ; (dynamic) set Lst_FreeCellFirstEntry or prev_entry.next_entry with new entry
+        stu   $FFFF                         ; (dynamic) set Lst_FreeCellFirstEntry or prev_entry.next_entry with new entry
         bra   BBF_rts
 
 BBF_ExpandAtStart

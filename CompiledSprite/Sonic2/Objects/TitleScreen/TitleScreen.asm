@@ -213,10 +213,10 @@ Sonic_PaletteFade                                *loc_12EC2:
 Sonic_PaletteFadeAfterWait                       *+
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        *ldx   #Obj_PaletteHandler3               *        lea     (TitleScreenPaletteChanger3).w,a1
+        *ldx   #Obj_PaletteHandler3              *        lea     (TitleScreenPaletteChanger3).w,a1
         *lda   #ObjID_TtlScrPalChanger
-        *sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
-        *clr   subtype,x                          *        move.b  #0,subtype(a1)
+        *sta   id,x                              *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
+        *clr   subtype,x                         *        move.b  #0,subtype(a1)
         * music unused (flag)                    *        st.b    objoff_30(a0)
         * music unused                           *        moveq   #MusID_Title,d0 ; title music
         rts                                      *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
@@ -323,7 +323,7 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldd   #$0000
         std   w_TitleScr_xy_data_index,u         *        clr.w   objoff_2C(a0)
         ldd   #$FF
-        std   b_TitleScr_final_state             *        st      objoff_2F(a0)
+        std   b_TitleScr_final_state,u            *        st      objoff_2F(a0)
         *ldd   #White_palette                     *        lea     (Normal_palette_line3).w,a1
         *std   Ptr_palette                        *        move.w  #$EEE,d0
                                                  *
@@ -368,33 +368,32 @@ Sonic_CreateSmallStar_AfterWait                  *+
                                                  *; ===========================================================================
                                                  *
 CyclingPal                                       *loc_13014:
-        bra   CyclingPal_NotYet
-        lda   Vint_runcount+1                    *        move.b  (Vint_runcount+3).w,d0
-        anda  #7 * every 8 frames                *        andi.b  #7,d0
-        bne   CyclingPal_NotYet                  *        bne.s   ++
-        ldx   w_TitleScr_color_data_index        *        move.w  objoff_2C(a0),d0
-        leax  2,x                                *        addq.w  #2,d0
-        cmpx  #CyclingPal_TitleScreen_end-CyclingPal_TitleScreen
+       *lda   Vint_runcount+1                    *        move.b  (Vint_runcount+3).w,d0
+       *anda  #7 * every 8 frames                *        andi.b  #7,d0
+       *bne   CyclingPal_NotYet                  *        bne.s   ++
+       *ldx   w_TitleScr_color_data_index,u      *        move.w  objoff_2C(a0),d0
+       *leax  2,x                                *        addq.w  #2,d0
+       *cmpx  #CyclingPal_TitleScreen_end-CyclingPal_TitleScreen
                                                  *        cmpi.w  #CyclingPal_TitleStar_End-CyclingPal_TitleStar,d0
-        blo   CyclingPal_Continue                *        blo.s   +
-        ldx   #0                                 *        moveq   #0,d0
+       *blo   CyclingPal_Continue                *        blo.s   +
+       *ldx   #0                                 *        moveq   #0,d0
 CyclingPal_Continue                              *+
-        stx   w_TitleScr_color_data_index,u      *        move.w  d0,objoff_2C(a0)
-        leax  <CyclingPal_TitleScreen-2,pcr      *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
-        ldd   ,x
-        *std   Normal_palette+$E
+       *stx   w_TitleScr_color_data_index,u      *        move.w  d0,objoff_2C(a0)
+       *leax  <CyclingPal_TitleScreen-2,pcr      *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
+       *ldd   ,x
+       *std   Normal_palette+$E
 CyclingPal_NotYet                                *+
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *; word_1303A:
 CyclingPal_TitleScreen                           *CyclingPal_TitleStar:
                                                  *        binclude "art/palettes/Title Star Cycle.bin"
-        fdb   $0F11                              * ;$0E64
-        fdb   $0E31                              * ;$0E86
-        fdb   $0F11                              * ;$0E64
-        fdb   $0E63                              * ;$0EA8
-        fdb   $0F11                              * ;$0E64
-        fdb   $0E96                              * ;$0ECA
+        *fdb   $0F11                             * ;$0E64
+        *fdb   $0E31                             * ;$0E86
+        *fdb   $0F11                             * ;$0E64
+        *fdb   $0E63                             * ;$0EA8
+        *fdb   $0F11                             * ;$0E64
+        *fdb   $0E96                             * ;$0ECA
 CyclingPal_TitleScreen_end                       *CyclingPal_TitleStar_End
                                                  *
 Sonic_xy_data                                    *word_13046:
@@ -767,20 +766,21 @@ SmallStar_MoveContinue
 * ---------------------------------------------------------------------------
 
                                                  *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-                                                 *
-                                                 *
+TitleScreen_SetFinalState_rts                    *
+        rts                                      *
 TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         tst   b_TitleScr_final_state,u           *        tst.b   objoff_2F(a0)
-        lbne  TitleScreen_SetFinalState_rts      *        bne.w   +       ; rts
+        bne  TitleScreen_SetFinalState_rts       *        bne.w   +       ; rts
         lda   Fire_Press                         *        move.b  (Ctrl_1_Press).w,d0
                                                  *        or.b    (Ctrl_2_Press).w,d0
         anda  #c1_button_A_mask|c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
                                                  *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_2_Press).w
                                                  *        andi.b  #button_start_mask,d0
-        lbeq  TitleScreen_SetFinalState_rts      *        beq.w   +       ; rts
+        beq  TitleScreen_SetFinalState_rts       *        beq.w   +       ; rts
         ldd   #$FF
-        std   b_TitleScr_final_state             *        st.b    objoff_2F(a0)
-                                                 *        move.b  #$10,routine_secondary(a0)
+        std   b_TitleScr_final_state,u           *        st.b    objoff_2F(a0)
+        lda   #$10
+        sta   routine_secondary,u                *        move.b  #$10,routine_secondary(a0)
         ldd   #Img_sonic_5
         std   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
         ldd   #$220C
@@ -866,7 +866,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         * music unused                           *        bne.s   +       ; rts
         * music unused                           *        moveq   #MusID_Title,d0 ; title music
         * music unused                           *        jsrto   (PlayMusic).l, JmpTo4_PlayMusic
-TitleScreen_SetFinalState_rts                    *+
+                                                 *+
         rts                                      *        rts
                                                  *; End of function sub_134BC
                                                  *
@@ -875,12 +875,12 @@ TitleScreen_SetFinalState_rts                    *+
                                                  *
                                                  *
                                                  *;sub_135EA:
-TitleScreen_InitSprite                           *TitleScreen_InitSprite:
+                                                 *TitleScreen_InitSprite:
                                                  *
         * vdp unused                             *        move.l  #Obj0E_MapUnc_136A8,mappings(a1)
         * vdp unused                             *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a1)
         * not implemented is override later      *        move.b  #4,priority(a1)
-        rts                                      *        rts
+        * rts                                    *        rts
                                                  *; End of function TitleScreen_InitSprite
                                                  *
                                                  *; ===========================================================================
