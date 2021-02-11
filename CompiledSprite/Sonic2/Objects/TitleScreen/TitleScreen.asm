@@ -737,12 +737,12 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
         std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         lda   #5
         sta   priority,u                         *        move.b  #5,priority(a0)
-        ldd   #$3C02
+        ldd   #$3C00
         std   xy_pixel,u                         *        move.w  #$170,x_pixel(a0)
                                                  *        move.w  #$80,y_pixel(a0)
         ldd   #Ani_smallStar
         std   anim,u                             *        move.b  #3,anim(a0)
-        ldd   #$8C
+        ldd   #$3B
         std   w_TitleScr_time_frame_countdown,u  *        move.w  #$8C,objoff_2A(a0)
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================

@@ -252,7 +252,7 @@ public class BuildDisk
 							if (curType.equals("B")) {
 								logger.debug("\t\t- BackupBackground/Draw/Erase");
 								asm.compileCode("A000");
-								curSubSprite.nb_cell = (asm.getEraseDataSize()/64)+1; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
+								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
 								curSubSprite.y_offset = asm.getY_offset();
 								curSubSprite.x_size = asm.getX_size();
@@ -277,7 +277,7 @@ public class BuildDisk
 							if (curType.equals("D")) {
 								logger.debug("\t\t- Draw");
 								// asm.compileDraw("A000");
-								curSubSprite.nb_cell = (asm.getEraseDataSize()/64)+1; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
+								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
 								curSubSprite.y_offset = asm.getY_offset();
 								curSubSprite.x_size = asm.getX_size();
