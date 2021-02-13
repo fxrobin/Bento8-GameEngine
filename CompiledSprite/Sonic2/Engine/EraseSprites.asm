@@ -179,7 +179,7 @@ ESP_SubDrawSpriteSearchInitB0
         
 ESP_SubDrawSearchB0
         cmpx  #Tbl_Sub_Object_Draw
-        beq   ESP_SubCheckOverlayB0         ; branch if no more sub objects
+        beq   ESP_NextObjectB0              ; branch if no more sub objects
         ldy   ,--x
 
 ESP_SubDrawCheckCollisionB0
@@ -281,7 +281,7 @@ ESP_SubDrawSpriteSearchInitB1
         
 ESP_SubDrawSearchB1
         cmpx  #Tbl_Sub_Object_Draw
-        beq   ESP_SubCheckOverlayB1         ; branch if no more sub objects
+        beq   ESP_NextObjectB1              ; branch if no more sub objects
         ldy   ,--x
 
 ESP_SubDrawCheckCollisionB1

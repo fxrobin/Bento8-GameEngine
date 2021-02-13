@@ -25,7 +25,7 @@ CSR_Start
         bne   CSR_SetBuffer1
         
 CSR_SetBuffer0        
-        lda   #rsv_buffer_0                 ; set offset a to object variables that belongs to screen buffer 0
+        lda   #rsv_buffer_0                 ; set offset to object variables that belongs to screen buffer 0
         sta   CSR_ProcessEachPriorityLevel+2    
 CSR_P8B0
         ldu   DPS_buffer_0+buf_Tbl_Priority_First_Entry+16 ; read DPS from priority 8 to priority 1
@@ -79,7 +79,7 @@ CSR_rtsB0
         rts
         
 CSR_SetBuffer1       
-        lda   #rsv_buffer_1                 ; set offset a to object variables that belongs to screen buffer 1
+        lda   #rsv_buffer_1                 ; set offset to object variables that belongs to screen buffer 1
         sta   CSR_ProcessEachPriorityLevel+2        
 CSR_P8B1
         ldu   DPS_buffer_1+buf_Tbl_Priority_First_Entry+16 ; read DPS from priority 8 to priority 1
@@ -212,8 +212,14 @@ CSR_CheckVerticalPosition
         ldy   rsv_curr_mapping_frame,u        
         addb  image_y_size_l,y
         bcs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
+        stb   rsv_y2_pixel,u        
         cmpb  #screen_height
         bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
+        
+        ldb   x_pixel,u
+        addb  image_x_size_l,y
+        stb   rsv_x2_pixel,u
+        
         lda   rsv_render_flags,u
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
         sta   rsv_render_flags,u
@@ -279,15 +285,21 @@ CSR_CheckDraw
         
 CSR_SetDrawTrue 
         lda   rsv_render_flags,u
-        ora   #rsv_render_displaysprite_mask    
+        ora   #rsv_render_displaysprite_mask ; set displaysprite flag   
         sta   rsv_render_flags,u         
         
+        lda   rsv_render_flags,u
+        anda  #rsv_render_erasesprite_mask 
+        cmpa  buf_onscreen,x
+        bne   CSR_SetHide         
+        
+        stu   ,y++
+        sty   cur_ptr_sub_obj_draw          ; maintain list of changing sprites to draw, should be to draw and ((on screen and to erase) or (not on screen and not to erase))  
+
+CSR_SetHide        
         lda   render_flags,u
         ora   #render_hide_mask             ; set hide flag
         sta   render_flags,u        
-        
-        stu   ,y++
-        sty   cur_ptr_sub_obj_draw
         
         ldu   buf_priority_next_obj,x
         lbne   CSR_ProcessEachPriorityLevel   
