@@ -116,8 +116,10 @@ DRS_ProcessEachPriorityLevelB0
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_0,x                ; store pointer to saved background data
-        ldd   rsv_xy2_pixel,x               ; load x' and y' in one operation
-        std   rsv_prev_xy2_pixel_0,x        ; save as previous x' and y'
+        ldd   rsv_xy1_pixel,x               ; load x' and y' in one operation
+        std   rsv_prev_xy1_pixel_0,x        ; save as previous x' and y'        
+        ldd   rsv_xy2_pixel,x               ; load x'' and y'' in one operation
+        std   rsv_prev_xy2_pixel_0,x        ; save as previous x'' and y''
         lda   #$01
         sta   rsv_onscreen_0,x              ; set the onscreen flag
 DRS_NextObjectB0        
@@ -209,8 +211,10 @@ DRS_ProcessEachPriorityLevelB1
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_1,x                ; store pointer to saved background data
-        ldd   rsv_xy2_pixel,x               ; load x' and y' in one operation
-        std   rsv_prev_xy2_pixel_1,x        ; save as previous x' and y'
+        ldd   rsv_xy1_pixel,x               ; load x' and y' in one operation
+        std   rsv_prev_xy1_pixel_1,x        ; save as previous x' and y'        
+        ldd   rsv_xy2_pixel,x               ; load x'' and y'' in one operation
+        std   rsv_prev_xy2_pixel_1,x        ; save as previous x'' and y''
         lda   #$01
         sta   rsv_onscreen_1,x              ; set the onscreen flag
 DRS_NextObjectB1        

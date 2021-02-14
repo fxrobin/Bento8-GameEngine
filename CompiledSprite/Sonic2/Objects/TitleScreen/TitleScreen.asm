@@ -95,6 +95,7 @@ TitleScr_Object_RAM_End equ Object_RAM+(object_size*10)
 w_TitleScr_time_frame_count     equ ext_variables
 w_TitleScr_time_frame_countdown equ ext_variables+2
 w_TitleScr_move_frame_count     equ ext_variables+2
+w_TitleScr_ss_move_frame_count  equ ext_variables+4
 w_TitleScr_xy_data_index        equ ext_variables+4
 w_TitleScr_color_data_index     equ ext_variables+4
 b_TitleScr_final_state          equ ext_variables+6
@@ -564,7 +565,7 @@ LargeStar_Init                                   *Obj0E_LargeStar_Init:
         * not implemented                        *        ori.w   #high_priority,art_tile(a0)
         ldd   #Ani_largeStar
         std   anim,u                             *        move.b  #2,anim(a0)
-        ldb   #$01
+        ldb   #$02
         stb   priority,u                         *        move.b  #1,priority(a0)
         ldd   #$201C
         std   xy_pixel,u                         *        move.w  #$100,x_pixel(a0)
@@ -737,13 +738,15 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
         std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
         lda   #5
         sta   priority,u                         *        move.b  #5,priority(a0)
-        ldd   #$3C00
+        ldd   #$3600
         std   xy_pixel,u                         *        move.w  #$170,x_pixel(a0)
                                                  *        move.w  #$80,y_pixel(a0)
         ldd   #Ani_smallStar
         std   anim,u                             *        move.b  #3,anim(a0)
-        ldd   #$3B
+        ldd   #$69
         std   w_TitleScr_time_frame_countdown,u  *        move.w  #$8C,objoff_2A(a0)
+        ldd   #$0000
+        std   w_TitleScr_ss_move_frame_count
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *
@@ -754,8 +757,15 @@ SmallStar_Move                                   *loc_132D2:
         bpl   SmallStar_MoveContinue
         jmp   DeleteObject                       *        bmi.w   DeleteObject
 SmallStar_MoveContinue
+        ldd   w_TitleScr_ss_move_frame_count,u
+        addd  #1
+        std   w_TitleScr_ss_move_frame_count,u
+        andb  #1 * one frame on two
+        bne   SmallStar_KeepPosition
         dec   x_pixel,u                          *        subq.w  #2,x_pixel(a0)
         inc   y_pixel,u                          *        addq.w  #1,y_pixel(a0)
+        inc   y_pixel,u
+SmallStar_KeepPosition       
         * no more offset table                   *        lea     (Ani_obj0E).l,a1
         jsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
