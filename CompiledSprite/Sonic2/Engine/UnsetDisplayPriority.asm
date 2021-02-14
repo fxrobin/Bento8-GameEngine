@@ -127,7 +127,7 @@ UDP_CheckDeleteB1
         lda   render_flags,u
         anda  #render_todelete_mask
         beq   UDP_SetNewPrioB1
-        lda   rsv_onscreen_1,u
+        lda   rsv_onscreen_0,u
         bne   UDP_SetNewPrioB1
         lda   rsv_onscreen_1,u
         bne   UDP_SetNewPrioB1

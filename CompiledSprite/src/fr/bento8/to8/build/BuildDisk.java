@@ -823,10 +823,10 @@ public class BuildDisk
 		line [11] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
 		line [12] = String.format("$%1$02X", s.y_offset >> 8 & 0xFF);		
 		line [13] = String.format("$%1$02X", s.y_offset & 0xFF); // signed value
-		line [14] = String.format("$%1$02X", s.x_size >> 8);		
-		line [15] = String.format("$%1$02X", s.x_size); // unsigned value
-		line [16] = String.format("$%1$02X", s.y_size >> 8);		
-		line [17] = String.format("$%1$02X", s.y_size); // unsigned value
+		line [14] = String.format("$%1$02X", (s.x_size-1) >> 8);		
+		line [15] = String.format("$%1$02X", s.x_size-1); // unsigned value
+		line [16] = String.format("$%1$02X", (s.y_size-1) >> 8);		
+		line [17] = String.format("$%1$02X", s.y_size-1); // unsigned value
 		return line;
 	}
 

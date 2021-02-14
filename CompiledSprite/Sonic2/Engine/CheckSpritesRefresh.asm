@@ -273,7 +273,7 @@ CSR_SetEraseTrue
         stu   ,y++
         sty   cur_ptr_sub_obj_erase
                 
-        bra   CSR_CheckDraw
+        lbra   CSR_CheckDraw
         
 CSR_SubEraseSpriteSearchInit
 
@@ -285,23 +285,45 @@ CSR_SubEraseSpriteSearchInit
         * and displayed at another position : both cases should be tested !
         
         lds   rsv_ptr_sub_object_erase,u
+        lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
+        bne   CSR_SubEraseSearchB1
         
-CSR_SubEraseSearch
+CSR_SubEraseSearchB0
         cmps  #Tbl_Sub_Object_Erase
         beq   CSR_SubDrawSpriteSearchInit   ; branch if no more sub objects
         ldy   ,--s
         
-CSR_SubEraseCheckCollision
+CSR_SubEraseCheckCollisionB0
         ldd   rsv_prev_xy1_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
-        bhs   CSR_SubEraseSearch
+        bhs   CSR_SubEraseSearchB0
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
-        bhs   CSR_SubEraseSearch
+        bhs   CSR_SubEraseSearchB0
         ldd   rsv_prev_xy2_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
-        bls   CSR_SubEraseSearch
+        bls   CSR_SubEraseSearchB0
         cmpb  rsv_y1_pixel,u                ;     entry : y_pixel
-        bls   CSR_SubEraseSearch
+        bls   CSR_SubEraseSearchB0
+        
+        ldy   cur_ptr_sub_obj_erase
+        bra   CSR_SetEraseTrue              ; found a collision
+
+CSR_SubEraseSearchB1
+        cmps  #Tbl_Sub_Object_Erase
+        beq   CSR_SubDrawSpriteSearchInit   ; branch if no more sub objects
+        ldy   ,--s
+        
+CSR_SubEraseCheckCollisionB1
+        ldd   rsv_prev_xy1_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 and rsv_prev_y_pixel_1 in one instruction
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
+        bhs   CSR_SubEraseSearchB1
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
+        bhs   CSR_SubEraseSearchB1
+        ldd   rsv_prev_xy2_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 + rsv_prev_mapping_frame_1.x_size and rsv_prev_y_pixel_1 + rsv_prev_mapping_frame_1.y_size in one instruction
+        cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
+        bls   CSR_SubEraseSearchB1
+        cmpb  rsv_y1_pixel,u                ;     entry : y_pixel
+        bls   CSR_SubEraseSearchB1
         
         ldy   cur_ptr_sub_obj_erase
         bra   CSR_SetEraseTrue              ; found a collision
@@ -327,7 +349,7 @@ CSR_SubDrawCheckCollision
         bls   CSR_SubDrawSearch
         
         ldy   cur_ptr_sub_obj_erase
-        bra   CSR_SetEraseTrue              ; found a collision
+        lbra   CSR_SetEraseTrue              ; found a collision
 
 CSR_SetEraseFalse
         lda   rsv_render_flags,u 
@@ -359,7 +381,7 @@ CSR_SetDrawTrue
         
         lda   rsv_render_flags,u
         anda  #rsv_render_erasesprite_mask
-        lsra                                ; BEWARE depend on rsv_render_erasesprite_mask value (here should be 2)      
+        lsra                                ; DEPENDECY on rsv_render_erasesprite_mask value (here should be 2)      
         cmpa  buf_onscreen,x
         bne   CSR_SetHide         
         

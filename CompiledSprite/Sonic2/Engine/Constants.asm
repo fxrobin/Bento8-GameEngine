@@ -69,7 +69,7 @@ image_meta_size               equ 18 ; number of bytes for each image reference
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 59
+nb_dynamic_objects            equ 1 * 59 max 64 total
 nb_level_objects              equ 3
 nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_level_objects
 
@@ -77,7 +77,7 @@ nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_le
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ 84 ; the size of an object
+object_size                   equ 86 ; the size of an object - DEPENDENCY ClearObj routine
 next_object                   equ object_size
 
 id                            equ 0           ; reference to object model id (ObjID_) (0: free slot)
@@ -140,7 +140,7 @@ rsv_render_flags              equ 41
 
 * --- rsv_render_flags bitfield variables ---
 rsv_render_checkrefresh_mask  equ $01 ; (bit 0) if erasesprite and display sprite flag are processed for this frame
-rsv_render_erasesprite_mask   equ $02 ; (bit 1) if a sprite need to be cleared on screen
+rsv_render_erasesprite_mask   equ $02 ; (bit 1) if a sprite need to be cleared on screen - DEPENDENCY adapt CSR_SetDrawTrue routine
 rsv_render_displaysprite_mask equ $04 ; (bit 2) if a sprite need to be rendered on screen
 rsv_render_outofrange_mask    equ $08 ; (bit 3) if a sprite is out of range for full rendering in screen
 
@@ -170,27 +170,27 @@ rsv_prev_y_pixel_0            equ 64 ; previous y screen coordinate b, must foll
 rsv_prev_xy1_pixel_0          equ 65 ;
 rsv_prev_x1_pixel_0           equ 65 ; previous x+x_offset-(x_size/2) screen coordinate b
 rsv_prev_y1_pixel_0           equ 66 ; previous y+y_offset-(y_size/2) screen coordinate b, must follow x1_pixel
-rsv_prev_xy2_pixel_0          equ 65 ;
-rsv_prev_x2_pixel_0           equ 65 ; previous x+x_offset+(x_size/2) screen coordinate b
-rsv_prev_y2_pixel_0           equ 66 ; previous y+y_offset+(y_size/2) screen coordinate b, must follow x2_pixel
-rsv_onscreen_0                equ 67 ; has been rendered on screen buffer 0
+rsv_prev_xy2_pixel_0          equ 67 ;
+rsv_prev_x2_pixel_0           equ 67 ; previous x+x_offset+(x_size/2) screen coordinate b
+rsv_prev_y2_pixel_0           equ 68 ; previous y+y_offset+(y_size/2) screen coordinate b, must follow x2_pixel
+rsv_onscreen_0                equ 69 ; has been rendered on screen buffer 0
 
-rsv_buffer_1                  equ 68 ; Start index of buffer 1 variables
-rsv_priority_1                equ 68 ; internal value that hold priority in video buffer 1
-rsv_priority_prev_obj_1       equ 69 ; and 70 ; previous object (OST address) in display priority list for video buffer 1 (0000 if none) w
-rsv_priority_next_obj_1       equ 71 ; and 72 ; next object (OST address) in display priority list for video buffer 1 (0000 if none) w
-rsv_prev_mapping_frame_1      equ 73 ; and 74 ; reference to previous image in video buffer 1 (Img_) (0000 if no image) w
-rsv_bgdata_1                  equ 75 ; and 76 ; address of background data in screen 1 w
-rsv_prev_xy_pixel_1           equ 77 ;
-rsv_prev_x_pixel_1            equ 77 ; previous x screen coordinate b
-rsv_prev_y_pixel_1            equ 78 ; previous y screen coordinate b, must follow x_pixel
-rsv_prev_xy1_pixel_1          equ 79 ;
-rsv_prev_x1_pixel_1           equ 79 ; previous x+x_size screen coordinate b
-rsv_prev_y1_pixel_1           equ 80 ; previous y+y_size screen coordinate b, must follow x_pixel
-rsv_prev_xy2_pixel_1          equ 81 ;
-rsv_prev_x2_pixel_1           equ 81 ; previous x+x_size screen coordinate b
-rsv_prev_y2_pixel_1           equ 82 ; previous y+y_size screen coordinate b, must follow x_pixel
-rsv_onscreen_1                equ 83 ; has been rendered on screen buffer 1
+rsv_buffer_1                  equ 70 ; Start index of buffer 1 variables
+rsv_priority_1                equ 70 ; internal value that hold priority in video buffer 1
+rsv_priority_prev_obj_1       equ 71 ; and 72 ; previous object (OST address) in display priority list for video buffer 1 (0000 if none) w
+rsv_priority_next_obj_1       equ 73 ; and 74 ; next object (OST address) in display priority list for video buffer 1 (0000 if none) w
+rsv_prev_mapping_frame_1      equ 75 ; and 76 ; reference to previous image in video buffer 1 (Img_) (0000 if no image) w
+rsv_bgdata_1                  equ 77 ; and 78 ; address of background data in screen 1 w
+rsv_prev_xy_pixel_1           equ 79 ;
+rsv_prev_x_pixel_1            equ 79 ; previous x screen coordinate b
+rsv_prev_y_pixel_1            equ 80 ; previous y screen coordinate b, must follow x_pixel
+rsv_prev_xy1_pixel_1          equ 81 ;
+rsv_prev_x1_pixel_1           equ 81 ; previous x+x_size screen coordinate b
+rsv_prev_y1_pixel_1           equ 82 ; previous y+y_size screen coordinate b, must follow x_pixel
+rsv_prev_xy2_pixel_1          equ 83 ;
+rsv_prev_x2_pixel_1           equ 83 ; previous x+x_size screen coordinate b
+rsv_prev_y2_pixel_1           equ 84 ; previous y+y_size screen coordinate b, must follow x_pixel
+rsv_onscreen_1                equ 85 ; has been rendered on screen buffer 1
 
 buf_priority                  equ 0  ; offset for each rsv_buffer variables
 buf_priority_prev_obj         equ 1  ;

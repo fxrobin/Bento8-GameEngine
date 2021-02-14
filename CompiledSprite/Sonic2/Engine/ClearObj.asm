@@ -25,6 +25,7 @@ ClearObj *@globals
         pshu  d,x,y,s
         pshu  d,x,y,s
         pshu  d,x,y,s
+        pshu  d,x,y      ; DEPENDENCY on object_size definition
 CLO_1        
         lds   #$0000
 CLO_2        
