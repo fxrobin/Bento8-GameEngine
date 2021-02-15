@@ -47,7 +47,7 @@ PalInit
 PalRun
         lda   ,y			           * chargement de la composante verte et rouge
         anda  pal_mask                 * on efface la valeur vert ou rouge par masque
-        ldb   #$FF                     * composante verte et rouge couleur cible
+        ldb   #$00                     * composante verte et rouge couleur cible
         andb  pal_mask                 * on efface la valeur vert ou rouge par masque
         stb   pal_buffer               * on stocke la valeur cible pour comparaison
         ldb   #$11                     * preparation de la valeur d'increment de couleur
@@ -70,7 +70,7 @@ PalVRSuivante
 	    
 SetPalBleu
         ldb   1,y			           * chargement composante bleue courante
-        cmpb  #$0F                     * comparaison composante courante et cible
+        cmpb  #$00                     * comparaison composante courante et cible
         beq   SetPalNext               * si composante est egale a la cible on passe
         bhi   SetPalBleudec            * si la composante est superieure on branche
         incb                           * on incremente la composante bleue
@@ -202,7 +202,7 @@ pal_len
 end_pal_len
    
 pal_cycles
-        fcb   $0F                      * nombre de frames de la transition (VSYNC)
+        fcb   $20                      * nombre de frames de la transition (VSYNC)
 								       
 pal_mask                               
         fcb   $0F                      * masque pour l'aternance du traitemet vert/rouge

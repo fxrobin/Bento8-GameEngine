@@ -54,7 +54,7 @@ public class BuildDisk
 	public static String binTmpFile = "TMP.BIN";
 	public static String lstTmpFile = "codes.lst";
 	
-	private static int IMAGE_META_SIZE = 18;
+	private static int IMAGE_META_SIZE = 20;
 
 	/**
 	 * Génère une image de disquette dans les formats .fd et .sd pour 
@@ -254,7 +254,8 @@ public class BuildDisk
 								asm.compileCode("A000");
 								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
-								curSubSprite.y_offset = asm.getY_offset();
+								curSubSprite.x1_offset = asm.getX1_offset();
+								curSubSprite.y1_offset = asm.getY1_offset();
 								curSubSprite.x_size = asm.getX_size();
 								curSubSprite.y_size = asm.getY_size();
 
@@ -279,7 +280,8 @@ public class BuildDisk
 								// asm.compileDraw("A000");
 								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
-								curSubSprite.y_offset = asm.getY_offset();
+								curSubSprite.x1_offset = asm.getX1_offset();
+								curSubSprite.y1_offset = asm.getY1_offset();
 								curSubSprite.x_size = asm.getX_size();
 								curSubSprite.y_size = asm.getY_size();
 								
@@ -294,7 +296,7 @@ public class BuildDisk
 						}
 
 						sprite.setSubSprite(curFlip, curSubSprite);
-						asmImgIndex.addFcb(new String[] {"00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00"});
+						asmImgIndex.addFcb(new String[] {"00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00"});
 					}
 
 					// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
@@ -522,19 +524,17 @@ public class BuildDisk
 				Act act = gameMode.getValue().acts.get(gameMode.getValue().actBoot);
 
 				if (act != null) {
-					if (act.paletteFileName != null) {
-						AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));
-						asmPalette.addLabel(act.paletteName + " * @globals");
-						asmPalette.add(PaletteTO8.getPaletteData(act.paletteFileName));
-						asmPalette.flush();
 
-						asmLoadAct.add("        ldd   #" + act.paletteName);
-						asmLoadAct.add("        std   Ptr_palette");
-						asmLoadAct.add("        jsr   UpdatePalette");
-
-						content += "        INCLUD PALETTE\n";
-						content += "        INCLUD UPDTPAL\n";
-					}
+					asmLoadAct.add("        ldd   #Black_palette");
+					asmLoadAct.add("        std   Ptr_palette");
+					asmLoadAct.add("        jsr   UpdatePalette");
+					
+					if (act.bgColorIndex != null) {
+						asmLoadAct.add("        ldx   #$3333                   * set Background solid color");
+						asmLoadAct.add("        ldb   #$62                     * load page 2");						
+						asmLoadAct.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
+						asmLoadAct.add("        jsr   ClearCartMem");
+					}					
 
 					if (act.screenBorder != null) {
 						asmLoadAct.add("        lda   $E7DD                    * set border color");
@@ -547,13 +547,11 @@ public class BuildDisk
 					}
 
 					if (act.bgColorIndex != null) {
+						asmLoadAct.add("        jsr   WaitVBL");						
 						asmLoadAct.add("        ldx   #$3333                   * set Background solid color");
-						asmLoadAct.add("        ldb   #$63                     * load page 3");
+						asmLoadAct.add("        ldb   #$63                     * load page 3");						
 						asmLoadAct.add("        stb   $E7E6                    * in cardtridge space ($0000-$3FFF)");
 						asmLoadAct.add("        jsr   ClearCartMem");						
-						asmLoadAct.add("        ldb   #$62                     * load page 2");
-						asmLoadAct.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
-						asmLoadAct.add("        jsr   ClearCartMem");
 
 						content += "        INCLUD CLRCARTM\n";
 					}
@@ -564,6 +562,20 @@ public class BuildDisk
 
 						content += "        INCLUD CPYIMG\n";
 					}
+					
+					if (act.paletteFileName != null) {
+						AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));
+						asmPalette.addLabel(act.paletteName + " * @globals");
+						asmPalette.add(PaletteTO8.getPaletteData(act.paletteFileName));
+						asmPalette.flush();
+
+						asmLoadAct.add("        ldd   #" + act.paletteName);
+						asmLoadAct.add("        std   Ptr_palette");
+						asmLoadAct.add("        jsr   UpdatePalette");
+
+						content += "        INCLUD PALETTE\n";
+						content += "        INCLUD UPDTPAL\n";
+					}					
 				}
 			}
 			
@@ -576,7 +588,7 @@ public class BuildDisk
 
 				// MAIN ENGINE - Génération des index Images
 				// --------------------------------------------------------------------------------------
-				asmImgIndex.add("ImgMeta_size equ " + IMAGE_META_SIZE);
+				//asmImgIndex.add("ImgMeta_size equ " + IMAGE_META_SIZE);
 				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
 					writeImgIndex(asmImgIndex, sprite.getValue());
 				}
@@ -821,12 +833,14 @@ public class BuildDisk
 		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
 		line [10] = String.format("$%1$02X", s.x_offset >> 8 & 0xFF);
 		line [11] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
-		line [12] = String.format("$%1$02X", s.y_offset >> 8 & 0xFF);		
-		line [13] = String.format("$%1$02X", s.y_offset & 0xFF); // signed value
-		line [14] = String.format("$%1$02X", (s.x_size-1) >> 8);		
-		line [15] = String.format("$%1$02X", s.x_size-1); // unsigned value
-		line [16] = String.format("$%1$02X", (s.y_size-1) >> 8);		
-		line [17] = String.format("$%1$02X", s.y_size-1); // unsigned value
+		line [12] = String.format("$%1$02X", s.x1_offset >> 8 & 0xFF);		
+		line [13] = String.format("$%1$02X", s.x1_offset & 0xFF); // signed value		
+		line [14] = String.format("$%1$02X", s.y1_offset >> 8 & 0xFF);		
+		line [15] = String.format("$%1$02X", s.y1_offset & 0xFF); // signed value
+		line [16] = String.format("$%1$02X", (s.x_size) >> 8);		
+		line [17] = String.format("$%1$02X", s.x_size); // unsigned value
+		line [18] = String.format("$%1$02X", (s.y_size) >> 8);		
+		line [19] = String.format("$%1$02X", s.y_size); // unsigned value
 		return line;
 	}
 

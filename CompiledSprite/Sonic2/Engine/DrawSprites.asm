@@ -156,9 +156,10 @@ DRS_dyn4B0
 ********************************************************************************
 
 DRS_XYToAddress
-*        suba  #$30
-*        subb  #$1C
-        lsra                                ; x=x/2, sprites moves by 2 pixels on x axis  
+        suba  #$30
+        subb  #$1C
+        lsra                                ; x=x/2, sprites moves by 2 pixels on x axis
+        lsra                                ; x=x/2, RAMA RAMB enterlace  
         bcs   DRS_XYToAddressRAMBFirst      ; Branch if write must begin in RAMB first
 DRS_XYToAddressRAMAFirst
         sta   DRS_dyn1+2

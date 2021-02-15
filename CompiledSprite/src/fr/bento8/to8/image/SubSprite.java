@@ -14,7 +14,8 @@ public class SubSprite {
 
 	public int nb_cell;
 	public int x_offset;
-	public int y_offset;
+	public int x1_offset;	
+	public int y1_offset;
 	public int x_size;
 	public int y_size;
 

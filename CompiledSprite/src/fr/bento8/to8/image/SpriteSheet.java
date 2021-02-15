@@ -30,8 +30,9 @@ public class SpriteSheet {
 
 	private byte[][][] pixels;
 	private byte[][][] data;
-	int[] x_offset; // position haut gauche de l'image par rapport au centre			
-	int[] y_offset; // position haut gauche de l'image par rapport au centre		
+	int[] x_offset; // position x du premier pixel en haut gauche de l'image par rapport au centre			
+	int[] x1_offset; // position haut gauche de l'image par rapport au centre
+	int[] y1_offset; // position haut gauche de l'image par rapport au centre		
 	int[] x_size; // largeur de l'image en pixel (sans les pixels transparents)		
 	int[] y_size; // hauteur de l'image en pixel (sans les pixels transparents)		
 	int center; // position du centre de l'image (dans le référentiel pixels)	
@@ -104,7 +105,8 @@ public class SpriteSheet {
 		pixels = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 		data = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
 		x_offset = new int[subImageNb];
-		y_offset = new int[subImageNb];		
+		x1_offset = new int[subImageNb];
+		y1_offset = new int[subImageNb];		
 		x_size = new int[subImageNb];		
 		y_size = new int[subImageNb];
 		int size = (80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2);
@@ -133,10 +135,11 @@ public class SpriteSheet {
 					if (firstPixel) {
 						firstPixel = false;
 						x_offset[position] = indexDest*2+page*2-(160*curLine)-(width/2);
-						y_offset[position] = curLine-((height-1)/2);
+						y1_offset[position] = curLine-((height-1)/2);
 					}
 					if (indexDest*2+page*2-(160*curLine) < x_Min) {
 						x_Min = indexDest*2+page*2-(160*curLine);
+						x1_offset[position] = x_Min-(width/2);
 					}
 					if (indexDest*2+page*2-(160*curLine) > x_Max) {
 						x_Max = indexDest*2+page*2-(160*curLine);
@@ -147,8 +150,8 @@ public class SpriteSheet {
 					if (curLine > y_Max) {
 						y_Max = curLine;
 					}
-					x_size[position] = x_Max-x_Min+1;
-					y_size[position] = y_Max-y_Min+1;
+					x_size[position] = x_Max-x_Min;
+					y_size[position] = y_Max-y_Min;
 				}
 				index++;
 
@@ -168,10 +171,11 @@ public class SpriteSheet {
 						if (firstPixel) {
 							firstPixel = false;
 							x_offset[position] = indexDest*2+page*2+1-(160*curLine)-(width/2);
-							y_offset[position] = curLine-((height-1)/2);				
+							y1_offset[position] = curLine-((height-1)/2);				
 						}
 						if (indexDest*2+page*2+1-(160*curLine) < x_Min) {
 							x_Min = indexDest*2+page*2+1-(160*curLine);
+							x1_offset[position] = x_Min-(width/2);							
 						}
 						if (indexDest*2+page*2+1-(160*curLine) > x_Max) {
 							x_Max = indexDest*2+page*2+1-(160*curLine);
@@ -182,8 +186,8 @@ public class SpriteSheet {
 						if (curLine > y_Max) {
 							y_Max = curLine;
 						}		
-						x_size[position] = x_Max-x_Min+1;
-						y_size[position] = y_Max-y_Min+1;	
+						x_size[position] = x_Max-x_Min;
+						y_size[position] = y_Max-y_Min;	
 					}
 					index++;
 
@@ -240,8 +244,12 @@ public class SpriteSheet {
 		return x_offset[subImagePos];
 	}
 
-	public int getSubImageYOffset(int subImagePos) {
-		return y_offset[subImagePos];
+	public int getSubImageX1Offset(int subImagePos) {
+		return x1_offset[subImagePos];
+	}	
+	
+	public int getSubImageY1Offset(int subImagePos) {
+		return y1_offset[subImagePos];
 	}
 
 	public int getSubImageXSize(int subImagePos) {

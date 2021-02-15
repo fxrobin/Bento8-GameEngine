@@ -23,7 +23,8 @@ dk_destination                equ $604F
 * ===========================================================================
 
 screen_width                  equ 160 ; screen width in pixel
-screen_height                 equ 200 ; screen height in pixel
+screen_top                    equ 28 ; in pixel
+screen_bottom                 equ 200+28 ; in pixel
 nb_priority_levels            equ 8   ; number of priority levels (need code change if modified)
 
 * ===========================================================================
@@ -56,22 +57,24 @@ erase_routine                 equ 7
 erase_nb_cell                 equ 9
 image_x_offset                equ 10
 image_x_offset_l              equ 11
-image_y_offset                equ 12
-image_y_offset_l              equ 13
-image_x_size                  equ 14 
-image_x_size_l                equ 15
-image_y_size                  equ 16
-image_y_size_l                equ 17
-image_meta_size               equ 18 ; number of bytes for each image reference
+image_x1_offset               equ 12
+image_x1_offset_l             equ 13
+image_y1_offset               equ 14
+image_y1_offset_l             equ 15
+image_x_size                  equ 16 
+image_x_size_l                equ 17
+image_y_size                  equ 18
+image_y_size_l                equ 19
+image_meta_size               equ 20 ; number of bytes for each image reference
 
 * ===========================================================================
 * Object Constants
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 1 * 59 max 64 total
+nb_dynamic_objects            equ 1
 nb_level_objects              equ 3
-nb_objects                    equ (nb_reserved_objects+nb_dynamic_objects)+nb_level_objects
+nb_objects                    equ 6 * max 64 total
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets

@@ -177,14 +177,14 @@ CSR_CheckPlayFieldCoord
 
         ldd   y_pos,u
         subd  Glb_Camera_Y_Pos
-        addd  image_y_offset,y
+        addd  image_y1_offset,y
         bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image        
         bmi   CSR_SetOutOfRange             ; branch if (y_pixel < 0)
         stb   y_pixel,u        
         addb  image_y_size_l,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         stb   rsv_y2_pixel,u
-        cmpb  #screen_height
+        cmpb  #screen_bottom
         bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
         lda   rsv_render_flags,u
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
@@ -217,18 +217,23 @@ CSR_NextObject
         rts
 
 CSR_CheckVerticalPosition
-        ldb   y_pixel,u                     ; in screen coordinate mode, image offset is managed by object
+        ldb   y_pixel,u
         ldy   rsv_curr_mapping_frame,u
-        addb  image_y_offset_l,y
+        
+        addb  image_y1_offset_l,y
         stb   rsv_y1_pixel,u
+
+        cmpb  #screen_top
+        bcs   CSR_SetOutOfRange
+        
         addb  image_y_size_l,y
-        bcs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
-        stb   rsv_y2_pixel,u        
-        cmpb  #screen_height
-        bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
+        stb   rsv_y2_pixel,u
+
+        cmpb  #screen_bottom
+        bhi   CSR_SetOutOfRange
         
         ldb   x_pixel,u
-        addb  image_x_offset_l,y
+        addb  image_x1_offset_l,y
         stb   rsv_x1_pixel,u
         addb  image_x_size_l,y
         stb   rsv_x2_pixel,u

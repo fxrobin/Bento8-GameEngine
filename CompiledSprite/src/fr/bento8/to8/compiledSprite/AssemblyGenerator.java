@@ -35,7 +35,8 @@ public class AssemblyGenerator{
 	private int sizeEFrameCode;
 	
 	private int x_offset;
-	private int y_offset;
+	private int x1_offset;
+	private int y1_offset;
 	private int x_size;
 	private int y_size;
 
@@ -66,7 +67,8 @@ public class AssemblyGenerator{
 	public AssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName();
 		x_offset = spriteSheet.getSubImageXOffset(imageNum);
-		y_offset = spriteSheet.getSubImageYOffset(imageNum);
+		x1_offset = spriteSheet.getSubImageX1Offset(imageNum);
+		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
 		x_size = spriteSheet.getSubImageXSize(imageNum);
 		y_size = spriteSheet.getSubImageYSize(imageNum);		
 
@@ -481,8 +483,12 @@ public class AssemblyGenerator{
 		return x_offset;
 	}
 
-	public int getY_offset() {
-		return y_offset;
+	public int getX1_offset() {
+		return x1_offset;
+	}	
+	
+	public int getY1_offset() {
+		return y1_offset;
 	}
 
 	public int getX_size() {
