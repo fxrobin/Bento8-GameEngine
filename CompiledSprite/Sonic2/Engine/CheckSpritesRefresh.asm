@@ -165,11 +165,11 @@ CSR_CheckPlayFieldCoord
         ldd   x_pos,u
         subd  Glb_Camera_X_Pos
         ldy   rsv_curr_mapping_frame,u
-        addd  image_x_offset,y
+        *addd  image_x_offset,y
         lbvs   CSR_SetOutOfRange             ; top left coordinate overflow of image
         lbmi   CSR_SetOutOfRange             ; branch if (x_pixel < 0)
         stb   x_pixel,u
-        addb  image_x_size_l,y
+        *addb  image_x_size_l,y
         lbvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         stb   rsv_x2_pixel,u
         cmpb  #screen_width
@@ -177,11 +177,11 @@ CSR_CheckPlayFieldCoord
 
         ldd   y_pos,u
         subd  Glb_Camera_Y_Pos
-        addd  image_y1_offset,y
+        *addd  image_y1_offset,y
         bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image        
         bmi   CSR_SetOutOfRange             ; branch if (y_pixel < 0)
         stb   y_pixel,u        
-        addb  image_y_size_l,y
+        *addb  image_y_size_l,y
         bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
         stb   rsv_y2_pixel,u
         cmpb  #screen_bottom

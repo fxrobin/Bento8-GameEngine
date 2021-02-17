@@ -25,7 +25,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import fr.bento8.to8.boot.Bootloader;
-import fr.bento8.to8.compiledSprite.AssemblyGenerator;
+import fr.bento8.to8.compiledSprite.backupDrawErase.AssemblyGenerator;
 import fr.bento8.to8.disk.DataIndex;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PaletteTO8;
@@ -54,7 +54,7 @@ public class BuildDisk
 	public static String binTmpFile = "TMP.BIN";
 	public static String lstTmpFile = "codes.lst";
 	
-	private static int IMAGE_META_SIZE = 20;
+	private static int IMAGE_META_SIZE = 15;
 
 	/**
 	 * Génère une image de disquette dans les formats .fd et .sd pour 
@@ -222,6 +222,12 @@ public class BuildDisk
 
 		// génération du sprite compilé
 		SubSprite curSubSprite;
+		
+		String[] blankImageMeta = new String[IMAGE_META_SIZE];
+		String doubleZero = "00";
+		for (int i = 0; i < IMAGE_META_SIZE; i++) {
+			blankImageMeta[i] = doubleZero;
+		}
 
 		// Parcours de tous les objets de chaque Game Mode
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
@@ -296,7 +302,7 @@ public class BuildDisk
 						}
 
 						sprite.setSubSprite(curFlip, curSubSprite);
-						asmImgIndex.addFcb(new String[] {"00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00","00"});
+						asmImgIndex.addFcb(blankImageMeta);
 					}
 
 					// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
@@ -831,16 +837,11 @@ public class BuildDisk
 		}
 		
 		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
-		line [10] = String.format("$%1$02X", s.x_offset >> 8 & 0xFF);
-		line [11] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
-		line [12] = String.format("$%1$02X", s.x1_offset >> 8 & 0xFF);		
-		line [13] = String.format("$%1$02X", s.x1_offset & 0xFF); // signed value		
-		line [14] = String.format("$%1$02X", s.y1_offset >> 8 & 0xFF);		
-		line [15] = String.format("$%1$02X", s.y1_offset & 0xFF); // signed value
-		line [16] = String.format("$%1$02X", (s.x_size) >> 8);		
-		line [17] = String.format("$%1$02X", s.x_size); // unsigned value
-		line [18] = String.format("$%1$02X", (s.y_size) >> 8);		
-		line [19] = String.format("$%1$02X", s.y_size); // unsigned value
+		line [10] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
+		line [11] = String.format("$%1$02X", s.x1_offset & 0xFF); // signed value		
+		line [12] = String.format("$%1$02X", s.y1_offset & 0xFF); // signed value
+		line [13] = String.format("$%1$02X", s.x_size); // unsigned value
+		line [14] = String.format("$%1$02X", s.y_size); // unsigned value
 		return line;
 	}
 

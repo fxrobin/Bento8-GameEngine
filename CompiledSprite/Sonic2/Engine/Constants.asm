@@ -55,17 +55,12 @@ draw_routine                  equ 4
 page_erase_routine            equ 6
 erase_routine                 equ 7
 erase_nb_cell                 equ 9
-image_x_offset                equ 10
-image_x_offset_l              equ 11
-image_x1_offset               equ 12
-image_x1_offset_l             equ 13
-image_y1_offset               equ 14
-image_y1_offset_l             equ 15
-image_x_size                  equ 16 
-image_x_size_l                equ 17
-image_y_size                  equ 18
-image_y_size_l                equ 19
-image_meta_size               equ 20 ; number of bytes for each image reference
+image_x_offset_l              equ 10
+image_x1_offset_l             equ 11
+image_y1_offset_l             equ 12
+image_x_size_l                equ 13
+image_y_size_l                equ 14
+image_meta_size               equ 15 ; number of bytes for each image reference
 
 * ===========================================================================
 * Object Constants
