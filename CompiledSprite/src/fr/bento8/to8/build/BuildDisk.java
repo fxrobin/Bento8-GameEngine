@@ -26,6 +26,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.backupDrawErase.AssemblyGenerator;
+import fr.bento8.to8.compiledSprite.draw.SimpleAssemblyGenerator;
 import fr.bento8.to8.disk.DataIndex;
 import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.image.PaletteTO8;
@@ -219,6 +220,7 @@ public class BuildDisk
 		// GAME MODE DATA - Génération des sprites compilés pour chaque objet
 		// ------------------------------------------------------------------
 		AssemblyGenerator asm;
+		SimpleAssemblyGenerator sasm;
 
 		// génération du sprite compilé
 		SubSprite curSubSprite;
@@ -248,7 +250,8 @@ public class BuildDisk
 					// Parcours des modes mirroir demandés pour chaque image
 					for (String curFlip : sprite.flip) {
 						logger.debug("\t"+gameMode.getValue()+"/"+object.getValue()+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " flip:" + curFlip);
-						asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), game.generatedCodeDirName+"/"+object.getValue().name, 0);
+						asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);
+						sasm = new SimpleAssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);						
 						asmImgIndex.addLabel(sprite.name+" *@globals");
 
 						// Sauvegarde du code généré pour le mode mirroir courant
@@ -283,20 +286,20 @@ public class BuildDisk
 
 							if (curType.equals("D")) {
 								logger.debug("\t\t- Draw");
-								// asm.compileDraw("A000");
-								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
-								curSubSprite.x_offset = asm.getX_offset();
-								curSubSprite.x1_offset = asm.getX1_offset();
-								curSubSprite.y1_offset = asm.getY1_offset();
-								curSubSprite.x_size = asm.getX_size();
-								curSubSprite.y_size = asm.getY_size();
+								sasm.compileCode("A000");
+								curSubSprite.nb_cell = 0;
+								curSubSprite.x_offset = sasm.getX_offset();
+								curSubSprite.x1_offset = sasm.getX1_offset();
+								curSubSprite.y1_offset = sasm.getY1_offset();
+								curSubSprite.x_size = sasm.getX_size();
+								curSubSprite.y_size = sasm.getY_size();
 								
 								logger.debug("Exomize ...");
 								curSubSprite.draw = new SubSpriteBin(curSubSprite);
 								curSubSprite.draw.setName("draw");
-								curSubSprite.draw.bin = exomize(asm.getDrawBINFile());
+								curSubSprite.draw.bin = exomize(sasm.getDrawBINFile());
 								curSubSprite.draw.fileIndex = new DataIndex();
-								//curSubSprite.draw.uncompressedSize = asm.get_Size();
+								curSubSprite.draw.uncompressedSize = sasm.getDSize();
 								object.getValue().subSpritesBin.add(curSubSprite.draw);
 							}
 						}
@@ -536,7 +539,7 @@ public class BuildDisk
 					asmLoadAct.add("        jsr   UpdatePalette");
 					
 					if (act.bgColorIndex != null) {
-						asmLoadAct.add("        ldx   #$3333                   * set Background solid color");
+						asmLoadAct.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 						asmLoadAct.add("        ldb   #$62                     * load page 2");						
 						asmLoadAct.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
 						asmLoadAct.add("        jsr   ClearCartMem");
@@ -545,7 +548,7 @@ public class BuildDisk
 					if (act.screenBorder != null) {
 						asmLoadAct.add("        lda   $E7DD                    * set border color");
 						asmLoadAct.add("        anda  #$F0");
-						asmLoadAct.add("        adda  #$03                     * color ref");
+						asmLoadAct.add("        adda  #"+String.format("$%1$02X", Integer.parseInt(act.screenBorder))+"                     * color ref");
 						asmLoadAct.add("        sta   $E7DD");
 						asmLoadAct.add("        anda  #$0F");
 						asmLoadAct.add("        adda  #$80");
@@ -554,7 +557,7 @@ public class BuildDisk
 
 					if (act.bgColorIndex != null) {
 						asmLoadAct.add("        jsr   WaitVBL");						
-						asmLoadAct.add("        ldx   #$3333                   * set Background solid color");
+						asmLoadAct.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 						asmLoadAct.add("        ldb   #$63                     * load page 3");						
 						asmLoadAct.add("        stb   $E7E6                    * in cardtridge space ($0000-$3FFF)");
 						asmLoadAct.add("        jsr   ClearCartMem");						
@@ -670,7 +673,8 @@ public class BuildDisk
 		// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
 		// ---------------------------------------------------------------------------------------
 		AsmSourceCode gmeData = new AsmSourceCode(getIncludeFilePath(Tags.GMDATA, game));
-
+		gmeData.addCommentLine("structure: sector, nb sector, drive (bit 7) track (bit 6-0), end offset, ram dest page, ram dest end addr. hb, ram dest end addr. lb");
+		
 		// Parcours des objets du Game Mode
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			

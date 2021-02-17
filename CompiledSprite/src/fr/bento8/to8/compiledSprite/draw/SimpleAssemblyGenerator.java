@@ -24,7 +24,7 @@ import fr.bento8.to8.build.Game;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.util.C6809Util;
 
-public class AssemblyGenerator{
+public class SimpleAssemblyGenerator{
 
 	private static final Logger logger = LogManager.getLogger("log");
 
@@ -56,7 +56,7 @@ public class AssemblyGenerator{
 	public static void main(String[] args) throws Exception {
 		Game.c6809 = "./c6809.exe";
 		Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
-		AssemblyGenerator asm = new AssemblyGenerator(new SpriteSheet("test", "./Sonic2/Objects/TitleScreen/Title_008.png", 1, "N"), "./tmp/cs_draw_out", 0);
+		SimpleAssemblyGenerator asm = new SimpleAssemblyGenerator(new SpriteSheet("test", "./Sonic2/Objects/TitleScreen/Title_008.png", 1, "N"), "./tmp/cs_draw_out", 0);
 		asm.compileCode("A000");
 		System.out.println("XOffset: "+asm.getX_offset());;
 		System.out.println("X1Offset: "+asm.getX1_offset());
@@ -65,7 +65,7 @@ public class AssemblyGenerator{
 		System.out.println("YSize: "+asm.getY_size());
 	}
 	
-	public AssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
+	public SimpleAssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName();
 		x_offset = spriteSheet.getSubImageXOffset(imageNum);
 		x1_offset = spriteSheet.getSubImageX1Offset(imageNum);
