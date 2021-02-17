@@ -250,8 +250,6 @@ public class BuildDisk
 					// Parcours des modes mirroir demandés pour chaque image
 					for (String curFlip : sprite.flip) {
 						logger.debug("\t"+gameMode.getValue()+"/"+object.getValue()+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " flip:" + curFlip);
-						asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);
-						sasm = new SimpleAssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);						
 						asmImgIndex.addLabel(sprite.name+" *@globals");
 
 						// Sauvegarde du code généré pour le mode mirroir courant
@@ -260,6 +258,7 @@ public class BuildDisk
 						for (String curType : sprite.type) {
 							if (curType.equals("B")) {
 								logger.debug("\t\t- BackupBackground/Draw/Erase");
+								asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);								
 								asm.compileCode("A000");
 								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 								curSubSprite.x_offset = asm.getX_offset();
@@ -286,6 +285,7 @@ public class BuildDisk
 
 							if (curType.equals("D")) {
 								logger.debug("\t\t- Draw");
+								sasm = new SimpleAssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);								
 								sasm.compileCode("A000");
 								curSubSprite.nb_cell = 0;
 								curSubSprite.x_offset = sasm.getX_offset();

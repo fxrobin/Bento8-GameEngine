@@ -109,8 +109,7 @@ public class SpriteSheet {
 		y1_offset = new int[subImageNb];		
 		x_size = new int[subImageNb];		
 		y_size = new int[subImageNb];
-		int size = (80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2);
-		center = ((size-((size/80)*80))/2+((size/80)/2)*80)/2;
+		center = (int) ((Math.ceil(height/2.0)-1)*40+subImageWidth/8);
 
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		

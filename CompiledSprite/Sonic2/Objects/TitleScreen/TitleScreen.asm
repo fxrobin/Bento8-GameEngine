@@ -196,10 +196,10 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFB0C0
         ldb   #Sub_LargeStar
         stb   subtype,x                          *        move.b  #8,subtype(a1)                          ; large star
-        *ldx   #Obj_EmblemTop                    *        lea     (IntroEmblemTop).w,a1
-        *sta   id,x                              *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
-        *ldb   #Sub_EmblemTop
-        *stb   subtype,x                         *        move.b  #6,subtype(a1)                          ; logo top
+        ldx   #Obj_EmblemTop                     *        lea     (IntroEmblemTop).w,a1
+        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
+        ldb   #Sub_EmblemTop
+        stb   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
         * sound unused                           *        moveq   #SndID_Sparkle,d0
         rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
@@ -261,8 +261,8 @@ TitleScreen_MoveObjects                          *loc_12F20:
         ldd   w_TitleScr_move_frame_count,u      *        move.w  objoff_2A(a0),d0
         addd  #1                                 *        addq.w  #1,d0
         std   w_TitleScr_move_frame_count,u      *        move.w  d0,objoff_2A(a0)
-        andb  #3 * one frame on four             *        andi.w  #3,d0
-        bne   MoveObjects_KeepPosition           *        bne.s   +
+        *andb  #3 * one frame on four             *        andi.w  #3,d0
+        *bne   MoveObjects_KeepPosition           *        bne.s   +
         ldd   w_TitleScr_xy_data_index,u         *        move.w  objoff_2C(a0),d1
         addd  #2                                 *        addq.w  #4,d1
 dyn_01
@@ -490,11 +490,14 @@ EmblemTop_Init                                   *Obj0E_LogoTop_Init:
         * not implemented                        *        move.b  #$B,mapping_frame(a0)
         * trademark logo for PAL                 *        tst.b   (Graphics_Flags).w
         * game version                           *        bmi.s   +
-        * lda   #Img_emblemFront                 *        move.b  #$A,mapping_frame(a0)
-        sta   mapping_frame,u                    *+
-        lda   #2
+        lda   render_flags,u
+        ora   #render_fixedoverlay_mask
+        sta   render_flags,u
+        ldd   #Img_emblemFront                   *        move.b  #$A,mapping_frame(a0)
+        std   mapping_frame,u                    *+
+        lda   #1
         sta   priority,u                         *        move.b  #2,priority(a0)
-        ldd   #$8078
+        ldd   #$807F
         std   xy_pixel,u                         *        move.w  #$120,x_pixel(a0)
                                                  *        move.w  #$E8,y_pixel(a0)
                                                  *
@@ -830,11 +833,11 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         ldd   #$7661
         std   xy_pixel,x                         *        move.w  #$10D,x_pixel(a1)
                                                  *        move.w  #$D1,y_pixel(a1)
-        * ldx   Obj_EmblemTop                    *        lea     (IntroEmblemTop).w,a1
-        * lda   #ObjID_TitleScreen        
-        * sta   id,x                             *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
-        * lda   #Sub_EmblemTop
-        * sta   subtype,x                        *        move.b  #6,subtype(a1)                          ; logo top
+        ldx   Obj_EmblemTop                      *        lea     (IntroEmblemTop).w,a1
+        lda   #ObjID_TitleScreen        
+        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        lda   #Sub_EmblemTop
+        sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
         * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
         *ldx   #Obj_PaletteHandler               *        lea     (TitleScreenPaletteChanger).w,a1

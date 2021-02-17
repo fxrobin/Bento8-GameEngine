@@ -149,7 +149,7 @@ public class PatternCluster{
 	}
 
 	public void setLEAOffsetRelativeToEachOthers() {
-		// Remplace les valeurs d'offset des LEA relatives au d�part par des valeurs relatives entre les LEA
+		// Remplace les valeurs d'offset des LEA relatives au départ par des valeurs relatives entre les LEA
 		int curOffset = 0, newOffset = 0, lastOffset = center;
 		for (int i = 0; i < solution.patterns.size(); i++) {
 			if (solution.computedLeas.containsKey(i)) {

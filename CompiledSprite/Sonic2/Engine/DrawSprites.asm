@@ -124,22 +124,24 @@ DRS_dyn3B0
         sta   rsv_onscreen_0,x              ; set the onscreen flag
 DRS_NextObjectB0        
         ldx   rsv_priority_next_obj_0,x
-        bne   DRS_ProcessEachPriorityLevelB0   
+        lbne   DRS_ProcessEachPriorityLevelB0   
         rts
         
 DRS_DrawWithoutBackupB0
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
-        jsr   DRS_XYToAddress 
+        jsr   DRS_XYToAddress
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn4B0+1                  ; save x reg
-        ldx   bckdraw_routine,u
-        jsr   ,x                            ; backup background and draw sprite on working screen buffer
+        ldx   draw_routine,u        
+        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
+        jsr   ,x                            ; draw sprite on working screen buffer
 DRS_dyn4B0
         ldx   #$0000                        ; (dynamic) restore x reg
         ldx   rsv_priority_next_obj_0,x
-        bne   DRS_ProcessEachPriorityLevelB0   
+        lbne   DRS_ProcessEachPriorityLevelB0   
         rts          
 
 ********************************************************************************
@@ -220,19 +222,22 @@ DRS_dyn3B1
         sta   rsv_onscreen_1,x              ; set the onscreen flag
 DRS_NextObjectB1        
         ldx   rsv_priority_next_obj_1,x
-        bne   DRS_ProcessEachPriorityLevelB1   
+        lbne   DRS_ProcessEachPriorityLevelB1   
         rts
         
 DRS_DrawWithoutBackupB1
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
-        jsr   DRS_XYToAddress 
+        jsr   DRS_XYToAddress
         ldu   rsv_curr_mapping_frame,x      ; load image to draw
         lda   page_draw_routine,u
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn4B1+1                  ; save x reg
-        jsr   [draw_routine,x]              ; backup background and draw sprite on working screen buffer
+        ldx   draw_routine,u        
+        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
+        jsr   ,x                            ; draw sprite on working screen buffer
 DRS_dyn4B1
         ldx   #$0000                        ; (dynamic) restore x reg
         ldx   rsv_priority_next_obj_1,x
-        bne   DRS_ProcessEachPriorityLevelB1   
+        lbne   DRS_ProcessEachPriorityLevelB1   
         rts              

@@ -70,9 +70,15 @@ public class AssemblyGenerator{
 		x1_offset = spriteSheet.getSubImageX1Offset(imageNum);
 		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
 		x_size = spriteSheet.getSubImageXSize(imageNum);
-		y_size = spriteSheet.getSubImageYSize(imageNum);		
+		y_size = spriteSheet.getSubImageYSize(imageNum);
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
+		logger.debug("XOffset: "+getX_offset());;
+		logger.debug("X1Offset: "+getX1_offset());
+		logger.debug("Y1Offset: "+getY1_offset());
+		logger.debug("XSize: "+getX_size());
+		logger.debug("YSize: "+getY_size());		
+		logger.debug("Center: "+spriteSheet.getCenter());
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 		
