@@ -29,7 +29,7 @@ public class PatternCluster{
 		initAssignmentStep();
 		clusterPatternsToExistingNodes(isForward);
 		createNewNodesAndClusterRemainingPatterns(isForward);
-		setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incr�ment du LEA impacte le calcul : A corriger
+		setLEAOffsetRelativeToEachOthers();
 		displayDebug();
 	}
 

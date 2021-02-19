@@ -558,15 +558,15 @@ public class SolutionOptim{
 						//patterns.get(n).add(new Integer[] {i, null}); On ne renseigne plus le pattern background backup pour les dissociables
 
 						if (solution.patterns.get(i).getNbBytes() == 1) {
-							value1 = (int)data[(solution.positions.get(i)*2)];
-							value2 = (int)data[(solution.positions.get(i)*2)+1];
+							value1 = (int)data[(solution.positions.get(i)*2)-1];
+							value2 = (int)data[(solution.positions.get(i)*2)];
 							value3 = null;
 							value4 = null;
 						} else {
-							value1 = (int)data[(solution.positions.get(i)*2)];
-							value2 = (int)data[(solution.positions.get(i)*2)+1];
-							value3 = (int)data[(solution.positions.get(i)*2)+2];
-							value4 = (int)data[(solution.positions.get(i)*2)+3];
+							value1 = (int)data[(solution.positions.get(i)*2)-3];
+							value2 = (int)data[(solution.positions.get(i)*2)-2];
+							value3 = (int)data[(solution.positions.get(i)*2)-1];
+							value4 = (int)data[(solution.positions.get(i)*2)];
 						}
 
 						hash = Objects.hash(1, solution.patterns.get(i).getNbBytes(),
@@ -765,15 +765,17 @@ public class SolutionOptim{
 		// Cas particulier:
 		// Gestion des patterns non dissociables, on doit utiliser la même
 		// combinaison que celle utilisée pour la sauvegarde du fond
-		if (!solution.patterns.get(id).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(id).useIndexedAddressing()) {
-			combiList.add(solution.patterns.get(id).getRegisterCombi().get(lastSnippet.getCombiIdx()));
-		} else {
-			combiList = solution.patterns.get(id).getRegisterCombi();
-		}
+//		if (!solution.patterns.get(id).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(id).useIndexedAddressing()) {
+//			combiList.add(solution.patterns.get(id).getRegisterCombi().get(lastSnippet.getCombiIdx()));
+//		} else {
+//			combiList = solution.patterns.get(id).getRegisterCombi();
+//		}
+		
+		combiList = solution.patterns.get(id).getRegisterCombi();
 
 		for (int j = 0; j < combiList.size(); j++) {
 			cycles = 0;
-			pos = solution.positions.get(id)*2;
+			pos = solution.positions.get(id)*2-(solution.patterns.get(id).getNbBytes()>1?solution.patterns.get(id).getNbPixels()-2:0);
 			currentReg.clear();
 			currentLoadMask.clear();
 
@@ -848,10 +850,10 @@ public class SolutionOptim{
 		}
 
 		// Sauvegarde de la méthode a exécuter
-		snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id), selectedCombi);
+		snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2-(solution.patterns.get(id).getNbBytes()>1?solution.patterns.get(id).getNbPixels()-2:0), selectedReg, selectedLoadMask, solution.computedOffsets.get(id), selectedCombi);
 
 		// Sauvegarde les valeurs chargées en cache
-		pos = solution.positions.get(id)*2;
+		pos = solution.positions.get(id)*2-(solution.patterns.get(id).getNbBytes()>1?solution.patterns.get(id).getNbPixels()-2:0);
 		for (int j = 0; j < combiList.get(selectedCombi).length; j++) {
 
 			if (combiList.get(selectedCombi)[j] &&
@@ -863,6 +865,7 @@ public class SolutionOptim{
 				// et qu'il n'a pas été réinitialisé dans le pattern
 
 				regSet[j] = true;
+				
 				regVal[j][0] = data[pos];
 				regVal[j][1] = data[pos+1];
 				if (Register.size[j] == 2) {

@@ -395,6 +395,7 @@ public class AssemblyGenerator{
 		asm.add("SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
+		asm.add("(info)\n");
 		return asm;
 	}
 
@@ -440,6 +441,7 @@ public class AssemblyGenerator{
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
+		asm.add("(info)\n");
 		return asm;
 	}
 

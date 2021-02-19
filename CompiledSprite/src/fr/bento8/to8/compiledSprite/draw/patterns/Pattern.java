@@ -25,6 +25,10 @@ public abstract class Pattern {
 	public List<String> getBackgroundCode (List<Integer> registerIndexesPUL, List<Integer> registerIndexesPSH, Integer offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 
+		// Quand on charge uniquement B pour un pattern D, il faut ajouter 1 à l'offset 
+		if (registerIndexesPUL.get(0)==Register.B && nbBytes==2) {
+			offset += 1;
+		}
 		asmCode.add("\tLD"+Register.name[registerIndexesPUL.get(0)]+" "+(offset!= 0?offset:"")+",S");
 
 		return asmCode;
@@ -32,7 +36,11 @@ public abstract class Pattern {
 
 	public int getBackgroundCodeCycles (List<Integer> registerIndexesPUL, List<Integer> registerIndexesPSH, Integer offset) throws Exception {
 		int cycles = 0;
-
+		
+		// Quand on charge uniquement B pour un pattern D, il faut ajouter 1 à l'offset 
+		if (registerIndexesPUL.get(0)==Register.B && nbBytes==2) {
+			offset += 1;
+		}
 		cycles += Register.costIndexedLD[registerIndexesPUL.get(0)] + Register.getIndexedOffsetCost(offset);
 
 		return cycles;
@@ -41,6 +49,10 @@ public abstract class Pattern {
 	public int getBackgroundCodeSize (List<Integer> registerIndexesPUL, List<Integer> registerIndexesPSH, Integer offset) throws Exception {
 		int size = 0;
 
+		// Quand on charge uniquement B pour un pattern D, il faut ajouter 1 à l'offset 
+		if (registerIndexesPUL.get(0)==Register.B && nbBytes==2) {
+			offset += 1;
+		}
 		size += Register.sizeIndexedLD[registerIndexesPUL.get(0)] + Register.getIndexedOffsetSize(offset);
 
 		return size;

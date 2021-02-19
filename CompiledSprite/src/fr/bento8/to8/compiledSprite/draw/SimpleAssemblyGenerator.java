@@ -29,6 +29,7 @@ public class SimpleAssemblyGenerator{
 	private static final Logger logger = LogManager.getLogger("log");
 
 	boolean FORWARD = true;
+	boolean REARWARD = false;
 	public String spriteName;
 	private int cyclesDFrameCode;
 	private int sizeDFrameCode;
@@ -99,11 +100,11 @@ public class SimpleAssemblyGenerator{
 		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
-			cs.buildCode(FORWARD);
+			cs.buildCode(REARWARD);
 			Solution solution = cs.getSolutions().get(0);
 
 			PatternCluster cluster = new PatternCluster(solution, spriteSheet.getCenter());
-			cluster.cluster(FORWARD);
+			cluster.cluster(REARWARD);
 
 			SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0), Game.maxTries);
 			regOpt.build();
@@ -116,11 +117,11 @@ public class SimpleAssemblyGenerator{
 			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
-			cs.buildCode(FORWARD);
+			cs.buildCode(REARWARD);
 			solution = cs.getSolutions().get(0);
 
 			cluster = new PatternCluster(solution, spriteSheet.getCenter());
-			cluster.cluster(FORWARD);
+			cluster.cluster(REARWARD);
 
 			regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1), Game.maxTries);
 			regOpt.build();
@@ -297,6 +298,7 @@ public class SimpleAssemblyGenerator{
 		asm.add("SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
+		asm.add("(info)\n");
 		return asm;
 	}
 

@@ -29,7 +29,7 @@ public class PatternCluster{
 		initAssignmentStep();
 		clusterPatternsToExistingNodes(isForward);
 		createNewNodesAndClusterRemainingPatterns(isForward);
-		setLEAOffsetRelativeToEachOthers(); // TODO gestion de l'auto incrément du LEA impacte le calcul : A corriger
+		setLEAOffsetRelativeToEachOthers();
 		displayDebug();
 	}
 
@@ -71,7 +71,9 @@ public class PatternCluster{
 						if (isForward) {
 							distance = solution.computedNodes.get(j) - solution.computedNodes.get(i);
 						} else {
-							distance = solution.computedNodes.get(i) - solution.computedNodes.get(j);
+							// Tous les noeuds traités ici sont rattachés à un pattern PSH, par conséquent le début du noeud est +1
+							// par rapport à la position car le PSH est remontant et son point de départ est +1
+							distance = (solution.computedNodes.get(i) + 1) - solution.computedNodes.get(j);
 						}
 						if ( -128 <= distance && distance <= 127) {
 							AssignedPatterns.set(j, i);
@@ -83,7 +85,8 @@ public class PatternCluster{
 								}
 							}
 							solution.computedNodes.set(j, nodeStart);
-							solution.computedOffsets.set(j, solution.positions.get(j)-solution.positions.get(i));
+							// +1 pour début du PSH
+							solution.computedOffsets.set(j, solution.positions.get(j) - (solution.positions.get(i) + 1 + solution.patterns.get(j).getNbBytes()-1));
 						}
 					}
 				}
@@ -92,7 +95,10 @@ public class PatternCluster{
 				if (nodeStart == -1 || i < nodeStart) {
 					nodeStart = i;
 				}
-				solution.computedLeas.put(nodeStart, solution.positions.get(i));
+				// +1 pour début du PSH
+				solution.computedLeas.put(nodeStart, solution.positions.get(i) + 1);
+				// Enregistrement de la taille du PSH pour calculer le leas suivant
+				solution.computedNodeOffset.put(nodeStart, solution.patterns.get(i).getNbBytes());
 				solution.computedNodes.set(i, nodeStart);
 				nodeStart = -1;
 			}
@@ -140,7 +146,8 @@ public class PatternCluster{
 
 				for (j = start; j < i; j++) {
 					solution.computedNodes.set(j, start);
-					solution.computedOffsets.set(j, solution.positions.get(j)-node);
+					solution.computedOffsets.set(j, solution.positions.get(j)-node-(solution.patterns.get(j).getNbBytes()-1));
+					solution.computedNodeOffset.put(j, 0);
 				}
 
 				start = i;
@@ -151,12 +158,13 @@ public class PatternCluster{
 	public void setLEAOffsetRelativeToEachOthers() {
 		// Remplace les valeurs d'offset des LEA relatives au départ par des valeurs relatives entre les LEA
 		int curOffset = 0, newOffset = 0, lastOffset = center;
+		
 		for (int i = 0; i < solution.patterns.size(); i++) {
 			if (solution.computedLeas.containsKey(i)) {
 				curOffset = solution.computedLeas.get(i);
 				newOffset = curOffset - lastOffset;
 				solution.computedLeas.replace(i, newOffset);
-				lastOffset = curOffset;
+				lastOffset = curOffset - solution.computedNodeOffset.get(i);
 			}
 		}
 	}

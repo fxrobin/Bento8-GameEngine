@@ -50,7 +50,7 @@ public class PatternFinder {
 				List<Solution> bottomSolution = buildCodeRearward(i-snippet.getNbPixels());
 				if (!bottomSolution.isEmpty()) {
 					for (Solution eachSolution : bottomSolution) {
-						eachSolution.add(snippet, -((this.image.length-2)-i)/2-snippet.getNbBytes()+1);
+						eachSolution.add(snippet, i/2);
 						localSolution.add(eachSolution);
 					}
 				}

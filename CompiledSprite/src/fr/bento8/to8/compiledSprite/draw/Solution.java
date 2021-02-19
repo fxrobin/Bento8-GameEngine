@@ -14,6 +14,7 @@ public class Solution {
 	public List<Integer> computedNodes;		// Liste des noeuds trouvés (= id du premier pattern du noeud)
 	public List<Integer> computedOffsets;  	// Liste des offsets applicables à chaque pattern pour l'adressage indexé
 	public HashMap<Integer, Integer> computedLeas; // Ensemble des LEAS (noeud, offset)
+	public HashMap<Integer, Integer> computedNodeOffset; // Décalage de la position du noeud après execution du PSH
 	
 	public List<Snippet> optimizedSnippets;	// Liste des patterns ordonnés par l'optimiseur contient des éléments supplémentaires LEAS ...
 	
@@ -27,6 +28,7 @@ public class Solution {
 		optimizedSnippets = new ArrayList<Snippet>();
 		computedOffsets = new ArrayList<Integer>();
 		computedLeas = new HashMap<Integer, Integer>();
+		computedNodeOffset = new HashMap<Integer, Integer>();
 		cycles = 0;
 		size = 0;
 	}

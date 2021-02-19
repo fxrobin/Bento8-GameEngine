@@ -44,6 +44,10 @@
 ; x=((x-128)/2)+48
 ; y=y-140+28
 ;
+; center : #$807F
+; top left : #$301C
+; bottom right : #$CFE3
+;
 ; Display priority (VDP)
 ; ----------------------
 ; Background
