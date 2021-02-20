@@ -13,8 +13,7 @@ public class Pattern_1011 extends PatternAlpha {
 		useIndexedAddressing = true;
 		isBackgroundBackupAndDrawDissociable = false;
 		resetRegisters.add(new boolean[] {true, false, false, false, false, false, false});
-		//registerCombi.add(new boolean[] {false, false, true, false, false, false, false});
-		registerCombi.add(new boolean[] {true, false, false, false, false, false, false});
+		registerCombi.add(new boolean[] {false, false, true, false, false, false, false});
 	}
 
 	public boolean matchesForward (byte[] data, Integer offset) {

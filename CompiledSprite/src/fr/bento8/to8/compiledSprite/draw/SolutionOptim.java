@@ -34,8 +34,8 @@ public class SolutionOptim{
 
 	int lastLeas;
 	// les variables Save sont pour les essais de solutions
-	boolean[] regSet, regSetSave, regSetBest;
-	byte[][] regVal, regValSave, regValBest;
+	boolean[] regSet, regSetSave, regSetBest, regSetCombi;
+	byte[][] regVal, regValSave, regValBest, regValCombi;
 	boolean[] regBBSet = new boolean[7];
 	Integer[] offsetBBSet = new Integer[7];
 	int regBBIdx = -1;
@@ -53,42 +53,29 @@ public class SolutionOptim{
 		this.fact[9] = maxTries;
 	}
 
-	private void saveState() {
+	private void saveState(boolean[] saveSet, byte[][] saveVal) {
 		// Sauvegarde de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
-			regSetSave[i] = regSet[i];
+			saveSet[i] = regSet[i];
 		}
 
 		for (int i = 0; i < regVal.length; i++) {
 			for (int j = 0; j < regVal[0].length; j++) {
-				regValSave[i][j] = regVal[i][j];	
+				saveVal[i][j] = regVal[i][j];	
 			}
 		}
 	}
 	
-	private void saveBestState() {
-		// Sauvegarde de l'état des registres
-		for (int i = 0; i < regSet.length; i++) {
-			regSetBest[i] = regSet[i];
-		}
-
-		for (int i = 0; i < regVal.length; i++) {
-			for (int j = 0; j < regVal[0].length; j++) {
-				regValBest[i][j] = regVal[i][j];	
-			}
-		}
-	}
-	
-	private void restoreBest() {
+	private void restoreState(boolean[] saveSet, byte[][] saveVal) {
 
 		// Rétablissement de l'état des registres
 		for (int i = 0; i < regSet.length; i++) {
-			regSet[i] = regSetBest[i];
+			regSet[i] = saveSet[i];
 		}
 
 		for (int i = 0; i < regVal.length; i++) {
 			for (int j = 0; j < regVal[0].length; j++) {
-				regVal[i][j] = regValBest[i][j];	
+				regVal[i][j] = saveVal[i][j];	
 			}
 		}
 	}	
@@ -118,7 +105,7 @@ public class SolutionOptim{
 
 	public List<Snippet> OptimizeUFactorial(List<List<Integer[]>> pattern, Integer lastPattern, boolean saveS, int[] ind) throws Exception {
 
-		saveState();
+		saveState(regSetSave, regValSave);
 
 		// Initialisation de la solution
 		Snippet s = null;
@@ -180,7 +167,7 @@ public class SolutionOptim{
 		regEBest.addAll(regE);
 		offsetEBest.clear();
 		offsetEBest.addAll(offsetE);
-		saveBestState();
+		saveState(regSetBest, regValBest);
 
 		restoreState();
 
@@ -257,7 +244,7 @@ public class SolutionOptim{
 					regEBest.addAll(regE);
 					offsetEBest.clear();
 					offsetEBest.addAll(offsetE);
-					saveBestState();
+					saveState(regSetBest, regValBest);
 				}
 
 				testSolution.clear();
@@ -302,7 +289,7 @@ public class SolutionOptim{
 
 	public List<Snippet> OptimizeRandom(List<List<Integer[]>> pattern, Integer lastPattern, boolean saveS) throws Exception {
 
-		saveState();
+		saveState(regSetSave, regValSave);
 
 		// Initialisation de la solution
 		Snippet s = null;
@@ -353,7 +340,7 @@ public class SolutionOptim{
 		regEBest.addAll(regE);
 		offsetEBest.clear();
 		offsetEBest.addAll(offsetE);
-		saveBestState();
+		saveState(regSetBest, regValBest);
 
 		restoreState();
 
@@ -439,7 +426,7 @@ public class SolutionOptim{
 					regEBest.addAll(regE);
 					offsetEBest.clear();
 					offsetEBest.addAll(offsetE);
-					saveBestState();
+					saveState(regSetBest, regValBest);
 				} else {
 					// Meilleurs r�sultats si ligne suivante comment�e
 					// Collections.swap(pattern, a, b);
@@ -469,8 +456,10 @@ public class SolutionOptim{
 
 		regSet = new boolean[] {false, false, false, false, false, false, false};
 		regSetBest = new boolean[] {false, false, false, false, false, false, false};
+		regSetCombi = new boolean[] {false, false, false, false, false, false, false};
 		regVal = new byte[7][4];
 		regValBest = new byte[7][4];
+		regValCombi = new byte[7][4];
 		regSetSave = new boolean[] {false, false, false, false, false, false, false};
 		regValSave = new byte[7][4];
 
@@ -612,7 +601,7 @@ public class SolutionOptim{
 					asmCodeCycles += s.getCycles();
 					asmCodeSize += s.getSize();
 				}
-				restoreBest();
+				restoreState(regSetBest, regValBest);
 
 				logger.debug("Cycles: "+asmCodeCycles);
 
@@ -772,6 +761,7 @@ public class SolutionOptim{
 //		}
 		
 		combiList = solution.patterns.get(id).getRegisterCombi();
+		saveState(regSetCombi, regValCombi);
 
 		for (int j = 0; j < combiList.size(); j++) {
 			cycles = 0;
@@ -784,51 +774,97 @@ public class SolutionOptim{
 
 				if (combiList.get(j)[k]) {
 					// Le registre est utilisé dans la combinaison
-
 					currentReg.add(k);
+					
+					// Chargement des données du sprite
+					b1 = data[pos];
+					b2 = data[pos+1];
+					if (Register.size[k] == 2) {
+						b3 = data[pos+2];
+						b4 = data[pos+3];
+					}					
 
 					if (regSet[k] &&
 						(solution.patterns.get(id).getResetRegisters().size() <= j || (solution.patterns.get(id).getResetRegisters().size() > j &&
 								                                                       solution.patterns.get(id).getResetRegisters().get(j)[k] == false))) {
 						// Le registre contient une valeur et n'est pas concerné par un reset dans le pattern
 
-						// Chargement des données du sprite
-						b1 = data[pos];
-						b2 = data[pos+1];
-						if (Register.size[k] == 2) {
-							b3 = data[pos+2];
-							b4 = data[pos+3];
-						}
-
-						if (k == Register.D && (regVal[k][0] != b1 || regVal[k][1] != b2) && regVal[k][2] == b3 && regVal[k][3] == b4) {
+						if (k == Register.D && regSet[Register.B] && (!regSet[Register.A] || regVal[k][0] != b1 || regVal[k][1] != b2) && regVal[k][2] == b3 && regVal[k][3] == b4) {
 							// Correspondance partielle sur D avec B mais pas A, on charge A
 							currentLoadMask.set(Register.A, true);
 							currentLoadMask.set(Register.B, false);
+							regSet[Register.A] = true;
+							regVal[Register.A][0] = b1;
+							regVal[Register.A][1] = b2;
+							regSet[Register.D] = true;
+                            regVal[Register.D][0] = b1;
+							regVal[Register.D][1] = b2;		
 							currentLoadMask.add(null);
 
-						} else if (k == Register.D && regVal[k][0] == b1 && regVal[k][1] == b2 && (regVal[k][2] != b3 || regVal[k][3] != b4)) {
+						} else if (k == Register.D && regSet[Register.A] && regVal[k][0] == b1 && regVal[k][1] == b2 && (!regSet[Register.B] || regVal[k][2] != b3 || regVal[k][3] != b4)) {
 							// Correspondance partielle sur D avec A mais pas B, on charge B
 							currentLoadMask.set(Register.A, false);
 							currentLoadMask.set(Register.B, true);
+							regSet[Register.B] = true;
+							regVal[Register.B][0] = b3;
+							regVal[Register.B][1] = b4;
+							regSet[Register.D] = true;
+							regVal[Register.D][2] = b3;
+							regVal[Register.D][3] = b4;		
 							currentLoadMask.add(null);
 
-						} else if (regVal[k][0] == b1 && regVal[k][1] == b2 && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == b3 && regVal[k][3] == b4))){
+						} else if (regSet[k] && (regVal[k][0] == b1 && regVal[k][1] == b2 && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == b3 && regVal[k][3] == b4)))){
 							// Le registre contient déjà la valeur, on ne charge rien
 							currentLoadMask.add(false);
 
 						} else {
 							// Le registre contient une valeur différente, on le charge
 							currentLoadMask.add(true);
+							// Cas particulier de D, on valorise A et B
+							if (j == Register.D) {
+									regSet[Register.A] = true;
+									regVal[Register.A][0] = b1;
+									regVal[Register.A][1] = b2;
+									regSet[Register.B] = true;
+									regVal[Register.B][0] = b3;
+									regVal[Register.B][1] = b4;
+							}
+
+							regSet[k] = true;						
+							regVal[k][0] = b1;
+							regVal[k][1] = b2;
+							if (Register.size[k] == 2) {
+								regVal[k][2] = b3;
+								regVal[k][3] = b4;		
+							}
 						}
 					} else {
 						// Le registre ne contient pas de valeur, on le charge
 						currentLoadMask.add(true);
+						// Cas particulier de D, on valorise A et B
+						if (j == Register.D) {
+								regSet[Register.A] = true;
+								regVal[Register.A][0] = b1;
+								regVal[Register.A][1] = b2;
+								regSet[Register.B] = true;
+								regVal[Register.B][0] = b3;
+								regVal[Register.B][1] = b4;
+						}
+
+						regSet[k] = true;						
+						regVal[k][0] = b1;
+						regVal[k][1] = b2;
+						if (Register.size[k] == 2) {
+							regVal[k][2] = b3;
+							regVal[k][3] = b4;		
+						}
 					}
 					pos += Register.size[k] * 2;
 				} else {
 					// Le registre n'est pas utilisé dans la combinaison
 					currentLoadMask.add(null);
 				}
+				restoreState(regSetCombi, regValCombi);
 			}
 
 			// Calcul du nombre de cycles de la solution courante
