@@ -1,0 +1,747 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : .\Sonic2\GeneratedCode\TITLESCR\PaletteHandler\PaletteHandler.asm
+ * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
+ * Contenu :
+ *     Main     0:MAIN.ASM     2934
+ *     Include  0:GLOBALS.ASM  1780
+ *     Include  0:CONSTANT.ASM 5233
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+    295                                   INCLUD GLOBALS
+    296                           * Generated Code
+    297
+    298                  414F     GameModeLoader equ $414F
+    299                  41C7     current_game_mode_data equ $41C7
+    300                  0001     ObjID_PaletteHandler equ 1
+    301                  0002     ObjID_TitleScreen equ 2
+    302                  65C5     Object_RAM equ $65C5
+    303                  6D3C     screen_border_color equ $6D3C
+    304                  6D59     Vint_runcount equ $6D59
+    305                  0001     c1_button_up_mask equ $0001
+    306                  0002     c1_button_down_mask equ $0002
+    307                  0004     c1_button_left_mask equ $0004
+    308                  0008     c1_button_right_mask equ $0008
+    309                  0010     c2_button_up_mask equ $0010
+    310                  0020     c2_button_down_mask equ $0020
+    311                  0040     c2_button_left_mask equ $0040
+    312                  0080     c2_button_right_mask equ $0080
+    313                  0040     c1_button_A_mask equ $0040
+    314                  0080     c2_button_A_mask equ $0080
+    315                  6D5B     Dpad_Held equ $6D5B
+    316                  6D5C     Fire_Held equ $6D5C
+    317                  6D5D     Dpad_Press equ $6D5D
+    318                  6D5E     Fire_Press equ $6D5E
+    319                  6DBF     MarkObjGone equ $6DBF
+    320                  6DC1     DisplaySprite_x equ $6DC1
+    321                  6DC7     DisplaySprite equ $6DC7
+    322                  6E40     AnimateSprite equ $6E40
+    323                  6F01     DeleteObject_x equ $6F01
+    324                  6F07     DeleteObject equ $6F07
+    325                  6FC9     ClearObj equ $6FC9
+    326                  77CB     Img_star_4 equ $77CB
+    327                  77D9     Img_star_3 equ $77D9
+    328                  77E7     Img_sonicHand equ $77E7
+    329                  77F5     Img_star_2 equ $77F5
+    330                  7803     Img_star_1 equ $7803
+    331                  7811     Img_emblemBack08 equ $7811
+    332                  781F     Img_emblemBack07 equ $781F
+    333                  782D     Img_emblemBack09 equ $782D
+    334                  783B     Img_emblemBack04 equ $783B
+    335                  7849     Img_emblemBack03 equ $7849
+    336                  7857     Img_emblemBack06 equ $7857
+    337                  7865     Img_emblemBack05 equ $7865
+    338                  7873     Img_tails_5 equ $7873
+    339                  7881     Img_tails_4 equ $7881
+    340                  788F     Img_tails_3 equ $788F
+    341                  789D     Img_tails_2 equ $789D
+    342                  78AB     Img_tails_1 equ $78AB
+    343                  78B9     Img_tailsHand equ $78B9
+    344                  78C7     Img_sonic_1 equ $78C7
+    345                  78D5     Img_sonic_2 equ $78D5
+    346                  78E3     Img_emblemBack02 equ $78E3
+    347                  78F1     Img_emblemBack01 equ $78F1
+    348                  78FF     Img_sonic_5 equ $78FF
+    349                  790D     Img_sonic_3 equ $790D
+    350                  791B     Img_sonic_4 equ $791B
+    351                  7929     Img_emblemFront07 equ $7929
+    352                  7937     Img_emblemFront08 equ $7937
+    353                  7945     Img_emblemFront05 equ $7945
+    354                  7953     Img_emblemFront06 equ $7953
+    355                  7961     Img_emblemFront03 equ $7961
+    356                  796F     Img_emblemFront04 equ $796F
+    357                  797D     Img_emblemFront01 equ $797D
+    358                  798B     Img_emblemFront02 equ $798B
+    359                  799A     Ani_smallStar equ $799A
+    360                  79A0     Ani_largeStar equ $79A0
+    361                  79AC     Ani_tails equ $79AC
+    362                  79B8     Ani_sonic equ $79B8
+    363
+    364                                   INCLUD CONSTANT
+    365                           * --------------------------------------->>
+    366                           * Constants
+    367                           *
+    368                           * Naming convention
+    369                           * -----------------
+    370                           * - lower case
+    371                           * - underscore-separated names
+    372                           *
+    373                           * --------------------------------------->>
+    374
+    375                           * =======================================>>
+    376                           * TO8 Registers
+    377                           * =======================================>>
+    378
+    379                  6049     dk_lecteur                    equ $6049
+    380                  604A     dk_piste                      equ $604A
+    381                  604B     dk_pisteL                     equ $604B
+    382                  604C     dk_secteur                    equ $604C
+    383                  604F     dk_destination                equ $604F
+    384
+    385                           * =======================================>>
+    386                           * Display Constants
+    387                           * =======================================>>
+    388
+    389                  00A0     screen_width                  equ 160 ; s>>
+    390                  001C     screen_top                    equ 28 ; in>>
+    391                  00E4     screen_bottom                 equ 200+28 >>
+    392                  0008     nb_priority_levels            equ 8   ; n>>
+    393
+    394                           * =======================================>>
+    395                           * Physics Constants
+    396                           * =======================================>>
+    397
+    398                  0038     gravity                       equ $38 ; G>>
+    399
+    400                           * =======================================>>
+    401                           * Animation Constants
+    402                           * =======================================>>
+    403
+    404                  00FF     _resetAnim                    equ $FF
+    405                  00FE     _goBackNFrames                equ $FE
+    406                  00FD     _goToAnimation                equ $FD
+    407                  00FC     _nextRoutine                  equ $FC
+    408                  00FB     _resetAnimAndSubRoutine       equ $FB
+    409                  00FA     _nextSubRoutine               equ $FA
+    410
+    411                           * =======================================>>
+    412                           * Images Constants
+    413                           * =======================================>>
+    414
+    415                  0000     page_bckdraw_routine          equ 0
+    416                  0001     bckdraw_routine               equ 1
+    417                  0003     page_draw_routine             equ 3
+    418                  0004     draw_routine                  equ 4
+    419                  0006     page_erase_routine            equ 6
+    420                  0007     erase_routine                 equ 7
+    421                  0009     erase_nb_cell                 equ 9
+    422                  000A     image_x1_offset_l             equ 10
+    423                  000B     image_y1_offset_l             equ 11
+    424                  000C     image_x_size_l                equ 12
+    425                  000D     image_y_size_l                equ 13
+    426                  000E     image_meta_size               equ 14 ; nu>>
+    427
+    428                           * =======================================>>
+    429                           * Object Constants
+    430                           * =======================================>>
+    431
+    432                  0002     nb_reserved_objects           equ 2
+    433                  0012     nb_dynamic_objects            equ 18
+    434                  0003     nb_level_objects              equ 3
+    435                  0017     nb_objects                    equ 23 * ma>>
+    436
+    437                           * --------------------------------------->>
+    438                           * Object Status Table offsets
+    439                           * --------------------------------------->>
+    440
+    441                  0052     object_size                   equ 82 ; th>>
+    442                  0052     next_object                   equ object_>>
+    443
+    444                  0000     id                            equ 0      >>
+    445                  0001     subtype                       equ 1      >>
+    446                  0002     render_flags                  equ 2
+    447
+    448                           * --- render_flags bitfield variables --->>
+    449                  0001     render_xmirror_mask           equ $01 ; (>>
+    450                  0002     render_ymirror_mask           equ $02 ; (>>
+    451                  0004     render_playfieldcoord_mask    equ $04 ; (>>
+    452                  0008     render_hide_mask              equ $08 ; (>>
+    453                  0010     render_fixedoverlay_mask      equ $10 ; (>>
+    454                  0020     render_todelete_mask          equ $20 ; (>>
+    455                  0040     render_free2_mask             equ $40 ; (>>
+    456                  0080     render_free3_mask             equ $80 ; (>>
+    457                            
+    458                  0003     priority                      equ 3      >>
+    459                  0004     anim                          equ 4  ; an>>
+    460                  0006     prev_anim                     equ 6  ; an>>
+    461                  0008     anim_frame                    equ 8      >>
+    462                  0009     anim_frame_duration           equ 9      >>
+    463                  000A     mapping_frame                 equ 10 ; an>>
+    464                  000C     x_pos                         equ 12 ; an>>
+    465                  000E     x_sub                         equ 14     >>
+    466                  000F     y_pos                         equ 15 ; an>>
+    467                  0011     y_sub                         equ 17     >>
+    468                  0012     xy_pixel                      equ 18     >>
+    469                  0012     x_pixel                       equ 18     >>
+    470                  0013     y_pixel                       equ 19     >>
+    471                  0014     x_vel                         equ 20 ; an>>
+    472                  0016     y_vel                         equ 22 ; an>>
+    473                  0018     routine                       equ 24     >>
+    474                  0019     routine_secondary             equ 25     >>
+    475                  001A     status                        equ 26
+    476
+    477                           * --- status bitfield variables for objec>>
+    478                  0001     status_x_orientation          equ   $01 ;>>
+    479                  0002     status_y_orientation          equ   $02 ;>>
+    480                  0004     status_bit2                   equ   $04 ;>>
+    481                  0008     status_mainchar_standing      equ   $08 ;>>
+    482                  0010     status_sidekick_standing      equ   $10 ;>>
+    483                  0020     status_mainchar_pushing       equ   $20 ;>>
+    484                  0040     status_sidekick_pushing       equ   $40 ;>>
+    485                  0080     status_bit7                   equ   $80 ;>>
+    486
+    487                           * --- status bitfield variables for Main >>
+    488                  0002     status_inair                  equ   $02 ;>>
+    489                  0004     status_jumporroll             equ   $04 ;>>
+    490                  0008     status_norgroundnorfall       equ   $08 ;>>
+    491                  0010     status_jumpingafterrolling    equ   $10 ;>>
+    492                  0020     status_pushing                equ   $20 ;>>
+    493                  0040     status_underwater             equ   $40 ;>>
+    494
+    495                  001B     ext_variables                 equ 27 ; to>>
+    496
+    497                           * --------------------------------------->>
+    498                           * reserved variables (engine)
+    499
+    500                  0029     rsv_render_flags              equ 41
+    501
+    502                           * --- rsv_render_flags bitfield variables>>
+    503                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
+    504                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
+    505                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
+    506                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
+    507
+    508                  002A     rsv_prev_anim                 equ 42 ; an>>
+    509                  002C     rsv_curr_mapping_frame        equ 44 ; an>>
+    510                  002E     rsv_xy1_pixel                 equ 46     >>
+    511                  002E     rsv_x1_pixel                  equ 46     >>
+    512                  002F     rsv_y1_pixel                  equ 47     >>
+    513                  0030     rsv_xy2_pixel                 equ 48     >>
+    514                  0030     rsv_x2_pixel                  equ 48     >>
+    515                  0031     rsv_y2_pixel                  equ 49     >>
+    516
+    517                           * --------------------------------------->>
+    518                           * reserved variables (engine) - buffer sp>>
+    519
+    520                  0032     rsv_buffer_0                  equ 50 ; St>>
+    521                  0032     rsv_priority_0                equ 50 ; in>>
+    522                  0033     rsv_priority_prev_obj_0       equ 51 ; an>>
+    523                  0035     rsv_priority_next_obj_0       equ 53 ; an>>
+    524                  0037     rsv_prev_mapping_frame_0      equ 55 ; an>>
+    525                  0039     rsv_bgdata_0                  equ 57 ; an>>
+    526                  003B     rsv_prev_xy_pixel_0           equ 59 ;
+    527                  003B     rsv_prev_x_pixel_0            equ 59 ; pr>>
+    528                  003C     rsv_prev_y_pixel_0            equ 60 ; pr>>
+    529                  003D     rsv_prev_xy1_pixel_0          equ 61 ;
+    530                  003D     rsv_prev_x1_pixel_0           equ 61 ; pr>>
+    531                  003E     rsv_prev_y1_pixel_0           equ 62 ; pr>>
+    532                  003F     rsv_prev_xy2_pixel_0          equ 63 ;
+    533                  003F     rsv_prev_x2_pixel_0           equ 63 ; pr>>
+    534                  0040     rsv_prev_y2_pixel_0           equ 64 ; pr>>
+    535                  0041     rsv_onscreen_0                equ 65 ; ha>>
+    536
+    537                  0042     rsv_buffer_1                  equ 66 ; St>>
+    538                  0042     rsv_priority_1                equ 66 ; in>>
+    539                  0043     rsv_priority_prev_obj_1       equ 67 ; an>>
+    540                  0045     rsv_priority_next_obj_1       equ 69 ; an>>
+    541                  0047     rsv_prev_mapping_frame_1      equ 71 ; an>>
+    542                  0049     rsv_bgdata_1                  equ 73 ; an>>
+    543                  004B     rsv_prev_xy_pixel_1           equ 75 ;
+    544                  004B     rsv_prev_x_pixel_1            equ 75 ; pr>>
+    545                  004C     rsv_prev_y_pixel_1            equ 76 ; pr>>
+    546                  004D     rsv_prev_xy1_pixel_1          equ 77 ;
+    547                  004D     rsv_prev_x1_pixel_1           equ 77 ; pr>>
+    548                  004E     rsv_prev_y1_pixel_1           equ 78 ; pr>>
+    549                  004F     rsv_prev_xy2_pixel_1          equ 79 ;
+    550                  004F     rsv_prev_x2_pixel_1           equ 79 ; pr>>
+    551                  0050     rsv_prev_y2_pixel_1           equ 80 ; pr>>
+    552                  0051     rsv_onscreen_1                equ 81 ; ha>>
+    553
+    554                  0000     buf_priority                  equ 0  ; of>>
+    555                  0001     buf_priority_prev_obj         equ 1  ;
+    556                  0003     buf_priority_next_obj         equ 3  ;
+    557                  0005     buf_prev_mapping_frame        equ 5  ;
+    558                  0007     buf_bgdata                    equ 7  ;
+    559                  0009     buf_prev_xy_pixel             equ 9  ;
+    560                  0009     buf_prev_x_pixel              equ 9  ;
+    561                  000A     buf_prev_y_pixel              equ 10 ;
+    562                  000B     buf_prev_xy1_pixel            equ 11 ;
+    563                  000B     buf_prev_x1_pixel             equ 11 ;
+    564                  000C     buf_prev_y1_pixel             equ 12 ;
+    565                  000D     buf_prev_xy2_pixel            equ 13 ;
+    566                  000D     buf_prev_x2_pixel             equ 13 ;
+    567                  000E     buf_prev_y2_pixel             equ 14 ;
+    568                  000F     buf_onscreen                  equ 15 ;
+     63        A000                       org   $A000
+     64
+     65                           * --------------------------------------->>
+     66                           * Object Status Table offsets
+     67                           * --------------------------------------->>
+     68                  001B     pal_src      equ ext_variables         * >>
+     69                  001D     pal_dst      equ ext_variables+2       * >>
+     70                  001F     pal_cycles   equ ext_variables+4       * >>
+     71        A000               curpal       rmb 32,0
+     72
+     73        A020 0F            pal_mask     fcb $0F                   * >>
+     74        A021 0000          pal_buffer   fdb $00                   * >>
+     75        A023 00            pal_idx      fcb $00                   * >>
+     76                                                                    >>
+     77                                                                    >>
+     78                                                                    >>
+     79                                                                    >>
+     80                                                                    >>
+     81                                                                    >>
+     82                                                                    >>
+     83                                                                    >>
+     84                                                                    >>
+     85                                                                    >>
+     86                                                                    >>
+     87        A024               PaletteHandler                           >>
+     88                                                                    >>
+     89  4+1   A024 A6   C8 18            lda   routine,u                  >>
+     90  4+1   A027 30   8C 02            leax  <PaletteHandler_Routines,pc>>
+     91  3+4   A02A 6E   96               jmp   [a,x]                      >>
+     92                                                                    >>
+     93        A02C               PaletteHandler_Routines                  >>
+     94        A02C A030                  fdb   PaletteHandler_Init        >>
+     95        A02E A093                  fdb   PaletteHandler_Main        >>
+     96                                                                    >>
+     97                                                                    >>
+     98        A030               PaletteHandler_Init                      >>
+     99  6     A030 109E 1B               ldy   pal_src                  * >>
+    100  5     A033 9E   1D               ldx   pal_dst
+    101  7     A035 7F   A023             clr   pal_idx
+    102        A038               PalRun
+    103  4+0   A038 A6   A4               lda   ,y                         >>
+    104  5     A03A B4   A020             anda  pal_mask                 * >>
+    105  4+0   A03D E6   84               ldb   ,x                       * >>
+    106  5     A03F F4   A020             andb  pal_mask                 * >>
+    107  5     A042 F7   A021             stb   pal_buffer               * >>
+    108  2     A045 C6   11               ldb   #$11                     * >>
+    109  5     A047 F4   A020             andb  pal_mask                 * >>
+    110  5     A04A F7   A022             stb   pal_buffer+1             * >>
+    111  5     A04D B1   A021             cmpa  pal_buffer               * >>
+    112  3     A050 27   10               beq   PalVRSuivante            * >>
+    113  3     A052 22   07               bhi   PalVRDec                 * >>
+    114  4+0   A054 A6   A4               lda   ,y                       * >>
+    115  5     A056 BB   A022             adda  pal_buffer+1             * >>
+    116  3     A059 20   05               bra   PalVRSave                * >>
+    117        A05B               PalVRDec
+    118  4+0   A05B A6   A4               lda   ,y                       * >>
+    119  5     A05D B0   A022             suba  pal_buffer+1             * >>
+    120        A060               PalVRSave
+    121  4+0   A060 A7   A4               sta   ,y                       * >>
+    122        A062               PalVRSuivante
+    123  7     A062 73   A020             com   pal_mask                 * >>
+    124  3     A065 2B   D1               bmi   PalRun                   * >>
+    125                            
+    126        A067               SetPalBleu
+    127  4+1   A067 E6   21               ldb   1,y                        >>
+    128  4+1   A069 E1   01               cmpb  1,x                      * >>
+    129  3     A06B 27   08               beq   SetPalNext               * >>
+    130  3     A06D 22   03               bhi   SetPalBleudec            * >>
+    131  2     A06F 5C                    incb                           * >>
+    132  3     A070 20   01               bra   SetPalSaveBleu           * >>
+    133        A072               SetPalBleudec
+    134  2     A072 5A                    decb                           * >>
+    135        A073               SetPalSaveBleu
+    136  4+1   A073 E7   21               stb   1,y                      * >>
+    137                            
+    138        A075               SetPalNext
+    139  5     A075 B6   A023             lda   pal_idx                  * >>
+    140  2     A078 48                    asla
+    141  5     A079 B7   E7DB             sta   $E7DB                    * >>
+    142  4+0   A07C A6   A4               lda   ,y                       * >>
+    143  5     A07E B7   E7DA             sta   $E7DA                    * >>
+    144  5     A081 F7   E7DA             stb   $E7DA                    * >>
+    145  4+1   A084 31   22               leay  2,y                      * >>
+    146  4+1   A086 30   02               leax  2,x                      * >>
+    147  7     A088 7C   A023             inc   pal_idx
+    148  5     A08B B6   A023             lda   pal_idx
+    149  2     A08E 81   10               cmpa  #$10
+    150  3     A090 27   A6               beq   PalRun                   * >>
+    151                                                                    >>
+    152                                                                    >>
+    153                                                                    >>
+    154                                                                    >>
+    155                                                                    >>
+    156                                                                    >>
+    157                                                                    >>
+    158                                                                    >>
+    159                                                                    >>
+    160                                                                    >>
+    161                                                                    >>
+    162                                                                    >>
+    163                                                                    >>
+    164                                                                    >>
+    165                                                                    >>
+    166                                                                    >>
+    167                                                                    >>
+    168                                                                    >>
+    169                                                                    >>
+    170                                                                    >>
+    171                                                                    >>
+    172  5     A092 39                    rts                              >>
+    173                                                                    >>
+    174                                                                    >>
+    175        A093               PaletteHandler_Main                      >>
+    176  6     A093 0A   1F               dec   pal_cycles               * >>
+    177  3     A095 26   99               bne   PaletteHandler_Init      * >>
+    178  6+0   A097 6F   C4               clr   ,u                       * >>
+    179                                                                    >>
+    180                                                                    >>
+    181                                                                    >>
+    182                                                                    >>
+    183                                                                    >>
+    184                                                                    >>
+    185                                                                    >>
+    186                                                                    >>
+    187                                                                    >>
+    188                                                                    >>
+    189                                                                    >>
+    190                                                                    >>
+    191                                                                    >>
+    192                                                                    >>
+    193                                                                    >>
+    194                                                                    >>
+    195                                                                    >>
+    196                                                                    >>
+    197                                                                    >>
+    198  5     A099 39                    rts                              >>
+    199                                                                    >>
+    200                                                                    >>
+    201                                                                    >>
+    202                                                                    >>
+    203                                                                    >>
+    204                                                                    >>
+    205                                                                    >>
+    206                                                                    >>
+    207                                                                    >>
+    208                                                                    >>
+    209                                                                    >>
+    210                                                                    >>
+    211                                                                    >>
+    212                                                                    >>
+    213                                                                    >>
+    214                                                                    >>
+    215                                                                    >>
+    216                                                                    >>
+    217                                                                    >>
+    218                                                                    >>
+    219                                                                    >>
+    220                                                                    >>
+    221                                                                    >>
+    222                                                                    >>
+    223                                                                    >>
+    224                                                                    >>
+    225                                                                    >>
+    226                                                                    >>
+    227                                                                    >>
+    228                                                                    >>
+    229                                                                    >>
+    230                                                                    >>
+    231                                                                    >>
+    232                                                                    >>
+    233                                                                    >>
+    234                                                                    >>
+    235                                                                    >>
+    236                                                                    >>
+    237                                                                    >>
+    238                                                                    >>
+    239                                                                    >>
+    240                                                                    >>
+    241                                                                    >>
+    242                                                                    >>
+    243                                                                    >>
+    244                                                                    >>
+    245                                                                    >>
+    246                                                                    >>
+    247                                                                    >>
+    248                                                                    >>
+    249                                                                    >>
+    250                                                                    >>
+    251                                                                    >>
+    252                                                                    >>
+    253                                                                    >>
+    254                                                                    >>
+    255                                                                    >>
+    256                                                                    >>
+    257                                                                    >>
+    258                                                                    >>
+    259                                                                    >>
+    260                                                                    >>
+    261                                                                    >>
+    262                                                                    >>
+    263                                                                    >>
+    264                                                                    >>
+    265                                                                    >>
+    266                                                                    >>
+    267                                                                    >>
+    268                                                                    >>
+    269                                                                    >>
+    270                                                                    >>
+    271                                                                    >>
+    272                                                                    >>
+    273                                                                    >>
+    274                                                                    >>
+    275                                                                    >>
+    276                                                                    >>
+    277                                                                    >>
+    278                                                                    >>
+    279                                                                    >>
+    280                                                                    >>
+    281                                                                    >>
+    282                                                                    >>
+    283                                                                    >>
+    284                                                                    >>
+    285                                                                    >>
+    286                                                                    >>
+    287                                                                    >>
+    288                                                                    >>
+    289                                                                    >>
+    290                                                                    >>
+    291                                                                    >>
+    292                                                                    >>
+    293                                                                    >>
+    294
+
+000000 Total Errors
+
+000222 Total Symbols
+     0x          Equ   0004 anim
+     0x          Equ   6E40 AnimateSprite
+     0x          Equ   0008 anim_frame
+     0x          Equ   0009 anim_frame_duration
+     0x          Equ   79A0 Ani_largeStar
+     0x          Equ   799A Ani_smallStar
+     0x          Equ   79B8 Ani_sonic
+     0x          Equ   79AC Ani_tails
+     0x          Equ   0001 bckdraw_routine
+     0x          Equ   0007 buf_bgdata
+     0x          Equ   000F buf_onscreen
+     0x          Equ   0005 buf_prev_mapping_frame
+     0x          Equ   000B buf_prev_x1_pixel
+     0x          Equ   000D buf_prev_x2_pixel
+     0x          Equ   000B buf_prev_xy1_pixel
+     0x          Equ   000D buf_prev_xy2_pixel
+     0x          Equ   0009 buf_prev_xy_pixel
+     0x          Equ   0009 buf_prev_x_pixel
+     0x          Equ   000C buf_prev_y1_pixel
+     0x          Equ   000E buf_prev_y2_pixel
+     0x          Equ   000A buf_prev_y_pixel
+     0x          Equ   0000 buf_priority
+     0x          Equ   0003 buf_priority_next_obj
+     0x          Equ   0001 buf_priority_prev_obj
+     0x          Equ   0040 c1_button_A_mask
+     0x          Equ   0002 c1_button_down_mask
+     0x          Equ   0004 c1_button_left_mask
+     0x          Equ   0008 c1_button_right_mask
+     0x          Equ   0001 c1_button_up_mask
+     0x          Equ   0080 c2_button_A_mask
+     0x          Equ   0020 c2_button_down_mask
+     0x          Equ   0040 c2_button_left_mask
+     0x          Equ   0080 c2_button_right_mask
+     0x          Equ   0010 c2_button_up_mask
+     0x          Equ   6FC9 ClearObj
+     0x          Label A000 curpal
+     0x          Equ   41C7 current_game_mode_data
+     0x          Equ   6F07 DeleteObject
+     0x          Equ   6F01 DeleteObject_x
+     0x          Equ   6DC7 DisplaySprite
+     0x          Equ   6DC1 DisplaySprite_x
+     0x          Equ   604F dk_destination
+     0x          Equ   6049 dk_lecteur
+     0x          Equ   604A dk_piste
+     0x          Equ   604B dk_pisteL
+     0x          Equ   604C dk_secteur
+     0x          Equ   6D5B Dpad_Held
+     0x          Equ   6D5D Dpad_Press
+     0x          Equ   0004 draw_routine
+     0x          Equ   0009 erase_nb_cell
+     0x          Equ   0007 erase_routine
+     3x          Equ   001B ext_variables
+     0x          Equ   6D5C Fire_Held
+     0x          Equ   6D5E Fire_Press
+     0x          Equ   414F GameModeLoader
+     0x          Equ   0038 gravity
+     0x          Equ   0000 id
+     0x          Equ   000E image_meta_size
+     0x          Equ   000A image_x1_offset_l
+     0x          Equ   000C image_x_size_l
+     0x          Equ   000B image_y1_offset_l
+     0x          Equ   000D image_y_size_l
+     0x          Equ   78F1 Img_emblemBack01
+     0x          Equ   78E3 Img_emblemBack02
+     0x          Equ   7849 Img_emblemBack03
+     0x          Equ   783B Img_emblemBack04
+     0x          Equ   7865 Img_emblemBack05
+     0x          Equ   7857 Img_emblemBack06
+     0x          Equ   781F Img_emblemBack07
+     0x          Equ   7811 Img_emblemBack08
+     0x          Equ   782D Img_emblemBack09
+     0x          Equ   797D Img_emblemFront01
+     0x          Equ   798B Img_emblemFront02
+     0x          Equ   7961 Img_emblemFront03
+     0x          Equ   796F Img_emblemFront04
+     0x          Equ   7945 Img_emblemFront05
+     0x          Equ   7953 Img_emblemFront06
+     0x          Equ   7929 Img_emblemFront07
+     0x          Equ   7937 Img_emblemFront08
+     0x          Equ   77E7 Img_sonicHand
+     0x          Equ   78C7 Img_sonic_1
+     0x          Equ   78D5 Img_sonic_2
+     0x          Equ   790D Img_sonic_3
+     0x          Equ   791B Img_sonic_4
+     0x          Equ   78FF Img_sonic_5
+     0x          Equ   7803 Img_star_1
+     0x          Equ   77F5 Img_star_2
+     0x          Equ   77D9 Img_star_3
+     0x          Equ   77CB Img_star_4
+     0x          Equ   78B9 Img_tailsHand
+     0x          Equ   78AB Img_tails_1
+     0x          Equ   789D Img_tails_2
+     0x          Equ   788F Img_tails_3
+     0x          Equ   7881 Img_tails_4
+     0x          Equ   7873 Img_tails_5
+     0x          Equ   000A mapping_frame
+     0x          Equ   6DBF MarkObjGone
+     0x          Equ   0012 nb_dynamic_objects
+     0x          Equ   0003 nb_level_objects
+     0x          Equ   0017 nb_objects
+     0x          Equ   0008 nb_priority_levels
+     0x          Equ   0002 nb_reserved_objects
+     0x          Equ   0052 next_object
+     0x          Equ   65C5 Object_RAM
+     1x          Equ   0052 object_size
+     0x          Equ   0001 ObjID_PaletteHandler
+     0x          Equ   0002 ObjID_TitleScreen
+     0x          Equ   0000 page_bckdraw_routine
+     0x          Equ   0003 page_draw_routine
+     0x          Equ   0006 page_erase_routine
+     0x          Label A024 PaletteHandler
+     2x          Label A030 PaletteHandler_Init
+     1x          Label A093 PaletteHandler_Main
+     1x          Label A02C PaletteHandler_Routines
+     2x          Label A038 PalRun
+     1x          Label A05B PalVRDec
+     1x          Label A060 PalVRSave
+     1x          Label A062 PalVRSuivante
+     5x          Label A021 pal_buffer
+     1x          Equ   001F pal_cycles
+     1x          Equ   001D pal_dst
+     4x          Label A023 pal_idx
+     4x          Label A020 pal_mask
+     1x          Equ   001B pal_src
+     0x          Equ   0006 prev_anim
+     0x          Equ   0003 priority
+     0x          Equ   0010 render_fixedoverlay_mask
+     0x          Equ   0002 render_flags
+     0x          Equ   0040 render_free2_mask
+     0x          Equ   0080 render_free3_mask
+     0x          Equ   0008 render_hide_mask
+     0x          Equ   0004 render_playfieldcoord_mask
+     0x          Equ   0020 render_todelete_mask
+     0x          Equ   0001 render_xmirror_mask
+     0x          Equ   0002 render_ymirror_mask
+     1x          Equ   0018 routine
+     0x          Equ   0019 routine_secondary
+     0x          Equ   0039 rsv_bgdata_0
+     0x          Equ   0049 rsv_bgdata_1
+     0x          Equ   0032 rsv_buffer_0
+     0x          Equ   0042 rsv_buffer_1
+     0x          Equ   002C rsv_curr_mapping_frame
+     0x          Equ   0041 rsv_onscreen_0
+     0x          Equ   0051 rsv_onscreen_1
+     0x          Equ   002A rsv_prev_anim
+     0x          Equ   0037 rsv_prev_mapping_frame_0
+     0x          Equ   0047 rsv_prev_mapping_frame_1
+     0x          Equ   003D rsv_prev_x1_pixel_0
+     0x          Equ   004D rsv_prev_x1_pixel_1
+     0x          Equ   003F rsv_prev_x2_pixel_0
+     0x          Equ   004F rsv_prev_x2_pixel_1
+     0x          Equ   003D rsv_prev_xy1_pixel_0
+     0x          Equ   004D rsv_prev_xy1_pixel_1
+     0x          Equ   003F rsv_prev_xy2_pixel_0
+     0x          Equ   004F rsv_prev_xy2_pixel_1
+     0x          Equ   003B rsv_prev_xy_pixel_0
+     0x          Equ   004B rsv_prev_xy_pixel_1
+     0x          Equ   003B rsv_prev_x_pixel_0
+     0x          Equ   004B rsv_prev_x_pixel_1
+     0x          Equ   003E rsv_prev_y1_pixel_0
+     0x          Equ   004E rsv_prev_y1_pixel_1
+     0x          Equ   0040 rsv_prev_y2_pixel_0
+     0x          Equ   0050 rsv_prev_y2_pixel_1
+     0x          Equ   003C rsv_prev_y_pixel_0
+     0x          Equ   004C rsv_prev_y_pixel_1
+     0x          Equ   0032 rsv_priority_0
+     0x          Equ   0042 rsv_priority_1
+     0x          Equ   0035 rsv_priority_next_obj_0
+     0x          Equ   0045 rsv_priority_next_obj_1
+     0x          Equ   0033 rsv_priority_prev_obj_0
+     0x          Equ   0043 rsv_priority_prev_obj_1
+     0x          Equ   0001 rsv_render_checkrefresh_mask
+     0x          Equ   0004 rsv_render_displaysprite_mask
+     0x          Equ   0002 rsv_render_erasesprite_mask
+     0x          Equ   0029 rsv_render_flags
+     0x          Equ   0008 rsv_render_outofrange_mask
+     0x          Equ   002E rsv_x1_pixel
+     0x          Equ   0030 rsv_x2_pixel
+     0x          Equ   002E rsv_xy1_pixel
+     0x          Equ   0030 rsv_xy2_pixel
+     0x          Equ   002F rsv_y1_pixel
+     0x          Equ   0031 rsv_y2_pixel
+     0x          Equ   6D3C screen_border_color
+     0x          Equ   00E4 screen_bottom
+     0x          Equ   001C screen_top
+     0x          Equ   00A0 screen_width
+     0x          Label A067 SetPalBleu
+     1x          Label A072 SetPalBleudec
+     1x          Label A075 SetPalNext
+     1x          Label A073 SetPalSaveBleu
+     0x          Equ   001A status
+     0x          Equ   0004 status_bit2
+     0x          Equ   0080 status_bit7
+     0x          Equ   0002 status_inair
+     0x          Equ   0010 status_jumpingafterrolling
+     0x          Equ   0004 status_jumporroll
+     0x          Equ   0020 status_mainchar_pushing
+     0x          Equ   0008 status_mainchar_standing
+     0x          Equ   0008 status_norgroundnorfall
+     0x          Equ   0020 status_pushing
+     0x          Equ   0040 status_sidekick_pushing
+     0x          Equ   0010 status_sidekick_standing
+     0x          Equ   0040 status_underwater
+     0x          Equ   0001 status_x_orientation
+     0x          Equ   0002 status_y_orientation
+     0x          Equ   0001 subtype
+     0x          Equ   6D59 Vint_runcount
+     0x          Equ   0012 xy_pixel
+     0x          Equ   0012 x_pixel
+     0x          Equ   000C x_pos
+     0x          Equ   000E x_sub
+     0x          Equ   0014 x_vel
+     0x          Equ   0013 y_pixel
+     0x          Equ   000F y_pos
+     0x          Equ   0011 y_sub
+     0x          Equ   0016 y_vel
+     0x          Equ   00FE _goBackNFrames
+     0x          Equ   00FD _goToAnimation
+     0x          Equ   00FC _nextRoutine
+     0x          Equ   00FA _nextSubRoutine
+     0x          Equ   00FF _resetAnim
+     0x          Equ   00FB _resetAnimAndSubRoutine
+

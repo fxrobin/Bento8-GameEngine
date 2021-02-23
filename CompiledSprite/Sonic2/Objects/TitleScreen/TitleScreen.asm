@@ -42,7 +42,7 @@
 ;
 ; conversion :
 ; x=((x-128)/2)+48
-; y=y-140+28
+; y=y-140+28-1
 ;
 ; center : #$807F
 ; top left : #$301C
@@ -85,11 +85,27 @@ Obj_LargeStar           equ Object_RAM+(object_size*2)
 Obj_SmallStar           equ Object_RAM+(object_size*3)
 Obj_SonicHand           equ Object_RAM+(object_size*4)
 Obj_TailsHand           equ Object_RAM+(object_size*5)
-Obj_EmblemTop           equ Object_RAM+(object_size*6)
-Obj_PaletteHandler      equ Object_RAM+(object_size*7)
-Obj_PaletteHandler2     equ Object_RAM+(object_size*8)
-Obj_PaletteHandler3     equ Object_RAM+(object_size*9)
-TitleScr_Object_RAM_End equ Object_RAM+(object_size*10)
+Obj_EmblemFront01       equ Object_RAM+(object_size*6)
+Obj_EmblemFront02       equ Object_RAM+(object_size*7)
+Obj_EmblemFront03       equ Object_RAM+(object_size*8)
+Obj_EmblemFront04       equ Object_RAM+(object_size*9)
+Obj_EmblemFront05       equ Object_RAM+(object_size*10)
+Obj_EmblemFront06       equ Object_RAM+(object_size*11)
+Obj_EmblemFront07       equ Object_RAM+(object_size*12)
+Obj_EmblemFront08       equ Object_RAM+(object_size*13)
+Obj_EmblemBack01        equ Object_RAM+(object_size*14)
+Obj_EmblemBack02        equ Object_RAM+(object_size*15)
+Obj_EmblemBack03        equ Object_RAM+(object_size*16)
+Obj_EmblemBack04        equ Object_RAM+(object_size*17)
+Obj_EmblemBack05        equ Object_RAM+(object_size*18)
+Obj_EmblemBack06        equ Object_RAM+(object_size*19)
+Obj_EmblemBack07        equ Object_RAM+(object_size*20)
+Obj_EmblemBack08        equ Object_RAM+(object_size*21)
+Obj_EmblemBack09        equ Object_RAM+(object_size*22)
+Obj_PaletteHandler      equ Object_RAM+(object_size*23)
+Obj_PaletteHandler2     equ Object_RAM+(object_size*24)
+Obj_PaletteHandler3     equ Object_RAM+(object_size*25)
+TitleScr_Object_RAM_End equ Object_RAM+(object_size*26)
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -106,14 +122,15 @@ b_TitleScr_final_state          equ ext_variables+6
 * ---------------------------------------------------------------------------
 * Subtypes
 * ---------------------------------------------------------------------------
-Sub_Init      equ 0
-Sub_Sonic     equ 2
-Sub_Tails     equ 4
-Sub_EmblemTop equ 6
-Sub_LargeStar equ 8
-Sub_SonicHand equ 10
-Sub_SmallStar equ 12
-Sub_TailsHand equ 16
+Sub_Init        equ 0
+Sub_Sonic       equ 2
+Sub_Tails       equ 4
+Sub_EmblemFront equ 6
+Sub_EmblemBack  equ 8
+Sub_LargeStar   equ 10
+Sub_SonicHand   equ 12
+Sub_SmallStar   equ 14
+Sub_TailsHand   equ 16
 
 * ***************************************************************************
 * TitleScreen
@@ -134,11 +151,12 @@ TitleScreen_Routines                             *Obj0E_Index:    offsetTable
         fdb   Init                               *                offsetTableEntry.w Obj0E_Init   ;   0
         fdb   Sonic                              *                offsetTableEntry.w Obj0E_Sonic  ;   2
         fdb   Tails                              *                offsetTableEntry.w Obj0E_Tails  ;   4
-        fdb   EmblemTop                          *                offsetTableEntry.w Obj0E_LogoTop        ;   6
+        fdb   EmblemFront                        *                offsetTableEntry.w Obj0E_LogoTop        ;   6
+        fdb   EmblemBack        
         fdb   LargeStar                          *                offsetTableEntry.w Obj0E_LargeStar      ;   8
         fdb   SonicHand                          *                offsetTableEntry.w Obj0E_SonicHand      ;  $A
         fdb   SmallStar                          *                offsetTableEntry.w Obj0E_SmallStar      ;  $C
-        fdb   $0000                              *                offsetTableEntry.w Obj0E_SkyPiece       ;  $E
+                                                 *                offsetTableEntry.w Obj0E_SkyPiece       ;  $E
         fdb   TailsHand                          *                offsetTableEntry.w Obj0E_TailsHand      ; $10
                                                  *; ===========================================================================
                                                  *; loc_12E38:
@@ -192,7 +210,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         std   mapping_frame,u                    *        move.b  #5,mapping_frame(a0)
         ldd   #Ani_sonic                         ; in original code, anim is an index in offset table (1 byte) that is implicitly initialized to 0
         std   anim,u                             ; so added init code to anim address here because it is not an index anymore
-        ldd   #$7870
+        ldd   #$786F
         std   xy_pixel,u                         *        move.w  #$110,x_pixel(a0)
                                                  *        move.w  #$E0,y_pixel(a0)
         ldx   #Obj_LargeStar                     *        lea     (IntroLargeStar).w,a1
@@ -200,10 +218,12 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFB0C0
         ldb   #Sub_LargeStar
         stb   subtype,x                          *        move.b  #8,subtype(a1)                          ; large star
-        ldx   #Obj_EmblemTop                     *        lea     (IntroEmblemTop).w,a1
-        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
-        ldb   #Sub_EmblemTop
-        stb   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
+        
+        * moved to Sonic_PaletteFadeAfterWait    *        lea     (IntroEmblemTop).w,a1
+                                                 *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
+
+                                                 *        move.b  #6,subtype(a1)                          ; logo top
+
         * sound unused                           *        moveq   #SndID_Sparkle,d0
         rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
@@ -217,10 +237,121 @@ Sonic_PaletteFade                                *loc_12EC2:
 Sonic_PaletteFadeAfterWait                       *+
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        *ldx   #Obj_PaletteHandler3              *        lea     (TitleScreenPaletteChanger3).w,a1
-        *lda   #ObjID_TtlScrPalChanger
-        *sta   id,x                              *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
-        *clr   subtype,x                         *        move.b  #0,subtype(a1)
+        
+        * Create emblem tiles
+        ldx   #Obj_EmblemFront01
+        lda   #ObjID_TitleScreen
+        ldb   #Sub_EmblemFront
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront01
+		sty   mapping_frame,x                   
+        
+        ldx   #Obj_EmblemFront02
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront02
+		sty   mapping_frame,x
+		
+        ldx   #Obj_EmblemFront03
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront03
+		sty   mapping_frame,x
+		
+        ldx   #Obj_EmblemFront04
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront04
+		sty   mapping_frame,x	
+		
+		ldx   #Obj_EmblemFront05
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront05
+		sty   mapping_frame,x	
+		
+        ldx   #Obj_EmblemFront06
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront06
+		sty   mapping_frame,x		
+		
+        ldx   #Obj_EmblemFront07
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront07
+		sty   mapping_frame,x	
+		
+        ldx   #Obj_EmblemFront08
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemFront08
+		sty   mapping_frame,x			
+		
+        ldx   #Obj_EmblemBack01
+        ldb   #Sub_EmblemBack
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack01
+		sty   mapping_frame,x
+		
+        ldx   #Obj_EmblemBack02
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack02
+		sty   mapping_frame,x
+		
+        ldx   #Obj_EmblemBack03
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack03
+		sty   mapping_frame,x	
+		
+		ldx   #Obj_EmblemBack04
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack04
+		sty   mapping_frame,x	
+		
+        ldx   #Obj_EmblemBack05
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack05
+		sty   mapping_frame,x		
+		
+        ldx   #Obj_EmblemBack06
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack06
+		sty   mapping_frame,x	
+		
+        ldx   #Obj_EmblemBack07
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack07
+		sty   mapping_frame,x	        
+		
+        ldx   #Obj_EmblemBack08
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack08
+		sty   mapping_frame,x
+		
+		ldx   #Obj_EmblemBack09
+        sta   id,x
+        stb   subtype,x
+        ldy   #Img_emblemBack09
+		sty   mapping_frame,x	
+        
+        ldx   #Obj_PaletteHandler3               *        lea     (TitleScreenPaletteChanger3).w,a1
+        lda   #ObjID_PaletteHandler
+        sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
+        clr   subtype,x                          *        move.b  #0,subtype(a1)
+        ldd   #Black_palette
+        std   ext_variables,x
+        ldd   #Pal_TitleScreen
+        std   ext_variables+2,x        
         * music unused (flag)                    *        st.b    objoff_30(a0)
         * music unused                           *        moveq   #MusID_Title,d0 ; title music
         rts                                      *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
@@ -257,7 +388,7 @@ Sonic_SetPal_TitleScreenAfterWait                *+
                                                  *; ===========================================================================
                                                  *
 Sonic_Move                                       *loc_12F18:
-        ldx   #Sonic_xy_data_end-Sonic_xy_data
+        ldx   #Sonic_xy_data_end-Sonic_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_13046_end-word_13046+4,d2
         leax  Sonic_xy_data-2,pcr                *        lea     (word_13046).l,a1
                                                  *
@@ -265,7 +396,7 @@ TitleScreen_MoveObjects                          *loc_12F20:
         ldd   w_TitleScr_move_frame_count,u      *        move.w  objoff_2A(a0),d0
         addd  #1                                 *        addq.w  #1,d0
         std   w_TitleScr_move_frame_count,u      *        move.w  d0,objoff_2A(a0)
-        *andb  #3 * one frame on four             *        andi.w  #3,d0
+        andb  #3 * one frame on four             *        andi.w  #3,d0
         *bne   MoveObjects_KeepPosition           *        bne.s   +
         ldd   w_TitleScr_xy_data_index,u         *        move.w  objoff_2C(a0),d1
         addd  #2                                 *        addq.w  #4,d1
@@ -401,14 +532,14 @@ CyclingPal_TitleScreen                           *CyclingPal_TitleStar:
 CyclingPal_TitleScreen_end                       *CyclingPal_TitleStar_End
                                                  *
 Sonic_xy_data                                    *word_13046:
-        fcb   $74,$60                            *        dc.w  $108, $D0
-        fcb   $70,$50                            *        dc.w  $100, $C0 ; 2
-        fcb   $6C,$40                            *        dc.w   $F8, $B0 ; 4
-        fcb   $6B,$36                            *        dc.w   $F6, $A6 ; 6
-        fcb   $6D,$2E                            *        dc.w   $FA, $9E ; 8
-        fcb   $70,$2A                            *        dc.w  $100, $9A ; $A
-        fcb   $72,$29                            *        dc.w  $104, $99 ; $C
-        fcb   $74,$28                            *        dc.w  $108, $98 ; $E
+        fcb   $74,$5F                            *        dc.w  $108, $D0
+        fcb   $70,$4F                            *        dc.w  $100, $C0 ; 2
+        fcb   $6C,$3F                            *        dc.w   $F8, $B0 ; 4
+        fcb   $6B,$35                            *        dc.w   $F6, $A6 ; 6
+        fcb   $6D,$2D                            *        dc.w   $FA, $9E ; 8
+        fcb   $70,$29                            *        dc.w  $100, $9A ; $A
+        fcb   $72,$28                            *        dc.w  $104, $99 ; $C
+        fcb   $74,$27                            *        dc.w  $108, $98 ; $E
 Sonic_xy_data_end                                *word_13046_end
                                                  *; ===========================================================================
 
@@ -434,9 +565,11 @@ Tails_Routines                                   *off_13074:      offsetTable
 Tails_Init                                       *Obj0E_Tails_Init:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldd   #$5C68
+        ldd   #$5C67
         std   xy_pixel,u                         *        move.w  #$D8,x_pixel(a0)
                                                  *        move.w  #$D8,y_pixel(a0)
+        ldb   #$05
+        stb   priority,u                                                 
         ldd   #Ani_tails
         std   anim,u                             *        move.b  #1,anim(a0)
         ldd   #Img_tails_1                       ; in original code, mapping_frame is an index in offset table (1 byte) that is implicitly initialized to 0
@@ -445,7 +578,7 @@ Tails_Init                                       *Obj0E_Tails_Init:
                                                  *; ===========================================================================
                                                  *
 Tails_Move                                       *loc_13096:
-        ldx   #Tails_xy_data_end-Tails_xy_data
+        ldx   #Tails_xy_data_end-Tails_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_130B8_end-word_130B8+4,d2
         leax  <Tails_xy_data-2,pcr               *        lea     (word_130B8).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
@@ -464,43 +597,43 @@ Tails_DisplaySprite                              *BranchTo10_DisplaySprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
 Tails_xy_data                                    *word_130B8:
-        fcb   $5B,$58                            *        dc.w   $D7,$C8
-        fcb   $59,$48                            *        dc.w   $D3,$B8  ; 2
-        fcb   $57,$3C                            *        dc.w   $CE,$AC  ; 4
-        fcb   $56,$36                            *        dc.w   $CC,$A6  ; 6
-        fcb   $55,$32                            *        dc.w   $CA,$A2  ; 8
-        fcb   $54,$31                            *        dc.w   $C9,$A1  ; $A
-        fcb   $54,$30                            *        dc.w   $C8,$A0  ; $C
+        fcb   $5B,$57                            *        dc.w   $D7,$C8
+        fcb   $59,$47                            *        dc.w   $D3,$B8  ; 2
+        fcb   $57,$3B                            *        dc.w   $CE,$AC  ; 4
+        fcb   $56,$35                            *        dc.w   $CC,$A6  ; 6
+        fcb   $55,$31                            *        dc.w   $CA,$A2  ; 8
+        fcb   $54,$30                            *        dc.w   $C9,$A1  ; $A
+        fcb   $54,$2F                            *        dc.w   $C8,$A0  ; $C
 Tails_xy_data_end                                *word_130B8_end
                                                  *; ===========================================================================
 
 * ---------------------------------------------------------------------------
-* EmblemTop
+* EmblemFront
 * ---------------------------------------------------------------------------
 
                                                  *
-EmblemTop                                        *Obj0E_LogoTop:
+EmblemFront                                      *Obj0E_LogoTop:
                                                  *        moveq   #0,d0
         lda   routine_secondary,u                *        move.b  routine_secondary(a0),d0
-        leax  <EmblemTop_Routines,pcr            *        move.w  off_130E2(pc,d0.w),d1
+        leax  <EmblemFront_Routines,pcr          *        move.w  off_130E2(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     off_130E2(pc,d1.w)
                                                  *; ===========================================================================
-EmblemTop_Routines                               *off_130E2:      offsetTable
-        fdb   EmblemTop_Init                     *                offsetTableEntry.w Obj0E_LogoTop_Init                   ; 0
-        fdb   EmblemTop_DisplaySprite            *                offsetTableEntry.w BranchTo11_DisplaySprite     ; 2
+EmblemFront_Routines                             *off_130E2:      offsetTable
+        fdb   EmblemFront_Init                   *                offsetTableEntry.w Obj0E_LogoTop_Init                   ; 0
+        fdb   EmblemFront_DisplaySprite          *                offsetTableEntry.w BranchTo11_DisplaySprite     ; 2
                                                  *; ===========================================================================
                                                  *
-EmblemTop_Init                                   *Obj0E_LogoTop_Init:
+EmblemFront_Init                                 *Obj0E_LogoTop_Init:
         * not implemented                        *        move.b  #$B,mapping_frame(a0)
         * trademark logo for PAL                 *        tst.b   (Graphics_Flags).w
         * game version                           *        bmi.s   +
         lda   render_flags,u
         ora   #render_fixedoverlay_mask
         sta   render_flags,u
-        ldd   #Img_emblemFront                   *        move.b  #$A,mapping_frame(a0)
-        std   mapping_frame,u                    *+
-        lda   #1
-        sta   priority,u                         *        move.b  #2,priority(a0)
+        * initialized in object creation         *        move.b  #$A,mapping_frame(a0)
+                                                 *+
+        ldb   #$01
+        stb   priority,u                         *        move.b  #2,priority(a0)
         ldd   #$807F
         std   xy_pixel,u                         *        move.w  #$120,x_pixel(a0)
                                                  *        move.w  #$E8,y_pixel(a0)
@@ -509,9 +642,32 @@ TitleScreen_NextSubRoutineAndDisplay             *loc_1310A:
         inc   routine_secondary,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
                                                  *
-EmblemTop_DisplaySprite                          *BranchTo11_DisplaySprite
+EmblemFront_DisplaySprite                        *BranchTo11_DisplaySprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
+
+* ---------------------------------------------------------------------------
+* EmblemBack
+* ---------------------------------------------------------------------------
+
+EmblemBack
+        lda   routine_secondary,u
+        leax  <EmblemBack_Routines,pcr
+        jmp   [a,x]
+
+EmblemBack_Routines
+        fdb   EmblemBack_Init
+        fdb   EmblemFront_DisplaySprite
+
+EmblemBack_Init
+        lda   render_flags,u
+        ora   #render_fixedoverlay_mask
+        sta   render_flags,u
+        ldb   #$06
+        stb   priority,u
+        ldd   #$807F
+        std   xy_pixel,u
+        bra   TitleScreen_NextSubRoutineAndDisplay
 
 * ---------------------------------------------------------------------------
 * Sky Piece
@@ -573,7 +729,7 @@ LargeStar_Init                                   *Obj0E_LargeStar_Init:
         std   anim,u                             *        move.b  #2,anim(a0)
         ldb   #$02
         stb   priority,u                         *        move.b  #1,priority(a0)
-        ldd   #$7038
+        ldd   #$7037
         std   xy_pixel,u                         *        move.w  #$100,x_pixel(a0)
                                                  *        move.w  #$A8,y_pixel(a0)
         ldd   #4
@@ -620,15 +776,15 @@ LargeStar_MoveContinue
                                                  *; ===========================================================================
                                                  *; unknown
 LargeStar_xy_data                                *word_131DC:
-        fcb   $5D,$82                            *        dc.w   $DA, $F2
-        fcb   $A8,$88                            *        dc.w  $170, $F8 ; 2
-        fcb   $89,$C1                            *        dc.w  $132,$131 ; 4
-        fcb   $BF,$32                            *        dc.w  $19E, $A2 ; 6
-        fcb   $50,$73                            *        dc.w   $C0, $E3 ; 8
-        fcb   $B0,$70                            *        dc.w  $180, $E0 ; $A
-        fcb   $76,$CB                            *        dc.w  $10D,$13B ; $C
-        fcb   $50,$3B                            *        dc.w   $C0, $AB ; $E
-        fcb   $A2,$97                            *        dc.w  $165, $107        ; $10
+        fcb   $5D,$81                            *        dc.w   $DA, $F2
+        fcb   $A8,$87                            *        dc.w  $170, $F8 ; 2
+        fcb   $89,$C0                            *        dc.w  $132,$131 ; 4
+        fcb   $BF,$31                            *        dc.w  $19E, $A2 ; 6
+        fcb   $50,$72                            *        dc.w   $C0, $E3 ; 8
+        fcb   $B0,$6F                            *        dc.w  $180, $E0 ; $A
+        fcb   $76,$CA                            *        dc.w  $10D,$13B ; $C
+        fcb   $50,$3A                            *        dc.w   $C0, $AB ; $E
+        fcb   $A2,$96                            *        dc.w  $165, $107        ; $10
 LargeStar_xy_data_end                            *word_131DC_end
                                                  *; ===========================================================================
 
@@ -656,7 +812,7 @@ SonicHand_Init                                   *Obj0E_SonicHand_Init:
         std   mapping_frame,u                    *        move.b  #9,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
-        ldd   #$924F
+        ldd   #$924E
         std   xy_pixel,u                         *        move.w  #$145,x_pixel(a0)
                                                  *        move.w  #$BF,y_pixel(a0)
                                                  *
@@ -665,15 +821,15 @@ SonicHand_DisplaySprite                          *BranchTo13_DisplaySprite
                                                  *; ===========================================================================
                                                  *
 SonicHand_Move                                   *loc_13234:
-        ldx   #SonicHand_xy_data_end-SonicHand_xy_data
+        ldx   #SonicHand_xy_data_end-SonicHand_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_13240_end-word_13240+4,d2
         leax  <SonicHand_xy_data-2,pcr           *        lea     (word_13240).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 SonicHand_xy_data                                *word_13240:
-        fcb   $91,$51                            *        dc.w  $143, $C1
-        fcb   $90,$52                            *        dc.w  $140, $C2 ; 2
-        fcb   $90,$51                            *        dc.w  $141, $C1 ; 4
+        fcb   $91,$50                            *        dc.w  $143, $C1
+        fcb   $90,$51                            *        dc.w  $140, $C2 ; 2
+        fcb   $90,$50                            *        dc.w  $141, $C1 ; 4
 SonicHand_xy_data_end                            *word_13240_end
                                                  *; ===========================================================================
 
@@ -701,7 +857,7 @@ TailsHand_Init                                   *Obj0E_TailsHand_Init:
         std   mapping_frame,u                    *        move.b  #$13,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
-        ldd   #$7765
+        ldd   #$7764
         std   xy_pixel,u                         *        move.w  #$10F,x_pixel(a0)
                                                  *        move.w  #$D5,y_pixel(a0)
                                                  *
@@ -710,14 +866,14 @@ TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite
                                                  *; ===========================================================================
                                                  *
 TailsHand_Move                                   *loc_13280:
-        ldx   #TailsHand_xy_data_end-TailsHand_xy_data
+        ldx   #TailsHand_xy_data_end-TailsHand_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_1328C_end-word_1328C+4,d2
         leax  <TailsHand_xy_data-2,pcr           *        lea     (word_1328C).l,a1
         lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 TailsHand_xy_data                                *word_1328C:
-        fcb   $76,$60                            *        dc.w  $10C, $D0
-        fcb   $76,$61                            *        dc.w  $10D, $D1 ; 2
+        fcb   $76,$5F                            *        dc.w  $10C, $D0
+        fcb   $76,$60                            *        dc.w  $10D, $D1 ; 2
 TailsHand_xy_data_end                            *word_1328C_end
                                                  *; ===========================================================================
 
@@ -742,9 +898,9 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_star_2
         std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
-        lda   #5
+        lda   #7
         sta   priority,u                         *        move.b  #5,priority(a0)
-        ldd   #$A810
+        ldd   #$A80F
         std   xy_pixel,u                         *        move.w  #$170,x_pixel(a0)
                                                  *        move.w  #$80,y_pixel(a0)
         ldd   #Ani_smallStar
@@ -790,7 +946,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         sta   routine_secondary,u                *        move.b  #$10,routine_secondary(a0)
         ldd   #Img_sonic_5
         std   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
-        ldd   #$7428
+        ldd   #$7427
         std   xy_pixel,u                         *        move.w  #$108,x_pixel(a0)
                                                  *        move.w  #$98,y_pixel(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
@@ -805,7 +961,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   mapping_frame,x                    *        move.b  #9,mapping_frame(a1)
         lda   #4
         sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
-        ldd   #$9051
+        ldd   #$9050
         std   xy_pixel,x                         *        move.w  #$141,x_pixel(a1)
                                                  *        move.w  #$C1,y_pixel(a1)
         ldx   #Obj_Tails                         *        lea     (IntroTails).w,a1
@@ -818,9 +974,9 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   mapping_frame,x                    *        move.b  #4,mapping_frame(a1)
         lda   #6
         sta   routine_secondary,x                *        move.b  #6,routine_secondary(a1)
-        lda   #3
+        lda   #5
         sta   priority,x                         *        move.b  #3,priority(a1)
-        ldd   #$5430
+        ldd   #$542F
         std   xy_pixel,x                         *        move.w  #$C8,x_pixel(a1)
                                                  *        move.w  #$A0,y_pixel(a1)
         ldx   #Obj_TailsHand                     *        lea     (IntroTailsHand).w,a1
@@ -834,14 +990,14 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   mapping_frame,x                    *        move.b  #$13,mapping_frame(a1)
         lda   #4
         sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
-        ldd   #$7661
+        ldd   #$7660
         std   xy_pixel,x                         *        move.w  #$10D,x_pixel(a1)
                                                  *        move.w  #$D1,y_pixel(a1)
-        ldx   Obj_EmblemTop                      *        lea     (IntroEmblemTop).w,a1
-        lda   #ObjID_TitleScreen        
-        sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
-        lda   #Sub_EmblemTop
-        sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
+        *ldx   Obj_EmblemFront                    *        lea     (IntroEmblemTop).w,a1
+        *lda   #ObjID_TitleScreen        
+        *sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        *lda   #Sub_EmblemFront
+        *sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
         * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
         *ldx   #Obj_PaletteHandler               *        lea     (TitleScreenPaletteChanger).w,a1

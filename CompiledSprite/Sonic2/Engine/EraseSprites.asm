@@ -14,10 +14,16 @@ EraseSprites
 
 ESP_Start
         lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
-        bne   ESP_P2B1
-        
+        bne   ESP_P1B1
+
+ESP_P1B0
+        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+2 ; read DPS from priority 1 to priority 8
+        beq   ESP_P2B0
+        lda   #$01
+        sta   ESP_CheckPriorityB0+1        
+        jsr   ESP_ProcessEachPriorityLevelB0
 ESP_P2B0
-        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+4 ; read DPS from priority 2 to priority 8
+        ldu   DPS_buffer_0+buf_Tbl_Priority_Last_Entry+4
         beq   ESP_P3B0
         lda   #$02
         sta   ESP_CheckPriorityB0+1        
@@ -61,8 +67,14 @@ ESP_P8B0
 ESP_rtsB0        
         rts
         
+ESP_P1B1
+        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+2 ; read DPS from priority 1 to priority 8
+        beq   ESP_P2B1
+        lda   #$01
+        sta   ESP_CheckPriorityB1+1        
+        jsr   ESP_ProcessEachPriorityLevelB1
 ESP_P2B1
-        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+4 ; read DPS from priority 2 to priority 8
+        ldu   DPS_buffer_1+buf_Tbl_Priority_Last_Entry+4
         beq   ESP_P3B1
         lda   #$02
         sta   ESP_CheckPriorityB1+1        
@@ -125,6 +137,9 @@ ESP_UnsetCheckRefreshB0
 ESP_CheckEraseB0
         anda  #rsv_render_erasesprite_mask
         beq   ESP_NextObjectB0
+        lda   render_flags,u
+        anda  #render_fixedoverlay_mask
+        bne   ESP_UnsetOnScreenFlagB0
         
 ESP_CallEraseRoutineB0
         stu   ESP_CallEraseRoutineB0_00+1   ; backup u (pointer to object)
@@ -170,6 +185,9 @@ ESP_UnsetCheckRefreshB1
 ESP_CheckEraseB1
         anda  #rsv_render_erasesprite_mask
         beq   ESP_NextObjectB1
+        lda   render_flags,u
+        anda  #render_fixedoverlay_mask
+        bne   ESP_UnsetOnScreenFlagB1        
         
 ESP_CallEraseRoutineB1
         stu   ESP_CallEraseRoutineB1_00+1   ; backup u (pointer to object)
@@ -177,7 +195,7 @@ ESP_CallEraseRoutineB1
         lda   page_erase_routine,x
         sta   $E7E5                         ; select page 04 in RAM (A000-DFFF)
         ldu   rsv_bgdata_1,u                ; cell_start background data
-        jsr   [erase_routine,x]              ; erase sprite un working screen buffer
+        jsr   [erase_routine,x]             ; erase sprite on working screen buffer
         leay  ,u                            ; cell_end background data stored in y
 ESP_CallEraseRoutineB1_00        
         ldu   #$0000                        ; restore u (pointer to object)

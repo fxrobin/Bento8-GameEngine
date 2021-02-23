@@ -34,8 +34,8 @@ public class SolutionOptim{
 
 	int lastLeas;
 	// les variables Save sont pour les essais de solutions
-	boolean[] regSet, regSetSave, regSetBest, regSetCombi;
-	byte[][] regVal, regValSave, regValBest, regValCombi;
+	boolean[] regSet, regSetSave, regSetBest;
+	byte[][] regVal, regValSave, regValBest;
 	boolean[] regBBSet = new boolean[7];
 	Integer[] offsetBBSet = new Integer[7];
 	int regBBIdx = -1;
@@ -452,10 +452,8 @@ public class SolutionOptim{
 
 		regSet = new boolean[] {false, false, false, false, false, false, false};
 		regSetBest = new boolean[] {false, false, false, false, false, false, false};
-		regSetCombi = new boolean[] {false, false, false, false, false, false, false};
 		regVal = new byte[7][4];
 		regValBest = new byte[7][4];
-		regValCombi = new byte[7][4];
 		regSetSave = new boolean[] {false, false, false, false, false, false, false};
 		regValSave = new byte[7][4];
 
@@ -752,12 +750,16 @@ public class SolutionOptim{
 		// Cas particulier:
 		// Gestion des patterns non dissociables, on doit utiliser la même
 		// combinaison que celle utilisée pour la sauvegarde du fond
+		
+		// Chaque combinaison n'utilise qu'une seule fois un registre donc pas la peine de sauver la valeur 
+		// du registre dans le cache regSet et regVal, c'est fait uniquement pour la combinaison retenue dans la 
+		// seconde partie de cette méthode
+		
 		if (!solution.patterns.get(id).isBackgroundBackupAndDrawDissociable() && solution.patterns.get(id).useIndexedAddressing()) {
 			combiList.add(solution.patterns.get(id).getRegisterCombi().get(lastSnippet.getCombiIdx()));
 		} else {
 			combiList = solution.patterns.get(id).getRegisterCombi();
 		}
-		saveState(regSetCombi, regValCombi);
 
 		for (int j = 0; j < combiList.size(); j++) {
 			cycles = 0;
@@ -770,98 +772,50 @@ public class SolutionOptim{
 
 				if (combiList.get(j)[k]) {
 					// Le registre est utilisé dans la combinaison
-
 					currentReg.add(k);
 					
-					// Chargement des données du sprite
-					b1 = data[pos];
-					b2 = data[pos+1];
-					if (Register.size[k] == 2) {
-						b3 = data[pos+2];
-						b4 = data[pos+3];
-					}					
-
 					if (regSet[k] &&
 						(solution.patterns.get(id).getResetRegisters().size() <= j || (solution.patterns.get(id).getResetRegisters().size() > j &&
 								                                                       solution.patterns.get(id).getResetRegisters().get(j)[k] == false))) {
 						// Le registre contient une valeur et n'est pas concerné par un reset dans le pattern
+						
+						// Chargement des données du sprite
+						b1 = data[pos];
+						b2 = data[pos+1];
+						if (Register.size[k] == 2) {
+							b3 = data[pos+2];
+							b4 = data[pos+3];
+						}							
 
-						if (k == Register.D && regSet[Register.B] && (!regSet[Register.A] || regVal[k][0] != b1 || regVal[k][1] != b2) && regVal[k][2] == b3 && regVal[k][3] == b4) {
+						if (k == Register.D && regSet[Register.B] && (!regSet[Register.A] || (regSet[Register.A] && (regVal[k][0] != b1 || regVal[k][1] != b2) && regVal[k][2] == b3 && regVal[k][3] == b4))) {
 							// Correspondance partielle sur D avec B mais pas A, on charge A
 							currentLoadMask.set(Register.A, true);
 							currentLoadMask.set(Register.B, false);
-							regSet[Register.A] = true;
-							regVal[Register.A][0] = b1;
-							regVal[Register.A][1] = b2;
-							regSet[Register.D] = true;
-                            regVal[Register.D][0] = b1;
-							regVal[Register.D][1] = b2;		
 							currentLoadMask.add(null);
 
-						} else if (k == Register.D && regSet[Register.A] && regVal[k][0] == b1 && regVal[k][1] == b2 && (!regSet[Register.B] || regVal[k][2] != b3 || regVal[k][3] != b4)) {
+						} else if (k == Register.D && regSet[Register.A] && regVal[k][0] == b1 && regVal[k][1] == b2 && (!regSet[Register.B] || (regSet[Register.B] && (regVal[k][2] != b3 || regVal[k][3] != b4)))) {
 							// Correspondance partielle sur D avec A mais pas B, on charge B
 							currentLoadMask.set(Register.A, false);
 							currentLoadMask.set(Register.B, true);
-							regSet[Register.B] = true;
-							regVal[Register.B][0] = b3;
-							regVal[Register.B][1] = b4;
-							regSet[Register.D] = true;
-							regVal[Register.D][2] = b3;
-							regVal[Register.D][3] = b4;		
 							currentLoadMask.add(null);
 
-						} else if (regSet[k] && (regVal[k][0] == b1 && regVal[k][1] == b2 && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == b3 && regVal[k][3] == b4)))){
+						} else if (regVal[k][0] == b1 && regVal[k][1] == b2 && (Register.size[k] == 1 || (Register.size[k] == 2 && regVal[k][2] == b3 && regVal[k][3] == b4))){
 							// Le registre contient déjà la valeur, on ne charge rien
 							currentLoadMask.add(false);
 
 						} else {
 							// Le registre contient une valeur différente, on le charge
 							currentLoadMask.add(true);
-							// Cas particulier de D, on valorise A et B
-							if (j == Register.D) {
-									regSet[Register.A] = true;
-									regVal[Register.A][0] = b1;
-									regVal[Register.A][1] = b2;
-									regSet[Register.B] = true;
-									regVal[Register.B][0] = b3;
-									regVal[Register.B][1] = b4;
-							}
-
-							regSet[k] = true;						
-							regVal[k][0] = b1;
-							regVal[k][1] = b2;
-							if (Register.size[k] == 2) {
-								regVal[k][2] = b3;
-								regVal[k][3] = b4;		
-							}
 						}
 					} else {
 						// Le registre ne contient pas de valeur, on le charge
 						currentLoadMask.add(true);
-						// Cas particulier de D, on valorise A et B
-						if (j == Register.D) {
-								regSet[Register.A] = true;
-								regVal[Register.A][0] = b1;
-								regVal[Register.A][1] = b2;
-								regSet[Register.B] = true;
-								regVal[Register.B][0] = b3;
-								regVal[Register.B][1] = b4;
-						}
-
-						regSet[k] = true;						
-						regVal[k][0] = b1;
-						regVal[k][1] = b2;
-						if (Register.size[k] == 2) {
-							regVal[k][2] = b3;
-							regVal[k][3] = b4;		
-						}
 					}
 					pos += Register.size[k] * 2;
 				} else {
 					// Le registre n'est pas utilisé dans la combinaison
 					currentLoadMask.add(null);
 				}
-				restoreState(regSetCombi, regValCombi);
 			}
 
 			// Calcul du nombre de cycles de la solution courante
@@ -885,7 +839,7 @@ public class SolutionOptim{
 		// Sauvegarde de la méthode a exécuter
 		snippet = new Snippet(solution.patterns.get(id), data, solution.positions.get(id)*2, selectedReg, selectedLoadMask, solution.computedOffsets.get(id), selectedCombi);
 
-		// Sauvegarde les valeurs chargées en cache
+		// Seconde partie de la méthode, pour la combinaison sélectionnée on met à jour le cache registre dans regSet et regVal 
 		pos = solution.positions.get(id)*2;
 		for (int j = 0; j < combiList.get(selectedCombi).length; j++) {
 
@@ -907,7 +861,7 @@ public class SolutionOptim{
 				}
 
 				// Cas particulier de A, on valorise D
-				if (j == Register.A && (regSet[Register.B] == true &&
+				if (j == Register.A && (regSet[Register.B] &&
 						((solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
 						(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
 								!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[Register.B]))))) {
@@ -917,7 +871,7 @@ public class SolutionOptim{
 				}
 
 				// Cas particulier de B, on valorise D
-				if (j == Register.B && (regSet[Register.A] == true && 
+				if (j == Register.B && (regSet[Register.A] && 
 						((solution.patterns.get(id).getResetRegisters().size() <= selectedCombi ||
 						(solution.patterns.get(id).getResetRegisters().size() > selectedCombi &&
 								!solution.patterns.get(id).getResetRegisters().get(selectedCombi)[Register.A]))))) {

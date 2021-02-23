@@ -39,7 +39,8 @@ public class SimpleAssemblyGenerator{
 	private int y1_offset;
 	private int x_size;
 	private int y_size;
-
+	private boolean invertPos;
+	
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
 	private List<String> spriteCode2 = new ArrayList<String>();
@@ -68,11 +69,11 @@ public class SimpleAssemblyGenerator{
 	
 	public SimpleAssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName();
-		x_offset = spriteSheet.getSubImageXOffset(imageNum);
 		x1_offset = spriteSheet.getSubImageX1Offset(imageNum);
 		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
 		x_size = spriteSheet.getSubImageXSize(imageNum);
-		y_size = spriteSheet.getSubImageYSize(imageNum);		
+		y_size = spriteSheet.getSubImageYSize(imageNum);
+		invertPos = spriteSheet.getPosInvert();
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("XOffset: "+getX_offset());;
@@ -253,24 +254,42 @@ public class SimpleAssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("DRAW_" + spriteName + "");
 		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
-		asm.add("\tSTD DYN_POS+2,PCR");		
-		asm.add("\tLDS ,Y");
+		if (invertPos) {
+			asm.add("\tLDS ,Y");
+			asm.add("\tSTS DYN_POS+2,PCR");				
+			asm.add("\tTFR D,S");			
+		} else {
+			asm.add("\tSTD DYN_POS+2,PCR");		
+			asm.add("\tLDS ,Y");
+		}
 		return asm;
 	}
 
 	public int getCodeFrameDrawStartCycles() {
 		int cycles = 0;
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
-		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
-		cycles += Register.costIndexedLD[Register.S];
+		if (invertPos) {
+			cycles += Register.costIndexedLD[Register.S];
+			cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
+			cycles += 7; // TFR
+		} else {
+			cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
+			cycles += Register.costIndexedLD[Register.S];
+		}
 		return cycles;
 	}
 
 	public int getCodeFrameDrawStartSize() {
 		int size = 0;
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
-		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-		size += Register.sizeIndexedLD[Register.S];
+		if (invertPos) {
+			size += Register.sizeIndexedLD[Register.S];
+			size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
+			size += 2; // TFR
+		} else {		
+			size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
+			size += Register.sizeIndexedLD[Register.S];
+		}
 		return size;
 	}
 

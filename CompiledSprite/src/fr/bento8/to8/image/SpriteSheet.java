@@ -30,12 +30,12 @@ public class SpriteSheet {
 
 	private byte[][][] pixels;
 	private byte[][][] data;
-	int[] x_offset; // position x du premier pixel en haut gauche de l'image par rapport au centre			
 	int[] x1_offset; // position haut gauche de l'image par rapport au centre
 	int[] y1_offset; // position haut gauche de l'image par rapport au centre		
 	int[] x_size; // largeur de l'image en pixel (sans les pixels transparents)		
 	int[] y_size; // hauteur de l'image en pixel (sans les pixels transparents)		
-	int center; // position du centre de l'image (dans le référentiel pixels)	
+	int center; // position du centre de l'image (dans le référentiel pixels)
+	boolean posInvert; // determine si l'on doit inverser les adresses de position pour les deux codes de sprite compilé (dépend du centre) 
 
 	public SpriteSheet(String tag, String file, int nbImages, String flip) {
 		try {
@@ -102,15 +102,22 @@ public class SpriteSheet {
 		// sépare l'image en deux parties pour la RAM A et RAM B
 		// ajoute les pixels transparents pour constituer une image linéaire de largeur 2x80px
 		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de même taille
-		pixels = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
-		data = new byte[subImageNb][2][(80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2)];
-		x_offset = new int[subImageNb];
+		int paddedImage = (80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2);
+		pixels = new byte[subImageNb][2][paddedImage];
+		data = new byte[subImageNb][2][paddedImage];
 		x1_offset = new int[subImageNb];
 		y1_offset = new int[subImageNb];		
 		x_size = new int[subImageNb];		
 		y_size = new int[subImageNb];
-		center = (int) ((Math.ceil(height/2.0)-1)*40+subImageWidth/8);
 
+		//if((subImageWidth/4) % 2 == 0) {
+			posInvert = false;
+		//} else {
+		//	posInvert = true;
+		//}
+		
+		center = (int) ((Math.ceil(height/2.0)-1)*40) +  subImageWidth/8;
+		
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		
 			int indexDest = 0;
@@ -133,7 +140,6 @@ public class SpriteSheet {
 					// Calcul des offset et size de l'image
 					if (firstPixel) {
 						firstPixel = false;
-						x_offset[position] = indexDest*2+page*2-(160*curLine)-(width/2);
 						y1_offset[position] = curLine-((height-1)/2);
 					}
 					if (indexDest*2+page*2-(160*curLine) < x_Min) {
@@ -169,7 +175,6 @@ public class SpriteSheet {
 						// Calcul des offset et size de l'image
 						if (firstPixel) {
 							firstPixel = false;
-							x_offset[position] = indexDest*2+page*2+1-(160*curLine)-(width/2);
 							y1_offset[position] = curLine-((height-1)/2);				
 						}
 						if (indexDest*2+page*2+1-(160*curLine) < x_Min) {
@@ -239,10 +244,6 @@ public class SpriteSheet {
 		return name;
 	}
 
-	public int getSubImageXOffset(int subImagePos) {
-		return x_offset[subImagePos];
-	}
-
 	public int getSubImageX1Offset(int subImagePos) {
 		return x1_offset[subImagePos];
 	}	
@@ -262,4 +263,8 @@ public class SpriteSheet {
 	public int getCenter() {
 		return center;
 	}
+	
+	public boolean getPosInvert() {
+		return posInvert;
+	}	
 }

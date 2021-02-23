@@ -207,7 +207,6 @@ CSR_DoNotDisplaySprite
         sta   rsv_render_flags,u
         
         ldy   cur_ptr_sub_obj_erase         ; maintain list of changing sprites to erase
-        sty   rsv_ptr_sub_object_erase,u
         stu   ,y++
         sty   cur_ptr_sub_obj_erase 
         
@@ -255,7 +254,6 @@ CSR_CheckErase
         lbne  CSR_CheckDraw
         
         ldy   cur_ptr_sub_obj_erase
-        sty   rsv_ptr_sub_object_erase,u
         
         lda   buf_onscreen,x
         lbeq   CSR_SetEraseFalse             ; branch if object is not on screen
@@ -288,8 +286,8 @@ CSR_SubEraseSpriteSearchInit
         * as a sub loop, this should be optimized as much as possible ... I hope it is
         * there are two lists because a sprite can be erased at a position
         * and displayed at another position : both cases should be tested !
-        
-        lds   rsv_ptr_sub_object_erase,u
+
+        lds   cur_ptr_sub_obj_erase        
         lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
         bne   CSR_SubEraseSearchB1
         
@@ -334,7 +332,7 @@ CSR_SubEraseCheckCollisionB1
         bra   CSR_SetEraseTrue              ; found a collision
 
 CSR_SubDrawSpriteSearchInit
-        lds   rsv_ptr_sub_object_draw,u
+        lds   cur_ptr_sub_obj_draw
         
 CSR_SubDrawSearch
         cmps  #Tbl_Sub_Object_Draw
@@ -354,7 +352,7 @@ CSR_SubDrawCheckCollision
         bls   CSR_SubDrawSearch
         
         ldy   cur_ptr_sub_obj_erase
-        lbra   CSR_SetEraseTrue              ; found a collision
+        lbra  CSR_SetEraseTrue              ; found a collision
 
 CSR_SetEraseFalse
         lda   rsv_render_flags,u 
@@ -365,10 +363,9 @@ CSR_CheckDraw
         lds   #$FFFF                        ; dynamic restore s
         lda   priority,u
         cmpa  cur_priority 
-        lbne   CSR_NextObject
+        lbne  CSR_NextObject
         
         ldy   cur_ptr_sub_obj_draw
-        sty   rsv_ptr_sub_object_draw,u
         
         lda   rsv_render_flags,u
         anda  #rsv_render_outofrange_mask
@@ -391,7 +388,7 @@ CSR_SetDrawTrue
         bne   CSR_SetHide         
         
         stu   ,y++
-        sty   cur_ptr_sub_obj_draw          ; maintain list of changing sprites to draw, should be to draw and ((on screen and to erase) or (not on screen and not to erase))  
+        sty   cur_ptr_sub_obj_draw          ; maintain list of changing sprites to draw, should be to draw and ((on screen and to erase) or (not on screen and not to erase)) 
 
 CSR_SetHide        
         lda   render_flags,u

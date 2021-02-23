@@ -55,7 +55,7 @@ public class BuildDisk
 	public static String binTmpFile = "TMP.BIN";
 	public static String lstTmpFile = "codes.lst";
 	
-	private static int IMAGE_META_SIZE = 15;
+	private static int IMAGE_META_SIZE = 14;
 
 	/**
 	 * Génère une image de disquette dans les formats .fd et .sd pour 
@@ -841,11 +841,10 @@ public class BuildDisk
 		}
 		
 		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
-		line [10] = String.format("$%1$02X", s.x_offset & 0xFF); // signed value
-		line [11] = String.format("$%1$02X", s.x1_offset & 0xFF); // signed value		
-		line [12] = String.format("$%1$02X", s.y1_offset & 0xFF); // signed value
-		line [13] = String.format("$%1$02X", s.x_size); // unsigned value
-		line [14] = String.format("$%1$02X", s.y_size); // unsigned value
+		line [10] = String.format("$%1$02X", s.x1_offset & 0xFF); // signed value		
+		line [11] = String.format("$%1$02X", s.y1_offset & 0xFF); // signed value
+		line [12] = String.format("$%1$02X", s.x_size); // unsigned value
+		line [13] = String.format("$%1$02X", s.y_size); // unsigned value
 		return line;
 	}
 

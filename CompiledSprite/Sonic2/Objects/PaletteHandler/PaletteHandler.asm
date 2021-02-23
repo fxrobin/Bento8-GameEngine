@@ -11,37 +11,68 @@
 ; Appel a une routine interne de l'objet : utiliser les branchements ((l)b__), ne pas utiliser les sauts.
 ; Utilisation de l'adressage indexe pour acceder a des donnees internes de l'objet : utilisation de "mon_tableau,pcr" pour charger l'adresse du tableau dans un registre
 ;
-; Commentaires sur le code original de Sonic 2
 ; Palettes
 ; --------
-; 4 palettes de 16 couleurs
-; Avant execution de l'objet : palettes 0 a 3 a noir
-; Dans l'ordre d'apparition des palettes :
-; Pal1 - fade in - Etoiles et Tails
-; Pal3 - fade in - Embleme
-; Pal0 - set - Sonic
-; Pal2 - set white - fade in - Background
-; valeurs Megadrive: 0, 2, 4, 6, 8, A, C, E
-; valeurs traduites RGB: 0, 0x24, 0x49, 0x6D, 0x92, 0xB6, 0xDB, 0xFF 
-;                        0, 36, 73, 109, 146, 182, 219, 255
-; les correspondances avec TO8 sont faites dans le domaine CIE-LAB
+; 4x pal of 16 colors (first is transparent)
+; init state:
+;    Pal1 - LargeStar, Tails
+;    Pal0,2,3 - Black
+;
+; sequence of TitleScreen :
+;    Pal3 - fade in - Emblem
+;    Pal0 - set - Sonic
+;    Pal2 - set - White
+;    Pal2 - fade in - Background
+;
+; Colors
+; ------
+; Genesis/Megadrive: 8 values for each component (BGR) 0, 2, 4, 6, 8, A, C, E
+; RGB space values: 0, 0x24, 0x49, 0x6D, 0x92, 0xB6, 0xDB, 0xFF
 ; ---------------------------------------------------------------------------
 
+;*******************************************************************************
+; Animation de la palette: fondu vers une couleur cible PAL_TO
+;*******************************************************************************
+; Ecriture en $E7DB de l'adresse ou sera stockee la couleur.
+;
+; les adresses vont de deux en deux car il y a deux octets a stocker par couleur.
+; couleur: 0, adresse: 00
+; couleur: 1, adresse: 02
+; couleur: 2, adresse: 04
+; ...
+;
+; Deux ecritures en $E7DA (auto-increment a partir de l'adresse couleur
+;                          positionnee en $E7DB) pour la valeur de couleur.
+;
+;                             V V V V                 R R R R
+; Premiere adresse        fondamentale V          fondamentale R
+;
+; Deuxieme adresse            X X X M                 B B B B
+; auto-incrementee        bit de marquage         fondamentale B
+;                       (incrustation video)
+;
+; Attention: les instructions suivantes effectuent une lecture avant l'ecriture
+; ASL, ASR, CLR, COM, DEL, INC, LSL, LSR, NEG, ROL, RDR
+; un seul appel sur $E7DA va lire $E7DA puis ecrire sur la seconde adresse $E7DA 
+; Sur $E7DA il faut donc utiliser l'instruction ST pour ecrire
+;*******************************************************************************   
+								       
 (main)MAIN
         INCLUD GLOBALS
         INCLUD CONSTANT
-        org   $0000     
+        org   $A000     
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
-ttlscrpalchanger_fadein_time_left equ $30
-ttlscrpalchanger_fadein_time equ $31
-ttlscrpalchanger_fadein_amount equ $32 ; and $33
-ttlscrpalchanger_start_offset equ $34 ; and $35
-ttlscrpalchanger_length equ $36 ; and $37
-ttlscrpalchanger_codeptr equ $3A ; and $38
-                                                 
+pal_src      equ ext_variables         * pointeur vers palette source
+pal_dst      equ ext_variables+2       * pointeur vers palette destination
+pal_cycles   equ ext_variables+4       * nombre de frames de la transition (VSYNC)
+pal_cur      rmb 32,0
+
+pal_mask     fcb $0F                   * masque pour l'aternance du traitemet vert/rouge
+pal_buffer   fdb $00                   * buffer de comparaison
+pal_idx      fcb $00                   * index de la couleur courante dans le traitement
                                                  *; ----------------------------------------------------------------------------
                                                  *; Object C9 - "Palette changing handler" from title screen
                                                  *; ----------------------------------------------------------------------------
@@ -53,18 +84,108 @@ ttlscrpalchanger_codeptr equ $3A ; and $38
                                                  *ttlscrpalchanger_codeptr = objoff_3A
                                                  *
                                                  *; Sprite_132F0:
-                                                 *ObjC9:
+PaletteHandler                                   *ObjC9:
                                                  *        moveq   #0,d0
         lda   routine,u                          *        move.b  routine(a0),d0
-        ldx   Tails_Routines,pcr                 *        move.w  ObjC9_Index(pc,d0.w),d1
+        leax  <PaletteHandler_Routines,pcr       *        move.w  ObjC9_Index(pc,d0.w),d1
         jmp   [a,x]                              *        jmp     ObjC9_Index(pc,d1.w)
                                                  *; ===========================================================================
-                                                 *ObjC9_Index:    offsetTable
-                                                 *                offsetTableEntry.w ObjC9_Init   ; 0
-                                                 *                offsetTableEntry.w ObjC9_Main   ; 2
+PaletteHandler_Routines                          *ObjC9_Index:    offsetTable
+        fdb   PaletteHandler_Init                *                offsetTableEntry.w ObjC9_Init   ; 0
+        fdb   PaletteHandler_Main                *                offsetTableEntry.w ObjC9_Main   ; 2
                                                  *; ===========================================================================
                                                  *
-                                                 *ObjC9_Init:
+PaletteHandler_Init                              *ObjC9_Init:
+        ldy   pal_src
+        ldx   pal_cur
+        leay  16,y
+        leax  16,x
+        ldd   -16,y
+        std   -16,x
+        ldd   -14,y
+        std   -14,x
+        ldd   -12,y
+        std   -12,x
+        ldd   -10,y
+        std   -10,x
+        ldd   -8,y
+        std   -8,x
+        ldd   -6,y
+        std   -6,x
+        ldd   -4,y
+        std   -4,x
+        ldd   -2,y
+        std   -2,x
+        ldd   ,y
+        std   ,x
+        ldd   2,y
+        std   2,x
+        ldd   4,y
+        std   4,x
+        ldd   6,y
+        std   6,x
+        ldd   8,y
+        std   8,x
+        ldd   10,y
+        std   10,x
+        ldd   12,y
+        std   12,x
+        ldd   14,y
+        std   14,x
+                        
+PaletteHandler_Run
+        ldy   pal_cur                  * chargement pointeur valeur des couleurs actuelles
+        ldx   pal_dst
+        clr   pal_idx
+PalRun
+        lda   ,y			           * chargement de la composante verte et rouge
+        anda  pal_mask                 * on efface la valeur vert ou rouge par masque
+        ldb   ,x                       * composante verte et rouge couleur cible
+        andb  pal_mask                 * on efface la valeur vert ou rouge par masque
+        stb   pal_buffer               * on stocke la valeur cible pour comparaison
+        ldb   #$11                     * preparation de la valeur d'increment de couleur
+        andb  pal_mask                 * on efface la valeur non utile par masque
+        stb   pal_buffer+1             * on stocke la valeur pour ADD ou SUB ulterieur
+        cmpa  pal_buffer               * comparaison de la composante courante et cible
+        beq   PalVRSuivante            * si composante est egale a la cible on passe
+        bhi   PalVRDec                 * si la composante est superieure on branche
+        lda   ,y                       * on recharge la valeur avec vert et rouge
+        adda  pal_buffer+1             * on incremente la composante verte ou rouge
+        bra   PalVRSave                * on branche pour sauvegarder
+PalVRDec
+        lda   ,y                       * on recharge la valeur avec vert et rouge
+        suba  pal_buffer+1             * on decremente la composante verte ou rouge
+PalVRSave                             
+        sta   ,y                       * sauvegarde de la nouvelle valeur vert ou rouge
+PalVRSuivante                         
+        com   pal_mask                 * inversion du masque pour traiter l'autre semioctet
+        bmi   PalRun                   * si on traite $F0 on branche sinon on continue
+	    
+SetPalBleu
+        ldb   1,y			           * chargement composante bleue courante
+        cmpb  1,x                      * comparaison composante courante et cible
+        beq   SetPalNext               * si composante est egale a la cible on passe
+        bhi   SetPalBleudec            * si la composante est superieure on branche
+        incb                           * on incremente la composante bleue
+        bra   SetPalSaveBleu           * on branche pour sauvegarder
+SetPalBleudec                       
+        decb                           * on decremente la composante bleue
+SetPalSaveBleu                         
+        stb   1,y                      * sauvegarde de la nouvelle valeur bleue
+								       
+SetPalNext                             
+        lda   pal_idx                  * Lecture index couleur
+        asla
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        lda   ,y                       * chargement de la nouvelle couleur courante
+        sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
+        leay  2,y                      * on avance le pointeur vers la nouvelle couleur source
+        leax  2,x                      * on avance le pointeur vers la nouvelle couleur dest
+        inc   pal_idx
+        lda   pal_idx
+        cmpa  #$10  
+        beq   PalRun                   * on reboucle si fin de liste pas atteinte
                                                  *        addq.b  #2,routine(a0)
                                                  *        moveq   #0,d0
                                                  *        move.b  subtype(a0),d0
@@ -89,7 +210,10 @@ ttlscrpalchanger_codeptr equ $3A ; and $38
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
-                                                 *ObjC9_Main:
+PaletteHandler_Main                              *ObjC9_Main:
+        dec   pal_cycles               * decremente le compteur du nombre de frame
+        bne   PaletteHandler_Run       * on reboucle si nombre de frame n'est pas realise
+        clr   ,u                       * auto-destruction de l'objet
                                                  *        subq.b  #1,ttlscrpalchanger_fadein_time_left(a0)
                                                  *        bpl.s   +
                                                  *        move.b  ttlscrpalchanger_fadein_time(a0),ttlscrpalchanger_fadein_time_left(a0)
@@ -174,7 +298,7 @@ ttlscrpalchanger_codeptr equ $3A ; and $38
                                                  *loc_13484:
                                                  *        or.b    d4,d5
                                                  *        move.b  d5,(a0)+
-        rts                                      *        rts
+                                                 *        rts
                                                  *; ===========================================================================
                                                  *
                                                  *loc_1348A:
@@ -204,4 +328,4 @@ ttlscrpalchanger_codeptr equ $3A ; and $38
                                                  *loc_134B6:
                                                  *        or.b    d3,d4
                                                  *        move.b  d4,(a0)+
-        rts                                      *        rts
+                                                 *        rts
