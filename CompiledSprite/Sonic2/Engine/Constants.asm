@@ -66,9 +66,9 @@ image_meta_size               equ 14 ; number of bytes for each image reference
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 18
+nb_dynamic_objects            equ 59
 nb_level_objects              equ 3
-nb_objects                    equ 23 * max 64 total
+nb_objects                    equ 64 * max 64 total
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets

@@ -115,7 +115,8 @@ Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of obje
         
 Object_RAM *@globals
 Reserved_Object_RAM
-Obj_MainCharacter             fdb   $0102                      ; id=01 subtype=02
+Obj_MainCharacter             fcb   $02
+                              fcb   $03                      ; id=TitleScreen subtype=03
                               rmb   object_size-2,0
 Obj_Sidekick                  rmb   object_size,0
 Reserved_Object_RAM_End

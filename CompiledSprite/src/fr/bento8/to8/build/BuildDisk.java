@@ -102,8 +102,8 @@ public class BuildDisk
 			computeObjectsRamAddress();
 			
 			// compile all asm code
-			compileObjects();
 			compileMainEngines();
+			compileObjects();
 			
 			// write to disk image 
 			writeObjects();
@@ -141,7 +141,7 @@ public class BuildDisk
 		}			
 		
 		// Initialisation des variables globales
-		glb = new AsmSourceCode(getIncludeFilePath(Tags.GLOBALS, game));		
+		glb = new AsmSourceCode(getIncludeFilePath(Tags.GLOBALS, game));	
 	}
 	
 	private static void compileGameModeLoader() throws IOException {
@@ -891,14 +891,28 @@ public class BuildDisk
 			String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 
 			Pattern pn = Pattern.compile("INCLUD\\s([0-9a-zA-Z]*)\\s");  
-			Matcher m = pn.matcher(content); 			
+			Matcher m = pn.matcher(content); 	
+			Pattern pn2;
+			Matcher m2;
 			
 			// Recherche de tous les TAG INCLUD dans le fichier ASM
 			while (m.find()) {
 				content = processInclude(m, includes, content);
-				content = processInclude(m, game, content);				
+				content = processInclude(m, game, content);
 			}
-			// Pour chaque TAG, en fin de fichier a compiler, ajout du contenu du fichier inclus		
+			
+			// Ajout des equ @IgnoreUndefined
+			pn = Pattern.compile("#([0-9a-zA-Z_]*)\\s\\*@IgnoreUndefined");  
+			m = pn.matcher(content); 			
+			while (m.find()) {
+				pn2 = Pattern.compile("(?m)^"+m.group(1));
+				m2 = pn2.matcher(content);  
+				if (m2.find() == false) {					
+					content += "\n" + m.group(1) + " equ 0";
+				}
+			}	
+			
+    		// Pour chaque TAG, en fin de fichier a compiler, ajout du contenu du fichier inclus		
 			Files.write(path, content.getBytes(StandardCharsets.UTF_8));
 			// ---------------------------------------------------------------------------
 
@@ -931,8 +945,6 @@ public class BuildDisk
 				String contentLst = new String(Files.readAllBytes(Paths.get(destFileName)), StandardCharsets.UTF_8);
 				pn = Pattern.compile("([0-9a-zA-Z_]*).*@globals.*") ;  
 				m = pn.matcher(content);
-				Pattern pn2;
-				Matcher m2;
 
 				// Recherche de tous les @globals dans le fichier ASM
 				while (m.find()) {

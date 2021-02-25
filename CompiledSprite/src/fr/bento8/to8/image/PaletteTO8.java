@@ -56,10 +56,11 @@ public class PaletteTO8 {
 				}
 			}
 
-			code += "        fdb   $0"
-					+ Integer.toHexString(to8RGBIndex.get(nearestColor & 0xFF))
+			code += "        fdb   $"
 					+ Integer.toHexString(to8RGBIndex.get((nearestColor >> 8) & 0xFF))
-					+ Integer.toHexString(to8RGBIndex.get((nearestColor >> 16) & 0xFF))
+					+ Integer.toHexString(to8RGBIndex.get((nearestColor >> 16) & 0xFF))					
+					+ "0"
+					+ Integer.toHexString(to8RGBIndex.get(nearestColor & 0xFF))
 					+ "\n";
 		}
 		

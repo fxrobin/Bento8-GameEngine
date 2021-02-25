@@ -202,7 +202,7 @@ pal_len
 end_pal_len
    
 pal_cycles
-        fcb   $20                      * nombre de frames de la transition (VSYNC)
+        fcb   $0F                      * nombre de frames de la transition (VSYNC)
 								       
 pal_mask                               
         fcb   $0F                      * masque pour l'aternance du traitemet vert/rouge
