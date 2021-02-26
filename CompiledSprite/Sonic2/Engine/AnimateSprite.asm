@@ -101,8 +101,9 @@ Anim_End_FD                                 *Anim_End_FD:
 Anim_End_FC                                 *Anim_End_FC:
         inca                                *    addq.b  #1,d0          ; is the end flag = $FC ?
         bne   Anim_End_FB                   *    bne.s   Anim_End_FB    ; if not, branch
-        inc   routine,u                     
-        inc   routine,u                     *    addq.b  #2,routine(a0) ; jump to next routine
+        ldb   routine,u
+        addb  #$03                     
+        stb   routine,u                     *    addq.b  #2,routine(a0) ; jump to next routine
         lda   #0                            
         sta   anim_frame_duration,u         *    move.b  #0,anim_frame_duration(a0)
         inc   anim_frame,u                  *    addq.b  #1,anim_frame(a0)
@@ -121,8 +122,9 @@ Anim_End_FB                                 *Anim_End_FB:
 Anim_End_FA                                 *Anim_End_FA:
         inca                                *    addq.b  #1,d0                    ; is the end flag = $FA ?
         bne   Anim_End                      *    bne.s   Anim_End_F9              ; if not, branch
-        inc   routine_secondary,u           *    addq.b  #2,routine_secondary(a0) ; jump to next routine
-        inc   routine_secondary,u    
+        ldb   routine_secondary,u           *    addq.b  #2,routine_secondary(a0) ; jump to next routine
+        addb  #$03
+        stb   routine_secondary,u    
 Anim_End               
         rts                                 *    rts
                                             *; ===========================================================================

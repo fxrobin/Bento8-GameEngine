@@ -66,7 +66,7 @@ image_meta_size               equ 14 ; number of bytes for each image reference
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 59
+nb_dynamic_objects            equ 21
 nb_level_objects              equ 3
 nb_objects                    equ 64 * max 64 total
 
@@ -86,7 +86,7 @@ render_xmirror_mask           equ $01 ; (bit 0) tell display engine to mirror sp
 render_ymirror_mask           equ $02 ; (bit 1) tell display engine to mirror sprite on vertical axis
 render_playfieldcoord_mask    equ $04 ; (bit 2) tell display engine to use playfield (1) or screen (0) coordinates
 render_hide_mask              equ $08 ; (bit 3) tell display engine to hide sprite (keep priority and mapping_frame)
-render_fixedoverlay_mask      equ $10 ; (bit 4) non moving sprite on top of the others (you should also set priority=1, playfieldcoord=0)
+render_fixedoverlay_mask      equ $10 ; (bit 4) non moving sprite with no background save
 render_todelete_mask          equ $20 ; (bit 5) tell display engine to delete sprite and clear OST for this object
 render_free2_mask             equ $40 ; (bit 6) free
 render_free3_mask             equ $80 ; (bit 7) free

@@ -131,14 +131,16 @@ ESP_CheckPriorityB0
         
 ESP_UnsetCheckRefreshB0
         lda   rsv_render_flags,u
+        ldb   render_flags,u
+        andb  #render_fixedoverlay_mask
+        bne   ESP_CheckEraseB0
         anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag
         sta   rsv_render_flags,u        
         
 ESP_CheckEraseB0
         anda  #rsv_render_erasesprite_mask
         beq   ESP_NextObjectB0
-        lda   render_flags,u
-        anda  #render_fixedoverlay_mask
+        andb  #render_fixedoverlay_mask
         bne   ESP_UnsetOnScreenFlagB0
         
 ESP_CallEraseRoutineB0
@@ -179,14 +181,16 @@ ESP_CheckPriorityB1
         
 ESP_UnsetCheckRefreshB1
         lda   rsv_render_flags,u
+        ldb   render_flags,u
+        andb  #render_fixedoverlay_mask
+        bne   ESP_CheckEraseB1
         anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag (CheckSpriteRefresh)
         sta   rsv_render_flags,u        
         
 ESP_CheckEraseB1
         anda  #rsv_render_erasesprite_mask
         beq   ESP_NextObjectB1
-        lda   render_flags,u
-        anda  #render_fixedoverlay_mask
+        andb  #render_fixedoverlay_mask
         bne   ESP_UnsetOnScreenFlagB1        
         
 ESP_CallEraseRoutineB1

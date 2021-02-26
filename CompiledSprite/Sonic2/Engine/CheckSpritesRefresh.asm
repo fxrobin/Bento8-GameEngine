@@ -319,14 +319,14 @@ CSR_SubEraseSearchB1
 CSR_SubEraseCheckCollisionB1
         ldd   rsv_prev_xy1_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 and rsv_prev_y_pixel_1 in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
-        bhs   CSR_SubEraseSearchB1
+        bhi   CSR_SubEraseSearchB1
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
-        bhs   CSR_SubEraseSearchB1
+        bhi   CSR_SubEraseSearchB1
         ldd   rsv_prev_xy2_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 + rsv_prev_mapping_frame_1.x_size and rsv_prev_y_pixel_1 + rsv_prev_mapping_frame_1.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
-        bls   CSR_SubEraseSearchB1
+        blo   CSR_SubEraseSearchB1
         cmpb  rsv_y1_pixel,u                ;     entry : y_pixel
-        bls   CSR_SubEraseSearchB1
+        blo   CSR_SubEraseSearchB1
         
         ldy   cur_ptr_sub_obj_erase
         bra   CSR_SetEraseTrue              ; found a collision
@@ -342,14 +342,14 @@ CSR_SubDrawSearch
 CSR_SubDrawCheckCollision
         ldd   rsv_xy1_pixel,y               ; sub entry : x_pixel and y_pixel in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
-        bhs   CSR_SubDrawSearch
+        bhi   CSR_SubDrawSearch
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
-        bhs   CSR_SubDrawSearch
+        bhi   CSR_SubDrawSearch
         ldd   rsv_xy2_pixel,y               ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
-        bls   CSR_SubDrawSearch
+        blo   CSR_SubDrawSearch
         cmpb  rsv_y1_pixel,u                ;     entry : y_pixel
-        bls   CSR_SubDrawSearch
+        blo   CSR_SubDrawSearch
         
         ldy   cur_ptr_sub_obj_erase
         lbra  CSR_SetEraseTrue              ; found a collision
