@@ -34,7 +34,6 @@ public class AssemblyGenerator{
 	private int cyclesEFrameCode;
 	private int sizeEFrameCode;
 	
-	private int x_offset;
 	private int x1_offset;
 	private int y1_offset;
 	private int x_size;
@@ -74,7 +73,6 @@ public class AssemblyGenerator{
 		invertPos = spriteSheet.getPosInvert();
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
-		logger.debug("XOffset: "+getX_offset());;
 		logger.debug("X1Offset: "+getX1_offset());
 		logger.debug("Y1Offset: "+getY1_offset());
 		logger.debug("XSize: "+getX_size());
@@ -504,10 +502,6 @@ public class AssemblyGenerator{
 	
 	public int getEraseDataSize() {
 		return sizeSpriteEData1+sizeSpriteEData2;
-	}
-
-	public int getX_offset() {
-		return x_offset;
 	}
 
 	public int getX1_offset() {

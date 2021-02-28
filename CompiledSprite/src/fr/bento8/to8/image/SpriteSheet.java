@@ -37,7 +37,7 @@ public class SpriteSheet {
 	int center; // position du centre de l'image (dans le référentiel pixels)
 	boolean posInvert; // determine si l'on doit inverser les adresses de position pour les deux codes de sprite compilé (dépend du centre) 
 
-	public SpriteSheet(String tag, String file, int nbImages, String flip) {
+	public SpriteSheet(String tag, String file, int nbImages, String variant) {
 		try {
 			subImageNb = nbImages;
 			image = ImageIO.read(new File(file));
@@ -54,7 +54,7 @@ public class SpriteSheet {
 				if (subImageWidth <= 160 && height <= 200 && pixelSize == 8) { // Contrôle du format d'image
 
 					// On inverse l'image verticalement		
-					if (flip.equals("Y")) {
+					if (variant.contains("Y")) {
 						AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 						tx.translate(0, -image.getHeight(null));
 						AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
@@ -62,7 +62,7 @@ public class SpriteSheet {
 					}
 
 					// On inverse l'image horizontalement		
-					else if (flip.equals("X")) {
+					else if (variant.contains("X")) {
 						hFlipped = true;
 						AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 						tx.translate(-image.getWidth(null), 0);
@@ -71,7 +71,7 @@ public class SpriteSheet {
 					}
 
 					// On inverse l'image horizontalement et verticalement		
-					else if (flip.equals("XY") || flip.equals("YX")) {
+					else if (variant.contains("XY")) {
 						hFlipped = true;
 						AffineTransform tx = AffineTransform.getScaleInstance(-1, -1);
 						tx.translate(-image.getWidth(null), -image.getHeight(null));

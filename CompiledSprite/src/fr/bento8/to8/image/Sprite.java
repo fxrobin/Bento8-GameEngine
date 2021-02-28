@@ -1,52 +1,24 @@
 package fr.bento8.to8.image;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import fr.bento8.to8.disk.FdUtil;
 
 public class Sprite {
 
 	public String name = "";
 	public String spriteFile;
-	public String[] flip;
-	public String[] type;	
 	
-	public SubSprite subSprite;
-	public SubSprite subSpriteX;
-	public SubSprite subSpriteY;
-	public SubSprite subSpriteXY;	
+	public HashMap<String, SubSprite> subSprites = new HashMap<String, SubSprite>(); 
 
 	public Sprite (String name) {
 		this.name = name;
 	}
 	
-	public void setSubSprite(String flip, SubSprite ss) {
-		switch (flip) {
-		case "N":
-			 subSprite = ss;				
-			break;
-		case "X":
-			subSpriteX = ss;						
-			break;
-		case "Y":
-			subSpriteY = ss;
-			break;
-		case "XY":
-			subSpriteXY = ss;
-			break;
-		}
-	}
-	
-	public void setAllFileIndex(FdUtil fd) {	
-		if (subSprite != null) {
-			subSprite.setAllFileIndex(fd);
-		}
-		if (subSpriteX != null) {
-			subSpriteX.setAllFileIndex(fd);
-		}
-		if (subSpriteY != null) {
-			subSpriteY.setAllFileIndex(fd);
-		}
-		if (subSpriteXY != null) {
-			subSpriteXY.setAllFileIndex(fd);
+	public void setAllFileIndex(FdUtil fd) {
+		for (Entry<String, SubSprite> subSprite : subSprites.entrySet()) {
+			subSprite.getValue().setAllFileIndex(fd);
 		}		
 	}	
 }

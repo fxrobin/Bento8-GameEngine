@@ -10,8 +10,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,8 +56,6 @@ public class BuildDisk
 	
 	public static String binTmpFile = "TMP.BIN";
 	public static String lstTmpFile = "codes.lst";
-	
-	private static int IMAGE_META_SIZE = 14;
 
 	/**
 	 * Génère une image de disquette dans les formats .fd et .sd pour 
@@ -225,12 +225,6 @@ public class BuildDisk
 		// génération du sprite compilé
 		SubSprite curSubSprite;
 		
-		String[] blankImageMeta = new String[IMAGE_META_SIZE];
-		String doubleZero = "00";
-		for (int i = 0; i < IMAGE_META_SIZE; i++) {
-			blankImageMeta[i] = doubleZero;
-		}
-
 		// Parcours de tous les objets de chaque Game Mode
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 
@@ -244,72 +238,74 @@ public class BuildDisk
 
 					Sprite sprite = new Sprite(spriteProperties.getKey());
 					sprite.spriteFile = spriteProperties.getValue()[0];
-					sprite.flip = spriteProperties.getValue()[1].split(",");
-					sprite.type = spriteProperties.getValue()[2].split(",");
+					String[] spriteVariants = spriteProperties.getValue()[1].split(",");
 
-					// Parcours des modes mirroir demandés pour chaque image
-					for (String curFlip : sprite.flip) {
-						logger.debug("\t"+gameMode.getValue()+"/"+object.getValue()+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " flip:" + curFlip);
+					// Parcours des différents rendus demandés pour chaque image
+					for (String cur_variant : spriteVariants) {
+						logger.debug("\t"+gameMode.getValue()+"/"+object.getValue()+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " variant:" + cur_variant);
 						asmImgIndex.addLabel(sprite.name+" *@globals");
 
-						// Sauvegarde du code généré pour le mode mirroir courant
+						// Sauvegarde du code généré pour la variante
 						curSubSprite = new SubSprite(sprite);
-						curSubSprite.setName(curFlip);
-						for (String curType : sprite.type) {
-							if (curType.equals("B")) {
-								logger.debug("\t\t- BackupBackground/Draw/Erase");
-								asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);								
-								asm.compileCode("A000");
-								curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
-								curSubSprite.x_offset = asm.getX_offset();
-								curSubSprite.x1_offset = asm.getX1_offset();
-								curSubSprite.y1_offset = asm.getY1_offset();
-								curSubSprite.x_size = asm.getX_size();
-								curSubSprite.y_size = asm.getY_size();
+						curSubSprite.setName(cur_variant);
+						if (cur_variant.contains("B")) {
+							logger.debug("\t\t- BackupBackground/Draw/Erase");
+							asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant),
+									Game.generatedCodeDirName + "/" + object.getValue().name, 0);
+							asm.compileCode("A000");
+							curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être
+																							// ajustée dans
+																							// MainEngine.asm si
+																							// modifiée TODO : rendre
+																							// paramétrable
+							curSubSprite.x1_offset = asm.getX1_offset();
+							curSubSprite.y1_offset = asm.getY1_offset();
+							curSubSprite.x_size = asm.getX_size();
+							curSubSprite.y_size = asm.getY_size();
 
-								logger.debug("Exomize ...");
-								curSubSprite.bckDraw = new SubSpriteBin(curSubSprite);
-								curSubSprite.bckDraw.setName("bckDraw");
-								curSubSprite.bckDraw.bin = exomize(asm.getBckDrawBINFile());
-								curSubSprite.bckDraw.fileIndex = new DataIndex();
-								curSubSprite.bckDraw.uncompressedSize = asm.getDSize();
-								object.getValue().subSpritesBin.add(curSubSprite.bckDraw);
+							logger.debug("Exomize ...");
+							curSubSprite.draw = new SubSpriteBin(curSubSprite);
+							curSubSprite.draw.setName("bckDraw");
+							curSubSprite.draw.bin = exomize(asm.getBckDrawBINFile());
+							curSubSprite.draw.fileIndex = new DataIndex();
+							curSubSprite.draw.uncompressedSize = asm.getDSize();
+							object.getValue().subSpritesBin.add(curSubSprite.draw);
 
-								curSubSprite.erase = new SubSpriteBin(curSubSprite);
-								curSubSprite.erase.setName("erase");
-								curSubSprite.erase.bin = exomize(asm.getEraseBINFile());
-								curSubSprite.erase.fileIndex = new DataIndex();
-								curSubSprite.erase.uncompressedSize = asm.getESize();
-								object.getValue().subSpritesBin.add(curSubSprite.erase);
-							}
-
-							if (curType.equals("D")) {
-								logger.debug("\t\t- Draw");
-								sasm = new SimpleAssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, curFlip), Game.generatedCodeDirName+"/"+object.getValue().name, 0);								
-								sasm.compileCode("A000");
-								curSubSprite.nb_cell = 0;
-								curSubSprite.x_offset = sasm.getX_offset();
-								curSubSprite.x1_offset = sasm.getX1_offset();
-								curSubSprite.y1_offset = sasm.getY1_offset();
-								curSubSprite.x_size = sasm.getX_size();
-								curSubSprite.y_size = sasm.getY_size();
-								
-								logger.debug("Exomize ...");
-								curSubSprite.draw = new SubSpriteBin(curSubSprite);
-								curSubSprite.draw.setName("draw");
-								curSubSprite.draw.bin = exomize(sasm.getDrawBINFile());
-								curSubSprite.draw.fileIndex = new DataIndex();
-								curSubSprite.draw.uncompressedSize = sasm.getDSize();
-								object.getValue().subSpritesBin.add(curSubSprite.draw);
-							}
+							curSubSprite.erase = new SubSpriteBin(curSubSprite);
+							curSubSprite.erase.setName("erase");
+							curSubSprite.erase.bin = exomize(asm.getEraseBINFile());
+							curSubSprite.erase.fileIndex = new DataIndex();
+							curSubSprite.erase.uncompressedSize = asm.getESize();
+							object.getValue().subSpritesBin.add(curSubSprite.erase);
 						}
 
-						sprite.setSubSprite(curFlip, curSubSprite);
-						asmImgIndex.addFcb(blankImageMeta);
+						if (cur_variant.contains("D")) {
+							logger.debug("\t\t- Draw");
+							sasm = new SimpleAssemblyGenerator(
+									new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant),
+									Game.generatedCodeDirName + "/" + object.getValue().name, 0);
+							sasm.compileCode("A000");
+							curSubSprite.nb_cell = 0;
+							curSubSprite.x1_offset = sasm.getX1_offset();
+							curSubSprite.y1_offset = sasm.getY1_offset();
+							curSubSprite.x_size = sasm.getX_size();
+							curSubSprite.y_size = sasm.getY_size();
+
+							logger.debug("Exomize ...");
+							curSubSprite.draw = new SubSpriteBin(curSubSprite);
+							curSubSprite.draw.setName("draw");
+							curSubSprite.draw.bin = exomize(sasm.getDrawBINFile());
+							curSubSprite.draw.fileIndex = new DataIndex();
+							curSubSprite.draw.uncompressedSize = sasm.getDSize();
+							object.getValue().subSpritesBin.add(curSubSprite.draw);
+						}
+
+						sprite.subSprites.put(cur_variant, curSubSprite);
 					}
 
-					// Sauvegarde de tous les modes mirroir demandés pour l'image en cours
+					// Sauvegarde de tous les rendus demandés pour l'image en cours
 					object.getValue().sprites.put(sprite.name, sprite);
+					writeImgIndex(asmImgIndex, sprite);
 				}
 
 				for (Entry<String, String[]> animationProperties : object.getValue().animationsProperties.entrySet()) {
@@ -322,6 +318,7 @@ public class BuildDisk
 					asmAnimScript.addFcb(new String[] {"00"});
 				}
 			}
+			
 			asmImgIndex.flush();				
 			asmAnimScript.flush();			
 		}
@@ -688,11 +685,9 @@ public class BuildDisk
 			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
-					
-					extractSubSpriteFileIndex(sprite.getValue().subSprite, gmeData, sprite.getKey());
-					extractSubSpriteFileIndex(sprite.getValue().subSpriteX, gmeData, sprite.getKey()+" X");
-					extractSubSpriteFileIndex(sprite.getValue().subSpriteY, gmeData, sprite.getKey()+" Y");
-					extractSubSpriteFileIndex(sprite.getValue().subSpriteXY, gmeData, sprite.getKey()+" XY");
+					for (Entry<String, SubSprite> subSprite : sprite.getValue().subSprites.entrySet()) {
+						extractSubSpriteFileIndex(subSprite.getValue(), gmeData, sprite.getKey()+" "+subSprite.getValue().name);
+					}
 				}
 				
 				// Code de l'objet
@@ -768,7 +763,6 @@ public class BuildDisk
 
 	private static void extractSubSpriteFileIndex(SubSprite sub, AsmSourceCode gmeData, String spriteTag) throws Exception {
 		if (sub != null) {
-			processFileIndex(sub.bckDraw, gmeData, spriteTag+" BckDraw");
 			processFileIndex(sub.draw, gmeData, spriteTag+" Draw");
 			processFileIndex(sub.erase, gmeData, spriteTag+" Erase");
 		}
@@ -790,62 +784,276 @@ public class BuildDisk
 	}
 	
 	private static void writeImgIndex(AsmSourceCode asmImgIndex, Sprite sprite) {
-		asmImgIndex.addLabel(sprite.name+" *@globals");
-		if (sprite.subSprite != null) {
-			asmImgIndex.addFcb(getImgSubSpriteIndex(sprite.subSprite));
+		// Sorry for this code ... should be a better way of doing that
+		List<String> line = new ArrayList<String>();
+		int x_size=0;
+		int y_size=0;
+		int n_offset = 0;
+		int n_x1 = 0;
+		int n_y1 = 0;
+		int x_offset = 0;
+		int x_x1 = 0;
+		int x_y1 = 0;		
+		int y_offset = 0;
+		int y_x1 = 0;
+		int y_y1 = 0;		
+		int xy_offset = 0;
+		int xy_x1 = 0;
+		int xy_y1 = 0;		
+		int nb0_offset = 0;
+		int nd0_offset = 0;
+		int nb1_offset = 0;
+		int nd1_offset = 0;
+		int xb0_offset = 0;
+		int xd0_offset = 0;
+		int xb1_offset = 0;
+		int xd1_offset = 0;
+		int yb0_offset = 0;
+		int yd0_offset = 0;
+		int yb1_offset = 0;
+		int yd1_offset = 0;
+		int xyb0_offset = 0;
+		int xyd0_offset = 0;
+		int xyb1_offset = 0;
+		int xyd1_offset = 0;		
+		
+		asmImgIndex.addLabel(sprite.name+" *@globals");		
+		
+		if (sprite.subSprites.containsKey("NB0") || sprite.subSprites.containsKey("ND0") || sprite.subSprites.containsKey("NB1") || sprite.subSprites.containsKey("ND1")) {
+			n_offset = 6;			
+		}
+
+		if (sprite.subSprites.containsKey("NB0")) {
+			nb0_offset = n_offset;
+			n_x1 = sprite.subSprites.get("NB0").x1_offset;
+			n_y1 = sprite.subSprites.get("NB0").y1_offset;
 		}
 		
-		if (sprite.subSpriteX != null) {
-			asmImgIndex.addFcb(getImgSubSpriteIndex(sprite.subSpriteX));
+		if (sprite.subSprites.containsKey("ND0")) {
+			nd0_offset = (nb0_offset>0?7:0) + n_offset;
+			n_x1 = sprite.subSprites.get("ND0").x1_offset;	
+			n_y1 = sprite.subSprites.get("ND0").y1_offset;
+		}
+
+		if (sprite.subSprites.containsKey("NB1")) {
+			nb1_offset = (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + n_offset;
+			n_x1 = sprite.subSprites.get("NB1").x1_offset;
+			n_y1 = sprite.subSprites.get("NB1").y1_offset;
 		}
 		
-		if (sprite.subSpriteY != null) {
-			asmImgIndex.addFcb(getImgSubSpriteIndex(sprite.subSpriteY));
+		if (sprite.subSprites.containsKey("ND1")) {
+			nd1_offset = (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + n_offset;
+			n_x1 = sprite.subSprites.get("ND1").x1_offset;
+			n_y1 = sprite.subSprites.get("ND1").y1_offset;
+		}		
+		
+		if (sprite.subSprites.containsKey("XB0") || sprite.subSprites.containsKey("XD0") || sprite.subSprites.containsKey("XB1") || sprite.subSprites.containsKey("XD1")) {
+			x_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + 6;			
+		}		
+		
+		if (sprite.subSprites.containsKey("XB0")) {
+			xb0_offset = x_offset;
+			x_x1 = sprite.subSprites.get("XB0").x1_offset;
+			x_y1 = sprite.subSprites.get("XB0").y1_offset;
 		}
 		
-		if (sprite.subSpriteXY != null) {
-			asmImgIndex.addFcb(getImgSubSpriteIndex(sprite.subSpriteXY));
+		if (sprite.subSprites.containsKey("XD0")) {
+			xd0_offset = (xb0_offset>0?7:0) + x_offset;
+			x_x1 = sprite.subSprites.get("XD0").x1_offset;
+			x_y1 = sprite.subSprites.get("XD0").y1_offset;			
 		}
+
+		if (sprite.subSprites.containsKey("XB1")) {
+			xb1_offset = (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + x_offset;
+			x_x1 = sprite.subSprites.get("XB1").x1_offset;
+			x_y1 = sprite.subSprites.get("XB1").y1_offset;			
+		}
+		
+		if (sprite.subSprites.containsKey("XD1")) {
+			xd1_offset = (xb1_offset>0?7:0) + (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + x_offset;
+			x_x1 = sprite.subSprites.get("XD1").x1_offset;
+			x_y1 = sprite.subSprites.get("XD1").y1_offset;			
+		}		
+		
+		if (sprite.subSprites.containsKey("YB0") || sprite.subSprites.containsKey("YD0") || sprite.subSprites.containsKey("YB1") || sprite.subSprites.containsKey("YD1")) {
+			y_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + 6;			
+		}		
+		
+		if (sprite.subSprites.containsKey("YB0")) {
+			yb0_offset = y_offset;
+			y_x1 = sprite.subSprites.get("YB0").x1_offset;
+			y_y1 = sprite.subSprites.get("YB0").y1_offset;
+		}
+		
+		if (sprite.subSprites.containsKey("YD0")) {
+			yd0_offset = (yb0_offset>0?7:0) + y_offset;
+			y_x1 = sprite.subSprites.get("YD0").x1_offset;
+			y_y1 = sprite.subSprites.get("YD0").y1_offset;			
+		}
+
+		if (sprite.subSprites.containsKey("YB1")) {
+			yb1_offset = (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + y_offset;
+			y_x1 = sprite.subSprites.get("YB1").x1_offset;
+			y_y1 = sprite.subSprites.get("YB1").y1_offset;			
+		}
+		
+		if (sprite.subSprites.containsKey("YD1")) {
+			yd1_offset = (yb1_offset>0?7:0) + (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + y_offset;
+			y_x1 = sprite.subSprites.get("YD1").x1_offset;
+			y_y1 = sprite.subSprites.get("YD1").y1_offset;
+		}
+		
+		if (sprite.subSprites.containsKey("XYB0") || sprite.subSprites.containsKey("XYD0") || sprite.subSprites.containsKey("XYB1") || sprite.subSprites.containsKey("XYD1")) {
+			xy_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + 6;			
+		}		
+		
+		if (sprite.subSprites.containsKey("XYB0")) {
+			xyb0_offset = xy_offset;
+			xy_x1 = sprite.subSprites.get("XYB0").x1_offset;
+			xy_y1 = sprite.subSprites.get("XYB0").y1_offset;
+		}
+		
+		if (sprite.subSprites.containsKey("XYD0")) {
+			xyd0_offset = (xyb0_offset>0?7:0) + xy_offset;
+			xy_x1 = sprite.subSprites.get("XYD0").x1_offset;
+			xy_y1 = sprite.subSprites.get("XYD0").y1_offset;			
+		}
+
+		if (sprite.subSprites.containsKey("XYB1")) {
+			xyb1_offset = (xyd0_offset>0?3:0) + (xyb0_offset>0?7:0) + xy_offset;
+			xy_x1 = sprite.subSprites.get("XYB1").x1_offset;
+			xy_y1 = sprite.subSprites.get("XYB1").y1_offset;
+		}
+		
+		if (sprite.subSprites.containsKey("XYD1")) {
+			xyd1_offset = (xyb1_offset>0?7:0) + (xyd0_offset>0?3:0) + (xyb0_offset>0?7:0) + xy_offset;
+			xy_x1 = sprite.subSprites.get("XYD1").x1_offset;
+			xy_y1 = sprite.subSprites.get("XYD1").y1_offset;
+		}		
+		
+		for (Entry<String, SubSprite> subSprite : sprite.subSprites.entrySet()) {
+			x_size = subSprite.getValue().x_size;
+			y_size = subSprite.getValue().y_size;
+			break;
+		}
+		
+		line.add(String.format("$%1$02X", n_offset)); // unsigned value
+		line.add(String.format("$%1$02X", x_offset)); // unsigned value
+		line.add(String.format("$%1$02X", y_offset)); // unsigned value
+		line.add(String.format("$%1$02X", xy_offset)); // unsigned value		
+		line.add(String.format("$%1$02X", x_size)); // unsigned value
+		line.add(String.format("$%1$02X", y_size)); // unsigned value
+		
+		if (nb0_offset+nd0_offset+nb1_offset+nd1_offset>0) {
+			line.add(String.format("$%1$02X", nb0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", nd0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", nb1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", nd1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", n_x1 & 0xFF)); // signed value		
+			line.add(String.format("$%1$02X", n_y1 & 0xFF)); // signed value			
+			if (sprite.subSprites.containsKey("NB0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("NB0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("ND0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("ND0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("NB1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("NB1"), line);
+			}
+
+			if (sprite.subSprites.containsKey("ND1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("ND1"), line);
+			}
+		}
+		
+		if (xb0_offset+xd0_offset+xb1_offset+xd1_offset>0) {
+			line.add(String.format("$%1$02X", xb0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xd0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xb1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xd1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", x_x1 & 0xFF)); // signed value		
+			line.add(String.format("$%1$02X", x_y1 & 0xFF)); // signed value			
+			if (sprite.subSprites.containsKey("XB0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XB0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("XD0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XD0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("XB1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XB1"), line);
+			}
+
+			if (sprite.subSprites.containsKey("XD1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XD1"), line);
+			}
+		}
+		
+		if (yb0_offset+yd0_offset+yb1_offset+yd1_offset>0) {
+			line.add(String.format("$%1$02X", yb0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", yd0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", yb1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", yd1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", y_x1 & 0xFF)); // signed value		
+			line.add(String.format("$%1$02X", y_y1 & 0xFF)); // signed value			
+			if (sprite.subSprites.containsKey("YB0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("YB0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("YD0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("YD0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("YB1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("YB1"), line);
+			}
+
+			if (sprite.subSprites.containsKey("YD1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("YD1"), line);
+			}
+		}
+		
+		if (xyb0_offset+xyd0_offset+xyb1_offset+xyd1_offset>0) {
+			line.add(String.format("$%1$02X", xyb0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xyd0_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xyb1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xyd1_offset)); // unsigned value
+			line.add(String.format("$%1$02X", xy_x1 & 0xFF)); // signed value		
+			line.add(String.format("$%1$02X", xy_y1 & 0xFF)); // signed value			
+			if (sprite.subSprites.containsKey("XYB0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XYB0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("XYD0")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XYD0"), line);
+			}
+
+			if (sprite.subSprites.containsKey("XYB1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XYB1"), line);
+			}
+
+			if (sprite.subSprites.containsKey("XYD1")) {
+				getImgSubSpriteIndex(sprite.subSprites.get("XYD1"), line);
+			}
+		}		
+		
+		asmImgIndex.addFcb((String[])line.toArray());
 	}
 	
-	private static String[] getImgSubSpriteIndex(SubSprite s) {
-		String[] line = new String[IMAGE_META_SIZE];
-		if (s.bckDraw != null) {
-			line [0] = String.format("$%1$02X", s.bckDraw.fileIndex.page);
-			line [1] = String.format("$%1$02X", s.bckDraw.fileIndex.address >> 8);		
-			line [2] = String.format("$%1$02X", s.bckDraw.fileIndex.address & 0xFF);		
-		} else {
-			line [0] = "$00";
-			line [1] = "$00";		
-			line [2] = "$00";	
-		}
-		
-		if (s.draw != null) {
-			line [3] = String.format("$%1$02X", s.draw.fileIndex.page);
-			line [4] = String.format("$%1$02X", s.draw.fileIndex.address >> 8);		
-			line [5] = String.format("$%1$02X", s.draw.fileIndex.address & 0xFF);
-		} else {
-			line [3] = "$00";
-			line [4] = "$00";		
-			line [5] = "$00";	
-		}
+	private static void getImgSubSpriteIndex(SubSprite s, List<String> line) {
+		line.add(String.format("$%1$02X", s.draw.fileIndex.page));
+		line.add(String.format("$%1$02X", s.draw.fileIndex.address >> 8));		
+		line.add(String.format("$%1$02X", s.draw.fileIndex.address & 0xFF));
 		
 		if (s.erase != null) {
-			line [6] = String.format("$%1$02X", s.erase.fileIndex.page);
-			line [7] = String.format("$%1$02X", s.erase.fileIndex.address >> 8);		
-			line [8] = String.format("$%1$02X", s.erase.fileIndex.address & 0xFF);
-		} else {
-			line [6] = "$00";
-			line [7] = "$00";		
-			line [8] = "$00";	
+			line.add(String.format("$%1$02X", s.erase.fileIndex.page));
+			line.add(String.format("$%1$02X", s.erase.fileIndex.address >> 8));		
+			line.add(String.format("$%1$02X", s.erase.fileIndex.address & 0xFF));
+			line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
 		}
-		
-		line [9] = String.format("$%1$02X", s.nb_cell); // unsigned value
-		line [10] = String.format("$%1$02X", s.x1_offset & 0xFF); // signed value		
-		line [11] = String.format("$%1$02X", s.y1_offset & 0xFF); // signed value
-		line [12] = String.format("$%1$02X", s.x_size); // unsigned value
-		line [13] = String.format("$%1$02X", s.y_size); // unsigned value
-		return line;
 	}
 
 	/**

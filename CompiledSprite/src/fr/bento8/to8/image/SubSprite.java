@@ -8,17 +8,15 @@ public class SubSprite {
 	public Sprite parent;
 	public String name = "";
 
-	public SubSpriteBin bckDraw;
-	public SubSpriteBin erase;
 	public SubSpriteBin draw;
+	public SubSpriteBin erase;
 
-	public int nb_cell;
-	public int x_offset;
+	public int x_size;
+	public int y_size;	
 	public int x1_offset;	
 	public int y1_offset;
-	public int x_size;
-	public int y_size;
-
+	public int nb_cell;
+	
 	public SubSprite(Sprite p) {
 		parent = p;
 	}
@@ -37,14 +35,11 @@ public class SubSprite {
 	}
 	
 	public void setAllFileIndex(FdUtil fd) {
-		if (bckDraw != null && bckDraw.fileIndex != null) {
-			setFileIndex(bckDraw, fd);			
+		if (draw != null && draw.fileIndex != null) {
+			setFileIndex(draw, fd);
 		}
 		if (erase != null && erase.fileIndex != null) {
 			setFileIndex(erase, fd);
-		}
-		if (draw != null && draw.fileIndex != null) {
-			setFileIndex(draw, fd);
 		}
 	}
 
