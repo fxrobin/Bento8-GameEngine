@@ -132,7 +132,7 @@ ESP_CheckPriorityB0
 ESP_UnsetCheckRefreshB0
         lda   rsv_render_flags,u
         ldb   render_flags,u
-        andb  #render_fixedoverlay_mask
+        andb  #render_motionless_mask
         bne   ESP_CheckEraseB0
         anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag
         sta   rsv_render_flags,u        
@@ -140,7 +140,8 @@ ESP_UnsetCheckRefreshB0
 ESP_CheckEraseB0
         anda  #rsv_render_erasesprite_mask
         beq   ESP_NextObjectB0
-        andb  #render_fixedoverlay_mask
+        ldb   rsv_prev_render_flags_0,u
+        andb  #rsv_prev_render_overlay_mask
         bne   ESP_UnsetOnScreenFlagB0
         
 ESP_CallEraseRoutineB0
@@ -161,7 +162,9 @@ ESP_FreeEraseBufferB0
         jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB0
-        clr   rsv_onscreen_0,u              ; sprite is no longer on screen
+        lda   rsv_prev_render_flags_0,u
+        anda  #:rsv_prev_render_onscreen_mask,u ; sprite is no longer on screen
+        sta   rsv_prev_render_flags_0,u
 
 ESP_NextObjectB0
         ldu   rsv_priority_prev_obj_0,u
@@ -182,7 +185,7 @@ ESP_CheckPriorityB1
 ESP_UnsetCheckRefreshB1
         lda   rsv_render_flags,u
         ldb   render_flags,u
-        andb  #render_fixedoverlay_mask
+        andb  #render_motionless_mask
         bne   ESP_CheckEraseB1
         anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag (CheckSpriteRefresh)
         sta   rsv_render_flags,u        
@@ -190,7 +193,8 @@ ESP_UnsetCheckRefreshB1
 ESP_CheckEraseB1
         anda  #rsv_render_erasesprite_mask
         beq   ESP_NextObjectB1
-        andb  #render_fixedoverlay_mask
+        ldb   rsv_prev_render_flags_1,u
+        andb  #rsv_prev_render_overlay_mask
         bne   ESP_UnsetOnScreenFlagB1        
         
 ESP_CallEraseRoutineB1
@@ -211,7 +215,9 @@ ESP_FreeEraseBufferB1
         jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB1
-        clr   rsv_onscreen_1,u              ; sprite is no longer on screen
+        lda   rsv_prev_render_flags_1,u
+        anda  #:rsv_prev_render_onscreen_mask,u ; sprite is no longer on screen
+        sta   rsv_prev_render_flags_1,u
         
 ESP_NextObjectB1
         ldu   rsv_priority_prev_obj_1,u

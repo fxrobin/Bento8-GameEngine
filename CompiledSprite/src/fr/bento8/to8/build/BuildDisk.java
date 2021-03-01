@@ -243,7 +243,6 @@ public class BuildDisk
 					// Parcours des différents rendus demandés pour chaque image
 					for (String cur_variant : spriteVariants) {
 						logger.debug("\t"+gameMode.getValue()+"/"+object.getValue()+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " variant:" + cur_variant);
-						asmImgIndex.addLabel(sprite.name+" *@globals");
 
 						// Sauvegarde du code généré pour la variante
 						curSubSprite = new SubSprite(sprite);

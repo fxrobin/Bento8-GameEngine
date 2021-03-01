@@ -152,44 +152,46 @@ CSR_UpdSpriteImageBasedOnMirror
         
         lda   render_flags,u                ; set image to display based on x and y mirror flags
         anda  #render_xmirror_mask!render_ymirror_mask
-        ldb   #image_meta_size
-        mul
-        addd  mapping_frame,u
-        std   rsv_curr_mapping_frame,u
+        ldy   image_set,u
+        ldb   a,y
+        leay  b,y                           ; read image set index
+        sty   rsv_image_subset,u
         
 CSR_CheckPlayFieldCoord
         lda   render_flags,u
         anda  #render_playfieldcoord_mask
         beq   CSR_CheckVerticalPosition     ; branch if position is already expressed in screen coordinate
         
-        ldd   x_pos,u
-        subd  Glb_Camera_X_Pos
-        ldy   rsv_curr_mapping_frame,u
+        * not yet implemented
+        * need to be updated with new algorithm (see drawio)
+        *ldd   x_pos,u
+        *subd  Glb_Camera_X_Pos
+        *ldy   rsv_mapping_frame,u
         *addd  image_x_offset,y
-        lbvs   CSR_SetOutOfRange             ; top left coordinate overflow of image
-        lbmi   CSR_SetOutOfRange             ; branch if (x_pixel < 0)
-        stb   x_pixel,u
+        *lbvs   CSR_SetOutOfRange             ; top left coordinate overflow of image
+        *lbmi   CSR_SetOutOfRange             ; branch if (x_pixel < 0)
+        *stb   x_pixel,u
         *addb  image_x_size_l,y
-        lbvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
-        stb   rsv_x2_pixel,u
-        cmpb  #screen_width
-        lbgt   CSR_SetOutOfRange             ; branch if (x_pixel + image.x_size > screen width)
+        *lbvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
+        *stb   rsv_x2_pixel,u
+        *cmpb  #screen_width
+        *lbgt   CSR_SetOutOfRange             ; branch if (x_pixel + image.x_size > screen width)
 
-        ldd   y_pos,u
-        subd  Glb_Camera_Y_Pos
+        *ldd   y_pos,u
+        *subd  Glb_Camera_Y_Pos
         *addd  image_y1_offset,y
-        bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image        
-        bmi   CSR_SetOutOfRange             ; branch if (y_pixel < 0)
-        stb   y_pixel,u        
+        *bvs   CSR_SetOutOfRange             ; top left coordinate overflow of image        
+        *bmi   CSR_SetOutOfRange             ; branch if (y_pixel < 0)
+        *stb   y_pixel,u        
         *addb  image_y_size_l,y
-        bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
-        stb   rsv_y2_pixel,u
-        cmpb  #screen_bottom
-        bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
-        lda   rsv_render_flags,u
-        anda  #:rsv_render_outofrange_mask  ; unset out of range flag
-        sta   rsv_render_flags,u
-        bra   CSR_CheckErase
+        *bvs   CSR_SetOutOfRange             ; bottom rigth coordinate overflow of image
+        *stb   rsv_y2_pixel,u
+        *cmpb  #screen_bottom
+        *bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
+        *lda   rsv_render_flags,u
+        *anda  #:rsv_render_outofrange_mask  ; unset out of range flag
+        *sta   rsv_render_flags,u
+        *bra   CSR_CheckErase
         
 CSR_DoNotDisplaySprite
         lda   priority,u                     
@@ -200,8 +202,8 @@ CSR_DoNotDisplaySprite
         anda  #:rsv_render_erasesprite_mask&:rsv_render_displaysprite_mask ; set erase and display flag to false
         sta   rsv_render_flags,u
                 
-        ldb   buf_onscreen,x
-        beq   CSR_NextObject                ; branch if not on screen
+        ldb   buf_prev_render_flags,x
+        bpl   CSR_NextObject                ; branch if not on screen
         
         ora   #rsv_render_erasesprite_mask  ; set erase flag to true if on screen                  
         sta   rsv_render_flags,u
@@ -216,25 +218,39 @@ CSR_NextObject
         rts
 
 CSR_CheckVerticalPosition
+        lda   x_pixel,u                     ; compute mapping_frame 
+        anda  #$01
+        asla
+        ldb   render_flags,u
+        andb  #render_overlay_mask
+        beq   CSR_NoOverlay
+        inca
+CSR_NoOverlay
+        ldb   a,y
+        leay  b,y                           ; read image subset index
+        sty   rsv_mapping_frame,u
+       
         ldb   y_pixel,u
-        ldy   rsv_curr_mapping_frame,u
-        
-        addb  image_y1_offset_l,y
+        ldy   rsv_image_subset,u
+        addb  image_subset_y1_offset,y
         stb   rsv_y1_pixel,u
 
         cmpb  #screen_top
         bcs   CSR_SetOutOfRange
         
-        addb  image_y_size_l,y
+        ldy   image_set,u
+        addb  image_y_size,y
         stb   rsv_y2_pixel,u
 
         cmpb  #screen_bottom
         bhi   CSR_SetOutOfRange
         
         ldb   x_pixel,u
-        addb  image_x1_offset_l,y
+        ldy   rsv_image_subset,u
+        addb  image_subset_x1_offset,y
         stb   rsv_x1_pixel,u
-        addb  image_x_size_l,y
+        ldy   image_set,u
+        addb  image_x_size,y
         stb   rsv_x2_pixel,u
         
         lda   rsv_render_flags,u
@@ -255,12 +271,13 @@ CSR_CheckErase
         
         ldy   cur_ptr_sub_obj_erase
         
-        lda   buf_onscreen,x
-        lbeq   CSR_SetEraseFalse             ; branch if object is not on screen
+        lda   buf_prev_render_flags,x
+        lbpl  CSR_SetEraseFalse             ; branch if object is not on screen
         ldd   xy_pixel,u
+        lsra                                ; x position precision is x_pixel/2 and mapping_frame with or without 1px shit, y position precision is y_pixel  
         cmpd  buf_prev_xy_pixel,x
         bne   CSR_SetEraseTrue              ; branch if object moved since last frame
-        ldd   rsv_curr_mapping_frame,u
+        ldd   rsv_mapping_frame,u
         cmpd  buf_prev_mapping_frame,x
         bne   CSR_SetEraseTrue              ; branch if object image changed since last frame
         lda   priority,u
@@ -298,9 +315,9 @@ CSR_SubEraseSearchB0
         
 CSR_SubEraseCheckCollisionB0
         ldd   rsv_prev_xy1_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
-        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_mapping_frame.x_size
         bhs   CSR_SubEraseSearchB0
-        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_mapping_frame.y_size
         bhs   CSR_SubEraseSearchB0
         ldd   rsv_prev_xy2_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
@@ -318,9 +335,9 @@ CSR_SubEraseSearchB1
         
 CSR_SubEraseCheckCollisionB1
         ldd   rsv_prev_xy1_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 and rsv_prev_y_pixel_1 in one instruction
-        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_mapping_frame.x_size
         bhi   CSR_SubEraseSearchB1
-        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_mapping_frame.y_size
         bhi   CSR_SubEraseSearchB1
         ldd   rsv_prev_xy2_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 + rsv_prev_mapping_frame_1.x_size and rsv_prev_y_pixel_1 + rsv_prev_mapping_frame_1.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
@@ -341,11 +358,11 @@ CSR_SubDrawSearch
 
 CSR_SubDrawCheckCollision
         ldd   rsv_xy1_pixel,y               ; sub entry : x_pixel and y_pixel in one instruction
-        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_curr_mapping_frame.x_size
+        cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_mapping_frame.x_size
         bhi   CSR_SubDrawSearch
-        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_curr_mapping_frame.y_size
+        cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_mapping_frame.y_size
         bhi   CSR_SubDrawSearch
-        ldd   rsv_xy2_pixel,y               ; sub entry : x_pixel + rsv_curr_mapping_frame.x_size and y_pixel + rsv_curr_mapping_frame.y_size in one instruction
+        ldd   rsv_xy2_pixel,y               ; sub entry : x_pixel + rsv_mapping_frame.x_size and y_pixel + rsv_mapping_frame.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
         blo   CSR_SubDrawSearch
         cmpb  rsv_y1_pixel,u                ;     entry : y_pixel
@@ -370,7 +387,7 @@ CSR_CheckDraw
         lda   rsv_render_flags,u
         anda  #rsv_render_outofrange_mask
         bne   CSR_SetDrawFalse              ; branch if object image is out of range
-        ldd   rsv_curr_mapping_frame,u
+        ldd   rsv_mapping_frame,u
         beq   CSR_SetDrawFalse              ; branch if object have no image
         lda   render_flags,u
         anda  #render_hide_mask
@@ -383,10 +400,16 @@ CSR_SetDrawTrue
         
         lda   rsv_render_flags,u
         anda  #rsv_render_erasesprite_mask
-        lsra                                ; DEPENDECY on rsv_render_erasesprite_mask value (here should be 2)      
-        cmpa  buf_onscreen,x
-        bne   CSR_SetHide         
-        
+        beq   CSR_SDT1
+        bne   CSR_SDT2
+CSR_SDT1                      
+        ldb   buf_prev_render_flags,x
+        bpl   CSR_SetHide
+        bne   CSR_SDT3      
+CSR_SDT2                      
+        ldb   buf_prev_render_flags,x
+        bmi   CSR_SetHide
+CSR_SDT3
         stu   ,y++
         sty   cur_ptr_sub_obj_draw          ; maintain list of changing sprites to draw, should be to draw and ((on screen and to erase) or (not on screen and not to erase)) 
 

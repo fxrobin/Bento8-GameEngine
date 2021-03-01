@@ -64,10 +64,10 @@ UDP_CheckDeleteB0
         lda   render_flags,u
         anda  #render_todelete_mask
         beq   UDP_SetNewPrioB0
-        lda   rsv_onscreen_0,u
-        bne   UDP_SetNewPrioB0
-        lda   rsv_onscreen_1,u
-        bne   UDP_SetNewPrioB0
+        lda   rsv_prev_render_flags_0,u
+        bmi   UDP_SetNewPrioB0
+        lda   rsv_prev_render_flags_1,u
+        bmi   UDP_SetNewPrioB0
         jsr   ClearObj
         bra   UDP_CheckEndB0
         
@@ -127,10 +127,10 @@ UDP_CheckDeleteB1
         lda   render_flags,u
         anda  #render_todelete_mask
         beq   UDP_SetNewPrioB1
-        lda   rsv_onscreen_0,u
-        bne   UDP_SetNewPrioB1
-        lda   rsv_onscreen_1,u
-        bne   UDP_SetNewPrioB1
+        lda   rsv_prev_render_flags_0,u
+        bmi   UDP_SetNewPrioB1
+        lda   rsv_prev_render_flags_1,u
+        bmi   UDP_SetNewPrioB1
         jsr   ClearObj
         bra   UDP_CheckEndB1
         

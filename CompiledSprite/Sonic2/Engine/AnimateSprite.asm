@@ -50,7 +50,7 @@ Anim_Run                                    *Anim_Run:
                                             *; loc_1657C:
 Anim_Next                                   *Anim_Next:
 	    * ne pas utiliser                   *    andi.b  #$7F,d0               ; clear sign bit
-        std   mapping_frame,u               *    move.b  d0,mapping_frame(a0)  ; load sprite number
+        std   image_set,u                   *    move.b  d0,mapping_frame(a0)  ; load sprite number
         ldb   status,u                      *    move.b  status(a0),d1         ; match the orientaion dictated by the object
         andb  #status_x_orientation+status_y_orientation
         stb   Anim_dyn+1

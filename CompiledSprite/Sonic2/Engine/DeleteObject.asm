@@ -28,8 +28,8 @@ DeleteObject *@globals                 *DeleteObject2:
         pshs  d,x,u
         
 DOB_Start
-        lda   rsv_onscreen_0,u
-        beq   DOB_RemoveFromDPSB0           ; branch if not onscreen on buffer 0
+        lda   rsv_prev_render_flags_0,u
+        bpl   DOB_RemoveFromDPSB0           ; branch if not onscreen on buffer 0
 
 DOB_ToDeleteFlag0
         lda   render_flags,u
@@ -43,8 +43,8 @@ DOB_Unset0
         stx   Lst_Priority_Unset_0
         
 DOB_TestOnscreen1
-        lda   rsv_onscreen_1,u
-        beq   DOB_RemoveFromDPSB1           ; branch if not onscreen on buffer 1
+        lda   rsv_prev_render_flags_1,u
+        bpl   DOB_RemoveFromDPSB1           ; branch if not onscreen on buffer 1
         
 DOB_ToDeleteFlag1
         lda   render_flags,u
@@ -120,8 +120,8 @@ DOB_CheckPrioNextB1
         leay  a,y
         ldd   rsv_priority_prev_obj_1,u
         std   ,y
-        lda   rsv_onscreen_0,u
-        bne   DOB_rts                       ; branch if onscreen on buffer 0 (do not erase object)        
+        lda   rsv_prev_render_flags_0,u
+        bmi   DOB_rts                       ; branch if onscreen on buffer 0 (do not erase object)        
         jsr   ClearObj                      ; this object is not onscreen anymore, clear this object now
 DOB_rts                                *
         puls  d,x,u,pc        
@@ -130,8 +130,8 @@ DOB_ChainNextB1
         ldd   rsv_priority_prev_obj_1,u
         ldy   rsv_priority_next_obj_1,u        
         std   rsv_priority_prev_obj_1,y
-        lda   rsv_onscreen_0,u
-        bne   DOB_rts                       ; branch if onscreen on buffer 0 (do not erase object)        
+        lda   rsv_prev_render_flags_0,u
+        bmi   DOB_rts                       ; branch if onscreen on buffer 0 (do not erase object)        
         jsr   ClearObj                      ; this object is not onscreen anymore, clear this object now
         puls  d,x,u,pc        
 
