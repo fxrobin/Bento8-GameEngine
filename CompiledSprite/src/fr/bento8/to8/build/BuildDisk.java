@@ -1040,7 +1040,7 @@ public class BuildDisk
 			}
 		}		
 		
-		asmImgIndex.addFcb((String[])line.toArray());
+		asmImgIndex.addFcb(line.toArray(new String[0]));
 	}
 	
 	private static void getImgSubSpriteIndex(SubSprite s, List<String> line) {

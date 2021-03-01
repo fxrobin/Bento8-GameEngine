@@ -79,7 +79,7 @@ public class SpriteSheet {
 						image = op.filter(image, null);
 					}
 
-					prepareImages();
+					prepareImages(variant);
 
 				} else {
 					logger.info("Le format de fichier de " + file + " n'est pas supporté.");
@@ -98,11 +98,10 @@ public class SpriteSheet {
 		}
 	}
 
-	public void prepareImages() {
+	public void prepareImages(String variant) {
 		// sépare l'image en deux parties pour la RAM A et RAM B
 		// ajoute les pixels transparents pour constituer une image linéaire de largeur 2x80px
-		// l'image se termine par toujours par un multiple de 4 pixels Ram 0 et Ram 1 sont de même taille
-		int paddedImage = (80 * (height-1)) + ((subImageWidth + (subImageWidth % 4 == 0 ? 0 : (4 - (subImageWidth % 4)))) / 2);
+		int paddedImage = 80*height;
 		pixels = new byte[subImageNb][2][paddedImage];
 		data = new byte[subImageNb][2][paddedImage];
 		x1_offset = new int[subImageNb];
@@ -208,6 +207,31 @@ public class SpriteSheet {
 						index = subImageWidth*position + curLine*width;
 						indexDest = 80*curLine;
 						page = 0;
+					}
+				}
+			}
+			
+			if (variant.contains("1")) {
+				// Décallage de l'image de 1px à droite pour chaque ligne
+				for (int y=0; y<height; y++) {
+					for (int x = 79; x >= 1; x -= 2) {
+	                    if (x == 79) {
+	                    	// Le pixel en fin de ligne revient au début de cette ligne
+	                    	pixels[position][0][0+(80*y)]=pixels[position][1][x+(80*y)];
+	                    	data[position][0][0+(80*y)]=data[position][1][x+(80*y)];
+	                    } else {
+	                    	pixels[position][0][(x+1)+(80*y)]=pixels[position][1][x+(80*y)];
+	                    	data[position][0][(x+1)+(80*y)]=data[position][1][x+(80*y)];
+	                    }
+
+                    	pixels[position][1][x+(80*y)]=pixels[position][1][(x-1)+(80*y)];
+                    	data[position][1][x+(80*y)]=data[position][1][(x-1)+(80*y)];
+					
+                    	pixels[position][1][(x-1)+(80*y)]=pixels[position][0][x+(80*y)];
+                    	data[position][1][(x-1)+(80*y)]=data[position][0][x+(80*y)];
+					
+                    	pixels[position][0][x+(80*y)]=pixels[position][0][(x-1)+(80*y)];
+                    	data[position][0][x+(80*y)]=data[position][0][(x-1)+(80*y)];
 					}
 				}
 			}
