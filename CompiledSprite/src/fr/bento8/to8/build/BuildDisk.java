@@ -783,10 +783,15 @@ public class BuildDisk
 	}
 	
 	private static void writeImgIndex(AsmSourceCode asmImgIndex, Sprite sprite) {
+		
 		// Sorry for this code ... should be a better way of doing that
+		// Note : index to image sub set is limited to an offset of +127
+		// this version go up to +102 so it's fine
+		
 		List<String> line = new ArrayList<String>();
-		int x_size=0;
-		int y_size=0;
+		int imageSet_header = 6, imageSubSet_header = 6;
+		int x_size = 0;
+		int y_size = 0;
 		int n_offset = 0;
 		int n_x1 = 0;
 		int n_y1 = 0;
@@ -819,113 +824,113 @@ public class BuildDisk
 		asmImgIndex.addLabel(sprite.name+" *@globals");		
 		
 		if (sprite.subSprites.containsKey("NB0") || sprite.subSprites.containsKey("ND0") || sprite.subSprites.containsKey("NB1") || sprite.subSprites.containsKey("ND1")) {
-			n_offset = 6;			
+			n_offset = imageSet_header;			
 		}
 
 		if (sprite.subSprites.containsKey("NB0")) {
-			nb0_offset = n_offset;
+			nb0_offset = imageSubSet_header;
 			n_x1 = sprite.subSprites.get("NB0").x1_offset;
 			n_y1 = sprite.subSprites.get("NB0").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("ND0")) {
-			nd0_offset = (nb0_offset>0?7:0) + n_offset;
+			nd0_offset = (nb0_offset>0?7:0) + imageSubSet_header;
 			n_x1 = sprite.subSprites.get("ND0").x1_offset;	
 			n_y1 = sprite.subSprites.get("ND0").y1_offset;
 		}
 
 		if (sprite.subSprites.containsKey("NB1")) {
-			nb1_offset = (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + n_offset;
+			nb1_offset = (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + imageSubSet_header;
 			n_x1 = sprite.subSprites.get("NB1").x1_offset;
 			n_y1 = sprite.subSprites.get("NB1").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("ND1")) {
-			nd1_offset = (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + n_offset;
+			nd1_offset = (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + imageSubSet_header;
 			n_x1 = sprite.subSprites.get("ND1").x1_offset;
 			n_y1 = sprite.subSprites.get("ND1").y1_offset;
 		}		
 		
 		if (sprite.subSprites.containsKey("XB0") || sprite.subSprites.containsKey("XD0") || sprite.subSprites.containsKey("XB1") || sprite.subSprites.containsKey("XD1")) {
-			x_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + 6;			
+			x_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + (n_offset>0?n_offset+imageSubSet_header:imageSet_header);			
 		}		
 		
 		if (sprite.subSprites.containsKey("XB0")) {
-			xb0_offset = x_offset;
+			xb0_offset = imageSubSet_header;
 			x_x1 = sprite.subSprites.get("XB0").x1_offset;
 			x_y1 = sprite.subSprites.get("XB0").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("XD0")) {
-			xd0_offset = (xb0_offset>0?7:0) + x_offset;
+			xd0_offset = (xb0_offset>0?7:0) + imageSubSet_header;
 			x_x1 = sprite.subSprites.get("XD0").x1_offset;
 			x_y1 = sprite.subSprites.get("XD0").y1_offset;			
 		}
 
 		if (sprite.subSprites.containsKey("XB1")) {
-			xb1_offset = (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + x_offset;
+			xb1_offset = (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + imageSubSet_header;
 			x_x1 = sprite.subSprites.get("XB1").x1_offset;
 			x_y1 = sprite.subSprites.get("XB1").y1_offset;			
 		}
 		
 		if (sprite.subSprites.containsKey("XD1")) {
-			xd1_offset = (xb1_offset>0?7:0) + (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + x_offset;
+			xd1_offset = (xb1_offset>0?7:0) + (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + imageSubSet_header;
 			x_x1 = sprite.subSprites.get("XD1").x1_offset;
 			x_y1 = sprite.subSprites.get("XD1").y1_offset;			
 		}		
 		
 		if (sprite.subSprites.containsKey("YB0") || sprite.subSprites.containsKey("YD0") || sprite.subSprites.containsKey("YB1") || sprite.subSprites.containsKey("YD1")) {
-			y_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + 6;			
+			y_offset = (xd1_offset>0?3:0) + (xb1_offset>0?7:0) + (xd0_offset>0?3:0) + (xb0_offset>0?7:0) + (x_offset>0?x_offset+imageSubSet_header:imageSet_header);			
 		}		
 		
 		if (sprite.subSprites.containsKey("YB0")) {
-			yb0_offset = y_offset;
+			yb0_offset = imageSubSet_header;
 			y_x1 = sprite.subSprites.get("YB0").x1_offset;
 			y_y1 = sprite.subSprites.get("YB0").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("YD0")) {
-			yd0_offset = (yb0_offset>0?7:0) + y_offset;
+			yd0_offset = (yb0_offset>0?7:0) + imageSubSet_header;
 			y_x1 = sprite.subSprites.get("YD0").x1_offset;
 			y_y1 = sprite.subSprites.get("YD0").y1_offset;			
 		}
 
 		if (sprite.subSprites.containsKey("YB1")) {
-			yb1_offset = (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + y_offset;
+			yb1_offset = (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + imageSubSet_header;
 			y_x1 = sprite.subSprites.get("YB1").x1_offset;
 			y_y1 = sprite.subSprites.get("YB1").y1_offset;			
 		}
 		
 		if (sprite.subSprites.containsKey("YD1")) {
-			yd1_offset = (yb1_offset>0?7:0) + (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + y_offset;
+			yd1_offset = (yb1_offset>0?7:0) + (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + imageSubSet_header;
 			y_x1 = sprite.subSprites.get("YD1").x1_offset;
 			y_y1 = sprite.subSprites.get("YD1").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("XYB0") || sprite.subSprites.containsKey("XYD0") || sprite.subSprites.containsKey("XYB1") || sprite.subSprites.containsKey("XYD1")) {
-			xy_offset = (nd1_offset>0?3:0) + (nb1_offset>0?7:0) + (nd0_offset>0?3:0) + (nb0_offset>0?7:0) + 6;			
+			xy_offset = (yd1_offset>0?3:0) + (yb1_offset>0?7:0) + (yd0_offset>0?3:0) + (yb0_offset>0?7:0) + (y_offset>0?y_offset+imageSubSet_header:imageSet_header);			
 		}		
 		
 		if (sprite.subSprites.containsKey("XYB0")) {
-			xyb0_offset = xy_offset;
+			xyb0_offset = imageSubSet_header;
 			xy_x1 = sprite.subSprites.get("XYB0").x1_offset;
 			xy_y1 = sprite.subSprites.get("XYB0").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("XYD0")) {
-			xyd0_offset = (xyb0_offset>0?7:0) + xy_offset;
+			xyd0_offset = (xyb0_offset>0?7:0) + imageSubSet_header;
 			xy_x1 = sprite.subSprites.get("XYD0").x1_offset;
 			xy_y1 = sprite.subSprites.get("XYD0").y1_offset;			
 		}
 
 		if (sprite.subSprites.containsKey("XYB1")) {
-			xyb1_offset = (xyd0_offset>0?3:0) + (xyb0_offset>0?7:0) + xy_offset;
+			xyb1_offset = (xyd0_offset>0?3:0) + (xyb0_offset>0?7:0) + imageSubSet_header;
 			xy_x1 = sprite.subSprites.get("XYB1").x1_offset;
 			xy_y1 = sprite.subSprites.get("XYB1").y1_offset;
 		}
 		
 		if (sprite.subSprites.containsKey("XYD1")) {
-			xyd1_offset = (xyb1_offset>0?7:0) + (xyd0_offset>0?3:0) + (xyb0_offset>0?7:0) + xy_offset;
+			xyd1_offset = (xyb1_offset>0?7:0) + (xyd0_offset>0?3:0) + (xyb0_offset>0?7:0) + imageSubSet_header;
 			xy_x1 = sprite.subSprites.get("XYD1").x1_offset;
 			xy_y1 = sprite.subSprites.get("XYD1").y1_offset;
 		}		

@@ -219,17 +219,32 @@ CSR_NextObject
 
 CSR_CheckVerticalPosition
         lda   x_pixel,u                     ; compute mapping_frame 
-        anda  #$01
-        asla
-        ldb   render_flags,u
-        andb  #render_overlay_mask
+        anda  #$01                          ; index of sub image is encoded in two bits: 00|BD0, 01|D0, 10|BD1, 11|D1 
+        asla                                ; set bit2 for 1px shifted image 
+        ldb   render_flags,u            
+        andb  #render_overlay_mask          ; set bit1 for normal (background save) or overlay sprite (no background save)
         beq   CSR_NoOverlay
         inca
 CSR_NoOverlay
         ldb   a,y
+        beq   CSR_NoDefinedFrame
         leay  b,y                           ; read image subset index
         sty   rsv_mapping_frame,u
-       
+        bra CSR_CVP_Continue
+        
+CSR_NoDefinedFrame
+        anda  #$01                          ; test if there is an image without 1px shift
+        ldb   a,y
+        beq   CSR_NoFrameFound              ; no defined frame, nothing will be displayed
+        leay  b,y                           ; read image subset index
+        sty   rsv_mapping_frame,u
+        bra CSR_CVP_Continue        
+           
+CSR_NoFrameFound
+        ldy   #$0000        
+        sty   rsv_mapping_frame,u
+
+CSR_CVP_Continue        
         ldb   y_pixel,u
         ldy   rsv_image_subset,u
         addb  image_subset_y1_offset,y

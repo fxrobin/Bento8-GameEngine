@@ -95,15 +95,15 @@ DRS_ProcessEachPriorityLevelB0
         lda   render_flags,x
         anda  #render_overlay_mask
         bne   DRS_DrawWithoutBackupB0
-        ldu   rsv_image_subset,x
+        ldu   rsv_mapping_frame,x
         lda   erase_nb_cell,u        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB0              ; branch if no more free space
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         jsr   DRS_XYToAddress
-        ldu   rsv_image_subset,x
-        stu   rsv_prev_image_subset_0,x        
+*        ldu   rsv_image_subset,x
+*        stu   rsv_prev_image_subset_0,x        
         ldu   rsv_mapping_frame,x           ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         lda   page_draw_routine,u
@@ -129,7 +129,7 @@ DRS_dyn3B0
         ldb   render_flags,x
         bitb  #render_overlay_mask
         beq   DRS_NoOverlayB0
-        adda  #rsv_prev_render_overlay_mask
+        anda  #rsv_prev_render_overlay_mask
 DRS_NoOverlayB0
         sta   rsv_prev_render_flags_0,x     ; set the onscreen flag and save overlay flag
         
@@ -201,15 +201,15 @@ DRS_ProcessEachPriorityLevelB1
         lda   render_flags,x
         anda  #render_overlay_mask
         bne   DRS_DrawWithoutBackupB1
-        ldu   rsv_image_subset,x
+        ldu   rsv_mapping_frame,x
         lda   erase_nb_cell,u        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB1              ; branch if no more free space
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         jsr   DRS_XYToAddress
-        ldu   rsv_image_subset,x
-        stu   rsv_prev_image_subset_1,x          
+        *ldu   rsv_image_subset,x
+        *stu   rsv_prev_image_subset_1,x          
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         lda   page_draw_routine,u
@@ -235,7 +235,7 @@ DRS_dyn3B1
         ldb   render_flags,x
         bitb  #render_overlay_mask
         beq   DRS_NoOverlayB1
-        adda  #rsv_prev_render_overlay_mask
+        anda  #rsv_prev_render_overlay_mask
 DRS_NoOverlayB1
         sta   rsv_prev_render_flags_1,x     ; set the onscreen flag and save overlay flag
                 

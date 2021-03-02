@@ -16,7 +16,7 @@ BgBufferFree
         bne   BBF1                          ; branch if buffer 1 is current
         
 BBF0
-        ldu   rsv_prev_image_subset_0,u     ; get sprite last image for this buffer
+        ldu   rsv_prev_mapping_frame_0,u     ; get sprite last image for this buffer
         lda   erase_nb_cell,u               ; get nb of cell to free
         ldu   #Lst_FreeCellFirstEntry_0        
         stu   BBF_SetNewEntryPrevLink+1     ; init prev address destination as Lst_FreeCellFirstEntry
@@ -26,7 +26,7 @@ BBF0
         bra   BBF_Next
         
 BBF1        
-        ldu   rsv_prev_image_subset_1,u
+        ldu   rsv_prev_mapping_frame_1,u
         lda   erase_nb_cell,u        
         ldu   #Lst_FreeCellFirstEntry_1        
         stu   BBF_SetNewEntryPrevLink+1        

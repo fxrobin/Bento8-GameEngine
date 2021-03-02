@@ -12,11 +12,15 @@ c2_button_right_mask         equ   $80 *@globals
 c1_button_A_mask             equ   $40 *@globals
 c2_button_A_mask             equ   $80 *@globals
 
+Joypads_Read
+Dpad_Read                    fcb   $00
+Fire_Read                    fcb   $00
+   
 Joypads
-Joypads_Held
+Joypads_Held                           *@globals
 Dpad_Held                    fcb   $00 *@globals
 Fire_Held                    fcb   $00 *@globals
-Joypads_Press
+Joypads_Press                          *@globals
 Dpad_Press                   fcb   $00 *@globals
 Fire_Press                   fcb   $00 *@globals
 
@@ -81,15 +85,18 @@ ReadJoypads                            *ReadJoypads:
                                        *    move.b  (a1),d1           ; Get controller port data (B/C/Dpad)
                                        *    andi.b  #$3F,d1
                                        *    or.b    d1,d0             ; Fuse together into one controller bit array
-                                       *    not.b   d0
-        ldd   $E7CC                    *    move.b  (a0),d1           ; Get held button data
+        ldd   $E7CC
         coma
-        comb
-        eora  Dpad_Held                *    eor.b   d0,d1             ; Toggle off buttons that are being held                       
-        eora  Dpad_Held                                       
-        std   Joypads_Held             *    move.b  d0,(a0)+          ; Put raw controller input (for held buttons) in F604/F606
-        anda  Dpad_Held                *    and.b   d0,d1
-        andb  Fire_Held
+        comb                           *    not.b   d0
+        std   Joypads_Read        
+        ldd   Joypads_Held             *    move.b  (a0),d1           ; Get held button data
+        eora  Dpad_Read                *    eor.b   d0,d1             ; Toggle off buttons that are being held                       
+        eorb  Fire_Read
+                                       *    move.b  d0,(a0)+          ; Put raw controller input (for held buttons) in F604/F606
+        anda  Dpad_Read                *    and.b   d0,d1
+        andb  Fire_Read
         std   Joypads_Press            *    move.b  d1,(a0)+          ; Put pressed controller input in F605/F607
+        ldd   Joypads_Read
+        std   Joypads_Held
         rts                            *    rts
                                        *; End of function Joypad_Read

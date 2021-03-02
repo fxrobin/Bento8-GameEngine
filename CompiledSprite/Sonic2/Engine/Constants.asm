@@ -158,7 +158,7 @@ rsv_buffer_0                  equ 54 ; Start index of buffer 0 variables
 rsv_priority_0                equ 54 ; internal value that hold priority in video buffer 0
 rsv_priority_prev_obj_0       equ 55 ; and 56 ; previous object (OST address) in display priority list for video buffer 0 (0000 if none) w
 rsv_priority_next_obj_0       equ 57 ; and 58 ; next object (OST address) in display priority list for video buffer 0 (0000 if none) w
-rsv_prev_image_subset_0       equ 59 ; and 60 ; reference to previous image subset in video buffer 0 w
+*rsv_prev_image_subset_0       equ 59 ; and 60 ; reference to previous image subset in video buffer 0 w
 rsv_prev_mapping_frame_0      equ 61 ; and 62 ; reference to previous image in video buffer 0 w
 rsv_bgdata_0                  equ 63 ; and 64 ; address of background data in screen 0 w
 rsv_prev_xy_pixel_0           equ 65 ;
@@ -179,7 +179,7 @@ rsv_buffer_1                  equ 72 ; Start index of buffer 1 variables
 rsv_priority_1                equ 72 ; internal value that hold priority in video buffer 1
 rsv_priority_prev_obj_1       equ 73 ; and 74 ; previous object (OST address) in display priority list for video buffer 1 (0000 if none) w
 rsv_priority_next_obj_1       equ 75 ; and 76 ; next object (OST address) in display priority list for video buffer 1 (0000 if none) w
-rsv_prev_image_subset_1       equ 77 ; and 78 ; reference to previous image subset in video buffer 1 w
+*rsv_prev_image_subset_1       equ 77 ; and 78 ; reference to previous image subset in video buffer 1 w
 rsv_prev_mapping_frame_1      equ 79 ; and 80 ; reference to previous image in video buffer 1 w
 rsv_bgdata_1                  equ 81 ; and 82 ; address of background data in screen 1 w
 rsv_prev_xy_pixel_1           equ 83 ;
@@ -196,7 +196,7 @@ rsv_prev_render_flags_1       equ 89 ;
 buf_priority                  equ 0  ; offset for each rsv_buffer variables
 buf_priority_prev_obj         equ 1  ;
 buf_priority_next_obj         equ 3  ;
-buf_prev_image_subset         equ 5  ;
+*buf_prev_image_subset         equ 5  ;
 buf_prev_mapping_frame        equ 7  ;
 buf_bgdata                    equ 9  ;
 buf_prev_xy_pixel             equ 11 ;
