@@ -413,17 +413,16 @@ CSR_SetDrawTrue
         ora   #rsv_render_displaysprite_mask ; set displaysprite flag   
         sta   rsv_render_flags,u         
         
-        lda   rsv_render_flags,u
-        anda  #rsv_render_erasesprite_mask
+        bita  #rsv_render_erasesprite_mask
         beq   CSR_SDT1
-        bne   CSR_SDT2
+        bra   CSR_SDT2
 CSR_SDT1                      
         ldb   buf_prev_render_flags,x
-        bpl   CSR_SetHide
-        bne   CSR_SDT3      
+        bmi   CSR_SetHide
+        bra   CSR_SDT3      
 CSR_SDT2                      
         ldb   buf_prev_render_flags,x
-        bmi   CSR_SetHide
+        bpl   CSR_SetHide
 CSR_SDT3
         stu   ,y++
         sty   cur_ptr_sub_obj_draw          ; maintain list of changing sprites to draw, should be to draw and ((on screen and to erase) or (not on screen and not to erase)) 
@@ -434,7 +433,7 @@ CSR_SetHide
         sta   render_flags,u        
         
         ldu   buf_priority_next_obj,x
-        lbne   CSR_ProcessEachPriorityLevel   
+        lbne  CSR_ProcessEachPriorityLevel   
         rts
 
 CSR_SetDrawFalse 

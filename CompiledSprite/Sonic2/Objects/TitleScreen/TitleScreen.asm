@@ -208,7 +208,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_sonic_1
-        std   mapping_frame,u                    *        move.b  #5,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #5,mapping_frame(a0)
         ldd   #Ani_sonic                         ; in original code, anim is an index in offset table (1 byte) that is implicitly initialized to 0
         std   anim,u                             ; so added init code to anim address here because it is not an index anymore
         * sonic est invisible a cette position mais depasse en bas on le positionne donc hors cadre        
@@ -248,104 +248,104 @@ Sonic_PaletteFadeAfterWait                       *+
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront01
-		sty   mapping_frame,x                   
+		sty   image_set,x                    
         
         ldx   #Obj_EmblemFront02
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront02
-		sty   mapping_frame,x
+		sty   image_set,x 
 		
         ldx   #Obj_EmblemFront03
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront03
-		sty   mapping_frame,x
+		sty   image_set,x 
 		
         ldx   #Obj_EmblemFront04
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront04
-		sty   mapping_frame,x	
+		sty   image_set,x 	
 		
 		ldx   #Obj_EmblemFront05
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront05
-		sty   mapping_frame,x	
+		sty   image_set,x 	
 		
         ldx   #Obj_EmblemFront06
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront06
-		sty   mapping_frame,x		
+		sty   image_set,x 		
 		
         ldx   #Obj_EmblemFront07
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront07
-		sty   mapping_frame,x	
+		sty   image_set,x 	
 		
         ldx   #Obj_EmblemFront08
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemFront08
-		sty   mapping_frame,x			
+		sty   image_set,x 			
 		
         ldx   #Obj_EmblemBack01
         ldb   #Sub_EmblemBack
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack01
-		sty   mapping_frame,x
+		sty   image_set,x 
 		
         ldx   #Obj_EmblemBack02
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack02
-		sty   mapping_frame,x
+		sty   image_set,x 
 		
         ldx   #Obj_EmblemBack03
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack03
-		sty   mapping_frame,x	
+		sty   image_set,x 	
 		
 		ldx   #Obj_EmblemBack04
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack04
-		sty   mapping_frame,x	
+		sty   image_set,x 	
 		
         ldx   #Obj_EmblemBack05
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack05
-		sty   mapping_frame,x		
+		sty   image_set,x 		
 		
         ldx   #Obj_EmblemBack06
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack06
-		sty   mapping_frame,x	
+		sty   image_set,x 	
 		
         ldx   #Obj_EmblemBack07
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack07
-		sty   mapping_frame,x	        
+		sty   image_set,x 	        
 		
         ldx   #Obj_EmblemBack08
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack08
-		sty   mapping_frame,x
+		sty   image_set,x 
 		
 		ldx   #Obj_EmblemBack09
         sta   id,x
         stb   subtype,x
         ldy   #Img_emblemBack09
-		sty   mapping_frame,x	
+		sty   image_set,x 	
         
         ldx   #Obj_PaletteHandler3               *        lea     (TitleScreenPaletteChanger3).w,a1
         lda   #ObjID_PaletteHandler
@@ -431,7 +431,7 @@ Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_sonic_5
-        std   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #$12,mapping_frame(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
         lda   #ObjID_TitleScreen
         sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro star) at $FFFFB1C0
@@ -440,7 +440,7 @@ Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_fixedoverlay_mask
+        ora   #render_overlay_mask!render_motionless_mask
         sta   render_flags,u
                 
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -589,7 +589,7 @@ Tails_Init                                       *Obj0E_Tails_Init:
         ldd   #Ani_tails
         std   anim,u                             *        move.b  #1,anim(a0)
         ldd   #Img_tails_1                       ; in original code, mapping_frame is an index in offset table (1 byte) that is implicitly initialized to 0
-        std   mapping_frame,u                    ; so added init code to mapping_frame address here because it is not an index anymore
+        std   image_set,u                     ; so added init code to mapping_frame address here because it is not an index anymore
         rts                                      *        rts
                                                  *; ===========================================================================
                                                  *
@@ -612,7 +612,7 @@ Tails_CreateHand                                 *loc_130A2:
         
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_fixedoverlay_mask
+        ora   #render_overlay_mask!render_motionless_mask
         sta   render_flags,u
         
                                                  *
@@ -652,7 +652,7 @@ EmblemFront_Init                                 *Obj0E_LogoTop_Init:
         * trademark logo for PAL                 *        tst.b   (Graphics_Flags).w
         * game version                           *        bmi.s   +
         lda   render_flags,u
-        ora   #render_fixedoverlay_mask
+        ora   #render_overlay_mask!render_motionless_mask
         sta   render_flags,u
         * initialized in object creation         *        move.b  #$A,mapping_frame(a0)
                                                  *+
@@ -695,7 +695,7 @@ EmblemBack_Routines
 
 EmblemBack_Init
         lda   render_flags,u
-        ora   #render_fixedoverlay_mask
+        ora   #render_overlay_mask!render_motionless_mask
         sta   render_flags,u
         ldb   #$06
         stb   priority,u
@@ -758,7 +758,7 @@ LargeStar_Init                                   *Obj0E_LargeStar_Init:
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_star_2
-        std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #$C,mapping_frame(a0)
         * not implemented                        *        ori.w   #high_priority,art_tile(a0)
         ldd   #Ani_largeStar
         std   anim,u                             *        move.b  #2,anim(a0)
@@ -846,7 +846,7 @@ SonicHand_Init                                   *Obj0E_SonicHand_Init:
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_sonicHand
-        std   mapping_frame,u                    *        move.b  #9,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #9,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
         ldd   #$924E
@@ -858,7 +858,7 @@ SonicHand_Init                                   *Obj0E_SonicHand_Init:
 SonicHand_DisplaySprite                          *BranchTo13_DisplaySprite
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_fixedoverlay_mask
+        ora   #render_overlay_mask!render_motionless_mask
         sta   render_flags,u
         
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -899,7 +899,7 @@ TailsHand_Init                                   *Obj0E_TailsHand_Init:
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_tailsHand
-        std   mapping_frame,u                    *        move.b  #$13,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #$13,mapping_frame(a0)
         lda   #3
         sta   priority,u                         *        move.b  #3,priority(a0)
         ldd   #$7764
@@ -911,7 +911,7 @@ TailsHand_Init                                   *Obj0E_TailsHand_Init:
 TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_fixedoverlay_mask
+        ora   #render_overlay_mask!render_motionless_mask
         sta   render_flags,u
         
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -950,7 +950,7 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_star_2
-        std   mapping_frame,u                    *        move.b  #$C,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #$C,mapping_frame(a0)
         lda   #7
         sta   priority,u                         *        move.b  #5,priority(a0)
         ldd   #$A80F
@@ -989,7 +989,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         bne  TitleScreen_SetFinalState_rts       *        bne.w   +       ; rts
         lda   Fire_Press                         *        move.b  (Ctrl_1_Press).w,d0
                                                  *        or.b    (Ctrl_2_Press).w,d0
-        anda  #c1_button_A_mask|c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
+        anda  #c1_button_A_mask!c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
                                                  *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_2_Press).w
                                                  *        andi.b  #button_start_mask,d0
         beq  TitleScreen_SetFinalState_rts       *        beq.w   +       ; rts
@@ -998,7 +998,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         lda   #24
         sta   routine_secondary,u                *        move.b  #$10,routine_secondary(a0)
         ldd   #Img_sonic_5
-        std   mapping_frame,u                    *        move.b  #$12,mapping_frame(a0)
+        std   image_set,u                        *        move.b  #$12,mapping_frame(a0)
         ldd   #$7427
         std   xy_pixel,u                         *        move.w  #$108,x_pixel(a0)
                                                  *        move.w  #$98,y_pixel(a0)
@@ -1011,7 +1011,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         lda   #2
         sta   priority,x                         *        move.b  #2,priority(a1)
         ldd   #Img_sonicHand
-        std   mapping_frame,x                    *        move.b  #9,mapping_frame(a1)
+        std   image_set,x                        *        move.b  #9,mapping_frame(a1)
         lda   #6
         sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
         ldd   #$9050
@@ -1024,7 +1024,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         lda   #Sub_Tails
         sta   routine,x                          *        move.b  #4,routine(a1)                          ; Tails
         ldd   #Img_tails_5
-        std   mapping_frame,x                    *        move.b  #4,mapping_frame(a1)
+        std   image_set,x                        *        move.b  #4,mapping_frame(a1)
         lda   #9
         sta   routine_secondary,x                *        move.b  #6,routine_secondary(a1)
         lda   #5
@@ -1041,17 +1041,17 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         ldb   #$02        
         stb   priority,x                         *        move.b  #2,priority(a1)
         ldd   #Img_tailsHand
-        std   mapping_frame,x                    *        move.b  #$13,mapping_frame(a1)
+        std   image_set,x                        *        move.b  #$13,mapping_frame(a1)
         lda   #6
         sta   routine_secondary,x                *        move.b  #4,routine_secondary(a1)
         ldd   #$7660
         std   xy_pixel,x                         *        move.w  #$10D,x_pixel(a1)
                                                  *        move.w  #$D1,y_pixel(a1)
-        *ldx   Obj_EmblemFront                    *        lea     (IntroEmblemTop).w,a1
+        *ldx   Obj_EmblemFront                   *        lea     (IntroEmblemTop).w,a1
         *lda   #ObjID_TitleScreen        
-        *sta   id,x                               *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
+        *sta   id,x                              *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E
         *lda   #Sub_EmblemFront
-        *sta   subtype,x                          *        move.b  #6,subtype(a1)                          ; logo top
+        *sta   subtype,x                         *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
         * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
         *ldx   #Obj_PaletteHandler               *        lea     (TitleScreenPaletteChanger).w,a1

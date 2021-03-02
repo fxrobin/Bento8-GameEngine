@@ -129,7 +129,7 @@ DRS_dyn3B0
         ldb   render_flags,x
         bitb  #render_overlay_mask
         beq   DRS_NoOverlayB0
-        anda  #rsv_prev_render_overlay_mask
+        ora   #rsv_prev_render_overlay_mask
 DRS_NoOverlayB0
         sta   rsv_prev_render_flags_0,x     ; set the onscreen flag and save overlay flag
         
@@ -235,7 +235,7 @@ DRS_dyn3B1
         ldb   render_flags,x
         bitb  #render_overlay_mask
         beq   DRS_NoOverlayB1
-        anda  #rsv_prev_render_overlay_mask
+        ora   #rsv_prev_render_overlay_mask
 DRS_NoOverlayB1
         sta   rsv_prev_render_flags_1,x     ; set the onscreen flag and save overlay flag
                 
