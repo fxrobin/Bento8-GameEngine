@@ -1,5 +1,20 @@
-(main)PlayPCM
-        org $A000
+* ---------------------------------------------------------------------------
+* PlayPCM
+* ------------
+* Subroutine to play a PCM sample at 16kHz
+* This will freeze anything running
+* DAC Init from Mission: Liftoff (merci Prehisto ;-))
+*
+* input REG : [y] Pcm_ index to play
+* reset REG : [d] [x] [y]
+* ---------------------------------------------------------------------------
+
+PlayPCM *@globals
+
+
+       * SAUVER la page !!!!!!!!!!
+
+
         ldd   #$fb3f  ! Mute by CRA to 
         anda  $e7cf   ! avoid sound when 
         sta   $e7cf   ! $e7cd written
@@ -13,20 +28,24 @@ PlayPCM_ReadChunk
         beq   PlayPCM_End
         sta   $E7E5                         ; mount page in A000-DFFF                
         ldx   pcm_start_addr,y              ; Chunk start addr
-(info)        
+       
 PlayPCM_Loop      
         cmpx  pcm_end_addr,y
         beq   PlayPCM_NextChunk
         lda   ,x+
         sta   $e7cd                         ; send byte to DAC
-        mul                                 ; tempo for 16KHz
+        mul                                 ; tempo for 16hHz
         mul
         mul
-        nop
+        ldd   #$0000
         bra   PlayPCM_Loop                  ; loop is 62 cycles instead of 62,5
-(info)          
+         
 PlayPCM_NextChunk
         leay  pcm_meta_size,y
+        ldd   #$0000                        ; tempo for 16kHz
+        ldd   #$0000
+        ldd   #$0000
+        ldd   #$0000
         bra   PlayPCM_ReadChunk
         
 PlayPCM_End        
@@ -37,17 +56,7 @@ PlayPCM_End
         stb   $e7cd   ! joystick port
         ora   #$04    ! Disable mute by
         sta   $e7cf   ! CRA + joystick
-        rts
-
-* Constants
-pcm_page        equ 0
-pcm_start_addr  equ 1
-pcm_end_addr    equ 3
-pcm_meta_size   equ 5
-
-* Main Engine data
-Pcm_TitleScreen
-        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
-        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
-        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
-        fcb   $FF                 * end flag    
+        
+        * AJOUTER RECHARGEMENT de la page initialement chargée !!!!
+        
+        rts   

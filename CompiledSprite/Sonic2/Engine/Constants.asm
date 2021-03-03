@@ -61,11 +61,20 @@ erase_routine                 equ 4
 erase_nb_cell                 equ 6
 
 * ===========================================================================
+* Sound Constants
+* ===========================================================================
+
+pcm_page        equ 0
+pcm_start_addr  equ 1
+pcm_end_addr    equ 3
+pcm_meta_size   equ 5
+
+* ===========================================================================
 * Object Constants
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 21
+nb_dynamic_objects            equ 27
 nb_level_objects              equ 3
 nb_objects                    equ 64 * max 64 total
 

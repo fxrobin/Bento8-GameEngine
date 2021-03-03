@@ -8,6 +8,7 @@ public class Tags{
 	public static String OBJECT_INDEX = "OBJINDEX";
 	public static String IMAGE_INDEX = "IMAGEIDX";
 	public static String ANIMATION_SCRIPT = "ANIMSCPT";
+	public static String SOUND_INDEX = "SOUNDIDX";	
 	public static String LOAD_ACT = "LOADACT";
 	
 	public Tags() {

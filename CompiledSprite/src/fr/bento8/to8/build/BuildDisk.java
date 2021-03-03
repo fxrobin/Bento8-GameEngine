@@ -26,6 +26,8 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
+import fr.bento8.to8.audio.Sound;
+import fr.bento8.to8.audio.SoundBin;
 import fr.bento8.to8.boot.Bootloader;
 import fr.bento8.to8.compiledSprite.backupDrawErase.AssemblyGenerator;
 import fr.bento8.to8.compiledSprite.draw.SimpleAssemblyGenerator;
@@ -91,6 +93,9 @@ public class BuildDisk
 			loadGameConfiguration(args[0]);
 			compileGameModeLoader();
 			setObjectsIdAsGlobals();
+			
+			// load object sounds
+			processSounds();
 			
 			// generate compilated sprites and compute size of all asm code 
 			compileSprites();
@@ -212,6 +217,37 @@ public class BuildDisk
 				throw new Exception("file " + gameMode.getValue().engineAsmMainEngine + " is too large:" + (binBytes.length - 10) + " bytes (max:"+0x4000+")");
 			}
 		}			
+	}
+	
+	private static void processSounds() throws Exception {
+		logger.info("Process Sounds ...");
+
+		// GAME MODE DATA - Chargement des données audio
+		// ---------------------------------------------
+		
+		// Parcours de tous les objets de chaque Game Mode
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			AsmSourceCode asmSndIndex = new AsmSourceCode(getIncludeFilePath(Tags.SOUND_INDEX, gameMode.getValue()));
+			
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+
+				// Parcours des données audio de l'objet
+				for (Entry<String, String[]> soundsProperties : object.getValue().soundsProperties.entrySet()) {
+
+					Sound sound = new Sound(soundsProperties.getKey());
+					sound.soundFile = soundsProperties.getValue()[0];
+					sound.setAllBinaries(sound.soundFile);
+					object.getValue().sounds.add(sound);
+					
+					asmSndIndex.addLabel(sound.name);		
+					for (int i=0; i < sound.sb.size(); i++) {
+						asmSndIndex.addFcb(new String[] {"$00", "$00", "$00", "$00", "$00"});
+					}
+					asmSndIndex.addFcb(new String[] {"$FF"});
+				}
+			}
+			asmSndIndex.flush();	
+		}
 	}
 	
 	private static void compileSprites() throws Exception {
@@ -358,7 +394,9 @@ public class BuildDisk
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 				cur_gmd_size += 7; // Code de l'object
 				cur_gmd_size += 7 * object.getValue().subSpritesBin.size(); // SubSprites
-
+				for (Sound sound : object.getValue().sounds) { // Sounds
+					cur_gmd_size += 7 * sound.sb.size();
+				}
 			}
 			cur_gmd_size += 10; // Entete +2, Balise de fin +1, Main engine +7
 			gmd_size += cur_gmd_size;
@@ -393,6 +431,9 @@ public class BuildDisk
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 				nbGameModeItems++; // Object Code
 				nbGameModeItems += object.getValue().subSpritesBin.size(); // Sprites
+				for (Sound sound : object.getValue().sounds) {
+						nbGameModeItems += sound.sb.size();
+				}	
 			}
 			
 			// Initialise un item pour chaque élément a écrire en RAM
@@ -404,6 +445,11 @@ public class BuildDisk
 				for (SubSpriteBin subSpriteBin : object.getValue().subSpritesBin) {
 					items[itemIdx++] = new Item(subSpriteBin, 1); // element, priority
 				}
+				for (Sound sound : object.getValue().sounds) {
+					for (SoundBin soundBin : sound.sb) {
+						items[itemIdx++] = new Item(soundBin, 1); // element, priority
+					}
+				}				
 				items[itemIdx++] = new Item(object.getValue().code, 1); // element, priority
 			}
 
@@ -588,12 +634,13 @@ public class BuildDisk
 			asmLoadAct.flush();			
 			
 			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(Tags.IMAGE_INDEX, gameMode.getValue()));			
-			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, gameMode.getValue()));			
+			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, gameMode.getValue()));	
+			AsmSourceCode asmSndIndex = new AsmSourceCode(getIncludeFilePath(Tags.SOUND_INDEX, gameMode.getValue()));
+			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 
 				// MAIN ENGINE - Génération des index Images
 				// --------------------------------------------------------------------------------------
-				//asmImgIndex.add("ImgMeta_size equ " + IMAGE_META_SIZE);
 				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
 					writeImgIndex(asmImgIndex, sprite.getValue());
 				}
@@ -609,9 +656,16 @@ public class BuildDisk
 					}
 					asmAnimScript.addFcb(new String[] { animationProperties.getValue()[i] });
 				}
+				
+				// MAIN ENGINE - Génération des index Audio
+				// --------------------------------------------------------------------------------------
+				for (Sound sound : object.getValue().sounds) {
+					writeSndIndex(asmSndIndex, sound);
+				}				
 			}
 			asmImgIndex.flush();
-			asmAnimScript.flush();			
+			asmAnimScript.flush();	
+			asmSndIndex.flush();
 			
 			// MAIN ENGINE - Compilation des Main Engines
 			// --------------------------------------------------------------------------------------			
@@ -651,6 +705,12 @@ public class BuildDisk
 				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
 					sprite.getValue().setAllFileIndex(fd);
 				}
+				
+				// GAME MODE DATA - Ecriture sur disquette des données audio
+				// ---------------------------------------------------------
+				for (Sound sound : object.getValue().sounds) {
+					sound.setAllFileIndex(fd);
+				}				
 
 				// GAME MODE DATA - Ecriture sur disquette du code des objets
 				// ----------------------------------------------------------
@@ -686,6 +746,20 @@ public class BuildDisk
 				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
 					for (Entry<String, SubSprite> subSprite : sprite.getValue().subSprites.entrySet()) {
 						extractSubSpriteFileIndex(subSprite.getValue(), gmeData, sprite.getKey()+" "+subSprite.getValue().name);
+					}
+				}
+				
+				for (Sound sound : object.getValue().sounds) {
+					for (SoundBin sb : sound.sb) {
+						gmeData.addFcb(new String[] {
+						String.format("$%1$02X", sb.fileIndex.sector),
+						String.format("$%1$02X", sb.fileIndex.nbSector-1),
+						String.format("$%1$02X", (sb.fileIndex.drive << 7)+sb.fileIndex.track),				
+						String.format("$%1$02X", -sb.fileIndex.endOffset & 0xFF),
+						String.format("$%1$02X", sb.fileIndex.page),	
+						String.format("$%1$02X", sb.fileIndex.endAddress >> 8),			
+						String.format("$%1$02X", sb.fileIndex.endAddress & 0x00FF)});			
+						gmeData.appendComment(sound.name + sound.sb.indexOf(sb) + " Sound");						
 					}
 				}
 				
@@ -760,6 +834,16 @@ public class BuildDisk
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	
+	//* Sound PCM
+	//Pcm_TitleScreen
+	//        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
+	//        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
+	//        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
+	//        fcb   $FF                 * end flag    
+	
+	// + enregistrer le binaire dans les pages RAM en complétant le vide laissé dans chaque page !
+	
 	private static void extractSubSpriteFileIndex(SubSprite sub, AsmSourceCode gmeData, String spriteTag) throws Exception {
 		if (sub != null) {
 			processFileIndex(sub.draw, gmeData, spriteTag+" Draw");
@@ -1059,6 +1143,20 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
 		}
 	}
+	
+	private static void writeSndIndex(AsmSourceCode asmSndIndex, Sound sound) {
+		asmSndIndex.addLabel(sound.name + " *@globals");
+		for (SoundBin sb : sound.sb) {
+			String[] line = new String[5];
+			line[0] = String.format("$%1$02X", sb.fileIndex.page);
+			line[1] = String.format("$%1$02X", sb.fileIndex.address >> 8);
+			line[2] = String.format("$%1$02X", sb.fileIndex.address & 0x00FF);
+			line[3] = String.format("$%1$02X", sb.fileIndex.endAddress >> 8);
+			line[4] = String.format("$%1$02X", sb.fileIndex.endAddress & 0x00FF);
+			asmSndIndex.addFcb(line);
+		}
+		asmSndIndex.addFcb(new String[] {"$FF"});
+	}
 
 	/**
 	 * Effectue la compilation du code assembleur
@@ -1216,7 +1314,7 @@ public class BuildDisk
 	 * @param binFile fichier contenant le code assembleur a compiler
 	 * @return
 	 */
-	private static byte[] exomize(String binFile) {
+	public static byte[] exomize(String binFile) {
 		try {
 			String basename = FileUtil.removeExtension(binFile);
 			String destFileName = basename+".EXO";

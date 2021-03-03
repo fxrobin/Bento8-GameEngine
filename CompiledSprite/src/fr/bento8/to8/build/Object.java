@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import fr.bento8.to8.audio.Sound;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SubSpriteBin;
 
@@ -20,10 +21,12 @@ public class Object extends AsmInclude{
 	public String codeFileName;
 	
 	public HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
-	public List<SubSpriteBin> subSpritesBin = new ArrayList<SubSpriteBin>();	
+	public List<SubSpriteBin> subSpritesBin = new ArrayList<SubSpriteBin>();
+	public List<Sound> sounds = new ArrayList<Sound>();
 	
 	public HashMap<String, String[]> spritesProperties;
 	public HashMap<String, String[]> animationsProperties;	
+	public HashMap<String, String[]> soundsProperties;
 	
 	public Object(String parentName, String name, String propertiesFileName) throws Exception {
 		this.name = name;
@@ -48,5 +51,6 @@ public class Object extends AsmInclude{
 
 		spritesProperties = PropertyList.get(prop, "sprite");
 		animationsProperties = PropertyList.get(prop, "animation");
+		soundsProperties = PropertyList.get(prop, "sound");
 	}	
 }
