@@ -1,53 +1,9 @@
 (main)PlayPCM
         org $A000
-        ldd   #$fb3f  ! Mute by CRA to 
-        anda  $e7cf   ! avoid sound when 
-        sta   $e7cf   ! $e7cd written
-        stb   $e7cd   ! Full sound line
-        ora   #$04    ! Disable mute by
-        sta   $e7cf   ! CRA and sound
-        
-PlayPCM_ReadChunk
-        lda   pcm_page,y                    ; load memory page
-        cmpa  #$FF
-        beq   PlayPCM_End
-        sta   $E7E5                         ; mount page in A000-DFFF                
-        ldx   pcm_start_addr,y              ; Chunk start addr
-(info)        
-PlayPCM_Loop      
-        cmpx  pcm_end_addr,y
-        beq   PlayPCM_NextChunk
-        lda   ,x+
-        sta   $e7cd                         ; send byte to DAC
-        mul                                 ; tempo for 16KHz
-        mul
-        mul
+
+        lda   #$0F
+        cmpa  #$0F
+        bcs   test
         nop
-        bra   PlayPCM_Loop                  ; loop is 62 cycles instead of 62,5
-(info)          
-PlayPCM_NextChunk
-        leay  pcm_meta_size,y
-        bra   PlayPCM_ReadChunk
-        
-PlayPCM_End        
-        ldd   #$fbfc  ! Mute by CRA to
-        anda  $e7cf   ! avoid sound when
-        sta   $e7cf   ! $e7cd is written
-        andb  $e7cd   ! Activate
-        stb   $e7cd   ! joystick port
-        ora   #$04    ! Disable mute by
-        sta   $e7cf   ! CRA + joystick
-        rts
-
-* Constants
-pcm_page        equ 0
-pcm_start_addr  equ 1
-pcm_end_addr    equ 3
-pcm_meta_size   equ 5
-
-* Main Engine data
-Pcm_TitleScreen
-        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
-        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
-        fcb   $00,$00,$00,$00,$00 * page, adresse debut, adresse fin
-        fcb   $FF                 * end flag    
+test
+        nop

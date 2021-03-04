@@ -12,8 +12,8 @@
 PlayPCM *@globals
 
 
-       * SAUVER la page !!!!!!!!!!
-
+        lda   $E7E5
+        sta   PlayPCM_RestorePage+1
 
         ldd   #$fb3f  ! Mute by CRA to 
         anda  $e7cf   ! avoid sound when 
@@ -30,22 +30,20 @@ PlayPCM_ReadChunk
         ldx   pcm_start_addr,y              ; Chunk start addr
        
 PlayPCM_Loop      
-        cmpx  pcm_end_addr,y
-        beq   PlayPCM_NextChunk
         lda   ,x+
         sta   $e7cd                         ; send byte to DAC
+        cmpx  pcm_end_addr,y
+        beq   PlayPCM_NextChunk        
         mul                                 ; tempo for 16hHz
         mul
         mul
-        ldd   #$0000
-        bra   PlayPCM_Loop                  ; loop is 62 cycles instead of 62,5
+        tfr   a,b
+        bra   PlayPCM_Loop                  ; loop is 63 cycles instead of 62,5
          
 PlayPCM_NextChunk
         leay  pcm_meta_size,y
-        ldd   #$0000                        ; tempo for 16kHz
-        ldd   #$0000
-        ldd   #$0000
-        ldd   #$0000
+        mul                                 ; tempo for 16kHz
+        nop
         bra   PlayPCM_ReadChunk
         
 PlayPCM_End        
@@ -56,7 +54,9 @@ PlayPCM_End
         stb   $e7cd   ! joystick port
         ora   #$04    ! Disable mute by
         sta   $e7cf   ! CRA + joystick
-        
-        * AJOUTER RECHARGEMENT de la page initialement chargée !!!!
+
+PlayPCM_RestorePage        
+        lda   #$00
+        sta   $E7E5
         
         rts   

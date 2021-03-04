@@ -21,4 +21,4 @@
         ldy   #Pcm_SEGA *@IgnoreUndefined
         jsr   PlayPCM
         clr   ,u                            ; Delete this Object
-                                                         
+        rts                                                 
