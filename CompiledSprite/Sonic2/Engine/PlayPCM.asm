@@ -11,7 +11,6 @@
 
 PlayPCM *@globals
 
-
         lda   $E7E5
         sta   PlayPCM_RestorePage+1
 

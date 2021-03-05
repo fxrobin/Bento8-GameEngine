@@ -20,5 +20,7 @@
         
         ldy   #Pcm_SEGA *@IgnoreUndefined
         jsr   PlayPCM
-        clr   ,u                            ; Delete this Object
+        *clr   ,u                            ; Delete this Object
+        ldd   #(ObjID_TitleScreen<+8)+$03    ; Replace this object with Title Screen Object subtype 3
+        std   ,u
         rts                                                 

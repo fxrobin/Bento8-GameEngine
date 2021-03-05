@@ -10,12 +10,15 @@
         org   $6100
 
         jsr   LoadAct
+        jsr   PSGInit
 
 * ==============================================================================
 * Main Loop
 * ==============================================================================
 LevelMainLoop
         jsr   WaitVBL
+        jsr   PSGFrame
+        jsr   PSGSFXFrame        
         jsr   ReadJoypads
         jsr   RunObjects
         jsr   CheckSpritesRefresh
@@ -155,7 +158,8 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD DRAWSPR
         INCLUD BGBALLOC
         INCLUD BGBFREE   
-        INCLUD PLAYPCM     
+        INCLUD PLAYPCM 
+        INCLUD PSGLIB    
         
 * ==============================================================================
 * Level Specific Generated Data

@@ -118,6 +118,7 @@ w_TitleScr_move_frame_count     equ ext_variables+2
 w_TitleScr_xy_data_index        equ ext_variables+4
 w_TitleScr_color_data_index     equ ext_variables+4
 b_TitleScr_final_state          equ ext_variables+6
+b_TitleScr_music_is_playing     equ ext_variables+7
 
 * ---------------------------------------------------------------------------
 * Subtypes
@@ -354,10 +355,11 @@ Sonic_PaletteFadeAfterWait                       *+
         ldd   #Black_palette *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Pal_TitleScreen *@IgnoreUndefined
-        std   ext_variables+2,x  
-        * music unused (flag)                    *        st.b    objoff_30(a0)
-        * music unused                           *        moveq   #MusID_Title,d0 ; title music
-        rts                                      *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
+        std   ext_variables+2,x
+        lda   #$FF  
+        sta   b_TitleScr_music_is_playing        *        st.b    objoff_30(a0)
+        ldx   #Psg_TitleScreen  *@IgnoreUndefined *        moveq   #MusID_Title,d0 ; title music
+        jmp   PSGPlayNoRepeat                    *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
                                                  *; ===========================================================================
                                                  *
 Sonic_SetPal_TitleScreen                         *loc_12EE8:
@@ -1079,11 +1081,11 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         *clr   Obj_PaletteHandler3+paletteHander_fadein_amount
                                                  *        sf.b    (TitleScreenPaletteChanger+paletteHander_fadein_amount).w ; MJ: set fade counter to 00 (finish)
                                                  *
-        * music unused                           *        tst.b   objoff_30(a0)
-        * music unused                           *        bne.s   +       ; rts
-        * music unused                           *        moveq   #MusID_Title,d0 ; title music
-        * music unused                           *        jsrto   (PlayMusic).l, JmpTo4_PlayMusic
-                                                 *+
+        tst   b_TitleScr_music_is_playing        *        tst.b   objoff_30(a0)
+        bne   TitleScreen_SetFinalState_end      *        bne.s   +       ; rts
+        ldx   #Psg_TitleScreen *@IgnoreUndefined *        moveq   #MusID_Title,d0 ; title music
+        jmp   PSGPlayNoRepeat                    *        jsrto   (PlayMusic).l, JmpTo4_PlayMusic
+TitleScreen_SetFinalState_end                    *+
         rts                                      *        rts
                                                  *; End of function sub_134BC
                                                  *
