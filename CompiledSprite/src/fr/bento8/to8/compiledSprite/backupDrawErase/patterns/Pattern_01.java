@@ -36,7 +36,7 @@ public class Pattern_01 extends PatternAlpha {
 		List<String> asmCode = new ArrayList<String>();		
 		asmCode.add("\tAND"+Register.name[registerIndexes.get(0)]+" #$F0");
 		asmCode.add("\tOR"+Register.name[registerIndexes.get(0)]+" "+"#$"+String.format("%01x%01x", data[position]&0xff, data[position+1]&0xff));
-		asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
+		asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",U");
 		return asmCode;
 	}
 	

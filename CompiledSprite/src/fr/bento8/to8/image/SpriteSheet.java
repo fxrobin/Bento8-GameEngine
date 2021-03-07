@@ -35,7 +35,6 @@ public class SpriteSheet {
 	int[] x_size; // largeur de l'image en pixel (sans les pixels transparents)		
 	int[] y_size; // hauteur de l'image en pixel (sans les pixels transparents)		
 	int center; // position du centre de l'image (dans le référentiel pixels)
-	boolean posInvert; // determine si l'on doit inverser les adresses de position pour les deux codes de sprite compilé (dépend du centre) 
 
 	public SpriteSheet(String tag, String file, int nbImages, String variant) {
 		try {
@@ -108,12 +107,6 @@ public class SpriteSheet {
 		y1_offset = new int[subImageNb];		
 		x_size = new int[subImageNb];		
 		y_size = new int[subImageNb];
-
-		//if((subImageWidth/4) % 2 == 0) {
-			posInvert = false;
-		//} else {
-		//	posInvert = true;
-		//}
 		
 		center = (int) ((Math.ceil(height/2.0)-1)*40) +  subImageWidth/8;
 		
@@ -287,8 +280,4 @@ public class SpriteSheet {
 	public int getCenter() {
 		return center;
 	}
-	
-	public boolean getPosInvert() {
-		return posInvert;
-	}	
 }

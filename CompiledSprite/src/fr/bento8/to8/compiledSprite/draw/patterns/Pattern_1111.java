@@ -10,7 +10,6 @@ public class Pattern_1111 extends PatternStackBlast {
 		registerCombi.add(new boolean[] {false, false, true, false, false, false, false});
 		registerCombi.add(new boolean[] {false, false, false, true, false, false, false});
 		registerCombi.add(new boolean[] {false, false, false, false, true, false, false});
-		registerCombi.add(new boolean[] {false, false, false, false, false, true, false});
 	}
 
 	public boolean matchesForward (byte[] data, Integer offset) {

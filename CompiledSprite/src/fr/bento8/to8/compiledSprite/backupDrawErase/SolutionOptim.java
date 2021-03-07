@@ -22,7 +22,7 @@ public class SolutionOptim{
 
 	private Solution solution;
 	private byte[] data;
-	int sizeSaveS;
+	int sizesaveU;
 
 	List<String> asmCode = new ArrayList<String>(); // Contient le code de sauvegarde du fond et du dessin de sprite
 	List<String> asmECode = new ArrayList<String>(); // Contient le code d'effacement du sprite (restauration du fond)
@@ -32,7 +32,7 @@ public class SolutionOptim{
 	private int asmECodeCycles;
 	private int asmECodeSize;
 
-	int lastLeas;
+	int lastLeau;
 	// les variables Save sont pour les essais de solutions
 	boolean[] regSet, regSetSave, regSetBest;
 	byte[][] regVal, regValSave, regValBest;
@@ -103,7 +103,7 @@ public class SolutionOptim{
 		}
 	}
 
-	public List<Snippet> OptimizeUFactorial(List<List<Integer[]>> pattern, Integer lastPattern, boolean saveS, int[] ind) throws Exception {
+	public List<Snippet> OptimizeUFactorial(List<List<Integer[]>> pattern, Integer lastPattern, boolean saveU, int[] ind) throws Exception {
 
 		saveState(regSetSave, regValSave);
 
@@ -130,7 +130,7 @@ public class SolutionOptim{
 			for (Integer[] p : pl) {
 				logger.debug("("+(p[0] != null?p[0]:"null")+","+(p[1] != null?p[1]:"null")+")");
 				if (p[0] != null) {
-					s = processPatternBackgroundBackup(p[0], saveS, s);
+					s = processPatternBackgroundBackup(p[0], saveU, s);
 					bestSolution.add(s);
 				}
 				if (p[1] != null) {
@@ -141,7 +141,7 @@ public class SolutionOptim{
 		logger.debug("groupes: "+Arrays.toString(ind));
 
 		if (lastPattern != null) {
-			s = processPatternBackgroundBackup(lastPattern, saveS, s);
+			s = processPatternBackgroundBackup(lastPattern, saveU, s);
 			bestSolution.add(s);
 			bestSolution.add(processPatternDraw(lastPattern, s));
 		}
@@ -195,7 +195,7 @@ public class SolutionOptim{
 				for (List<Integer[]> pl : pattern) {
 					for (Integer[] p : pl) {
 						if (p[0] != null) {
-							s = processPatternBackgroundBackup(p[0], saveS, s);
+							s = processPatternBackgroundBackup(p[0], saveU, s);
 							testSolution.add(s);
 						}
 						if (p[1] != null) {
@@ -205,7 +205,7 @@ public class SolutionOptim{
 				}
 
 				if (lastPattern != null) {
-					s = processPatternBackgroundBackup(lastPattern, saveS, s);
+					s = processPatternBackgroundBackup(lastPattern, saveU, s);
 					testSolution.add(s);
 					testSolution.add(processPatternDraw(lastPattern, s));
 				}
@@ -285,7 +285,7 @@ public class SolutionOptim{
 		arr[j] = t;
 	}
 
-	public List<Snippet> OptimizeRandom(List<List<Integer[]>> pattern, Integer lastPattern, boolean saveS) throws Exception {
+	public List<Snippet> OptimizeRandom(List<List<Integer[]>> pattern, Integer lastPattern, boolean saveU) throws Exception {
 
 		saveState(regSetSave, regValSave);
 
@@ -302,7 +302,7 @@ public class SolutionOptim{
 		for (List<Integer[]> pl : pattern) {
 			for (Integer[] p : pl) {
 				if (p[0] != null) {
-					s = processPatternBackgroundBackup(p[0], saveS, s);
+					s = processPatternBackgroundBackup(p[0], saveU, s);
 					bestSolution.add(s);
 				}
 				if (p[1] != null) {
@@ -312,7 +312,7 @@ public class SolutionOptim{
 		}
 
 		if (lastPattern != null) {
-			s = processPatternBackgroundBackup(lastPattern, saveS, s);
+			s = processPatternBackgroundBackup(lastPattern, saveU, s);
 			bestSolution.add(s);
 			bestSolution.add(processPatternDraw(lastPattern, s));
 		}
@@ -354,7 +354,7 @@ public class SolutionOptim{
 				Collections.swap(pattern, a, b);
 			}
 
-			// V�rification des contraintes
+			// Vérification des contraintes
 			for (List<Integer[]> pl : pattern) {
 				for (Integer[] p : pl) {
 					if (p[0] != null) {
@@ -375,7 +375,7 @@ public class SolutionOptim{
 				for (List<Integer[]> pl : pattern) {
 					for (Integer[] p : pl) {
 						if (p[0] != null) {
-							s = processPatternBackgroundBackup(p[0], saveS, s);
+							s = processPatternBackgroundBackup(p[0], saveU, s);
 							testSolution.add(s);
 						}
 						if (p[1] != null) {
@@ -385,18 +385,18 @@ public class SolutionOptim{
 				}
 
 				if (lastPattern != null) {
-					s = processPatternBackgroundBackup(lastPattern, saveS, s);
+					s = processPatternBackgroundBackup(lastPattern, saveU, s);
 					testSolution.add(s);
 					testSolution.add(processPatternDraw(lastPattern, s));
 				}
 
-				// flush du pr�c�dent pattern et purge des registres
+				// flush du précédent pattern et purge des registres
 				for (int i = regBBSet.length-1; i >= 0; i--) {
 					if (regBBSet[i]) {
 						s.addRegisterPSH(i);
 
-						// Pour chaque registre sauvegard� dans les donn�es du fond
-						// On enregistre l'id du registre et l'offset associ�
+						// Pour chaque registre sauvegardé dans les données du fond
+						// On enregistre l'id du registre et l'offset associé
 						// dans le cas d'un stack blast, on enregistre un index null
 						regE.add(i);
 						offsetE.add(offsetBBSet[i]);
@@ -424,14 +424,14 @@ public class SolutionOptim{
 					offsetEBest.addAll(offsetE);
 					saveState(regSetBest, regValBest);
 				} else {
-					// Meilleurs r�sultats si ligne suivante comment�e
+					// Meilleurs résultats si ligne suivante commentée
 					// Collections.swap(pattern, a, b);
 				}
 
 				testSolution.clear();
 				restoreState();
 			} else {
-				// Meilleurs r�sultats si ligne suivante comment�e
+				// Meilleurs résultats si ligne suivante commentée
 				// Collections.swap(pattern, a, b);
 			}
 
@@ -461,10 +461,10 @@ public class SolutionOptim{
 		List<List<Integer[]>> patterns = new ArrayList<List<Integer[]>>();
 		Integer lastPattern;
 
-		lastLeas = Integer.MAX_VALUE;	
+		lastLeau = Integer.MAX_VALUE;	
 		int currentNode = 0;
-		boolean saveS;
-		sizeSaveS = 0;
+		boolean saveU;
+		sizesaveU = 0;
 
 		int[] ind;
 		HashMap<Integer, Integer> hm = new HashMap<Integer, Integer>();
@@ -473,8 +473,8 @@ public class SolutionOptim{
 			// Parcours de tous les patterns
 			int i = 0;
 
-			// Au début de l'image on sauvegarde S même s'il n'y a pas de LEAS
-			saveS = true;
+			// Au début de l'image on sauvegarde U même s'il n'y a pas de LEAU
+			saveU = true;
 			Integer hash;
 
 			while (i < solution.patterns.size()) {
@@ -487,16 +487,16 @@ public class SolutionOptim{
 				Integer value1 = null, value2 = null, value3 = null, value4 = null;
 				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
 
-					// Ecriture du LEAS				
-					if (currentNode != lastLeas // le noeud courant est diff�rent de celui du dernier LEAS
-							&& solution.computedLeas.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAS
-							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
-						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
+					// Ecriture du LEAU				
+					if (currentNode != lastLeau // le noeud courant est différent de celui du dernier LEAU
+							&& solution.computedLeau.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAU
+							&& solution.computedLeau.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAU avec offset de 0
+						asmCode.add("\tLEAU "+solution.computedLeau.get(solution.computedNodes.get(i))+",U");
 						asmCode.add("");
-						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeas.get(solution.computedNodes.get(i)));
-						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeas.get(solution.computedNodes.get(i)));
-						lastLeas = solution.computedNodes.get(i);
-						saveS = true; // On enregistre le fait qu'un LEAS a �t� produit pour ce noeud
+						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeau.get(solution.computedNodes.get(i)));
+						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeau.get(solution.computedNodes.get(i)));
+						lastLeau = solution.computedNodes.get(i);
+						saveU = true; // On enregistre le fait qu'un LEAU a été produit pour ce noeud
 					}
 
 					// Parcours des patterns et assignation d'un groupe
@@ -520,7 +520,7 @@ public class SolutionOptim{
 
 					} else if (!solution.patterns.get(i).useIndexedAddressing()) {
 						// Le stack blast doit être positionné en fin de noeud pour être exécuté en début de rétablissement de fond
-						// en particulier il doit être joué juste après le premier PULU ...,S car le PSHS va décaler le pointeur S
+						// en particulier il doit être joué juste après le premier PULS ...,U car le PSHU va décaler le pointeur U
 						// et le positonner correctement pour les accès mémoire indexées.
 						// Si on veut le positionner ailleurs il faut recalculer les offsets : c'est réalisable ... mais risque d'être long à coder
 						lastPattern = i;
@@ -581,15 +581,15 @@ public class SolutionOptim{
 
 				// Optimisation combinatoire
 				if (ind.length < 10) {
-					bestSolution = OptimizeUFactorial(patterns, lastPattern, saveS, ind);
+					bestSolution = OptimizeUFactorial(patterns, lastPattern, saveU, ind);
 				} else {
-					bestSolution = OptimizeRandom(patterns, lastPattern, saveS);
+					bestSolution = OptimizeRandom(patterns, lastPattern, saveU);
 				}	
 
-				// Enrichissement de la solution avec le positionnement de la sauvegarde du S
-				Pattern.placeS(saveS, bestSolution, regEBest, offsetEBest);
-				if (saveS)
-					sizeSaveS += 2;
+				// Enrichissement de la solution avec le positionnement de la sauvegarde du U
+				Pattern.placeU(saveU, bestSolution, regEBest, offsetEBest);
+				if (saveU)
+					sizesaveU += 2;
 
 				// Execution de la solution optimisée
 				for (Snippet s : bestSolution) {
@@ -608,14 +608,14 @@ public class SolutionOptim{
 				logger.debug("CyclesE: "+asmECodeCycles);
 			}
 
-			saveS = false;
+			saveU = false;
 
 		} catch (Exception e) {
 			logger.fatal("", e);
 		}
 	}
 
-	public Snippet processPatternBackgroundBackup(int id, boolean saveS, Snippet lastSnippet) throws Exception {
+	public Snippet processPatternBackgroundBackup(int id, boolean saveU, Snippet lastSnippet) throws Exception {
 
 		List<Integer> selectedRegPUL = new ArrayList<Integer>();
 		List<Integer> selectedRegPSH = new ArrayList<Integer>();
@@ -962,7 +962,7 @@ public class SolutionOptim{
 		for (Pattern pattern : solution.patterns) {
 			size += pattern.getNbBytes();
 		}
-		size += sizeSaveS;
+		size += sizesaveU;
 
 		return size;
 	}

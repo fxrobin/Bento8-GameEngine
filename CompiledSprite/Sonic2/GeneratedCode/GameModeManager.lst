@@ -1,0 +1,1003 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : .\Sonic2\GeneratedCode\GameModeManager.asm
+ * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
+ * Contenu :
+ *     Main     0:GAMEMODE.ASM 1579
+ *     Include  0:CONSTANT.ASM 5657
+ *     Include  0:GLOBALS.ASM  4639
+ *     Include  0:GMLOADER.ASM 2210
+ *     Include  0:GMDATA.ASM   2320
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+    105                                   INCLUD CONSTANT
+    106                           * --------------------------------------->>
+    107                           * Constants
+    108                           *
+    109                           * Naming convention
+    110                           * -----------------
+    111                           * - lower case
+    112                           * - underscore-separated names
+    113                           *
+    114                           * --------------------------------------->>
+    115
+    116                           * =======================================>>
+    117                           * TO8 Registers
+    118                           * =======================================>>
+    119
+    120                  6049     dk_lecteur                    equ $6049
+    121                  604A     dk_piste                      equ $604A
+    122                  604B     dk_pisteL                     equ $604B
+    123                  604C     dk_secteur                    equ $604C
+    124                  604F     dk_destination                equ $604F
+    125
+    126                           * =======================================>>
+    127                           * Display Constants
+    128                           * =======================================>>
+    129
+    130                  00A0     screen_width                  equ 160 ; s>>
+    131                  001C     screen_top                    equ 28 ; in>>
+    132                  00E4     screen_bottom                 equ 200+28 >>
+    133                  0008     nb_priority_levels            equ 8   ; n>>
+    134
+    135                           * =======================================>>
+    136                           * Physics Constants
+    137                           * =======================================>>
+    138
+    139                  0038     gravity                       equ $38 ; G>>
+    140
+    141                           * =======================================>>
+    142                           * Animation Constants
+    143                           * =======================================>>
+    144
+    145                  00FF     _resetAnim                    equ $FF
+    146                  00FE     _goBackNFrames                equ $FE
+    147                  00FD     _goToAnimation                equ $FD
+    148                  00FC     _nextRoutine                  equ $FC
+    149                  00FB     _resetAnimAndSubRoutine       equ $FB
+    150                  00FA     _nextSubRoutine               equ $FA
+    151
+    152                           * =======================================>>
+    153                           * Images Constants
+    154                           * =======================================>>
+    155
+    156                  0004     image_x_size                  equ 4
+    157                  0005     image_y_size                  equ 5
+    158
+    159                  0004     image_subset_x1_offset        equ 4
+    160                  0005     image_subset_y1_offset        equ 5
+    161
+    162                  0000     page_draw_routine             equ 0
+    163                  0001     draw_routine                  equ 1
+    164                  0003     page_erase_routine            equ 3
+    165                  0004     erase_routine                 equ 4
+    166                  0006     erase_nb_cell                 equ 6
+    167
+    168                           * =======================================>>
+    169                           * Sound Constants
+    170                           * =======================================>>
+    171
+    172                  0000     pcm_page        equ 0
+    173                  0001     pcm_start_addr  equ 1
+    174                  0003     pcm_end_addr    equ 3
+    175                  0005     pcm_meta_size   equ 5
+    176
+    177                           * =======================================>>
+    178                           * Object Constants
+    179                           * =======================================>>
+    180
+    181                  0002     nb_reserved_objects           equ 2
+    182                  001B     nb_dynamic_objects            equ 27
+    183                  0003     nb_level_objects              equ 3
+    184                  0040     nb_objects                    equ 64 * ma>>
+    185
+    186                           * --------------------------------------->>
+    187                           * Object Status Table offsets
+    188                           * --------------------------------------->>
+    189
+    190                  005A     object_size                   equ 90 ; th>>
+    191                  005A     next_object                   equ object_>>
+    192
+    193                  0000     id                            equ 0      >>
+    194                  0001     subtype                       equ 1      >>
+    195                  0002     render_flags                  equ 2
+    196
+    197                           * --- render_flags bitfield variables --->>
+    198                  0001     render_xmirror_mask           equ $01 ; (>>
+    199                  0002     render_ymirror_mask           equ $02 ; (>>
+    200                  0004     render_overlay_mask           equ $04 ; (>>
+    201                  0008     render_motionless_mask        equ $08 ; (>>
+    202                  0010     render_playfieldcoord_mask    equ $10 ; (>>
+    203                  0020     render_hide_mask              equ $20 ; (>>
+    204                  0040     render_todelete_mask          equ $40 ; (>>
+    205                  0080     render_free3_mask             equ $80 ; (>>
+    206                            
+    207                  0003     priority                      equ 3      >>
+    208                  0004     anim                          equ 4  ; an>>
+    209                  0006     prev_anim                     equ 6  ; an>>
+    210                  0008     anim_frame                    equ 8      >>
+    211                  0009     anim_frame_duration           equ 9      >>
+    212                  000A     image_set                     equ 10 ; an>>
+    213                  000C     x_pos                         equ 12 ; an>>
+    214                  000E     x_sub                         equ 14     >>
+    215                  000F     y_pos                         equ 15 ; an>>
+    216                  0011     y_sub                         equ 17     >>
+    217                  0012     xy_pixel                      equ 18     >>
+    218                  0012     x_pixel                       equ 18     >>
+    219                  0013     y_pixel                       equ 19     >>
+    220                  0014     x_vel                         equ 20 ; an>>
+    221                  0016     y_vel                         equ 22 ; an>>
+    222                  0018     routine                       equ 24     >>
+    223                  0019     routine_secondary             equ 25     >>
+    224                  001A     status                        equ 26
+    225
+    226                           * --- status bitfield variables for objec>>
+    227                  0001     status_x_orientation          equ   $01 ;>>
+    228                  0002     status_y_orientation          equ   $02 ;>>
+    229                  0004     status_bit2                   equ   $04 ;>>
+    230                  0008     status_mainchar_standing      equ   $08 ;>>
+    231                  0010     status_sidekick_standing      equ   $10 ;>>
+    232                  0020     status_mainchar_pushing       equ   $20 ;>>
+    233                  0040     status_sidekick_pushing       equ   $40 ;>>
+    234                  0080     status_bit7                   equ   $80 ;>>
+    235
+    236                           * --- status bitfield variables for Main >>
+    237                  0002     status_inair                  equ   $02 ;>>
+    238                  0004     status_jumporroll             equ   $04 ;>>
+    239                  0008     status_norgroundnorfall       equ   $08 ;>>
+    240                  0010     status_jumpingafterrolling    equ   $10 ;>>
+    241                  0020     status_pushing                equ   $20 ;>>
+    242                  0040     status_underwater             equ   $40 ;>>
+    243
+    244                  001B     ext_variables                 equ 27 ; to>>
+    245
+    246                           * --------------------------------------->>
+    247                           * reserved variables (engine)
+    248
+    249                  0029     rsv_render_flags              equ 41
+    250
+    251                           * --- rsv_render_flags bitfield variables>>
+    252                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
+    253                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
+    254                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
+    255                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
+    256
+    257                  002A     rsv_prev_anim                 equ 42 ; an>>
+    258                           *rsv_image_set                equ 44 ; an>>
+    259                  002E     rsv_image_subset              equ 46 ; an>>
+    260                  0030     rsv_mapping_frame             equ 48 ; an>>
+    261                  0032     rsv_xy1_pixel                 equ 50     >>
+    262                  0032     rsv_x1_pixel                  equ 50     >>
+    263                  0033     rsv_y1_pixel                  equ 51     >>
+    264                  0034     rsv_xy2_pixel                 equ 52     >>
+    265                  0034     rsv_x2_pixel                  equ 52     >>
+    266                  0035     rsv_y2_pixel                  equ 53     >>
+    267
+    268                           * --------------------------------------->>
+    269                           * reserved variables (engine) - buffer sp>>
+    270
+    271                  0036     rsv_buffer_0                  equ 54 ; St>>
+    272                  0036     rsv_priority_0                equ 54 ; in>>
+    273                  0037     rsv_priority_prev_obj_0       equ 55 ; an>>
+    274                  0039     rsv_priority_next_obj_0       equ 57 ; an>>
+    275                           *rsv_prev_image_subset_0       equ 59 ; a>>
+    276                  003D     rsv_prev_mapping_frame_0      equ 61 ; an>>
+    277                  003F     rsv_bgdata_0                  equ 63 ; an>>
+    278                  0041     rsv_prev_xy_pixel_0           equ 65 ;
+    279                  0041     rsv_prev_x_pixel_0            equ 65 ; pr>>
+    280                  0042     rsv_prev_y_pixel_0            equ 66 ; pr>>
+    281                  0043     rsv_prev_xy1_pixel_0          equ 67 ;
+    282                  0043     rsv_prev_x1_pixel_0           equ 67 ; pr>>
+    283                  0044     rsv_prev_y1_pixel_0           equ 68 ; pr>>
+    284                  0045     rsv_prev_xy2_pixel_0          equ 69 ;
+    285                  0045     rsv_prev_x2_pixel_0           equ 69 ; pr>>
+    286                  0046     rsv_prev_y2_pixel_0           equ 70 ; pr>>
+    287                  0047     rsv_prev_render_flags_0       equ 71 ;
+    288                           * --- rsv_prev_render_flags_0 bitfield va>>
+    289                  0001     rsv_prev_render_overlay_mask  equ $01 ; (>>
+    290                  0080     rsv_prev_render_onscreen_mask equ $80 ; (>>
+    291
+    292                  0048     rsv_buffer_1                  equ 72 ; St>>
+    293                  0048     rsv_priority_1                equ 72 ; in>>
+    294                  0049     rsv_priority_prev_obj_1       equ 73 ; an>>
+    295                  004B     rsv_priority_next_obj_1       equ 75 ; an>>
+    296                           *rsv_prev_image_subset_1       equ 77 ; a>>
+    297                  004F     rsv_prev_mapping_frame_1      equ 79 ; an>>
+    298                  0051     rsv_bgdata_1                  equ 81 ; an>>
+    299                  0053     rsv_prev_xy_pixel_1           equ 83 ;
+    300                  0053     rsv_prev_x_pixel_1            equ 83 ; pr>>
+    301                  0054     rsv_prev_y_pixel_1            equ 84 ; pr>>
+    302                  0055     rsv_prev_xy1_pixel_1          equ 85 ;
+    303                  0055     rsv_prev_x1_pixel_1           equ 85 ; pr>>
+    304                  0056     rsv_prev_y1_pixel_1           equ 86 ; pr>>
+    305                  0057     rsv_prev_xy2_pixel_1          equ 87 ;
+    306                  0057     rsv_prev_x2_pixel_1           equ 87 ; pr>>
+    307                  0058     rsv_prev_y2_pixel_1           equ 88 ; pr>>
+    308                  0059     rsv_prev_render_flags_1       equ 89 ;
+    309
+    310                  0000     buf_priority                  equ 0  ; of>>
+    311                  0001     buf_priority_prev_obj         equ 1  ;
+    312                  0003     buf_priority_next_obj         equ 3  ;
+    313                           *buf_prev_image_subset         equ 5  ;
+    314                  0007     buf_prev_mapping_frame        equ 7  ;
+    315                  0009     buf_bgdata                    equ 9  ;
+    316                  000B     buf_prev_xy_pixel             equ 11 ;
+    317                  000B     buf_prev_x_pixel              equ 11 ;
+    318                  000C     buf_prev_y_pixel              equ 12 ;
+    319                  000D     buf_prev_xy1_pixel            equ 13 ;
+    320                  000D     buf_prev_x1_pixel             equ 13 ;
+    321                  000E     buf_prev_y1_pixel             equ 14 ;
+    322                  000F     buf_prev_xy2_pixel            equ 15 ;
+    323                  000F     buf_prev_x2_pixel             equ 15 ;
+    324                  0010     buf_prev_y2_pixel             equ 16 ;
+    325                  0011     buf_prev_render_flags         equ 17 ;
+    326
+    327                                   INCLUD GLOBALS
+    328                           * Generated Code
+    329
+    330                  414F     GameModeLoader equ $414F
+    331                  41C7     current_game_mode_data equ $41C7
+    332                  0001     ObjID_SEGA equ 1
+    333                  0002     ObjID_PaletteHandler equ 2
+    334                  0003     ObjID_TitleScreen equ 3
+    335                  6730     Object_RAM equ $6730
+    336                  7289     screen_border_color equ $7289
+    337                  72A6     Vint_runcount equ $72A6
+    338                  0001     c1_button_up_mask equ $0001
+    339                  0002     c1_button_down_mask equ $0002
+    340                  0004     c1_button_left_mask equ $0004
+    341                  0008     c1_button_right_mask equ $0008
+    342                  0010     c2_button_up_mask equ $0010
+    343                  0020     c2_button_down_mask equ $0020
+    344                  0040     c2_button_left_mask equ $0040
+    345                  0080     c2_button_right_mask equ $0080
+    346                  0040     c1_button_A_mask equ $0040
+    347                  0080     c2_button_A_mask equ $0080
+    348                  72AA     Joypads_Held equ $72AA
+    349                  72AA     Dpad_Held equ $72AA
+    350                  72AB     Fire_Held equ $72AB
+    351                  72AC     Joypads_Press equ $72AC
+    352                  72AC     Dpad_Press equ $72AC
+    353                  72AD     Fire_Press equ $72AD
+    354                  7317     MarkObjGone equ $7317
+    355                  7319     DisplaySprite_x equ $7319
+    356                  731F     DisplaySprite equ $731F
+    357                  7398     AnimateSprite equ $7398
+    358                  745D     DeleteObject_x equ $745D
+    359                  7463     DeleteObject equ $7463
+    360                  7525     ClearObj equ $7525
+    361                  7D60     PlayPCM equ $7D60
+    362                  7DB2     PSGInit equ $7DB2
+    363                  7DC4     PSGPlayNoRepeat equ $7DC4
+    364                  7DF2     PSGStop equ $7DF2
+    365                  7E1B     PSGResume equ $7E1B
+    366                  7E66     PSGCancelLoop equ $7E66
+    367                  7E6A     PSGGetStatus equ $7E6A
+    368                  7E6E     PSGSetMusicVolumeAttenuation equ $7E6E
+    369                  7ECD     PSGSilenceChannels equ $7ECD
+    370                  7EE2     PSGRestoreVolumes equ $7EE2
+    371                  7F56     PSGSFXPlayLoop equ $7F56
+    372                  7FA2     PSGSFXStop equ $7FA2
+    373                  8018     PSGSFXCancelLoop equ $8018
+    374                  801C     PSGSFXGetStatus equ $801C
+    375                  8021     PSGFrame equ $8021
+    376                  80DA     _sendVolume2PSG equ $80DA
+    377                  812D     PSGSFXFrame equ $812D
+    378                  818A     _SFXsetLoopPoint equ $818A
+    379                  81D6     Img_star_4 equ $81D6
+    380                  81E9     Img_star_3 equ $81E9
+    381                  81FC     Img_sonicHand equ $81FC
+    382                  8212     Img_star_2 equ $8212
+    383                  822C     Img_star_1 equ $822C
+    384                  8246     Img_emblemBack08 equ $8246
+    385                  8255     Img_emblemBack07 equ $8255
+    386                  8264     Img_emblemBack09 equ $8264
+    387                  8273     Img_emblemBack04 equ $8273
+    388                  8282     Img_emblemBack03 equ $8282
+    389                  8291     Img_emblemBack06 equ $8291
+    390                  82A0     Img_emblemBack05 equ $82A0
+    391                  82AF     Img_tails_5 equ $82AF
+    392                  82C5     Img_tails_4 equ $82C5
+    393                  82D8     Img_tails_3 equ $82D8
+    394                  82EB     Img_tails_2 equ $82EB
+    395                  82FE     Img_tails_1 equ $82FE
+    396                  8311     Img_tailsHand equ $8311
+    397                  8327     Img_sonic_1 equ $8327
+    398                  833A     Img_sonic_2 equ $833A
+    399                  834D     Img_emblemBack02 equ $834D
+    400                  835C     Img_emblemBack01 equ $835C
+    401                  836B     Img_sonic_5 equ $836B
+    402                  8381     Img_sonic_3 equ $8381
+    403                  8394     Img_sonic_4 equ $8394
+    404                  83A7     Img_emblemFront07 equ $83A7
+    405                  83B6     Img_emblemFront08 equ $83B6
+    406                  83C5     Img_emblemFront05 equ $83C5
+    407                  83D4     Img_emblemFront06 equ $83D4
+    408                  83E3     Img_emblemFront03 equ $83E3
+    409                  83F2     Img_emblemFront04 equ $83F2
+    410                  8401     Img_emblemFront01 equ $8401
+    411                  8410     Img_emblemFront02 equ $8410
+    412                  8420     Ani_smallStar equ $8420
+    413                  8426     Ani_largeStar equ $8426
+    414                  8432     Ani_tails equ $8432
+    415                  843E     Ani_sonic equ $843E
+    416                  6730     Object_RAM equ $6730
+    417                  7289     screen_border_color equ $7289
+    418                  72A6     Vint_runcount equ $72A6
+    419                  0001     c1_button_up_mask equ $0001
+    420                  0002     c1_button_down_mask equ $0002
+    421                  0004     c1_button_left_mask equ $0004
+    422                  0008     c1_button_right_mask equ $0008
+    423                  0010     c2_button_up_mask equ $0010
+    424                  0020     c2_button_down_mask equ $0020
+    425                  0040     c2_button_left_mask equ $0040
+    426                  0080     c2_button_right_mask equ $0080
+    427                  0040     c1_button_A_mask equ $0040
+    428                  0080     c2_button_A_mask equ $0080
+    429                  72AA     Joypads_Held equ $72AA
+    430                  72AA     Dpad_Held equ $72AA
+    431                  72AB     Fire_Held equ $72AB
+    432                  72AC     Joypads_Press equ $72AC
+    433                  72AC     Dpad_Press equ $72AC
+    434                  72AD     Fire_Press equ $72AD
+    435                  7317     MarkObjGone equ $7317
+    436                  7319     DisplaySprite_x equ $7319
+    437                  731F     DisplaySprite equ $731F
+    438                  7398     AnimateSprite equ $7398
+    439                  745D     DeleteObject_x equ $745D
+    440                  7463     DeleteObject equ $7463
+    441                  7525     ClearObj equ $7525
+    442                  7D60     PlayPCM equ $7D60
+    443                  7DB2     PSGInit equ $7DB2
+    444                  7DC4     PSGPlayNoRepeat equ $7DC4
+    445                  7DF2     PSGStop equ $7DF2
+    446                  7E1B     PSGResume equ $7E1B
+    447                  7E66     PSGCancelLoop equ $7E66
+    448                  7E6A     PSGGetStatus equ $7E6A
+    449                  7E6E     PSGSetMusicVolumeAttenuation equ $7E6E
+    450                  7ECD     PSGSilenceChannels equ $7ECD
+    451                  7EE2     PSGRestoreVolumes equ $7EE2
+    452                  7F56     PSGSFXPlayLoop equ $7F56
+    453                  7FA2     PSGSFXStop equ $7FA2
+    454                  8018     PSGSFXCancelLoop equ $8018
+    455                  801C     PSGSFXGetStatus equ $801C
+    456                  8021     PSGFrame equ $8021
+    457                  80DA     _sendVolume2PSG equ $80DA
+    458                  812D     PSGSFXFrame equ $812D
+    459                  818A     _SFXsetLoopPoint equ $818A
+    460                  81D6     Img_star_4 equ $81D6
+    461                  81E9     Img_star_3 equ $81E9
+    462                  81FC     Img_sonicHand equ $81FC
+    463                  8212     Img_star_2 equ $8212
+    464                  822C     Img_star_1 equ $822C
+    465                  8246     Img_emblemBack08 equ $8246
+    466                  8255     Img_emblemBack07 equ $8255
+    467                  8264     Img_emblemBack09 equ $8264
+    468                  8273     Img_emblemBack04 equ $8273
+    469                  8282     Img_emblemBack03 equ $8282
+    470                  8291     Img_emblemBack06 equ $8291
+    471                  82A0     Img_emblemBack05 equ $82A0
+    472                  82AF     Img_tails_5 equ $82AF
+    473                  82C5     Img_tails_4 equ $82C5
+    474                  82D8     Img_tails_3 equ $82D8
+    475                  82EB     Img_tails_2 equ $82EB
+    476                  82FE     Img_tails_1 equ $82FE
+    477                  8311     Img_tailsHand equ $8311
+    478                  8327     Img_sonic_1 equ $8327
+    479                  833A     Img_sonic_2 equ $833A
+    480                  834D     Img_emblemBack02 equ $834D
+    481                  835C     Img_emblemBack01 equ $835C
+    482                  836B     Img_sonic_5 equ $836B
+    483                  8381     Img_sonic_3 equ $8381
+    484                  8394     Img_sonic_4 equ $8394
+    485                  83A7     Img_emblemFront07 equ $83A7
+    486                  83B6     Img_emblemFront08 equ $83B6
+    487                  83C5     Img_emblemFront05 equ $83C5
+    488                  83D4     Img_emblemFront06 equ $83D4
+    489                  83E3     Img_emblemFront03 equ $83E3
+    490                  83F2     Img_emblemFront04 equ $83F2
+    491                  8401     Img_emblemFront01 equ $8401
+    492                  8410     Img_emblemFront02 equ $8410
+    493                  8420     Ani_smallStar equ $8420
+    494                  8426     Ani_largeStar equ $8426
+    495                  8432     Ani_tails equ $8432
+    496                  843E     Ani_sonic equ $843E
+    497                  8747     Pcm_SEGA equ $8747
+    498                  8752     Psg_TitleScreen equ $8752
+    499                  87C9     Pal_TitleScreen equ $87C9
+    500                  87EA     Ptr_palette equ $87EA
+    501                  87EC     Black_palette equ $87EC
+    502                  880C     White_palette equ $880C
+    503
+     35        A000                       org $A000
+     36
+     37        A000               GameModeManager
+     38
+     39                           * Positionnement de la page 3 a l'ecran
+     40                           *****************************************>>
+     41        A000               WaitVBL
+     42  7     A000 7D   E7E7             tst   $E7E7                    * >>
+     43  3     A003 2A   FB               bpl   WaitVBL                  * >>
+     44        A005               WaitVBL_01
+     45  7     A005 7D   E7E7             tst   $E7E7                    * >>
+     46  3     A008 2B   FB               bmi   WaitVBL_01               * >>
+     47        A00A               SwapVideoPage
+     48  2     A00A C6   C0               ldb   #$C0                     * >>
+     49  5     A00C F7   E7DD             stb   $E7DD                    * >>
+     50                            
+     51                           * Positionnement de la page 2 en zone 000>>
+     52                           *****************************************>>
+     53  2     A00F C6   62               ldb   #$62                     * >>
+     54  5     A011 F7   E7E6             stb   $E7E6                    * >>
+     55                            
+     56                           * Positionnement de la page 0a en zone 40>>
+     57                           *****************************************>>
+     58  5     A014 F6   E7C3             ldb   $E7C3                    * >>
+     59  2     A017 C4   FE               andb  #$FE                     * >>
+     60  5     A019 F7   E7C3             stb   $E7C3                    * >>
+     61
+     62                           * Copie en page 0a des donnees du mode a >>
+     63                           * les groupes de 7 octets sont recopiees >>
+     64                           * si on souhaite implanter le debut du mo>>
+     65                           * il faut le charger en dernier (car ecra>>
+     66                           * la fin des donnees est marquee par un o>>
+     67                           *****************************************>>
+     68  7     A01C 10FF A03D             sts   CopyCode3+2              ; >>
+     69  6+1   A020 10EE 5E               lds   -2,u                     ; >>
+     70  2     A023 86   FF               lda   #$FF                     ; >>
+     71  5+1   A025 34   02               pshs  a                        ; >>
+     72        A027               CopyData1
+     73  5+7   A027 37   3E               pulu  d,x,y,dp                 ; >>
+     74  5+7   A029 34   3E               pshs  d,x,y,dp                 ; >>
+     75        A02B               CopyData2
+     76  2     A02B 4D                    tsta                           ; >>
+     77  3     A02C 2A   F9               bpl   CopyData1                ; >>
+     78
+     79                           * Copie en page 0a du code Game Mode Engi>>
+     80                           * les groupes de 7 octets sont recopiees >>
+     81                           * les donnees a l'avance on gagne un leas>>
+     82                           *****************************************>>
+     83  3     A02E CE   A042             ldu   #GameModeLoaderBin       * >>
+     84        A031               CopyCode1
+     85  5+7   A031 37   3E               pulu  d,x,y,dp                 ; >>
+     86  5+7   A033 34   3E               pshs  d,x,y,dp                 ; >>
+     87        A035               CopyCode2
+     88  5     A035 118C 4000             cmps  #$4000                   ; >>
+     89  3     A039 26   F6               bne   CopyCode1                ; >>
+     90        A03B               CopyCode3
+     91  4     A03B 10CE 0000             lds   #0                       ; >>
+     92                            
+     93                           * Execution du Game Mode Engine en page 0>>
+     94                           *****************************************>>
+     95  4     A03F 7E   414F             jmp   GameModeLoader
+     96
+     97                           * =======================================>>
+     98                           * GameModeEngine
+     99                           * =======================================>>
+    100        A042               GameModeLoaderBin
+    504                                   INCLUD GMLOADER
+    505
+    506        A042 00 35 40 20           fcb   $00,$35,$40,$20,$8F,$00,$00>>
+               A046 8F 00 00
+    507        A049 86 00 B7 E7           fcb   $86,$00,$B7,$E7,$E5,$BD,$40>>
+               A04D E5 BD 40
+    508        A050 C9 01 00 33           fcb   $C9,$01,$00,$33,$C9,$FE,$00>>
+               A054 C9 FE 00
+    509        A057 DB B6 41 B8           fcb   $DB,$B6,$41,$B8,$27,$08,$33>>
+               A05B 27 08 33
+    510        A05E DE 4F 11 83           fcb   $DE,$4F,$11,$83,$00,$00,$23>>
+               A062 00 00 23
+    511        A065 04 0F 4B 0C           fcb   $04,$0F,$4B,$0C,$49,$0C,$4F>>
+               A069 49 0C 4F
+    512        A06C 0C 4B 96 4B           fcb   $0C,$4B,$96,$4B,$81,$4F,$23>>
+               A070 81 4F 23
+    513        A073 10 23 10 86           fcb   $10,$23,$10,$86,$01,$97,$4C>>
+               A077 01 97 4C
+    514        A07A E8 2A 0C 4C           fcb   $E8,$2A,$0C,$4C,$96,$4C,$81>>
+               A07E 96 4C 81
+    515        A081 34 40 86 02           fcb   $34,$40,$86,$02,$97,$48,$BD>>
+               A085 97 48 BD
+    516        A088 26 B7 41 B8           fcb   $26,$B7,$41,$B8,$F7,$41,$BA>>
+               A08C F7 41 BA
+    517        A08F DD 4A C6 00           fcb   $DD,$4A,$C6,$00,$DD,$4F,$37>>
+               A093 DD 4F 37
+    518        A096 01 C4 7F 97           fcb   $01,$C4,$7F,$97,$49,$86,$00>>
+               A09A 49 86 00
+    519        A09D F7 41 A8 E6           fcb   $F7,$41,$A8,$E6,$C0,$1D,$84>>
+               A0A1 C0 1D 84
+    520        A0A4 9F FF 7E 61           fcb   $9F,$FF,$7E,$61,$00,$97,$4C>>
+               A0A8 00 97 4C
+    521        A0AB 8B EC C1 2A           fcb   $8B,$EC,$C1,$2A,$07,$10,$CE>>
+               A0AF 07 10 CE
+    522        A0B2 41 CE 34 40           fcb   $41,$CE,$34,$40,$86,$60,$1F>>
+               A0B6 86 60 1F
+    523        A0B9 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$CE>>
+               A0BD 00 00 CE
+    524        A0C0 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0C4 00 00 00
+    525        A0C7 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0CB 00 00 00
+    526        A0CE 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0D2 00 00 00
+    527        A0D5 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0D9 00 00 00
+    528        A0DC 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0E0 00 00 00
+    529        A0E3 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0E7 00 00 00
+    530        A0EA 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0EE 00 00 00
+    531        A0F1 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0F5 00 00 00
+    532        A0F8 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A0FC 00 00 00
+    533        A0FF 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A103 00 00 00
+    534        A106 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A10A 00 00 00
+    535        A10D 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A111 00 00 00
+    536        A114 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A118 00 00 00
+    537        A11B 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A11F 00 00 00
+    538        A122 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A126 00 00 00
+    539        A129 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A12D 00 00 00
+    540        A130 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A134 00 00 00
+    541        A137 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A13B 00 00 00
+    542        A13E 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A142 00 00 00
+    543        A145 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A149 00 00 00
+    544        A14C 00 00 00 00           fcb   $00,$00,$00,$00,$00,$00,$00>>
+               A150 00 00 00
+    545        A153 04 10 30 20           fcb   $04,$10,$30,$20,$00,$00,$00>>
+               A157 00 00 00
+    546        A15A 8D DC E3 01           fcb   $8D,$DC,$E3,$01,$39,$04,$02>>
+               A15E 39 04 02
+    547        A161 30 8D 00 0E           fcb   $30,$8D,$00,$0E,$3A,$58,$3A>>
+               A165 3A 58 3A
+    548        A168 2A F6 97 8D           fcb   $2A,$F6,$97,$8D,$EC,$E1,$39>>
+               A16C EC E1 39
+    549        A16F 27 FB 69 61           fcb   $27,$FB,$69,$61,$69,$E4,$5A>>
+               A173 69 E4 5A
+    550        A176 86 12 20 09           fcb   $86,$12,$20,$09,$A6,$C2,$46>>
+               A17A A6 C2 46
+    551        A17D FF E6 84 6F           fcb   $FF,$E6,$84,$6F,$E2,$6F,$E2>>
+               A181 E2 6F E2
+    552        A184 F4 20 B3 10           fcb   $F4,$20,$B3,$10,$AF,$66,$35>>
+               A188 AF 66 35
+    553        A18B 12 34 A7 A4           fcb   $12,$34,$A7,$A4,$30,$1F,$26>>
+               A18F 30 1F 26
+    554        A192 77 35 10 31           fcb   $77,$35,$10,$31,$3F,$A6,$A9>>
+               A196 3F A6 A9
+    555        A199 8D 1B EB 03           fcb   $8D,$1B,$EB,$03,$8D,$32,$DD>>
+               A19D 8D 32 DD
+    556        A1A0 10 83 00 03           fcb   $10,$83,$00,$03,$24,$01,$3A>>
+               A1A4 24 01 3A
+    557        A1A7 8D 44 34 06           fcb   $8D,$44,$34,$06,$30,$8C,$4B>>
+               A1AB 30 8C 4B
+    558        A1AE A2 30 1F 26           fcb   $A2,$30,$1F,$26,$F8,$20,$D9>>
+               A1B2 F8 20 D9
+    559        A1B5 8D 39 1F 01           fcb   $8D,$39,$1F,$01,$A6,$C2,$A7>>
+               A1B9 A6 C2 A7
+    560        A1BC C1 10 27 37           fcb   $C1,$10,$27,$37,$25,$0F,$5A>>
+               A1C0 25 0F 5A
+    561        A1C3 5C 8D 46 27           fcb   $5C,$8D,$46,$27,$F9,$C6,$00>>
+               A1C7 F9 C6 00
+    562        A1CA 26 15 D7 45           fcb   $26,$15,$D7,$45,$8C,$0C,$45>>
+               A1CE 8C 0C 45
+    563        A1D1 10 AE 66 C6           fcb   $10,$AE,$66,$C6,$01,$8D,$50>>
+               A1D5 01 8D 50
+    564        A1D8 35 06 5C C1           fcb   $35,$06,$5C,$C1,$34,$26,$DC>>
+               A1DC 34 26 DC
+    565        A1DF FA E6 E4 AF           fcb   $FA,$E6,$E4,$AF,$A1,$30,$8B>>
+               A1E3 A1 30 8B
+    566        A1E6 A0 53 69 E4           fcb   $A0,$53,$69,$E4,$49,$5C,$2B>>
+               A1EA 49 5C 2B
+    567        A1ED 00 01 C6 04           fcb   $00,$01,$C6,$04,$8D,$6D,$E7>>
+               A1F1 8D 6D E7
+    568        A1F4 34 06 C5 0F           fcb   $34,$06,$C5,$0F,$26,$03,$8E>>
+               A1F8 26 03 8E
+    569        A1FB 8D 00 A9 5F           fcb   $8D,$00,$A9,$5F,$D7,$8D,$4F>>
+               A1FF D7 8D 4F
+    570        A202 34 7F 1F 50           fcb   $34,$7F,$1F,$50,$1F,$8B,$31>>
+               A206 1F 8B 31
+    571
+    572                                   INCLUD GMDATA
+    573                           * Generated Code
+    574
+    575                           * structure: sector, nb sector, drive (bi>>
+    576        A209               gm_TITLESCR
+    577        A209 438F                  fdb   current_game_mode_data+456
+    578        A20B               gmboot * @globals
+    579        A20B 05 33 00 41           fcb   $05,$33,$00,$41,$0A,$DF,$F6>>
+               A20F 0A DF F6
+    580        A212 08 1B 03 E6           fcb   $08,$1B,$03,$E6,$09,$DF,$74>>
+               A216 09 DF 74
+    581        A219 03 01 05 1A           fcb   $03,$01,$05,$1A,$05,$DF,$9A>>
+               A21D 05 DF 9A
+    582        A220 10 00 05 F3           fcb   $10,$00,$05,$F3,$05,$DF,$83>>
+               A224 05 DF 83
+    583        A227 0D 01 06 16           fcb   $0D,$01,$06,$16,$05,$DE,$A2>>
+               A22B 05 DE A2
+    584        A22E 0E 00 06 8D           fcb   $0E,$00,$06,$8D,$05,$DC,$EF>>
+               A232 05 DC EF
+    585        A235 0E 01 06 41           fcb   $0E,$01,$06,$41,$05,$DC,$5A>>
+               A239 05 DC 5A
+    586        A23C 0F 00 06 99           fcb   $0F,$00,$06,$99,$05,$DB,$58>>
+               A240 05 DB 58
+    587        A243 0F 02 06 B3           fcb   $0F,$02,$06,$B3,$05,$D9,$29>>
+               A247 05 D9 29
+    588        A24A 01 03 07 6E           fcb   $01,$03,$07,$6E,$06,$DD,$45>>
+               A24E 06 DD 45
+    589        A251 04 01 07 7A           fcb   $04,$01,$07,$7A,$05,$DA,$FA>>
+               A255 05 DA FA
+    590        A258 05 00 07 E2           fcb   $05,$00,$07,$E2,$05,$D4,$E1>>
+               A25C 05 D4 E1
+    591        A25F 05 01 07 24           fcb   $05,$01,$07,$24,$05,$D4,$72>>
+               A263 05 D4 72
+    592        A266 06 00 07 8F           fcb   $06,$00,$07,$8F,$05,$D5,$80>>
+               A26A 05 D5 80
+    593        A26D 06 00 07 D1           fcb   $06,$00,$07,$D1,$05,$D5,$0F>>
+               A271 05 D5 0F
+    594        A274 06 01 07 1F           fcb   $06,$01,$07,$1F,$05,$D3,$CD>>
+               A278 05 D3 CD
+    595        A27B 07 00 07 5A           fcb   $07,$00,$07,$5A,$05,$D3,$7C>>
+               A27F 05 D3 7C
+    596        A282 07 00 07 AA           fcb   $07,$00,$07,$AA,$05,$D4,$44>>
+               A286 05 D4 44
+    597        A289 07 00 07 E5           fcb   $07,$00,$07,$E5,$05,$D3,$F1>>
+               A28D 05 D3 F1
+    598        A290 07 02 07 C9           fcb   $07,$02,$07,$C9,$05,$D3,$58>>
+               A294 05 D3 58
+    599        A297 09 02 07 7F           fcb   $09,$02,$07,$7F,$05,$CE,$CA>>
+               A29B 05 CE CA
+    600        A29E 0B 02 07 47           fcb   $0B,$02,$07,$47,$05,$CB,$30>>
+               A2A2 05 CB 30
+    601        A2A5 0D 01 07 68           fcb   $0D,$01,$07,$68,$05,$C7,$C1>>
+               A2A9 05 C7 C1
+    602        A2AC 0E 02 07 31           fcb   $0E,$02,$07,$31,$05,$C6,$24>>
+               A2B0 05 C6 24
+    603        A2B3 10 00 07 80           fcb   $10,$00,$07,$80,$05,$C2,$44>>
+               A2B7 05 C2 44
+    604        A2BA 10 02 07 0D           fcb   $10,$02,$07,$0D,$05,$C0,$87>>
+               A2BE 05 C0 87
+    605        A2C1 02 05 08 D8           fcb   $02,$05,$08,$D8,$07,$D0,$E2>>
+               A2C5 07 D0 E2
+    606        A2C8 07 07 08 E9           fcb   $07,$07,$08,$E9,$07,$DF,$CE>>
+               A2CC 07 DF CE
+    607        A2CF 0E 02 08 A4           fcb   $0E,$02,$08,$A4,$05,$BC,$CF>>
+               A2D3 05 BC CF
+    608        A2D6 10 07 08 43           fcb   $10,$07,$08,$43,$08,$DB,$C4>>
+               A2DA 08 DB C4
+    609        A2DD 07 01 09 F3           fcb   $07,$01,$09,$F3,$05,$B8,$58>>
+               A2E1 05 B8 58
+    610        A2E4 08 07 09 6A           fcb   $08,$07,$09,$6A,$08,$CD,$83>>
+               A2E8 08 CD 83
+    611        A2EB 0F 02 09 20           fcb   $0F,$02,$09,$20,$06,$D7,$F1>>
+               A2EF 06 D7 F1
+    612        A2F2 01 06 0A 10           fcb   $01,$06,$0A,$10,$07,$C6,$6D>>
+               A2F6 07 C6 6D
+    613        A2F9 07 01 0A 6F           fcb   $07,$01,$0A,$6F,$05,$B4,$19>>
+               A2FD 05 B4 19
+    614        A300 08 05 0A 55           fcb   $08,$05,$0A,$55,$07,$BA,$08>>
+               A304 07 BA 08
+    615        A307 0D 01 0A 6A           fcb   $0D,$01,$0A,$6A,$05,$B0,$68>>
+               A30B 05 B0 68
+    616        A30E 0E 01 0A 37           fcb   $0E,$01,$0A,$37,$05,$AA,$C2>>
+               A312 05 AA C2
+    617        A315 0F 01 0A 64           fcb   $0F,$01,$0A,$64,$05,$AC,$FA>>
+               A319 05 AC FA
+    618        A31C 10 00 0A EA           fcb   $10,$00,$0A,$EA,$05,$AB,$66>>
+               A320 05 AB 66
+    619        A323 10 04 0A 97           fcb   $10,$04,$0A,$97,$08,$BF,$25>>
+               A327 08 BF 25
+    620        A32A 04 01 0B 8C           fcb   $04,$01,$0B,$8C,$06,$D3,$86>>
+               A32E 06 D3 86
+    621        A331 05 05 0B D7           fcb   $05,$05,$0B,$D7,$08,$B0,$8A>>
+               A335 08 B0 8A
+    622        A338 0A 01 0B FE           fcb   $0A,$01,$0B,$FE,$06,$CF,$57>>
+               A33C 06 CF 57
+    623        A33F 0B 02 0B D2           fcb   $0B,$02,$0B,$D2,$05,$A9,$BD>>
+               A343 05 A9 BD
+    624        A346 0D 02 0B 9E           fcb   $0D,$02,$0B,$9E,$05,$A6,$1D>>
+               A34A 05 A6 1D
+    625        A34D 0F 04 0B AA           fcb   $0F,$04,$0B,$AA,$07,$AE,$94>>
+               A351 07 AE 94
+    626        A354 03 05 0C 2D           fcb   $03,$05,$0C,$2D,$09,$BD,$F6>>
+               A358 09 BD F6
+    627        A35B 08 01 0C 32           fcb   $08,$01,$0C,$32,$06,$CA,$AA>>
+               A35F 06 CA AA
+    628        A362 09 04 0C DC           fcb   $09,$04,$0C,$DC,$0B,$AF,$90>>
+               A366 0B AF 90
+    629        A369 0D 01 0C D3           fcb   $0D,$01,$0C,$D3,$06,$C6,$63>>
+               A36D 06 C6 63
+    630        A370 0E 05 0C 40           fcb   $0E,$05,$0C,$40,$09,$AE,$DF>>
+               A374 09 AE DF
+    631        A377 03 01 0D 41           fcb   $03,$01,$0D,$41,$06,$C1,$FF>>
+               A37B 06 C1 FF
+    632        A37E 04 00 0D FD           fcb   $04,$00,$0D,$FD,$05,$A2,$B7>>
+               A382 05 A2 B7
+    633        A385 04 03 0D 3E           fcb   $04,$03,$0D,$3E,$06,$BD,$CA>>
+               A389 06 BD CA
+    634        A38C 07 02 0D 72           fcb   $07,$02,$0D,$72,$06,$B9,$1F>>
+               A390 06 B9 1F
+    635        A393 09 02 0D 91           fcb   $09,$02,$0D,$91,$06,$B4,$58>>
+               A397 06 B4 58
+    636        A39A 0B 02 0D 4A           fcb   $0B,$02,$0D,$4A,$06,$B0,$1F>>
+               A39E 06 B0 1F
+    637        A3A1 0D 01 0D D9           fcb   $0D,$01,$0D,$D9,$06,$AC,$17>>
+               A3A5 06 AC 17
+    638        A3A8 0E 01 0D 5D           fcb   $0E,$01,$0D,$5D,$05,$A0,$B0>>
+               A3AC 05 A0 B0
+    639        A3AF 0F 01 0D D9           fcb   $0F,$01,$0D,$D9,$06,$A9,$00>>
+               A3B3 06 A9 00
+    640        A3B6 10 03 0D E0           fcb   $10,$03,$0D,$E0,$06,$A6,$08>>
+               A3BA 06 A6 08
+    641        A3BD 03 04 0E 03           fcb   $03,$04,$0E,$03,$07,$A5,$40>>
+               A3C1 07 A5 40
+    642        A3C4 07 0C 0E 1E           fcb   $07,$0C,$0E,$1E,$01,$88,$4C>>
+               A3C8 01 88 4C
+    643        A3CB FF                    fcb   $FF
+    103
+    104
+
+000000 Total Errors
+
+000246 Total Symbols
+     0x          Equ   0004 anim
+     0x          Equ   7398 AnimateSprite
+     0x          Equ   0008 anim_frame
+     0x          Equ   0009 anim_frame_duration
+     0x          Equ   8426 Ani_largeStar
+     0x          Equ   8420 Ani_smallStar
+     0x          Equ   843E Ani_sonic
+     0x          Equ   8432 Ani_tails
+     0x          Equ   87EC Black_palette
+     0x          Equ   0009 buf_bgdata
+     0x          Equ   0007 buf_prev_mapping_frame
+     0x          Equ   0011 buf_prev_render_flags
+     0x          Equ   000D buf_prev_x1_pixel
+     0x          Equ   000F buf_prev_x2_pixel
+     0x          Equ   000D buf_prev_xy1_pixel
+     0x          Equ   000F buf_prev_xy2_pixel
+     0x          Equ   000B buf_prev_xy_pixel
+     0x          Equ   000B buf_prev_x_pixel
+     0x          Equ   000E buf_prev_y1_pixel
+     0x          Equ   0010 buf_prev_y2_pixel
+     0x          Equ   000C buf_prev_y_pixel
+     0x          Equ   0000 buf_priority
+     0x          Equ   0003 buf_priority_next_obj
+     0x          Equ   0001 buf_priority_prev_obj
+     0x          Equ   0040 c1_button_A_mask
+     0x          Equ   0002 c1_button_down_mask
+     0x          Equ   0004 c1_button_left_mask
+     0x          Equ   0008 c1_button_right_mask
+     0x          Equ   0001 c1_button_up_mask
+     0x          Equ   0080 c2_button_A_mask
+     0x          Equ   0020 c2_button_down_mask
+     0x          Equ   0040 c2_button_left_mask
+     0x          Equ   0080 c2_button_right_mask
+     0x          Equ   0010 c2_button_up_mask
+     0x          Equ   7525 ClearObj
+     1x          Label A031 CopyCode1
+     0x          Label A035 CopyCode2
+     1x          Label A03B CopyCode3
+     1x          Label A027 CopyData1
+     0x          Label A02B CopyData2
+     1x          Equ   41C7 current_game_mode_data
+     0x          Equ   7463 DeleteObject
+     0x          Equ   745D DeleteObject_x
+     0x          Equ   731F DisplaySprite
+     0x          Equ   7319 DisplaySprite_x
+     0x          Equ   604F dk_destination
+     0x          Equ   6049 dk_lecteur
+     0x          Equ   604A dk_piste
+     0x          Equ   604B dk_pisteL
+     0x          Equ   604C dk_secteur
+     0x          Equ   72AA Dpad_Held
+     0x          Equ   72AC Dpad_Press
+     0x          Equ   0001 draw_routine
+     0x          Equ   0006 erase_nb_cell
+     0x          Equ   0004 erase_routine
+     0x          Equ   001B ext_variables
+     0x          Equ   72AB Fire_Held
+     0x          Equ   72AD Fire_Press
+     1x          Equ   414F GameModeLoader
+     1x          Label A042 GameModeLoaderBin
+     0x          Label A000 GameModeManager
+     0x          Label A20B gmboot
+     0x          Label A209 gm_TITLESCR
+     0x          Equ   0038 gravity
+     0x          Equ   0000 id
+     0x          Equ   000A image_set
+     0x          Equ   0004 image_subset_x1_offset
+     0x          Equ   0005 image_subset_y1_offset
+     0x          Equ   0004 image_x_size
+     0x          Equ   0005 image_y_size
+     0x          Equ   835C Img_emblemBack01
+     0x          Equ   834D Img_emblemBack02
+     0x          Equ   8282 Img_emblemBack03
+     0x          Equ   8273 Img_emblemBack04
+     0x          Equ   82A0 Img_emblemBack05
+     0x          Equ   8291 Img_emblemBack06
+     0x          Equ   8255 Img_emblemBack07
+     0x          Equ   8246 Img_emblemBack08
+     0x          Equ   8264 Img_emblemBack09
+     0x          Equ   8401 Img_emblemFront01
+     0x          Equ   8410 Img_emblemFront02
+     0x          Equ   83E3 Img_emblemFront03
+     0x          Equ   83F2 Img_emblemFront04
+     0x          Equ   83C5 Img_emblemFront05
+     0x          Equ   83D4 Img_emblemFront06
+     0x          Equ   83A7 Img_emblemFront07
+     0x          Equ   83B6 Img_emblemFront08
+     0x          Equ   81FC Img_sonicHand
+     0x          Equ   8327 Img_sonic_1
+     0x          Equ   833A Img_sonic_2
+     0x          Equ   8381 Img_sonic_3
+     0x          Equ   8394 Img_sonic_4
+     0x          Equ   836B Img_sonic_5
+     0x          Equ   822C Img_star_1
+     0x          Equ   8212 Img_star_2
+     0x          Equ   81E9 Img_star_3
+     0x          Equ   81D6 Img_star_4
+     0x          Equ   8311 Img_tailsHand
+     0x          Equ   82FE Img_tails_1
+     0x          Equ   82EB Img_tails_2
+     0x          Equ   82D8 Img_tails_3
+     0x          Equ   82C5 Img_tails_4
+     0x          Equ   82AF Img_tails_5
+     0x          Equ   72AA Joypads_Held
+     0x          Equ   72AC Joypads_Press
+     0x          Equ   7317 MarkObjGone
+     0x          Equ   001B nb_dynamic_objects
+     0x          Equ   0003 nb_level_objects
+     0x          Equ   0040 nb_objects
+     0x          Equ   0008 nb_priority_levels
+     0x          Equ   0002 nb_reserved_objects
+     0x          Equ   005A next_object
+     0x          Equ   6730 Object_RAM
+     1x          Equ   005A object_size
+     0x          Equ   0002 ObjID_PaletteHandler
+     0x          Equ   0001 ObjID_SEGA
+     0x          Equ   0003 ObjID_TitleScreen
+     0x          Equ   0000 page_draw_routine
+     0x          Equ   0003 page_erase_routine
+     0x          Equ   87C9 Pal_TitleScreen
+     0x          Equ   0003 pcm_end_addr
+     0x          Equ   0005 pcm_meta_size
+     0x          Equ   0000 pcm_page
+     0x          Equ   8747 Pcm_SEGA
+     0x          Equ   0001 pcm_start_addr
+     0x          Equ   7D60 PlayPCM
+     0x          Equ   0006 prev_anim
+     0x          Equ   0003 priority
+     0x          Equ   7E66 PSGCancelLoop
+     0x          Equ   8021 PSGFrame
+     0x          Equ   7E6A PSGGetStatus
+     0x          Equ   7DB2 PSGInit
+     0x          Equ   7DC4 PSGPlayNoRepeat
+     0x          Equ   7EE2 PSGRestoreVolumes
+     0x          Equ   7E1B PSGResume
+     0x          Equ   7E6E PSGSetMusicVolumeAttenuation
+     0x          Equ   8018 PSGSFXCancelLoop
+     0x          Equ   812D PSGSFXFrame
+     0x          Equ   801C PSGSFXGetStatus
+     0x          Equ   7F56 PSGSFXPlayLoop
+     0x          Equ   7FA2 PSGSFXStop
+     0x          Equ   7ECD PSGSilenceChannels
+     0x          Equ   7DF2 PSGStop
+     0x          Equ   8752 Psg_TitleScreen
+     0x          Equ   87EA Ptr_palette
+     0x          Equ   0002 render_flags
+     0x          Equ   0080 render_free3_mask
+     0x          Equ   0020 render_hide_mask
+     0x          Equ   0008 render_motionless_mask
+     0x          Equ   0004 render_overlay_mask
+     0x          Equ   0010 render_playfieldcoord_mask
+     0x          Equ   0040 render_todelete_mask
+     0x          Equ   0001 render_xmirror_mask
+     0x          Equ   0002 render_ymirror_mask
+     0x          Equ   0018 routine
+     0x          Equ   0019 routine_secondary
+     0x          Equ   003F rsv_bgdata_0
+     0x          Equ   0051 rsv_bgdata_1
+     0x          Equ   0036 rsv_buffer_0
+     0x          Equ   0048 rsv_buffer_1
+     0x          Equ   002E rsv_image_subset
+     0x          Equ   0030 rsv_mapping_frame
+     0x          Equ   002A rsv_prev_anim
+     0x          Equ   003D rsv_prev_mapping_frame_0
+     0x          Equ   004F rsv_prev_mapping_frame_1
+     0x          Equ   0047 rsv_prev_render_flags_0
+     0x          Equ   0059 rsv_prev_render_flags_1
+     0x          Equ   0080 rsv_prev_render_onscreen_mask
+     0x          Equ   0001 rsv_prev_render_overlay_mask
+     0x          Equ   0043 rsv_prev_x1_pixel_0
+     0x          Equ   0055 rsv_prev_x1_pixel_1
+     0x          Equ   0045 rsv_prev_x2_pixel_0
+     0x          Equ   0057 rsv_prev_x2_pixel_1
+     0x          Equ   0043 rsv_prev_xy1_pixel_0
+     0x          Equ   0055 rsv_prev_xy1_pixel_1
+     0x          Equ   0045 rsv_prev_xy2_pixel_0
+     0x          Equ   0057 rsv_prev_xy2_pixel_1
+     0x          Equ   0041 rsv_prev_xy_pixel_0
+     0x          Equ   0053 rsv_prev_xy_pixel_1
+     0x          Equ   0041 rsv_prev_x_pixel_0
+     0x          Equ   0053 rsv_prev_x_pixel_1
+     0x          Equ   0044 rsv_prev_y1_pixel_0
+     0x          Equ   0056 rsv_prev_y1_pixel_1
+     0x          Equ   0046 rsv_prev_y2_pixel_0
+     0x          Equ   0058 rsv_prev_y2_pixel_1
+     0x          Equ   0042 rsv_prev_y_pixel_0
+     0x          Equ   0054 rsv_prev_y_pixel_1
+     0x          Equ   0036 rsv_priority_0
+     0x          Equ   0048 rsv_priority_1
+     0x          Equ   0039 rsv_priority_next_obj_0
+     0x          Equ   004B rsv_priority_next_obj_1
+     0x          Equ   0037 rsv_priority_prev_obj_0
+     0x          Equ   0049 rsv_priority_prev_obj_1
+     0x          Equ   0001 rsv_render_checkrefresh_mask
+     0x          Equ   0004 rsv_render_displaysprite_mask
+     0x          Equ   0002 rsv_render_erasesprite_mask
+     0x          Equ   0029 rsv_render_flags
+     0x          Equ   0008 rsv_render_outofrange_mask
+     0x          Equ   0032 rsv_x1_pixel
+     0x          Equ   0034 rsv_x2_pixel
+     0x          Equ   0032 rsv_xy1_pixel
+     0x          Equ   0034 rsv_xy2_pixel
+     0x          Equ   0033 rsv_y1_pixel
+     0x          Equ   0035 rsv_y2_pixel
+     0x          Equ   7289 screen_border_color
+     0x          Equ   00E4 screen_bottom
+     0x          Equ   001C screen_top
+     0x          Equ   00A0 screen_width
+     0x          Equ   001A status
+     0x          Equ   0004 status_bit2
+     0x          Equ   0080 status_bit7
+     0x          Equ   0002 status_inair
+     0x          Equ   0010 status_jumpingafterrolling
+     0x          Equ   0004 status_jumporroll
+     0x          Equ   0020 status_mainchar_pushing
+     0x          Equ   0008 status_mainchar_standing
+     0x          Equ   0008 status_norgroundnorfall
+     0x          Equ   0020 status_pushing
+     0x          Equ   0040 status_sidekick_pushing
+     0x          Equ   0010 status_sidekick_standing
+     0x          Equ   0040 status_underwater
+     0x          Equ   0001 status_x_orientation
+     0x          Equ   0002 status_y_orientation
+     0x          Equ   0001 subtype
+     0x          Label A00A SwapVideoPage
+     0x          Equ   72A6 Vint_runcount
+     1x          Label A000 WaitVBL
+     1x          Label A005 WaitVBL_01
+     0x          Equ   880C White_palette
+     0x          Equ   0012 xy_pixel
+     0x          Equ   0012 x_pixel
+     0x          Equ   000C x_pos
+     0x          Equ   000E x_sub
+     0x          Equ   0014 x_vel
+     0x          Equ   0013 y_pixel
+     0x          Equ   000F y_pos
+     0x          Equ   0011 y_sub
+     0x          Equ   0016 y_vel
+     0x          Equ   00FE _goBackNFrames
+     0x          Equ   00FD _goToAnimation
+     0x          Equ   00FC _nextRoutine
+     0x          Equ   00FA _nextSubRoutine
+     0x          Equ   00FF _resetAnim
+     0x          Equ   00FB _resetAnimAndSubRoutine
+     0x          Equ   80DA _sendVolume2PSG
+     0x          Equ   818A _SFXsetLoopPoint
+

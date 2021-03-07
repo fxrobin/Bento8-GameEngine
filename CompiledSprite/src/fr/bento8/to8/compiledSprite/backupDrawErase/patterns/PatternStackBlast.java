@@ -10,7 +10,7 @@ public abstract class PatternStackBlast extends Pattern{
 	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		String pixelValues;
-		String pshs = "\tPSHS ";
+		String pshu = "\tPSHU ";
 		boolean firstPass;
 
 		// loadMask :
@@ -19,7 +19,7 @@ public abstract class PatternStackBlast extends Pattern{
 		//    null = Ne pas ecrire le LD et ne pas avancer la position de lecture des data
 
 		// registerIndexes :
-		//    Liste des index de registre pour l'�criture
+		//    Liste des index de registre pour l'écriture
 
 		// Cr�ation du LD
 		for (int i=0; i<loadMask.size(); i++) {
@@ -44,19 +44,19 @@ public abstract class PatternStackBlast extends Pattern{
 		}
 
 		if (this.nbBytes <= 2) {
-			asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
+			asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",U");
 		} else {
 			// Cr�ation du PSHS
 			firstPass = true;
 			for (int i=0; i<registerIndexes.size(); i++) {
 				if (firstPass) {
-					pshs += Register.name[registerIndexes.get(i)];
+					pshu += Register.name[registerIndexes.get(i)];
 					firstPass = false;
 				} else {
-					pshs += ","+Register.name[registerIndexes.get(i)];
+					pshu += ","+Register.name[registerIndexes.get(i)];
 				}
 			}
-			asmCode.add(pshs);
+			asmCode.add(pshu);
 		}
 
 		return asmCode;

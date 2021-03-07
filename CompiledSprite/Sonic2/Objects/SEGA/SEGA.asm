@@ -20,6 +20,12 @@
         
         ldy   #Pcm_SEGA *@IgnoreUndefined
         jsr   PlayPCM
+        
+        lda   $6019                           
+        ora   #$20
+        sta   $6019                                   ; STATUS register
+        andcc #:$10                                   ; tell 6809 to activate irq    
+                      
         *clr   ,u                            ; Delete this Object
         ldd   #(ObjID_TitleScreen<+8)+$03    ; Replace this object with Title Screen Object subtype 3
         std   ,u

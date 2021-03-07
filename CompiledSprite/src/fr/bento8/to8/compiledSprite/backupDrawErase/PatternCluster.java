@@ -92,7 +92,7 @@ public class PatternCluster{
 				if (nodeStart == -1 || i < nodeStart) {
 					nodeStart = i;
 				}
-				solution.computedLeas.put(nodeStart, solution.positions.get(i));
+				solution.computedLeau.put(nodeStart, solution.positions.get(i));
 				solution.computedNodes.set(i, nodeStart);
 				nodeStart = -1;
 			}
@@ -104,7 +104,7 @@ public class PatternCluster{
 		List<Integer> minMaxI = new ArrayList<Integer>();
 		int i = 0, j;
 
-		//  S�l�ction des patterns � regrouper en noeuds
+		//  Séléction des patterns à regrouper en noeuds
 		while (i < solution.computedNodes.size()) {
 			while (i < solution.computedNodes.size() && AssignedPatterns.get(i) != -1) {
 				i++;
@@ -136,7 +136,7 @@ public class PatternCluster{
 				} else {
 					node = -((Math.abs(solution.positions.get(start) - solution.positions.get(i-1))+1) / 2) + solution.positions.get(start);
 				}
-				solution.computedLeas.put(start, node);
+				solution.computedLeau.put(start, node);
 
 				for (j = start; j < i; j++) {
 					solution.computedNodes.set(j, start);
@@ -152,10 +152,10 @@ public class PatternCluster{
 		// Remplace les valeurs d'offset des LEA relatives au départ par des valeurs relatives entre les LEA
 		int curOffset = 0, newOffset = 0, lastOffset = center;
 		for (int i = 0; i < solution.patterns.size(); i++) {
-			if (solution.computedLeas.containsKey(i)) {
-				curOffset = solution.computedLeas.get(i);
+			if (solution.computedLeau.containsKey(i)) {
+				curOffset = solution.computedLeau.get(i);
 				newOffset = curOffset - lastOffset;
-				solution.computedLeas.replace(i, newOffset);
+				solution.computedLeau.replace(i, newOffset);
 				lastOffset = curOffset;
 			}
 		}
@@ -180,7 +180,7 @@ public class PatternCluster{
 			i++;
 		}
 		logger.debug("");
-		logger.debug("LEAS: (noeud=offset) "+solution.computedLeas);
+		logger.debug("LEAS: (noeud=offset) "+solution.computedLeau);
 		logger.debug("");
 	}
 }

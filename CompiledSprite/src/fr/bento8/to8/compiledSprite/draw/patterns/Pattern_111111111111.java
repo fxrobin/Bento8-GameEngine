@@ -8,9 +8,6 @@ public class Pattern_111111111111 extends PatternStackBlast {
 		useIndexedAddressing = false;
 		isBackgroundBackupAndDrawDissociable = false;
 		registerCombi.add(new boolean[] {false, false, true, true, true, false, false});
-		registerCombi.add(new boolean[] {false, false, true, true, false, true, false});
-		registerCombi.add(new boolean[] {false, false, true, false, true, true, false});
-		registerCombi.add(new boolean[] {false, false, false, true, true, true, false});
 	}
 
 	public boolean matchesForward (byte[] data, Integer offset) {

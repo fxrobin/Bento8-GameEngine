@@ -39,7 +39,6 @@ public class SimpleAssemblyGenerator{
 	private int y1_offset;
 	private int x_size;
 	private int y_size;
-	private boolean invertPos;
 	
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
@@ -73,7 +72,6 @@ public class SimpleAssemblyGenerator{
 		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
 		x_size = spriteSheet.getSubImageXSize(imageNum);
 		y_size = spriteSheet.getSubImageYSize(imageNum);
-		invertPos = spriteSheet.getPosInvert();
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("XOffset: "+getX_offset());;
@@ -253,69 +251,54 @@ public class SimpleAssemblyGenerator{
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
 		asm.add("DRAW_" + spriteName + "");
-		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
-		if (invertPos) {
-			asm.add("\tLDS ,Y");
-			asm.add("\tSTS DYN_POS+2,PCR");				
-			asm.add("\tTFR D,S");			
-		} else {
-			asm.add("\tSTD DYN_POS+2,PCR");		
-			asm.add("\tLDS ,Y");
-		}
+		//asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
+		asm.add("\tSTD DYN_POS+2,PCR");		
+		asm.add("\tLEAS ,U");		
+		asm.add("\tLDU ,Y");
 		return asm;
 	}
 
 	public int getCodeFrameDrawStartCycles() {
 		int cycles = 0;
-		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
-		if (invertPos) {
-			cycles += Register.costIndexedLD[Register.S];
-			cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
-			cycles += 7; // TFR
-		} else {
-			cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
-			cycles += Register.costIndexedLD[Register.S];
-		}
+		//cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
+		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;
+		cycles += Register.costIndexedLEA;
+		cycles += Register.costIndexedLD[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameDrawStartSize() {
 		int size = 0;
-		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
-		if (invertPos) {
-			size += Register.sizeIndexedLD[Register.S];
-			size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
-			size += 2; // TFR
-		} else {		
-			size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-			size += Register.sizeIndexedLD[Register.S];
-		}
+		//size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
+		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
+		size += Register.sizeIndexedLEA;
+		size += Register.sizeIndexedLD[Register.U];
 		return size;
 	}
 
 	public List<String> getCodeFrameDrawMid() {
 		List<String> asm = new ArrayList<String>();
 		asm.add("DYN_POS");
-		asm.add("\n\tLDS #$0000");		
+		asm.add("\n\tLDU #$0000");		
 		return asm;
 	}
 
 	public int getCodeFrameDrawMidCycles() {
 		int cycles = 0;
-		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.costImmediateLD[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameDrawMidSize() {
 		int size = 0;
-		size += Register.costImmediateLD[Register.S];
+		size += Register.costImmediateLD[Register.U];
 		return size;
 	}
 
 	public List<String> getCodeFrameDrawEnd() {
 		List<String> asm = new ArrayList<String>();
-		asm.add("SSAV_" + spriteName + "");
-		asm.add("\tLDS #$0000");
+		//asm.add("SSAV_" + spriteName + "");
+		//asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
 		asm.add("(info)\n");
 		return asm;
@@ -323,14 +306,14 @@ public class SimpleAssemblyGenerator{
 
 	public int getCodeFrameDrawEndCycles() {
 		int cycles = 0;
-		cycles += Register.costImmediateLD[Register.S];
+		//cycles += Register.costImmediateLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
 	}
 
 	public int getCodeFrameDrawEndSize() {
 		int size = 0;
-		size += Register.sizeImmediateLD[Register.S];
+		//size += Register.sizeImmediateLD[Register.S];
 		size += 1; // RTS
 		return size;
 	}

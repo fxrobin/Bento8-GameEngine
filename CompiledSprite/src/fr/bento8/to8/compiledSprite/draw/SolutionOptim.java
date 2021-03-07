@@ -32,7 +32,7 @@ public class SolutionOptim{
 	private int asmECodeCycles;
 	private int asmECodeSize;
 
-	int lastLeas;
+	int lastLeau;
 	// les variables Save sont pour les essais de solutions
 	boolean[] regSet, regSetSave, regSetBest;
 	byte[][] regVal, regValSave, regValBest;
@@ -465,7 +465,7 @@ public class SolutionOptim{
 		List<List<Integer[]>> patterns = new ArrayList<List<Integer[]>>();
 		Integer lastPattern;
 
-		lastLeas = Integer.MAX_VALUE;	
+		lastLeau = Integer.MAX_VALUE;	
 		int currentNode = 0;
 		boolean saveS;
 		sizeSaveS = 0;
@@ -477,7 +477,7 @@ public class SolutionOptim{
 			// Parcours de tous les patterns
 			int i = 0;
 
-			// Au début de l'image on sauvegarde S même s'il n'y a pas de LEAS
+			// Au début de l'image on sauvegarde U même s'il n'y a pas de LEAU
 			saveS = true;
 			Integer hash;
 
@@ -491,16 +491,16 @@ public class SolutionOptim{
 				Integer value1 = null, value2 = null, value3 = null, value4 = null;
 				while (i < solution.patterns.size() && currentNode == solution.computedNodes.get(i)) {
 
-					// Ecriture du LEAS				
-					if (currentNode != lastLeas // le noeud courant est diff�rent de celui du dernier LEAS
-							&& solution.computedLeas.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAS
-							&& solution.computedLeas.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAS avec offset de 0
-						asmCode.add("\tLEAS "+solution.computedLeas.get(solution.computedNodes.get(i))+",S");
+					// Ecriture du LEAU				
+					if (currentNode != lastLeau // le noeud courant est différent de celui du dernier LEAU
+							&& solution.computedLeau.containsKey(solution.computedNodes.get(i)) // Le noeud courant est un noeud de LEAU
+							&& solution.computedLeau.get(solution.computedNodes.get(i)) != 0) { // Ignore les LEAU avec offset de 0
+						asmCode.add("\tLEAU "+solution.computedLeau.get(solution.computedNodes.get(i))+",U");
 						asmCode.add("");
-						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeas.get(solution.computedNodes.get(i)));
-						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeas.get(solution.computedNodes.get(i)));
-						lastLeas = solution.computedNodes.get(i);
-						saveS = true; // On enregistre le fait qu'un LEAS a �t� produit pour ce noeud
+						asmCodeCycles += Register.costIndexedLEA + Register.getIndexedOffsetCost(solution.computedLeau.get(solution.computedNodes.get(i)));
+						asmCodeSize += Register.sizeIndexedLEA + Register.getIndexedOffsetSize(solution.computedLeau.get(solution.computedNodes.get(i)));
+						lastLeau = solution.computedNodes.get(i);
+						saveS = true; // On enregistre le fait qu'un LEAU a été produit pour ce noeud
 					}
 
 					// Parcours des patterns et assignation d'un groupe
@@ -524,7 +524,7 @@ public class SolutionOptim{
 
 					} else if (!solution.patterns.get(i).useIndexedAddressing()) {
 						// Le stack blast doit être positionné en fin de noeud pour être exécuté en début de rétablissement de fond
-						// en particulier il doit être joué juste après le premier PULU ...,S car le PSHS va décaler le pointeur S
+						// en particulier il doit être joué juste après le premier PULS ...,U car le PSHU va décaler le pointeur U
 						// et le positonner correctement pour les accès mémoire indexées.
 						// Si on veut le positionner ailleurs il faut recalculer les offsets : c'est réalisable ... mais risque d'être long à coder
 						lastPattern = i;

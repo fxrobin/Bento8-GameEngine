@@ -1,0 +1,33 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_star_2
+	STS ERASE_SSAV_Img_star_2+1,PCR
+
+	LEAS ,U
+ERASE_CODE_Img_star_2_1
+	PULS A,U
+	STA 120,U
+
+	PULS A,B
+	STA 80,U
+	STB 40,U
+
+	PULS A,B
+	STA -40,U
+	STB -80,U
+
+	PULS A,B
+	STA ,U
+	STB -120,U
+
+	PULS A,U
+	STA ,U
+
+	LEAU ,S
+ERASE_SSAV_Img_star_2
+	LDS #$0000
+	RTS
+
+(info)
+

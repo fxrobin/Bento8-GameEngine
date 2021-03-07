@@ -96,7 +96,7 @@ public class PatternCluster{
 					nodeStart = i;
 				}
 				// +1 pour début du PSH
-				solution.computedLeas.put(nodeStart, solution.positions.get(i) + 1);
+				solution.computedLeau.put(nodeStart, solution.positions.get(i) + 1);
 				// Enregistrement de la taille du PSH pour calculer le leas suivant
 				solution.computedNodeOffset.put(nodeStart, solution.patterns.get(i).getNbBytes());
 				solution.computedNodes.set(i, nodeStart);
@@ -142,7 +142,7 @@ public class PatternCluster{
 				} else {
 					node = -((Math.abs(solution.positions.get(start) - solution.positions.get(i-1))+1) / 2) + solution.positions.get(start);
 				}
-				solution.computedLeas.put(start, node);
+				solution.computedLeau.put(start, node);
 
 				for (j = start; j < i; j++) {
 					solution.computedNodes.set(j, start);
@@ -160,10 +160,10 @@ public class PatternCluster{
 		int curOffset = 0, newOffset = 0, lastOffset = center;
 		
 		for (int i = 0; i < solution.patterns.size(); i++) {
-			if (solution.computedLeas.containsKey(i)) {
-				curOffset = solution.computedLeas.get(i);
+			if (solution.computedLeau.containsKey(i)) {
+				curOffset = solution.computedLeau.get(i);
 				newOffset = curOffset - lastOffset;
-				solution.computedLeas.replace(i, newOffset);
+				solution.computedLeau.replace(i, newOffset);
 				lastOffset = curOffset - solution.computedNodeOffset.get(i);
 			}
 		}
@@ -188,7 +188,7 @@ public class PatternCluster{
 			i++;
 		}
 		logger.debug("");
-		logger.debug("LEAS: (noeud=offset) "+solution.computedLeas);
+		logger.debug("LEAS: (noeud=offset) "+solution.computedLeau);
 		logger.debug("");
 	}
 }

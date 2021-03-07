@@ -38,7 +38,6 @@ public class AssemblyGenerator{
 	private int y1_offset;
 	private int x_size;
 	private int y_size;
-	private boolean invertPos;
 
 	// Code
 	private List<String> spriteCode1 = new ArrayList<String>();
@@ -70,7 +69,6 @@ public class AssemblyGenerator{
 		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
 		x_size = spriteSheet.getSubImageXSize(imageNum);
 		y_size = spriteSheet.getSubImageYSize(imageNum);
-		invertPos = spriteSheet.getPosInvert();
 
 		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
 		logger.debug("X1Offset: "+getX1_offset());
@@ -349,66 +347,53 @@ public class AssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("BCKDRAW_" + spriteName + "");
 		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
-		if (invertPos) {
-			asm.add("\tLDS ,Y");
-			asm.add("\tSTS DYN_POS+2,PCR");				
-			asm.add("\tTFR D,S");			
-		} else {
-			asm.add("\tSTD DYN_POS+2,PCR");		
-			asm.add("\tLDS ,Y");
-		}
+		asm.add("\tSTD DYN_POS+2,PCR");
+		asm.add("\tLEAS ,U");
+		asm.add("\tLDU ,Y");
+
 		return asm;
 	}
 
 	public int getCodeFrameBckDrawStartCycles() {
 		int cycles = 0;
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
-		if (invertPos) {
-			cycles += Register.costIndexedLD[Register.S];
-			cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
-			cycles += 7; // TFR
-		} else {
-			cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;		
-			cycles += Register.costIndexedLD[Register.S];
-		}
+		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;
+		cycles += Register.costIndexedLEA;
+		cycles += Register.costIndexedLD[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameBckDrawStartSize() {
 		int size = 0;
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
-		if (invertPos) {
-			size += Register.sizeIndexedLD[Register.S];
-			size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
-			size += 2; // TFR
-		} else {		
-			size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-			size += Register.sizeIndexedLD[Register.S];
-		}
+		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;
+		size += Register.sizeIndexedLEA;		
+		size += Register.sizeIndexedLD[Register.U];
 		return size;
 	}
 
 	public List<String> getCodeFrameBckDrawMid() {
 		List<String> asm = new ArrayList<String>();
 		asm.add("DYN_POS");
-		asm.add("\n\tLDS #$0000");		
+		asm.add("\n\tLDU #$0000");		
 		return asm;
 	}
 
 	public int getCodeFrameBckDrawMidCycles() {
 		int cycles = 0;
-		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.costImmediateLD[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameBckDrawMidSize() {
 		int size = 0;
-		size += Register.costImmediateLD[Register.S];
+		size += Register.costImmediateLD[Register.U];
 		return size;
 	}
 
 	public List<String> getCodeFrameBckDrawEnd() {
 		List<String> asm = new ArrayList<String>();
+		asm.add("\tLEAU ,S");
 		asm.add("SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
@@ -418,6 +403,7 @@ public class AssemblyGenerator{
 
 	public int getCodeFrameBckDrawEndCycles() {
 		int cycles = 0;
+		cycles += Register.costIndexedLEA;
 		cycles += Register.costImmediateLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
@@ -425,6 +411,7 @@ public class AssemblyGenerator{
 
 	public int getCodeFrameBckDrawEndSize() {
 		int size = 0;
+		size += Register.sizeIndexedLEA;
 		size += Register.sizeImmediateLD[Register.S];
 		size += 1; // RTS
 		return size;
@@ -437,6 +424,7 @@ public class AssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("ERASE_" + spriteName + "");
 		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+1,PCR\n");
+		asm.add("\tLEAS ,U");
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;
 	}
@@ -444,17 +432,20 @@ public class AssemblyGenerator{
 	public int getCodeFrameEraseStartCycles() {
 		int cycles = 0;
 		cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
+		cycles += Register.costIndexedLEA;
 		return cycles;
 	}
 
 	public int getCodeFrameEraseStartSize() {
 		int size = 0;
 		size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
+		size += Register.sizeIndexedLEA;	
 		return size;
 	}	
 	
 	public List<String> getCodeFrameEraseEnd() {
 		List<String> asm = new ArrayList<String>();
+		asm.add("\tLEAU ,S");
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
@@ -464,6 +455,7 @@ public class AssemblyGenerator{
 
 	public int getCodeFrameEraseEndCycles() {
 		int cycles = 0;
+		cycles += Register.costIndexedLEA;
 		cycles += Register.costImmediateLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
@@ -471,7 +463,8 @@ public class AssemblyGenerator{
 
 	public int getCodeFrameEraseEndSize() {
 		int size = 0;
-		size += Register.sizeImmediateLD[Register.S];
+		size += Register.sizeIndexedLEA;
+		size += Register.sizeImmediateLD[Register.S];	
 		size += 1; // RTS
 		return size;
 	}

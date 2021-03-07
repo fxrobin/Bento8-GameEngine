@@ -29,7 +29,7 @@ public abstract class Pattern {
 		if (registerIndexesPUL.get(0)==Register.B && nbBytes==2) {
 			offset += 1;
 		}
-		asmCode.add("\tLD"+Register.name[registerIndexesPUL.get(0)]+" "+(offset!= 0?offset:"")+",S");
+		asmCode.add("\tLD"+Register.name[registerIndexesPUL.get(0)]+" "+(offset!= 0?offset:"")+",U");
 
 		return asmCode;
 	}

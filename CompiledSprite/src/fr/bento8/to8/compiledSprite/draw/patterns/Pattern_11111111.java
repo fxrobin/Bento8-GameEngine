@@ -9,10 +9,7 @@ public class Pattern_11111111 extends PatternStackBlast {
 		isBackgroundBackupAndDrawDissociable = false;
 		registerCombi.add(new boolean[] {false, false, true, true, false, false, false});
 		registerCombi.add(new boolean[] {false, false, true, false, true, false, false});
-		registerCombi.add(new boolean[] {false, false, true, false, false, true, false});
 		registerCombi.add(new boolean[] {false, false, false, true, true, false, false});
-		registerCombi.add(new boolean[] {false, false, false, true, false, true, false});
-		registerCombi.add(new boolean[] {false, false, false, false, true, true, false});
 		}
 
 	public boolean matchesForward (byte[] data, Integer offset) {

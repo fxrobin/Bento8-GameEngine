@@ -82,12 +82,15 @@ SetPalSaveBleu
 								       
 SetPalNext                             
         lda   pal_idx                  * Lecture index couleur
-        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        *sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        sta   $9000                     * A retirer !!!!!!!
         adda  #$02                     * increment de l'indice de couleur (x2)
         sta   pal_idx                  * stockage du nouvel index
         lda   ,y                       * chargement de la nouvelle couleur courante
-        sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
-        stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
+        *sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        *stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
+        sta   $9000                     * A retirer !!!!!!!
+        stb   $9000                     * A retirer !!!!!!!
         lda   pal_idx                  * rechargement de l'index couleur
         cmpa  ,x                       * comparaison avec l'index limite pour cette couleur
         bne   SetPalNext               * si inferieur on continue avec la meme couleur

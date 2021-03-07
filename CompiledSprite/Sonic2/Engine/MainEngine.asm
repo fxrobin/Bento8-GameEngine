@@ -12,13 +12,17 @@
         jsr   LoadAct
         jsr   PSGInit
 
+InitIRQ        
+        ldd   #_IRQ                                   ; map IRQ routine                
+        std   $6027
+        ldd   #$09C4                                  
+        std   $E7C6                                   ; timer to 20ms      
+
 * ==============================================================================
 * Main Loop
 * ==============================================================================
 LevelMainLoop
-        jsr   WaitVBL
-        jsr   PSGFrame
-        jsr   PSGSFXFrame        
+        jsr   WaitVBL      
         jsr   ReadJoypads
         jsr   RunObjects
         jsr   CheckSpritesRefresh
@@ -26,6 +30,19 @@ LevelMainLoop
         jsr   UnsetDisplayPriority
         jsr   DrawSprites        
         bra   LevelMainLoop
+        
+* ==============================================================================
+* IRQ
+* ==============================================================================       
+_IRQ
+        lda   $E7E5
+        sta   _IRQ_end+1                              ; backup data page
+        jsr   PSGFrame
+        jsr   PSGSFXFrame
+_IRQ_end        
+        lda   #$00
+        sta   $E7E5                                   ; restore data page
+        jmp   $E830  
 
 * ==============================================================================
 * Global Data

@@ -10,7 +10,7 @@ public abstract class PatternStackBlast extends Pattern{
 	public List<String> getDrawCode (byte[] data, int position, List<Integer> registerIndexes, List<Boolean> loadMask, Integer offset) throws Exception {
 		List<String> asmCode = new ArrayList<String>();
 		String pixelValues;
-		String pshs = "\tPSHS ";
+		String pshs = "\tPSHU ";
 		boolean firstPass;
 
 		// loadMask :
@@ -44,7 +44,7 @@ public abstract class PatternStackBlast extends Pattern{
 		}
 
 		if (this.nbBytes <= 2) {
-			asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",S");
+			asmCode.add("\tST"+Register.name[registerIndexes.get(0)]+" "+(offset!= 0?offset:"")+",U");
 		} else {
 			// Création du PSHS
 			firstPass = true;

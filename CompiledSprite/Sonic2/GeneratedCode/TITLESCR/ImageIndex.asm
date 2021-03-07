@@ -1,0 +1,101 @@
+* Generated Code
+
+Img_star_4 *@globals
+        fcb   $06,$00,$00,$00,$0A,$16,$06,$00,$00,$00,$FB,$F5,$05,$DC
+        fcb   $EF,$05,$DC,$5A,$01
+Img_star_3 *@globals
+        fcb   $06,$00,$00,$00,$06,$0E,$06,$00,$00,$00,$FD,$F9,$05,$DB
+        fcb   $58,$05,$DA,$FA,$01
+Img_sonicHand *@globals
+        fcb   $06,$00,$00,$00,$0E,$2A,$06,$0D,$00,$00,$04,$01,$06,$D7
+        fcb   $F1,$05,$D9,$29,$05,$05,$D5,$80
+Img_star_2 *@globals
+        fcb   $06,$00,$00,$00,$02,$06,$06,$00,$0D,$00,$FF,$FD,$05,$D5
+        fcb   $0F,$05,$D4,$E1,$01,$05,$D4,$72,$05,$D4,$44,$01
+Img_star_1 *@globals
+        fcb   $06,$00,$00,$00,$02,$04,$06,$00,$0D,$00,$FF,$FE,$05,$D3
+        fcb   $F1,$05,$D3,$CD,$01,$05,$D3,$7C,$05,$D3,$58,$01
+Img_emblemBack08 *@globals
+        fcb   $06,$00,$00,$00,$1F,$27,$00,$06,$00,$00,$10,$DD,$05,$CE
+        fcb   $CA
+Img_emblemBack07 *@globals
+        fcb   $06,$00,$00,$00,$1F,$1F,$00,$06,$00,$00,$10,$BD,$05,$CB
+        fcb   $30
+Img_emblemBack09 *@globals
+        fcb   $06,$00,$00,$00,$0F,$38,$00,$06,$00,$00,$30,$B3,$05,$C7
+        fcb   $C1
+Img_emblemBack04 *@globals
+        fcb   $06,$00,$00,$00,$24,$09,$00,$06,$00,$00,$EE,$B3,$05,$C6
+        fcb   $24
+Img_emblemBack03 *@globals
+        fcb   $06,$00,$00,$00,$1F,$26,$00,$06,$00,$00,$D0,$DD,$05,$C2
+        fcb   $44
+Img_emblemBack06 *@globals
+        fcb   $06,$00,$00,$00,$1F,$1C,$00,$06,$00,$00,$F0,$DD,$05,$C0
+        fcb   $87
+Img_emblemBack05 *@globals
+        fcb   $06,$00,$00,$00,$1F,$1F,$00,$06,$00,$00,$F0,$BD,$05,$BC
+        fcb   $CF
+Img_tails_5 *@globals
+        fcb   $06,$00,$00,$00,$2B,$3F,$06,$0D,$00,$00,$03,$0D,$07,$D0
+        fcb   $E2,$05,$B8,$58,$10,$07,$C6,$6D
+Img_tails_4 *@globals
+        fcb   $06,$00,$00,$00,$2C,$3A,$06,$00,$00,$00,$03,$12,$08,$CD
+        fcb   $83,$05,$B4,$19,$10
+Img_tails_3 *@globals
+        fcb   $06,$00,$00,$00,$2B,$3C,$06,$00,$00,$00,$04,$11,$08,$BF
+        fcb   $25,$06,$D3,$86,$0F
+Img_tails_2 *@globals
+        fcb   $06,$00,$00,$00,$2B,$37,$06,$00,$00,$00,$02,$16,$07,$BA
+        fcb   $08,$05,$B0,$68,$0F
+Img_tails_1 *@globals
+        fcb   $06,$00,$00,$00,$1B,$3F,$06,$00,$00,$00,$0C,$11,$07,$AE
+        fcb   $94,$05,$AC,$FA,$0D
+Img_tailsHand *@globals
+        fcb   $06,$00,$00,$00,$07,$12,$06,$0D,$00,$00,$04,$06,$05,$AB
+        fcb   $66,$05,$AA,$C2,$01,$05,$A9,$BD
+Img_sonic_1 *@globals
+        fcb   $06,$00,$00,$00,$23,$42,$06,$00,$00,$00,$02,$0E,$08,$B0
+        fcb   $8A,$06,$CF,$57,$13
+Img_sonic_2 *@globals
+        fcb   $06,$00,$00,$00,$24,$53,$06,$00,$00,$00,$03,$0D,$08,$A0
+        fcb   $00,$06,$CA,$AA,$17
+Img_emblemBack02 *@globals
+        fcb   $06,$00,$00,$00,$1F,$1F,$00,$06,$00,$00,$D0,$BD,$05,$A6
+        fcb   $1D
+Img_emblemBack01 *@globals
+        fcb   $06,$00,$00,$00,$0F,$37,$00,$06,$00,$00,$C0,$B3,$05,$A2
+        fcb   $B7
+Img_sonic_5 *@globals
+        fcb   $06,$00,$00,$00,$23,$49,$06,$0D,$00,$00,$0C,$0A,$09,$AE
+        fcb   $DF,$06,$C6,$63,$14,$07,$A5,$40
+Img_sonic_3 *@globals
+        fcb   $06,$00,$00,$00,$24,$46,$06,$00,$00,$00,$0B,$0D,$0B,$A0
+        fcb   $00,$06,$C1,$FF,$14
+Img_sonic_4 *@globals
+        fcb   $06,$00,$00,$00,$23,$49,$06,$00,$00,$00,$0C,$0A,$09,$A0
+        fcb   $00,$06,$BD,$CA,$14
+Img_emblemFront07 *@globals
+        fcb   $06,$00,$00,$00,$12,$12,$00,$06,$00,$00,$F7,$3D,$05,$A0
+        fcb   $B0
+Img_emblemFront08 *@globals
+        fcb   $06,$00,$00,$00,$26,$25,$00,$06,$00,$00,$10,$1D,$06,$B9
+        fcb   $1F
+Img_emblemFront05 *@globals
+        fcb   $06,$00,$00,$00,$26,$25,$00,$06,$00,$00,$C9,$1D,$06,$B4
+        fcb   $58
+Img_emblemFront06 *@globals
+        fcb   $06,$00,$00,$00,$1F,$1F,$00,$06,$00,$00,$F0,$1D,$06,$B0
+        fcb   $1F
+Img_emblemFront03 *@globals
+        fcb   $06,$00,$00,$00,$1F,$1F,$00,$06,$00,$00,$F0,$FD,$06,$AC
+        fcb   $17
+Img_emblemFront04 *@globals
+        fcb   $06,$00,$00,$00,$1B,$1F,$00,$06,$00,$00,$10,$FD,$06,$A9
+        fcb   $00
+Img_emblemFront01 *@globals
+        fcb   $06,$00,$00,$00,$3D,$03,$00,$06,$00,$00,$E1,$F9,$05,$A0
+        fcb   $00
+Img_emblemFront02 *@globals
+        fcb   $06,$00,$00,$00,$1A,$1F,$00,$06,$00,$00,$D5,$FD,$06,$A6
+        fcb   $08
