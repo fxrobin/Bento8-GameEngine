@@ -15,7 +15,7 @@
 InitIRQ        
         ldd   #_IRQ                                   ; map IRQ routine                
         std   $6027
-        ldd   #$09C4                                  
+        ldd   #$09C4                                  ; 09C4 for 50hz 0823 for 60hz
         std   $E7C6                                   ; timer to 20ms      
 
 * ==============================================================================

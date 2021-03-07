@@ -347,7 +347,7 @@ public class AssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("BCKDRAW_" + spriteName + "");
 		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
-		asm.add("\tSTD DYN_POS+2,PCR");
+		asm.add("\tSTD DYN_POS+1,PCR");
 		asm.add("\tLEAS ,U");
 		asm.add("\tLDU ,Y");
 

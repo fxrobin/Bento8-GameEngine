@@ -252,8 +252,8 @@ public class SimpleAssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("DRAW_" + spriteName + "");
 		//asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
-		asm.add("\tSTD DYN_POS+2,PCR");		
-		asm.add("\tLEAS ,U");		
+		asm.add("\tSTD DYN_POS+1,PCR");		
+		//asm.add("\tLEAS ,U");		
 		asm.add("\tLDU ,Y");
 		return asm;
 	}
@@ -262,7 +262,7 @@ public class SimpleAssemblyGenerator{
 		int cycles = 0;
 		//cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;
-		cycles += Register.costIndexedLEA;
+		//cycles += Register.costIndexedLEA;
 		cycles += Register.costIndexedLD[Register.U];
 		return cycles;
 	}
@@ -271,7 +271,7 @@ public class SimpleAssemblyGenerator{
 		int size = 0;
 		//size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
 		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-		size += Register.sizeIndexedLEA;
+		//size += Register.sizeIndexedLEA;
 		size += Register.sizeIndexedLD[Register.U];
 		return size;
 	}

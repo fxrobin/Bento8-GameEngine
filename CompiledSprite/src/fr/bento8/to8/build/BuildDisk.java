@@ -288,11 +288,10 @@ public class BuildDisk
 							asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant),
 									Game.generatedCodeDirName + "/" + object.getValue().name, 0);
 							asm.compileCode("A000");
-							curSubSprite.nb_cell = (asm.getEraseDataSize() + 64 - 1) / 64; // La valeur 64 doit être
-																							// ajustée dans
-																							// MainEngine.asm si
-																							// modifiée TODO : rendre
-																							// paramétrable
+							// La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
+							// 16 octets supplémentaires pour IRQ 12 octets du bckp registres et 4 pour les appels sous programmes
+							// A rendre paramétrable aussi
+							curSubSprite.nb_cell = (asm.getEraseDataSize() + 16 + 64 - 1) / 64;
 							curSubSprite.x1_offset = asm.getX1_offset();
 							curSubSprite.y1_offset = asm.getY1_offset();
 							curSubSprite.x_size = asm.getX_size();
