@@ -8,7 +8,22 @@
 cpt            fcb   $00
 Ptr_palette    fdb   Black_palette  *@globals
 Black_palette  rmb   $20,0          *@globals
-White_palette  rmb   $20,$FF        *@globals
+White_palette  fdb   $ff0f          *@globals
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f               
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
+               fdb   $ff0f
 
 UpdatePalette
     	ldx   Ptr_palette

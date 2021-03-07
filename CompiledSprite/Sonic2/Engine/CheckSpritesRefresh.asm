@@ -279,7 +279,7 @@ CSR_SetOutOfRange
         sta   rsv_render_flags,u
 
 CSR_CheckErase
-        sts   CSR_CheckDraw+2
+        stx   CSR_CheckDraw+1
         lda   buf_priority,x
         cmpa  cur_priority 
         lbne  CSR_CheckDraw
@@ -319,14 +319,14 @@ CSR_SubEraseSpriteSearchInit
         * there are two lists because a sprite can be erased at a position
         * and displayed at another position : both cases should be tested !
 
-        lds   cur_ptr_sub_obj_erase        
+        ldx   cur_ptr_sub_obj_erase       
         lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations
         bne   CSR_SubEraseSearchB1
         
 CSR_SubEraseSearchB0
-        cmps  #Tbl_Sub_Object_Erase
+        cmpx  #Tbl_Sub_Object_Erase
         beq   CSR_SubDrawSpriteSearchInit   ; branch if no more sub objects
-        ldy   ,--s
+        ldy   ,--x
         
 CSR_SubEraseCheckCollisionB0
         ldd   rsv_prev_xy1_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
@@ -344,9 +344,9 @@ CSR_SubEraseCheckCollisionB0
         bra   CSR_SetEraseTrue              ; found a collision
 
 CSR_SubEraseSearchB1
-        cmps  #Tbl_Sub_Object_Erase
+        cmpx  #Tbl_Sub_Object_Erase
         beq   CSR_SubDrawSpriteSearchInit   ; branch if no more sub objects
-        ldy   ,--s
+        ldy   ,--x
         
 CSR_SubEraseCheckCollisionB1
         ldd   rsv_prev_xy1_pixel_1,y        ; sub entry : rsv_prev_x_pixel_1 and rsv_prev_y_pixel_1 in one instruction
@@ -364,12 +364,12 @@ CSR_SubEraseCheckCollisionB1
         bra   CSR_SetEraseTrue              ; found a collision
 
 CSR_SubDrawSpriteSearchInit
-        lds   cur_ptr_sub_obj_draw
+        ldx   cur_ptr_sub_obj_draw
         
 CSR_SubDrawSearch
-        cmps  #Tbl_Sub_Object_Draw
+        cmpx  #Tbl_Sub_Object_Draw
         beq   CSR_SetEraseFalse             ; branch if no more sub objects
-        ldy   ,--s
+        ldy   ,--x
 
 CSR_SubDrawCheckCollision
         ldd   rsv_xy1_pixel,y               ; sub entry : x_pixel and y_pixel in one instruction
@@ -392,7 +392,7 @@ CSR_SetEraseFalse
         sta   rsv_render_flags,u        
                
 CSR_CheckDraw
-        lds   #$FFFF                        ; dynamic restore s
+        ldx   #$FFFF                        ; dynamic restore x
         lda   priority,u
         cmpa  cur_priority 
         lbne  CSR_NextObject

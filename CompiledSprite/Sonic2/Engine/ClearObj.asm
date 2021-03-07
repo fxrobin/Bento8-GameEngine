@@ -9,26 +9,27 @@
 
 ClearObj *@globals
         sts   CLO_1+2
-        stx   CLO_2+1        
+        stx   CLO_2+1
+        leas  object_size,u        
         ldd   #$0000
         ldx   #$0000
         leay  ,x
-        leas  ,x
-        leau  object_size,u
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d,x,y,s
-        pshu  d         ; DEPENDENCY on object_size definition
+        leau  ,x
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        pshs  d,x,y,u
+        leau  ,s
 CLO_1        
-        lds   #$0000
+        lds   #$0000        ; start of object should not be written with S as an index because of IRQ        
+        pshu  d,x,y         ; saving 12 bytes + (2 bytes * _sr calls) inside IRQ routine
+        pshu  d,x,y         ; DEPENDENCY on nb of _sr calls inside IRQ routine  (here 18 bytes of margin)
+        pshu  d,x,y         ; DEPENDENCY on object_size definition
 CLO_2        
         ldx   #$0000        
         rts

@@ -42,35 +42,39 @@
 ********************************************************************************   
 
 PalInit
+        setdp $62
+        lda   #$62
+        tfr   a,dp                     * positionne la direct page a 60
+        clr   <pal_idx
         ldx   #pal_len                 * index limite de chargement pour couleur courante 
-        ldy   #pal_from                * chargement pointeur valeur des couleurs actuelles
+        ldu   #pal_from                * chargement pointeur valeur des couleurs actuelles
 PalRun
-        lda   ,y			           * chargement de la composante verte et rouge
+        lda   ,u			           * chargement de la composante verte et rouge
         anda  pal_mask                 * on efface la valeur vert ou rouge par masque
-        ldb   #$00                     * composante verte et rouge couleur cible
-        andb  pal_mask                 * on efface la valeur vert ou rouge par masque
-        stb   pal_buffer               * on stocke la valeur cible pour comparaison
+        ldb   #$FF                     * composante verte et rouge couleur cible
+        andb  <pal_mask                * on efface la valeur vert ou rouge par masque
+        stb   <pal_buffer              * on stocke la valeur cible pour comparaison
         ldb   #$11                     * preparation de la valeur d'increment de couleur
-        andb  pal_mask                 * on efface la valeur non utile par masque
-        stb   pal_buffer+1             * on stocke la valeur pour ADD ou SUB ulterieur
-        cmpa  pal_buffer               * comparaison de la composante courante et cible
+        andb  <pal_mask                * on efface la valeur non utile par masque
+        stb   <pal_buffer+1            * on stocke la valeur pour ADD ou SUB ulterieur
+        cmpa  <pal_buffer              * comparaison de la composante courante et cible
         beq   PalVRSuivante            * si composante est egale a la cible on passe
         bhi   PalVRDec                 * si la composante est superieure on branche
-        lda   ,y                       * on recharge la valeur avec vert et rouge
-        adda  pal_buffer+1             * on incremente la composante verte ou rouge
+        lda   ,u                       * on recharge la valeur avec vert et rouge
+        adda  <pal_buffer+1            * on incremente la composante verte ou rouge
         bra   PalVRSave                * on branche pour sauvegarder
 PalVRDec
-        lda   ,y                       * on recharge la valeur avec vert et rouge
-        suba  pal_buffer+1             * on decremente la composante verte ou rouge
+        lda   ,u                       * on recharge la valeur avec vert et rouge
+        suba  <pal_buffer+1            * on decremente la composante verte ou rouge
 PalVRSave                             
-        sta   ,y                       * sauvegarde de la nouvelle valeur vert ou rouge
+        sta   ,u                       * sauvegarde de la nouvelle valeur vert ou rouge
 PalVRSuivante                         
-        com   pal_mask                 * inversion du masque pour traiter l'autre semioctet
+        com   <pal_mask                * inversion du masque pour traiter l'autre semioctet
         bmi   PalRun                   * si on traite $F0 on branche sinon on continue
 	    
 SetPalBleu
-        ldb   1,y			           * chargement composante bleue courante
-        cmpb  #$00                     * comparaison composante courante et cible
+        ldb   1,u			           * chargement composante bleue courante
+        cmpb  #$0F                     * comparaison composante courante et cible
         beq   SetPalNext               * si composante est egale a la cible on passe
         bhi   SetPalBleudec            * si la composante est superieure on branche
         incb                           * on incremente la composante bleue
@@ -78,23 +82,20 @@ SetPalBleu
 SetPalBleudec                       
         decb                           * on decremente la composante bleue
 SetPalSaveBleu                         
-        stb   1,y                      * sauvegarde de la nouvelle valeur bleue
+        stb   1,u                      * sauvegarde de la nouvelle valeur bleue
 								       
 SetPalNext                             
-        lda   pal_idx                  * Lecture index couleur
-        *sta   $E7DB                    * selectionne l'indice de couleur a ecrire
-        sta   $9000                     * A retirer !!!!!!!
+        lda   <pal_idx                 * Lecture index couleur
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
         adda  #$02                     * increment de l'indice de couleur (x2)
-        sta   pal_idx                  * stockage du nouvel index
-        lda   ,y                       * chargement de la nouvelle couleur courante
-        *sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
-        *stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
-        sta   $9000                     * A retirer !!!!!!!
-        stb   $9000                     * A retirer !!!!!!!
-        lda   pal_idx                  * rechargement de l'index couleur
+        sta   <pal_idx                 * stockage du nouvel index
+        lda   ,u                       * chargement de la nouvelle couleur courante
+        sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
+        lda   <pal_idx                 * rechargement de l'index couleur
         cmpa  ,x                       * comparaison avec l'index limite pour cette couleur
         bne   SetPalNext               * si inferieur on continue avec la meme couleur
-        leay  2,y                      * on avance le pointeur vers la nouvelle couleur
+        leau  2,u                      * on avance le pointeur vers la nouvelle couleur
         leax  1,x                      * on avance le pointeur vers la nouvelle limite
         cmpx  #end_pal_len             * test de fin de liste
         bne   PalRun                   * on reboucle si fin de liste pas atteinte
@@ -106,9 +107,10 @@ Vsync_2
         tst   $E7E7                    * le faisceau est dans l'ecran
         bmi   Vsync_2                  * tant que le bit est a 1 on boucle
 								        
-        dec   pal_cycles               * decremente le compteur du nombre de frame
+        dec   <pal_cycles              * decremente le compteur du nombre de frame
         bne   PalInit                  * on reboucle si nombre de frame n'est pas realise
         bra   InitVideo                * saut de la signature de boot
+        rmb   7,0                      * 7 octets de libre
         
 pal_buffer                             
         fcb   $42                      * B et buffer de comparaison

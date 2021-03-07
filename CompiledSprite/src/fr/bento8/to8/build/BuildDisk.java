@@ -574,11 +574,6 @@ public class BuildDisk
 				Act act = gameMode.getValue().acts.get(gameMode.getValue().actBoot);
 
 				if (act != null) {
-
-					asmLoadAct.add("        ldd   #Black_palette");
-					asmLoadAct.add("        std   Ptr_palette");
-					asmLoadAct.add("        jsr   UpdatePalette");
-					
 					if (act.bgColorIndex != null) {
 						asmLoadAct.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 						asmLoadAct.add("        ldb   #$62                     * load page 2");						
@@ -619,10 +614,10 @@ public class BuildDisk
 						asmPalette.add(PaletteTO8.getPaletteData(act.paletteFileName));
 						asmPalette.flush();
 
-						asmLoadAct.add("        ldd   #" + act.paletteName);
-						asmLoadAct.add("        std   Ptr_palette");
-						asmLoadAct.add("        jsr   UpdatePalette");
-
+//						asmLoadAct.add("        ldd   #" + act.paletteName);
+//						asmLoadAct.add("        std   Ptr_palette");
+//						asmLoadAct.add("        jsr   UpdatePalette");
+//
 						content += "        INCLUD PALETTE\n";
 						content += "        INCLUD UPDTPAL\n";
 					}					

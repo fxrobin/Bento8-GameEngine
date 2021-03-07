@@ -79,16 +79,55 @@ PaletteHandler_Routines
         lbra  PaletteHandler_Main
  
 PaletteHandler_Init
-        sts   PHI_Rts+1,pcr            * Bug c6809 devrait etre +2
         lda   routine,u
         adda  #$03
-        sta   routine,u
+        sta   routine,u 
         lda   #$10    
-        sta   pal_cycles,pcr    
+        sta   pal_cycles,pcr
+        
+        ldy   pal_src,u                * copie de la palette source dans pal_cur
+        leax  pal_cur,pcr
+        ldd   ,y
+        std   ,x
+        ldd   2,y
+        std   2,x
+        ldd   4,y
+        std   4,x
+        ldd   6,y
+        std   6,x   
+        ldd   8,y
+        std   8,x
+        ldd   10,y
+        std   10,x
+        ldd   12,y
+        std   12,x
+        ldd   14,y
+        std   14,x
+        ldd   16,y
+        std   16,x
+        ldd   18,y
+        std   18,x
+        ldd   20,y
+        std   20,x
+        ldd   22,y
+        std   22,x
+        ldd   24,y
+        std   24,x
+        ldd   26,y
+        std   26,x
+        ldd   28,y
+        std   28,x
+        ldd   30,y
+        std   30,x                                                                                                                     
+                                                 
+PaletteHandler_Main
         ldx   pal_dst,u
-        ldy   pal_src,u
-        leas  pal_cur,pcr
-        clr   pal_idx,pcr                        
+        leay  pal_cur,pcr
+        clr   pal_idx,pcr   
+        dec   pal_cycles,pcr           * decremente le compteur du nombre de frame
+        bne   PHI_Loop                 * on reboucle si nombre de frame n'est pas realise
+        jmp   ClearObj                 * auto-destruction de l'objet
+        
 PHI_Loop
         lda   ,y	                   * chargement de la composante verte et rouge
         anda  pal_mask,pcr             * on efface la valeur vert ou rouge par masque
@@ -108,7 +147,7 @@ PHI_VRDec
         lda   ,y                       * on recharge la valeur avec vert et rouge
         suba  pal_buffer+1,pcr         * on decremente la composante verte ou rouge
 PHI_VRSave                             
-        sta   ,s                       * sauvegarde de la nouvelle valeur vert ou rouge
+        sta   ,y                       * sauvegarde de la nouvelle valeur vert ou rouge
 PHI_VRSuivante                         
         com   pal_mask,pcr             * inversion du masque pour traiter l'autre semioctet
         bmi   PHI_Loop                 * si on traite $F0 on branche sinon on continue
@@ -123,37 +162,22 @@ PHI_SetPalBleu
 PHI_SetPalBleudec                       
         decb                           * on decremente la composante bleue
 PHI_SetPalSaveBleu                         
-        stb   1,s                      * sauvegarde de la nouvelle valeur bleue
+        stb   1,y                      * sauvegarde de la nouvelle valeur bleue
 								       
 PHI_SetPalNext                             
         lda   pal_idx,pcr              * Lecture index couleur
         asla
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
-        lda   ,s                       * chargement de la nouvelle couleur courante
+        lda   ,y                       * chargement de la nouvelle couleur courante
         sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
         stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
         leay  2,y                      * on avance le pointeur vers la nouvelle couleur source
         leax  2,x                      * on avance le pointeur vers la nouvelle couleur dest
-        leas  2,s                      * on avance le pointeur vers la couleur intermediaire
         inc   pal_idx,pcr
         lda   pal_idx,pcr
         cmpa  #$10  
         bne   PHI_Loop                 * on reboucle si fin de liste pas atteinte
-
-PHI_Rts
-        lds   #$0000
-        rts
-                                                 
-PaletteHandler_Main
-        sts   PHI_Rts+1,pcr            * Bug c6809 devrait etre +2
-        ldx   pal_dst,u
-        leay  pal_cur,pcr
-        leas  pal_cur,pcr
-        clr   pal_idx,pcr   
-        dec   pal_cycles,pcr           * decremente le compteur du nombre de frame
-        lbne  PHI_Loop                 * on reboucle si nombre de frame n'est pas realise
-        clr   ,u                       * auto-destruction de l'objet
-        bra   PHI_Rts
+        rts        
 
 * ---------------------------------------------------------------------------
 * Local data

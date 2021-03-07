@@ -78,7 +78,7 @@
 * Object Status Table index
 * - objects with a dedicated adress (no dynamic allocation)
 * ---------------------------------------------------------------------------
-TitleScr_Object_RAM     equ Object_RAM+(object_size*1)
+TitleScr_Object_RAM     equ Object_RAM
 Obj_Sonic               equ TitleScr_Object_RAM
 Obj_Tails               equ TitleScr_Object_RAM+(object_size*1)
 Obj_LargeStar           equ TitleScr_Object_RAM+(object_size*2)
