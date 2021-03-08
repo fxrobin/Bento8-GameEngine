@@ -565,6 +565,16 @@ public class BuildDisk
 			String mainEngineTmpFile = duplicateFile(gameMode.getValue().engineAsmMainEngine, gameMode.getKey());
 			String content = "\n";
 			
+			// MAIN ENGINE - Palettes
+			// --------------------------------------------------------------------------------------			
+			AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));
+			
+			for (Entry<String, Palette> palette : gameMode.getValue().palettes.entrySet()) {
+				asmPalette.addLabel(palette.getValue().name + " * @globals");
+				asmPalette.add(PaletteTO8.getPaletteData(palette.getValue().fileName));
+				asmPalette.flush();
+			}
+			
 			// MAIN ENGINE - Code d'initialisation de l'Acte
 			// --------------------------------------------------------------------------------------
 			AsmSourceCode asmLoadAct = new AsmSourceCode(getIncludeFilePath(Tags.LOAD_ACT, gameMode.getValue()));
@@ -608,19 +618,14 @@ public class BuildDisk
 						content += "        INCLUD CPYIMG\n";
 					}
 					
-					if (act.paletteFileName != null) {
-						AsmSourceCode asmPalette = new AsmSourceCode(getIncludeFilePath(Tags.PALETTE, gameMode.getValue()));
-						asmPalette.addLabel(act.paletteName + " * @globals");
-						asmPalette.add(PaletteTO8.getPaletteData(act.paletteFileName));
-						asmPalette.flush();
-
+					if (act.paletteName != null) {
 //						asmLoadAct.add("        ldd   #" + act.paletteName);
 //						asmLoadAct.add("        std   Ptr_palette");
 //						asmLoadAct.add("        jsr   UpdatePalette");
 //
 						content += "        INCLUD PALETTE\n";
 						content += "        INCLUD UPDTPAL\n";
-					}					
+					}
 				}
 			}
 			

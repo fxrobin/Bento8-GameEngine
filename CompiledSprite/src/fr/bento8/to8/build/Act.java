@@ -8,7 +8,6 @@ public class Act{
 	public String bgFileName;
 	public String objPlacementFileName;
 	public String paletteName;
-	public String paletteFileName;	
 	
 	public Act(String name) throws Exception {
 		this.name = name;
@@ -30,7 +29,6 @@ public class Act{
 				break;
 			case "palette":
 				this.paletteName = values[0];
-				this.paletteFileName = values[1];
 				break;
 			default:
 		}

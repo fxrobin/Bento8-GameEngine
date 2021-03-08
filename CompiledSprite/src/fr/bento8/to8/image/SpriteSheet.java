@@ -52,16 +52,16 @@ public class SpriteSheet {
 
 				if (subImageWidth <= 160 && height <= 200 && pixelSize == 8) { // Contrôle du format d'image
 
-					// On inverse l'image verticalement		
-					if (variant.contains("Y")) {
+					// On inverse l'image verticalement (x mirror)		
+					if (variant.contains("X")) {
 						AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 						tx.translate(0, -image.getHeight(null));
 						AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 						image = op.filter(image, null);
 					}
 
-					// On inverse l'image horizontalement		
-					else if (variant.contains("X")) {
+					// On inverse l'image horizontalement (y mirror)
+					else if (variant.contains("Y")) {
 						hFlipped = true;
 						AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 						tx.translate(-image.getWidth(null), 0);

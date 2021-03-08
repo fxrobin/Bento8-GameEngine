@@ -78,7 +78,7 @@
 * Object Status Table index
 * - objects with a dedicated adress (no dynamic allocation)
 * ---------------------------------------------------------------------------
-TitleScr_Object_RAM     equ Object_RAM
+TitleScr_Object_RAM     equ Object_RAM+(object_size*1)
 Obj_Sonic               equ TitleScr_Object_RAM
 Obj_Tails               equ TitleScr_Object_RAM+(object_size*1)
 Obj_LargeStar           equ TitleScr_Object_RAM+(object_size*2)
@@ -205,6 +205,13 @@ Sonic_Routines                                   *off_12E76:      offsetTable
                                                  *; ===========================================================================
                                                  *; spawn more stars
 Sonic_Init                                       *Obj0E_Sonic_Init:
+
+        * Activate IRQ for Sound
+        lda   $6019                           
+        ora   #$20
+        sta   $6019                                   ; STATUS register
+        andcc #:$10                                   ; tell 6809 to activate irq    
+
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)

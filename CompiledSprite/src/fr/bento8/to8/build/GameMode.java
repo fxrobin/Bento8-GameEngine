@@ -17,6 +17,7 @@ public class GameMode extends AsmInclude{
 	
 	public String engineAsmMainEngine;
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
+	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
 	public HashMap<String, Act> acts = new HashMap<String, Act>(); 
 	public String actBoot;
 	
@@ -62,6 +63,20 @@ public class GameMode extends AsmInclude{
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
 			objects.put(curObject.getKey(), new Object(name, curObject.getKey(), curObject.getValue()[0]));
 		}	
+		
+		// Palettes
+		// ********************************************************************
+		
+		HashMap<String, String[]> paletteProperties = PropertyList.get(prop, "palette");
+		if (paletteProperties == null) {
+			throw new Exception("palette not found in " + fileName);
+		}
+		
+		// Chargement des fichiers de configuration des Palettes
+		for (Map.Entry<String,String[]> curPalette : paletteProperties.entrySet()) {
+			BuildDisk.logger.debug("\tLoad Palette "+curPalette.getKey()+": "+curPalette.getValue()[0]);
+			palettes.put(curPalette.getKey(), new Palette(name, curPalette.getKey(), curPalette.getValue()[0]));
+		}			
 
 		// Act Sequence
 		// ********************************************************************

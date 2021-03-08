@@ -531,9 +531,6 @@ PSGSFXGetStatus *@globals
 * ************************************************************************************
 * processes a music frame
 * destroys A,B,X
-
-PSGFrame_end
-        rts
         
 PSGFrame *@globals
 
@@ -541,11 +538,12 @@ PSGFrame *@globals
         sta   $E7E5
 
         lda   PSGMusicStatus                          ; check if we have got to play a tune
-        beq   PSGFrame_end
+        bne   PSGFrame_continue
+        rts
 
+PSGFrame_continue        
         lda   PSGMusicSkipFrames                      ; check if we havve got to skip frames
         bne   _skipFrame
-  
         ldx   PSGMusicPointer                         ; read current address
 
 _intLoop
