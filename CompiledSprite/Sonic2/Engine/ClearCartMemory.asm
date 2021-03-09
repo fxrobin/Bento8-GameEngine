@@ -2,7 +2,7 @@
 * Clear memory in cardtridge area
 ********************************************************************************
 
-ClearCartMem
+ClearCartMem *@globals
         pshs  u,dp
         sts   ClearCartMem_3+2
         lds   #$4000

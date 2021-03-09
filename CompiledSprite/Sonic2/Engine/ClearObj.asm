@@ -9,7 +9,7 @@
 
 ClearObj *@globals
         sts   CLO_1+2
-        stx   CLO_2+1
+        pshs  d,x,y,u  
         leas  object_size,u        
         ldd   #$0000
         ldx   #$0000
@@ -31,5 +31,4 @@ CLO_1
         pshu  d,x,y         ; DEPENDENCY on nb of _sr calls inside IRQ routine  (here 18 bytes of margin)
         pshu  d,x,y         ; DEPENDENCY on object_size definition
 CLO_2        
-        ldx   #$0000        
-        rts
+        puls  d,x,y,u,pc

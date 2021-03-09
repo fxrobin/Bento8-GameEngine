@@ -13,53 +13,33 @@
 ; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ;
 ; ---------------------------------------------------------------------------
-(main)SEGA
+(main)SATI
         INCLUD GLOBALS
         INCLUD CONSTANT
         org   $A000
         
-Obj_PaletteHandler      equ SegaScr_Object_RAM+(object_size*1)        
+Obj_PaletteHandler      equ Object_RAM+(object_size*1)        
         
 SonicAndTailsIn
         lda   routine,u
         sta   *+4,pcr
-        bra   SEGA_Routines
+        bra   SATI_Routines
 
 SATI_Routines
-        lbra  SATI_fadeOut
         lbra  SATI_fadeIn
+        lbra  SATI_fadeOut        
         lbra  SATI_Wait
  
-SATI_fadeOut        
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
-        sta   id,x                 
-        clr   routine,x            
-        ldd   #Pal_SEGA *@IgnoreUndefined
-        std   ext_variables,x
-        ldd   #Black_palette *@IgnoreUndefined
-        std   ext_variables+2,x
-        
-        lda   routine,u
-        adda  #$03
-        sta   routine,u  
-        rts
-        
 SATI_fadeIn
-        ldx   #Obj_PaletteHandler
-        tst   ,x
-        bne   SATI_fadeIn_return
-        
         ldx   #$0000
-        jsr   ClearCartMem        
+        *jsr   ClearCartMem        
         
         ldd   #Img_SonicAndTailsIn
-        std   imageset,u
+        std   image_set,u
 
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x                 
-        clr   routine,x            
         ldd   #Black_palette *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Pal_SonicAndTailsIn *@IgnoreUndefined
@@ -70,13 +50,34 @@ SATI_fadeIn
 SATI_fadeIn_return        
         rts    
                 
-SATI_Wait
+SATI_fadeOut
         ldd   Vint_runcount
         cmpd  #3*50 ; 3 seconds
-        beq   SATI_continue
+        bne   SATI_fadeOut_continue
+        rts
+
+SATI_fadeOut_continue        
+        ldx   #Obj_PaletteHandler
+        lda   #ObjID_PaletteHandler
+        sta   id,x                 
+        ldd   #Pal_SonicAndTailsIn *@IgnoreUndefined
+        std   ext_variables,x
+        ldd   #Black_palette *@IgnoreUndefined
+        std   ext_variables+2,x  
+          
+        lda   routine,u
+        adda  #$03
+        sta   routine,u    
         rts                
                 
-SATI_continue            
+SATI_Wait
+        ldx   #Obj_PaletteHandler
+        tst   ,x
+        beq   SATI_Wait_continue
+        rts
+        
+SATI_Wait_continue
+        jsr   ClearObj                    
         ldd   #(ObjID_TitleScreen<+8)+$03             ; Replace this object with Title Screen Object subtype 3
         std   ,u
         rts  

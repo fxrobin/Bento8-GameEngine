@@ -18,18 +18,56 @@
         INCLUD CONSTANT
         org   $A000
 
-SegaScr_Object_RAM      equ Object_RAM
-Obj_Trails1             equ SegaScr_Object_RAM
-Obj_Trails2             equ SegaScr_Object_RAM+(object_size*1)
-Obj_Trails3             equ SegaScr_Object_RAM+(object_size*2)
-Obj_Trails4             equ SegaScr_Object_RAM+(object_size*3)
-Obj_SonicHand           equ SegaScr_Object_RAM+(object_size*4)
-Obj_TailsHand           equ SegaScr_Object_RAM+(object_size*5)
-Obj_EmblemFront01       equ SegaScr_Object_RAM+(object_size*6)        
-Obj_PaletteHandler      equ SegaScr_Object_RAM+(object_size*7)
+SegaScr_This            equ Object_RAM
+Obj_SEGA                equ SegaScr_This
+Obj_Trails1             equ SegaScr_This+(object_size*1)
+Obj_Trails2             equ SegaScr_This+(object_size*2)
+Obj_Trails3             equ SegaScr_This+(object_size*3)
+Obj_Trails4             equ SegaScr_This+(object_size*4)
+Obj_Sonic1              equ SegaScr_This+(object_size*5)
+Obj_Sonic2              equ SegaScr_This+(object_size*6)
+Obj_Sonic3              equ SegaScr_This+(object_size*7)        
+Obj_PaletteHandler      equ SegaScr_This+(object_size*8)
 
-b_SegaScr_PalDone_Flag  equ ext_variables        
-      
+* ---------------------------------------------------------------------------
+* Object Status Table offsets
+* - two variables can share same space if used by two different subtypes
+* - take care of words and bytes and space them accordingly
+* ---------------------------------------------------------------------------
+b_nbFrames              equ ext_variables        
+
+* ---------------------------------------------------------------------------
+* Subtypes
+* ---------------------------------------------------------------------------
+Sub_Init        equ 0
+Sub_SEGA        equ 3
+Sub_Trails      equ 6
+Sub_Sonic       equ 9
+                                                       
+SEGA_Main
+        lda   routine,u
+        sta   *+4,pcr
+        bra   SEGA_Routines                                                       
+        
+SEGA_Routines
+        lbra  SEGA_MainInit
+        lbra  SEGA
+        lbra  Trails                                                  
+        lbra  Sonic
+                                                       
+SEGA_MainInit
+        lda   #4
+        sta   priority,u
+        lda   subtype,u
+        sta   routine,u
+        bra   SEGA_Main
+        
+Trails
+        jmp   DisplaySprite
+        
+Sonic        
+        jsr   AnimateSprite
+        jmp   DisplaySprite
                                                       * 
                                                       * ; ===========================================================================
                                                       * ; ----------------------------------------------------------------------------
@@ -38,26 +76,123 @@ b_SegaScr_PalDone_Flag  equ ext_variables
                                                       * ; Sprite_3A1DC:
 SEGA                                                  * ObjB0:
                                                       *     moveq   #0,d0
-        lda   routine,u                               *     move.b  routine(a0),d0
+        lda   routine_secondary,u                     *     move.b  routine(a0),d0
         sta   *+4,pcr                                 *     move.w  ObjB0_Index(pc,d0.w),d1
         bra   SEGA_Routines                           *     jmp ObjB0_Index(pc,d1.w)
                                                       * ; ===========================================================================
                                                       * ; off_3A1EA:
-SEGA_Routines                                         * ObjB0_Index:    offsetTable
+SEGA_SubRoutines                                      * ObjB0_Index:    offsetTable
         lbra  SEGA_Init                               *         offsetTableEntry.w ObjB0_Init       ;  0
         lbra  SEGA_RunLeft                            *         offsetTableEntry.w ObjB0_RunLeft    ;  2
         lbra  SEGA_MidWipe                            *         offsetTableEntry.w ObjB0_MidWipe    ;  4
         lbra  SEGA_RunRight                           *         offsetTableEntry.w ObjB0_RunRight   ;  6
+        lbra  SEGA_RunRightWaitPal
         lbra  SEGA_EndWipe                            *         offsetTableEntry.w ObjB0_EndWipe    ;  8
-        lbra  SEGA_Wait        
+        lbra  SEGA_EndWipeWaitPal
+        lbra  SEGA_Wait
+        lbra  SEGA_end        
         rts                                           *         offsetTableEntry.w return_3A3F6     ; $A
                                                       * ; ===========================================================================
-                                                      * 
+                                                      *
 SEGA_Init                                             * ObjB0_Init:
                                                       *     bsr.w   LoadSubObject
-                                                      *     move.w  #$1E8,x_pixel(a0)
+                                                      *     move.w  #$1E8,x_pixel(a0)                                                  
                                                       *     move.w  #$F0,y_pixel(a0)
-                                                      *     move.w  #$B,objoff_2A(a0)
+        lda   #$B
+        sta   b_nbFrames,u                            *     move.w  #$B,objoff_2A(a0)
+        
+        * Init SEGA logo position
+        ldd   #$807F
+        std   xy_pixel,u
+        
+        * Disable background save and XY refresh on SEGA logo 
+        lda   render_flags,u
+        ora   #render_overlay_mask!render_motionless_mask
+        sta   render_flags,u        
+        
+        * Init all sub objects
+        stu   SEGA_Init_01+1
+        ldd   #(ObjID_SEGA<+8)+Sub_Trails
+        ldy   #$E47F
+        
+        ldx   #Obj_Trails1
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Img_SegaTrails_1
+        stu   image_set,x
+
+        ldx   #Obj_Trails2
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Img_SegaTrails_2
+        stu   image_set,x        
+        
+        ldx   #Obj_Trails3
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Img_SegaTrails_3
+        stu   image_set,x        
+        
+        ldx   #Obj_Trails4
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Img_SegaTrails_4
+        stu   image_set,x                                
+        
+        ldd   #(ObjID_SEGA<+8)+Sub_Sonic
+        
+        ldx   #Obj_Sonic1
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Ani_SegaSonic_1
+        stu   anim,x
+
+        ldx   #Obj_Sonic2
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Ani_SegaSonic_1
+        stu   anim,x
+        
+        ldx   #Obj_Sonic3
+        std   ,x
+        sty   xy_pixel,x
+        ldu   #Ani_SegaSonic_1
+        stu   anim,x
+        
+SEGA_Init_01
+        ldu   #$0000
+        
+        * Disable backround save on Trails and set x mirror
+        ldx   #Obj_Trails1
+        lda   render_flags,x
+        ora   #render_overlay_mask!render_xmirror_mask
+        sta   render_flags,x
+        ldb   #3
+        stb   priority,x
+        ldx   #Obj_Trails2
+        sta   render_flags,x
+        stb   priority,x
+        ldx   #Obj_Trails3
+        sta   render_flags,x
+        stb   priority,x
+        ldx   #Obj_Trails4
+        sta   render_flags,x
+        stb   priority,x
+        
+        * Set x mirror on Sonic
+        ldx   #Obj_Sonic1
+        lda   render_flags,x
+        ora   #render_xmirror_mask
+        sta   render_flags,x
+        ldb   #2
+        stb   priority,x
+        ldx   #Obj_Sonic2
+        sta   render_flags,x
+        stb   priority,x
+        ldx   #Obj_Sonic3
+        sta   render_flags,x
+        stb   priority,x
+        
                                                       *     move.w  #2,(SegaScr_VInt_Subrout).w
                                                       *     bset    #0,render_flags(a0)
                                                       *     bset    #0,status(a0)
@@ -163,33 +298,95 @@ SEGA_Init                                             * ObjB0_Init:
                                                       * 
 SEGA_RunLeft                                          * ObjB0_RunLeft:
                                                       *     subi.w  #$20,x_pos(a0)
-                                                      *     subq.w  #1,objoff_2A(a0)
-                                                      *     bmi.s   loc_3A312
-        bsr   SEGA_Move_Streaks_Left                  *     bsr.w   ObjB0_Move_Streaks_Left
+        dec   b_nbFrames,u                            *     subq.w  #1,objoff_2A(a0)
+        bmi   SEGA_RunLeft_continue                   *     bmi.s   loc_3A312
+                                                      *     bsr.w   ObjB0_Move_Streaks_Left
+        ldx   #Obj_Trails1                                                      
+        lda   x_pixel,x
+        suba  #$10                                              
+        sta   x_pixel,x
+        ldx   #Obj_Trails2                                                      
+        sta   x_pixel,x
+        ldx   #Obj_Trails3                                                      
+        sta   x_pixel,x
+        ldx   #Obj_Trails4                                                      
+        sta   x_pixel,x
+
+        ldx   #Obj_Sonic1                                                      
+        lda   x_pixel,x
+        suba  #$10                                              
+        sta   x_pixel,x
+        ldx   #Obj_Sonic2                                                      
+        sta   x_pixel,x
+        ldx   #Obj_Sonic3                                                      
+        sta   x_pixel,x        
                                                       *     lea (Ani_objB0).l,a1
                                                       *     jsrto   (AnimateSprite).l, JmpTo25_AnimateSprite
-                                                      *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
+        rts                                           *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
                                                       * ; ===========================================================================
                                                       * 
-                                                      * loc_3A312:
+SEGA_RunLeft_continue                                 * loc_3A312:
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u                                                      
                                                       *     addq.b  #2,routine(a0)
-                                                      *     move.w  #$C,objoff_2A(a0)
+        lda   #$C                                     *     move.w  #$C,objoff_2A(a0)
+        sta   b_nbFrames,u
                                                       *     move.b  #1,objoff_2C(a0)
                                                       *     move.b  #-1,objoff_2D(a0)
-                                                      *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
+        rts                                           *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
                                                       * ; ===========================================================================
                                                       * 
 SEGA_MidWipe                                          * ObjB0_MidWipe:
+
+        * Unset x mirror on Trails
+        ldx   #Obj_Trails1
+        lda   render_flags,x
+        anda   #:render_xmirror_mask
+        sta   render_flags,x
+        ldx   #Obj_Trails2
+        sta   render_flags,x
+        ldx   #Obj_Trails3
+        sta   render_flags,x
+        ldx   #Obj_Trails4
+        sta   render_flags,x
+        
+        * Unset x mirror on Sonic
+        ldx   #Obj_Sonic1
+        lda   render_flags,x
+        anda   #:render_xmirror_mask
+        sta   render_flags,x
+        ldx   #Obj_Sonic2
+        sta   render_flags,x
+        ldx   #Obj_Sonic3
+        sta   render_flags,x
+
+        * Set Sega Logo
+        ldd   #Img_SegaLogo_1
+        std   image_set,u  
+        
+        * Fade out Trails
+        ldx   #Obj_PaletteHandler
+        lda   #ObjID_PaletteHandler
+        sta   id,x                
+        ldd   #Pal_SEGA *@IgnoreUndefined
+        std   ext_variables,x
+        ldd   #Pal_SEGAMid *@IgnoreUndefined
+        std   ext_variables+2,x
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+        rts         
                                                       *     tst.w   objoff_2A(a0)
                                                       *     beq.s   loc_3A33A
                                                       *     subq.w  #1,objoff_2A(a0)
-        SEGA_Move_Streaks_Left                        *     bsr.w   ObjB0_Move_Streaks_Left
+                                                      *     bsr.w   ObjB0_Move_Streaks_Left
                                                       * 
                                                       * loc_3A33A:
                                                       *     lea word_3A49E(pc),a1
                                                       *     bsr.w   loc_3A44E
                                                       *     bne.s   loc_3A346
-        rts                                           *     rts
+                                                      *     rts
                                                       * ; ===========================================================================
                                                       * 
                                                       * loc_3A346:
@@ -220,86 +417,149 @@ SEGA_MidWipe                                          * ObjB0_MidWipe:
                                                       *     rts
                                                       * ; ===========================================================================
                                                       * 
+SEGA_RunRightWaitPal                                  
+        ldx   #Obj_PaletteHandler
+        tst   ,x
+        beq   SEGA_RunRightWaitPal_continue
+        rts
+        
+SEGA_RunRightWaitPal_continue   
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u 
+        rts     
+
 SEGA_RunRight                                         * ObjB0_RunRight:
-                                                      *     subq.w  #1,objoff_2A(a0)
-                                                      *     bmi.s   loc_3A3B4
+        dec   b_nbFrames,u                            *     subq.w  #1,objoff_2A(a0)
+        bmi   SEGA_RunRight_continue                  *     bmi.s   loc_3A3B4
                                                       *     addi.w  #$20,x_pos(a0)
-        bsr   SEGA_Move_Streaks_Right                 *     bsr.w   ObjB0_Move_Streaks_Right
+                                                      *     bsr.w   ObjB0_Move_Streaks_Right
+        ldx   #Obj_Trails1                                                      
+        lda   x_pixel,x
+        adda  #$10                                              
+        sta   x_pixel,x
+        ldx   #Obj_Trails2                                                      
+        sta   x_pixel,x
+        ldx   #Obj_Trails3                                                      
+        sta   x_pixel,x
+        ldx   #Obj_Trails4                                                      
+        sta   x_pixel,x
+        
+        ldx   #Obj_Sonic1                                                      
+        lda   x_pixel,x
+        adda  #$10                                              
+        sta   x_pixel,x
+        ldx   #Obj_Sonic2                                                      
+        sta   x_pixel,x
+        ldx   #Obj_Sonic3                                                      
+        sta   x_pixel,x            
                                                       *     lea (Ani_objB0).l,a1
                                                       *     jsrto   (AnimateSprite).l, JmpTo25_AnimateSprite
-                                                      *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
+        jmp   DisplaySprite                           *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
                                                       * ; ===========================================================================
                                                       * 
-                                                      * loc_3A3B4:
+SEGA_RunRight_continue                                * loc_3A3B4:
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u                                                      
                                                       *     addq.b  #2,routine(a0)
                                                       *     move.w  #$C,objoff_2A(a0)
                                                       *     move.b  #1,objoff_2C(a0)
                                                       *     move.b  #-1,objoff_2D(a0)
-                                                      *     rts
+        rts                                           *     rts
                                                       * ; ===========================================================================
                                                       * 
 SEGA_EndWipe                                          * ObjB0_EndWipe:
+        * Fade out Trails
+        ldx   #Obj_PaletteHandler
+        lda   #ObjID_PaletteHandler
+        sta   id,x                 
+        ldd   #Pal_SEGA *@IgnoreUndefined
+        std   ext_variables,x
+        ldd   #Pal_SEGAEnd *@IgnoreUndefined
+        std   ext_variables+2,x
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+        rts
+        
                                                       *     tst.w   objoff_2A(a0)
                                                       *     beq.s   loc_3A3DA
                                                       *     subq.w  #1,objoff_2A(a0)
-        bsr   SEGA_Move_Streaks_Right                 *     bsr.w   ObjB0_Move_Streaks_Right
+                                                      *     bsr.w   ObjB0_Move_Streaks_Right
                                                       * 
                                                       * loc_3A3DA:
                                                       *     lea word_3A514(pc),a1
                                                       *     bsr.w   loc_3A44E
-        bne   SEGA_PlaySample                         *     bne.s   loc_3A3E6
-        rts                                           *     rts
+                                                      *     bne.s   loc_3A3E6
+                                                      *     rts
                                                       * ; ===========================================================================
-                                                      * 
+                                                      *         
+        
+SEGA_EndWipeWaitPal                                  
+        ldx   #Obj_PaletteHandler
+        tst   ,x
+        beq   SEGA_PlaySample
+        rts
+
 SEGA_PlaySample                                       * loc_3A3E6:
-        lda   routine,u
+        lda   routine_secondary,u
         adda  #$03
-        sta   routine,u                               *     addq.b  #2,routine(a0)              
-        lda   #$FF           
-        sta   b_SegaScr_PalDone_Flag,u                *     st  (SegaScr_PalDone_Flag).w
+        sta   routine_secondary,u                     *     addq.b  #2,routine(a0)              
+           
+                                                      *     st  (SegaScr_PalDone_Flag).w
         ldy   #Pcm_SEGA *@IgnoreUndefined             *     move.b  #SndID_SegaSound,d0
         jsr   PlayPCM                                 *     jsrto   (PlaySound).l, JmpTo12_PlaySound
         
-        ldd   #$0000
-        std   Vint_runcount
-                                                      * 
-                                                      * return_3A3F6:
+        ldd   #$0000                                  *
+        std   Vint_runcount                           * return_3A3F6:
         rts                                           *     rts
         
 SEGA_Wait
         ldd   Vint_runcount
         cmpd  #3*50 ; 3 seconds
-        beq
+        beq   SEGA_fadeOut
         rts
         
-SEGAPal_fadeOut        
+SEGA_fadeOut        
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x                 
-        clr   subtype,x            
-        ldd   #White_palette *@IgnoreUndefined
+        ldd   #Pal_SEGAEnd *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Black_palette *@IgnoreUndefined
         std   ext_variables+2,x
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u 
         rts
-        
-SEGAPal_fadeIn
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
-        sta   id,x                 
-        clr   subtype,x            
-        ldd   #Black_palette *@IgnoreUndefined
-        std   ext_variables,x
-        ldd   #Pal_TitleScreen *@IgnoreUndefined
-        std   ext_variables+2,x    
-        rts    
                 
-SEGAPal_continue            
-        ldd   #$0000
-        std   w_SEGA_time_frame_count,u
-        sta   routine,u
+SEGA_end
+        ldx   #Obj_PaletteHandler
+        tst   ,x
+        beq   SEGA_return
+        rts
+
+SEGA_return                    
+        jsr   ClearObj
         ldd   #(ObjID_SonicAndTailsIn<+8)+$00         ; Replace this object with Title Screen Object subtype 3
         std   ,u
+        ldu   #Obj_Trails1
+        jsr   ClearObj
+        ldu   #Obj_Trails1
+        jsr   ClearObj
+        ldu   #Obj_Trails1
+        jsr   ClearObj
+        ldu   #Obj_Trails4
+        jsr   ClearObj
+        ldu   #Obj_Sonic1
+        jsr   ClearObj
+        ldu   #Obj_Sonic2
+        jsr   ClearObj
+        ldu   #Obj_Sonic3
+        jsr   ClearObj  
+        ldu   #Obj_PaletteHandler
+        jsr   ClearObj                                                        
         rts  
                         
                                                       * ; ===========================================================================
@@ -331,58 +591,26 @@ SEGAPal_continue
                                                       *     jmpto   (DisplaySprite).l, JmpTo45_DisplaySprite
                                                       * ; ===========================================================================
                                                       * 
-SEGA_Move_Streaks_Left                                * ObjB0_Move_Streaks_Left:
+                                                      * ObjB0_Move_Streaks_Left:
                                                       *     ; 9 full lines (8 pixels) + 6 pixels, 2-byte interleaved entries for PNT A and PNT B
                                                       *     lea (Horiz_Scroll_Buf + 2 * 2 * (9 * 8 + 6)).w,a1
                                                       * 
                                                       *     move.w  #$22,d6 ; Number of streaks-1
-        ldx   #Obj_Trails1                                                      
-        lda   x_pixel,x
-        suba  #$10                                              
-        sta   x_pixel,x
-        ldx   #Obj_Trails2                                                      
-        lda   x_pixel,x
-        suba  #$10                                              
-        sta   x_pixel,x
-        ldx   #Obj_Trails3                                                      
-        lda   x_pixel,x
-        suba  #$10                                              
-        sta   x_pixel,x
-        ldx   #Obj_Trails4                                                      
-        lda   x_pixel,x
-        suba  #$10                                              
-        sta   x_pixel,x                        
                                                       * -   subi.w  #$20,(a1)
                                                       *     addq.w  #2 * 2 * 2,a1   ; Advance to next streak 2 pixels down
                                                       *     dbf d6,-
-        rts                                           *     rts
+                                                      *     rts
                                                       * ; ===========================================================================
                                                       * 
-SEGA_Move_Streaks_Right                               * ObjB0_Move_Streaks_Right:
+                                                      * ObjB0_Move_Streaks_Right:
                                                       *     ; 9 full lines (8 pixels) + 7 pixels, 2-byte interleaved entries for PNT A and PNT B
                                                       *     lea (Horiz_Scroll_Buf + 2 * 2 * (9 * 8 + 7)).w,a1
                                                       * 
                                                       *     move.w  #$22,d6 ; Number of streaks-1
-        ldx   #Obj_Trails1                                                      
-        lda   x_pixel,x
-        adda  #$10                                              
-        sta   x_pixel,x
-        ldx   #Obj_Trails2                                                      
-        lda   x_pixel,x
-        adda  #$10                                              
-        sta   x_pixel,x
-        ldx   #Obj_Trails3                                                      
-        lda   x_pixel,x
-        adda  #$10                                              
-        sta   x_pixel,x
-        ldx   #Obj_Trails4                                                      
-        lda   x_pixel,x
-        adda  #$10                                              
-        sta   x_pixel,x                        
                                                       * -   addi.w  #$20,(a1)
                                                       *     addq.w  #2 * 2 * 2,a1   ; Advance to next streak 2 pixels down
                                                       *     dbf d6,-
-        rts                                           *     rts
+                                                      *     rts
                                                       * ; ===========================================================================
                                                       * 
                                                       * loc_3A44E:
