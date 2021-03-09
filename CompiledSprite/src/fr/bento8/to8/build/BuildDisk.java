@@ -488,7 +488,7 @@ public class BuildDisk
 						}
 					}
 				}
-				logger.debug("*** Non allocated space on page "+page+" : " + (0xDFFF - address) + " octets");
+				logger.debug("*** Non allocated space on page "+page+" : " + (0xE000 - address) + " octets");
 				page++;
 				if (page > game.nbMaxPagesRAM) {
 					logger.fatal("No more space Left on RAM !");
@@ -619,10 +619,10 @@ public class BuildDisk
 					}
 					
 					if (act.paletteName != null) {
-//						asmLoadAct.add("        ldd   #" + act.paletteName);
-//						asmLoadAct.add("        std   Ptr_palette");
-//						asmLoadAct.add("        jsr   UpdatePalette");
-//
+						asmLoadAct.add("        ldd   #" + act.paletteName);
+						asmLoadAct.add("        std   Ptr_palette");
+						asmLoadAct.add("        jsr   UpdatePalette");
+
 						content += "        INCLUD PALETTE\n";
 						content += "        INCLUD UPDTPAL\n";
 					}

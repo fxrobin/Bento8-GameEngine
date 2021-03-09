@@ -219,7 +219,7 @@ CSR_NextObject
 
 CSR_CheckVerticalPosition
         lda   x_pixel,u                     ; compute mapping_frame 
-        anda  #$01                          ; index of sub image is encoded in two bits: 00|BD0, 01|D0, 10|BD1, 11|D1 
+        anda  #$01                          ; index of sub image is encoded in two bits: 00|B0, 01|D0, 10|B1, 11|D1 
         asla                                ; set bit2 for 1px shifted image 
         ldb   render_flags,u            
         andb  #render_overlay_mask          ; set bit1 for normal (background save) or overlay sprite (no background save)

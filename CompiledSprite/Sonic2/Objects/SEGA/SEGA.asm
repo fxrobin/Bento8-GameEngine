@@ -85,8 +85,8 @@ SEGA_SubRoutines                                      * ObjB0_Index:    offsetTa
         lbra  SEGA_Init                               *         offsetTableEntry.w ObjB0_Init       ;  0
         lbra  SEGA_RunLeft                            *         offsetTableEntry.w ObjB0_RunLeft    ;  2
         lbra  SEGA_MidWipe                            *         offsetTableEntry.w ObjB0_MidWipe    ;  4
+        lbra  SEGA_MidWipeWaitPal
         lbra  SEGA_RunRight                           *         offsetTableEntry.w ObjB0_RunRight   ;  6
-        lbra  SEGA_RunRightWaitPal
         lbra  SEGA_EndWipe                            *         offsetTableEntry.w ObjB0_EndWipe    ;  8
         lbra  SEGA_EndWipeWaitPal
         lbra  SEGA_Wait
@@ -111,9 +111,9 @@ SEGA_Init                                             * ObjB0_Init:
         sta   render_flags,u        
         
         * Init all sub objects
-        stu   SEGA_Init_01+1
+        stu   SEGA_Init_01+1,pcr
         ldd   #(ObjID_SEGA<+8)+Sub_Trails
-        ldy   #$E47F
+        ldy   #$F07F
         
         ldx   #Obj_Trails1
         std   ,x
@@ -130,16 +130,17 @@ SEGA_Init                                             * ObjB0_Init:
         ldx   #Obj_Trails3
         std   ,x
         sty   xy_pixel,x
-        ldu   #Img_SegaTrails_3
+        ldu   #Img_SegaTrails_5
         stu   image_set,x        
         
         ldx   #Obj_Trails4
         std   ,x
         sty   xy_pixel,x
-        ldu   #Img_SegaTrails_4
+        ldu   #Img_SegaTrails_6
         stu   image_set,x                                
         
         ldd   #(ObjID_SEGA<+8)+Sub_Sonic
+        ldy   #$E87F
         
         ldx   #Obj_Sonic1
         std   ,x
@@ -150,13 +151,13 @@ SEGA_Init                                             * ObjB0_Init:
         ldx   #Obj_Sonic2
         std   ,x
         sty   xy_pixel,x
-        ldu   #Ani_SegaSonic_1
+        ldu   #Ani_SegaSonic_2
         stu   anim,x
         
         ldx   #Obj_Sonic3
         std   ,x
         sty   xy_pixel,x
-        ldu   #Ani_SegaSonic_1
+        ldu   #Ani_SegaSonic_3
         stu   anim,x
         
 SEGA_Init_01
@@ -169,29 +170,38 @@ SEGA_Init_01
         sta   render_flags,x
         ldb   #3
         stb   priority,x
+        
         ldx   #Obj_Trails2
         sta   render_flags,x
         stb   priority,x
+        
         ldx   #Obj_Trails3
         sta   render_flags,x
         stb   priority,x
+        
         ldx   #Obj_Trails4
         sta   render_flags,x
         stb   priority,x
         
         * Set x mirror on Sonic
         ldx   #Obj_Sonic1
-        lda   render_flags,x
-        ora   #render_xmirror_mask
-        sta   render_flags,x
+        lda   status,x
+        ora   #status_x_orientation
+        sta   status,x
         ldb   #2
         stb   priority,x
+        
         ldx   #Obj_Sonic2
-        sta   render_flags,x
+        sta   status,x
         stb   priority,x
+        
         ldx   #Obj_Sonic3
-        sta   render_flags,x
+        sta   status,x
         stb   priority,x
+        
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u         
         
                                                       *     move.w  #2,(SegaScr_VInt_Subrout).w
                                                       *     bset    #0,render_flags(a0)
@@ -348,18 +358,22 @@ SEGA_MidWipe                                          * ObjB0_MidWipe:
         sta   render_flags,x
         ldx   #Obj_Trails3
         sta   render_flags,x
+        ldy   #Img_SegaTrails_3
+        sty   image_set,x              
         ldx   #Obj_Trails4
         sta   render_flags,x
+        ldy   #Img_SegaTrails_4
+        sty   image_set,x              
         
         * Unset x mirror on Sonic
         ldx   #Obj_Sonic1
-        lda   render_flags,x
-        anda   #:render_xmirror_mask
-        sta   render_flags,x
+        lda   status,x
+        anda   #:status_x_orientation
+        sta   status,x
         ldx   #Obj_Sonic2
-        sta   render_flags,x
+        sta   status,x
         ldx   #Obj_Sonic3
-        sta   render_flags,x
+        sta   status,x
 
         * Set Sega Logo
         ldd   #Img_SegaLogo_1
@@ -417,13 +431,13 @@ SEGA_MidWipe                                          * ObjB0_MidWipe:
                                                       *     rts
                                                       * ; ===========================================================================
                                                       * 
-SEGA_RunRightWaitPal                                  
+SEGA_MidWipeWaitPal                                  
         ldx   #Obj_PaletteHandler
         tst   ,x
-        beq   SEGA_RunRightWaitPal_continue
+        beq   SEGA_MidWipeWaitPal_continue
         rts
         
-SEGA_RunRightWaitPal_continue   
+SEGA_MidWipeWaitPal_continue   
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u 

@@ -135,8 +135,8 @@ Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of obje
         
 Object_RAM *@globals
 Reserved_Object_RAM
-Obj_MainCharacter             fcb   01
-                              rmb   object_size-1,0
+Obj_MainCharacter             fdb   $0203
+                              rmb   object_size-2,0
 Obj_Sidekick                  rmb   object_size,0
 Reserved_Object_RAM_End
 
