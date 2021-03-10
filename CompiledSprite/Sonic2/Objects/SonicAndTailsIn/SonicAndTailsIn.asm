@@ -77,7 +77,7 @@ SATI_Wait
         rts
         
 SATI_Wait_continue
-        jsr   ClearObj                    
+        jsr   DeleteObject                    
         ldd   #(ObjID_TitleScreen<+8)+$03             ; Replace this object with Title Screen Object subtype 3
         std   ,u
         rts  

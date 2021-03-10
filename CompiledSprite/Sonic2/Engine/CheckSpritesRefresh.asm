@@ -309,6 +309,14 @@ CSR_CheckErase
         
         ldy   cur_ptr_sub_obj_erase
         
+        lda   rsv_render_flags,u
+        anda  #rsv_render_outofrange_mask
+        beq   CSR_CheckErase_InRange
+        lda   buf_prev_render_flags,x
+        lbpl  CSR_SetEraseDrawFalse         ; branch if object is not on screen    
+        bra   CSR_SetEraseTrue
+                
+CSR_CheckErase_InRange        
         lda   buf_prev_render_flags,x
         lbpl  CSR_SetEraseFalse             ; branch if object is not on screen
         ldd   xy_pixel,u
@@ -458,6 +466,11 @@ CSR_SetHide
         ldu   buf_priority_next_obj,x
         lbne  CSR_ProcessEachPriorityLevel   
         rts
+
+CSR_SetEraseDrawFalse 
+        lda   rsv_render_flags,u 
+        anda  #:rsv_render_erasesprite_mask
+        sta   rsv_render_flags,u 
 
 CSR_SetDrawFalse 
         lda   rsv_render_flags,u

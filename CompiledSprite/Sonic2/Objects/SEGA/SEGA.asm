@@ -98,7 +98,7 @@ SEGA_Init                                             * ObjB0_Init:
                                                       *     bsr.w   LoadSubObject
                                                       *     move.w  #$1E8,x_pixel(a0)                                                  
                                                       *     move.w  #$F0,y_pixel(a0)
-        lda   #$B
+        lda   #$D
         sta   b_nbFrames,u                            *     move.w  #$B,objoff_2A(a0)
         
         * Init SEGA logo position
@@ -113,7 +113,7 @@ SEGA_Init                                             * ObjB0_Init:
         * Init all sub objects
         stu   SEGA_Init_01+1,pcr
         ldd   #(ObjID_SEGA<+8)+Sub_Trails
-        ldy   #$E07F
+        ldy   #$E07E
         
         ldx   #Obj_Trails1
         std   ,x
@@ -140,7 +140,7 @@ SEGA_Init                                             * ObjB0_Init:
         stu   image_set,x                                
         
         ldd   #(ObjID_SEGA<+8)+Sub_Sonic
-        ldy   #$E87A
+        ldy   #$E879
         
         ldx   #Obj_Sonic1
         std   ,x
@@ -322,6 +322,7 @@ SEGA_RunLeft                                          * ObjB0_RunLeft:
         ldx   #Obj_Trails4                                                      
         sta   x_pixel,x
 
+        rts
         ldx   #Obj_Sonic1                                                      
         lda   x_pixel,x
         suba  #$10                                              
@@ -340,7 +341,7 @@ SEGA_RunLeft_continue                                 * loc_3A312:
         adda  #$03
         sta   routine_secondary,u                                                      
                                                       *     addq.b  #2,routine(a0)
-        lda   #$B                                     *     move.w  #$C,objoff_2A(a0)
+        lda   #$D                                     *     move.w  #$C,objoff_2A(a0)
         sta   b_nbFrames,u
                                                       *     move.b  #1,objoff_2C(a0)
                                                       *     move.b  #-1,objoff_2D(a0)
@@ -349,62 +350,51 @@ SEGA_RunLeft_continue                                 * loc_3A312:
                                                       * 
 SEGA_MidWipe                                          * ObjB0_MidWipe:
 
-        stu   SEGA_MidWipe_01+1,pcr
-
+        rts
         * Unset x mirror on Trails
         ldx   #Obj_Trails1
-        ldb   y_pixel,x
-        decb
-        lda   #$18
-        tfr   d,u
-        stu   xy_pixel,x
         lda   render_flags,x
         anda   #:render_xmirror_mask
-        sta   render_flags,x        
-        ldb   #2
-        stb   priority,x
+        sta   render_flags,x
+        ldb   y_pixel,x
+        decb
+        stb   y_pixel,x
         
         ldx   #Obj_Trails2
         sta   render_flags,x
-        stu   xy_pixel,x
-        stb   priority,x        
+        stb   y_pixel,x
                 
         ldx   #Obj_Trails3
         sta   render_flags,x
+        stb   y_pixel,x
         ldy   #Img_SegaTrails_3
         sty   image_set,x
-        stu   xy_pixel,x
-        stb   priority,x        
         
         ldx   #Obj_Trails4
         sta   render_flags,x
+        stb   y_pixel,x
         ldy   #Img_SegaTrails_4
-        sty   image_set,x
-        stu   xy_pixel,x
-        stb   priority,x                      
-        
+        sty   image_set,x                     
+      
         * Unset x mirror on Sonic
         ldx   #Obj_Sonic1
-        ldb   #$10
-        stb   x_pixel,x        
         lda   status,x
         anda   #:status_x_orientation
         sta   status,x
+        ldb   #$18
+        stb   x_pixel,x        
         
         ldx   #Obj_Sonic2
-        stb   x_pixel,x
         sta   status,x
+        stb   x_pixel,x
         
         ldx   #Obj_Sonic3
-        stb   x_pixel,x        
         sta   status,x
-
+        stb   x_pixel,x        
+        
         * Set Sega Logo
         ldd   #Img_SegaLogo_1
-        std   image_set,u  
-        
-SEGA_MidWipe_01
-        ldu   #$0000        
+        std   image_set,u          
         
         * Fade out Trails
         ldx   #Obj_PaletteHandler
@@ -417,7 +407,8 @@ SEGA_MidWipe_01
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-        rts         
+        
+        jmp   DisplaySprite         
                                                       *     tst.w   objoff_2A(a0)
                                                       *     beq.s   loc_3A33A
                                                       *     subq.w  #1,objoff_2A(a0)
@@ -462,6 +453,7 @@ SEGA_MidWipeWaitPal
         ldx   #Obj_PaletteHandler
         tst   ,x
         beq   SEGA_MidWipeWaitPal_continue
+        jmp   DisplaySprite
         rts
         
 SEGA_MidWipeWaitPal_continue   
@@ -511,6 +503,27 @@ SEGA_RunRight_continue                                * loc_3A3B4:
                                                       * ; ===========================================================================
                                                       * 
 SEGA_EndWipe                                          * ObjB0_EndWipe:
+
+        * Set Sega Logo
+        ldd   #Img_SegaLogo_2
+        std   image_set,u
+        
+        * Delete Trails and Sonic Sprites
+        ldu   #Obj_Trails1
+        jsr   DeleteObject
+        ldu   #Obj_Trails2
+        jsr   DeleteObject
+        ldu   #Obj_Trails3
+        jsr   DeleteObject
+        ldu   #Obj_Trails4
+        jsr   DeleteObject
+        ldu   #Obj_Sonic1
+        jsr   DeleteObject
+        ldu   #Obj_Sonic2
+        jsr   DeleteObject
+        ldu   #Obj_Sonic3
+        jsr   DeleteObject    
+
         * Fade out Trails
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
@@ -519,10 +532,11 @@ SEGA_EndWipe                                          * ObjB0_EndWipe:
         std   ext_variables,x
         ldd   #Pal_SEGAEnd *@IgnoreUndefined
         std   ext_variables+2,x
+        
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-        rts
+        jmp   DisplaySprite
         
                                                       *     tst.w   objoff_2A(a0)
                                                       *     beq.s   loc_3A3DA
@@ -541,6 +555,7 @@ SEGA_EndWipeWaitPal
         ldx   #Obj_PaletteHandler
         tst   ,x
         beq   SEGA_PlaySample
+        jmp   DisplaySprite
         rts
 
 SEGA_PlaySample                                       * loc_3A3E6:
@@ -562,7 +577,7 @@ SEGA_Wait
         beq   SEGA_fadeOut
         rts
         
-SEGA_fadeOut        
+SEGA_fadeOut
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x                 
@@ -582,25 +597,12 @@ SEGA_end
         rts
 
 SEGA_return                    
-        jsr   ClearObj
-        ldd   #(ObjID_SonicAndTailsIn<+8)+$00         ; Replace this object with Title Screen Object subtype 3
-        std   ,u
-        ldu   #Obj_Trails1
-        jsr   ClearObj
-        ldu   #Obj_Trails1
-        jsr   ClearObj
-        ldu   #Obj_Trails1
-        jsr   ClearObj
-        ldu   #Obj_Trails4
-        jsr   ClearObj
-        ldu   #Obj_Sonic1
-        jsr   ClearObj
-        ldu   #Obj_Sonic2
-        jsr   ClearObj
-        ldu   #Obj_Sonic3
-        jsr   ClearObj  
-        ldu   #Obj_PaletteHandler
-        jsr   ClearObj                                                        
+        *jsr   ClearObj
+        *ldd   #(ObjID_SonicAndTailsIn<+8)+$00         ; Replace this object with Title Screen Object subtype 3
+        *std   ,u
+        
+        *ldu   #Obj_PaletteHandler
+        *jsr   ClearObj                                                        
         rts  
                         
                                                       * ; ===========================================================================

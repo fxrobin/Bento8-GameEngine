@@ -77,7 +77,7 @@ public class AssemblyGenerator{
 		logger.debug("YSize: "+getY_size());		
 		logger.debug("Center: "+spriteSheet.getCenter());
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
+		//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 		
 		destDir += "/"+spriteName;
 		asmBckDrawFileName = destDir+"_BckDraw.ASM";
@@ -122,7 +122,7 @@ public class AssemblyGenerator{
 
 			logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
 			logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
-			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
+			//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
 			cs.buildCode(FORWARD);
@@ -173,7 +173,18 @@ public class AssemblyGenerator{
 			// Utilisation du .BIN existant
 			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length-10;
 			// Utilisation du .lst existant
-			cycleECache = C6809Util.countCycles(lstEraseFileName);			
+			cycleECache = C6809Util.countCycles(lstEraseFileName);		
+			
+			// Lecture de la taille des données de la routine erase
+			Path path = Paths.get(lstEraseFileName);
+			String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+			
+			Pattern pn = Pattern.compile("(Equ)\\s*([0-9a-fA-F]*)\\sDataSize") ;  
+			Matcher m = pn.matcher(content);
+
+			while (m.find()) {
+				sizeSpriteEData1=Integer.parseInt(m.group(2), 16);			
+			}
 		}
 	}
 
@@ -265,10 +276,14 @@ public class AssemblyGenerator{
 				Files.deleteIfExists(asmEFile);
 				Files.createFile(asmEFile);
 				
+				List<String> dataSize = new ArrayList<String>();
+				dataSize.add(String.format("DataSize equ $%1$04X", getEraseDataSize() & 0xFFFF));
+				
 				Files.write(asmEFile, getCodeFrameEraseStart("IMGE.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, getCodeFrameEraseEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmEFile, dataSize, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			} else {
 				// change ORG adress in existing ASM file
 				String str = new String(Files.readAllBytes(asmEFile), StandardCharsets.UTF_8);

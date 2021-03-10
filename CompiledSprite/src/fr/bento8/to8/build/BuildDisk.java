@@ -227,26 +227,29 @@ public class BuildDisk
 		
 		// Parcours de tous les objets de chaque Game Mode
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			AsmSourceCode asmSndIndex = new AsmSourceCode(getIncludeFilePath(Tags.SOUND_INDEX, gameMode.getValue()));
-			
-			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 
-				// Parcours des données audio de l'objet
-				for (Entry<String, String[]> soundsProperties : object.getValue().soundsProperties.entrySet()) {
+			if (gameMode.getValue().asmIncludes.get(Tags.SOUND_INDEX) != null) {
+				AsmSourceCode asmSndIndex = new AsmSourceCode(getIncludeFilePath(Tags.SOUND_INDEX, gameMode.getValue()));
 
-					Sound sound = new Sound(soundsProperties.getKey());
-					sound.soundFile = soundsProperties.getValue()[0];
-					sound.setAllBinaries(sound.soundFile);
-					object.getValue().sounds.add(sound);
-					
-					asmSndIndex.addLabel(sound.name);		
-					for (int i=0; i < sound.sb.size(); i++) {
-						asmSndIndex.addFcb(new String[] {"$00", "$00", "$00", "$00", "$00"});
+				for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+
+					// Parcours des données audio de l'objet
+					for (Entry<String, String[]> soundsProperties : object.getValue().soundsProperties.entrySet()) {
+
+						Sound sound = new Sound(soundsProperties.getKey());
+						sound.soundFile = soundsProperties.getValue()[0];
+						sound.setAllBinaries(sound.soundFile);
+						object.getValue().sounds.add(sound);
+
+						asmSndIndex.addLabel(sound.name);
+						for (int i = 0; i < sound.sb.size(); i++) {
+							asmSndIndex.addFcb(new String[] { "$00", "$00", "$00", "$00", "$00" });
+						}
+						asmSndIndex.addFcb(new String[] { "$FF" });
 					}
-					asmSndIndex.addFcb(new String[] {"$FF"});
 				}
+				asmSndIndex.flush();
 			}
-			asmSndIndex.flush();	
 		}
 	}
 	
@@ -633,8 +636,11 @@ public class BuildDisk
 			asmLoadAct.flush();			
 			
 			AsmSourceCode asmImgIndex = new AsmSourceCode(getIncludeFilePath(Tags.IMAGE_INDEX, gameMode.getValue()));			
-			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, gameMode.getValue()));	
-			AsmSourceCode asmSndIndex = new AsmSourceCode(getIncludeFilePath(Tags.SOUND_INDEX, gameMode.getValue()));
+			AsmSourceCode asmAnimScript = new AsmSourceCode(getIncludeFilePath(Tags.ANIMATION_SCRIPT, gameMode.getValue()));
+			AsmSourceCode asmSndIndex = null;
+			if (gameMode.getValue().asmIncludes.get(Tags.SOUND_INDEX) != null) {
+				asmSndIndex = new AsmSourceCode(getIncludeFilePath(Tags.SOUND_INDEX, gameMode.getValue()));
+			}
 			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 
@@ -655,16 +661,21 @@ public class BuildDisk
 					}
 					asmAnimScript.addFcb(new String[] { animationProperties.getValue()[i] });
 				}
-				
-				// MAIN ENGINE - Génération des index Audio
-				// --------------------------------------------------------------------------------------
-				for (Sound sound : object.getValue().sounds) {
-					writeSndIndex(asmSndIndex, sound);
-				}				
+			
+				if (gameMode.getValue().asmIncludes.get(Tags.SOUND_INDEX) != null) {
+					// MAIN ENGINE - Génération des index Audio
+					// --------------------------------------------------------------------------------------
+					for (Sound sound : object.getValue().sounds) {
+						writeSndIndex(asmSndIndex, sound);
+					}			
+				}
 			}
 			asmImgIndex.flush();
 			asmAnimScript.flush();	
-			asmSndIndex.flush();
+			
+			if (gameMode.getValue().asmIncludes.get(Tags.SOUND_INDEX) != null) {
+				asmSndIndex.flush();
+			}
 			
 			// MAIN ENGINE - Compilation des Main Engines
 			// --------------------------------------------------------------------------------------			
