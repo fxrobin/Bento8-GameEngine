@@ -148,7 +148,7 @@ Obj_TailsTails                rmb   object_size,0 * Positionnement et nommage a 
 Obj_SonicDust                 rmb   object_size,0 * Positionnement et nommage a mettre dans objet Tails
 Obj_TailsDust                 rmb   object_size,0 * Positionnement et nommage a mettre dans objet Tails
 LevelOnly_Object_RAM_End
-Object_RAM_End
+Object_RAM_End                fdb *
 
 * ---------------------------------------------------------------------------
 * Lifecycle

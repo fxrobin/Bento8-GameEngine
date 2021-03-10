@@ -24,7 +24,9 @@ dk_destination                equ $604F
 
 screen_width                  equ 160 ; screen width in pixel
 screen_top                    equ 28 ; in pixel
-screen_bottom                 equ 200+28 ; in pixel
+screen_bottom                 equ 28+199 ; in pixel
+screen_left                   equ 48 ; in pixel
+screen_right                  equ 48+159 ; in pixel
 nb_priority_levels            equ 8   ; number of priority levels (need code change if modified)
 
 * ===========================================================================
@@ -97,7 +99,7 @@ render_motionless_mask        equ $08 ; (bit 3) tell display engine to compute s
 render_playfieldcoord_mask    equ $10 ; (bit 4) tell display engine to use playfield (1) or screen (0) coordinates
 render_hide_mask              equ $20 ; (bit 5) tell display engine to hide sprite (keep priority and mapping_frame)
 render_todelete_mask          equ $40 ; (bit 6) tell display engine to delete sprite and clear OST for this object
-render_noxloop_mask           equ $80 ; (bit 7) tell display engine to hide sprite when screen coordinate is used and x is out of screen 
+render_xloop_mask             equ $80 ; (bit 7) (screen coordinate) tell display engine to hide sprite when x is out of screen (0) or to display (1)  
  
 priority                      equ 3           ; display priority (0: nothing to display, 1:front, ..., 8:back)
 anim                          equ 4  ; and 5  ; reference to current animation (Ani_)

@@ -8,8 +8,8 @@
 * ---------------------------------------------------------------------------
 
 ClearObj *@globals
+        pshs  d,x,y,u
         sts   CLO_1+2
-        pshs  d,x,y,u  
         leas  object_size,u        
         ldd   #$0000
         ldx   #$0000

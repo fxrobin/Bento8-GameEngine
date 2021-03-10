@@ -260,14 +260,37 @@ CSR_CVP_Continue
         cmpb  #screen_bottom
         bhi   CSR_SetOutOfRange
         
+        lda   render_flags,u
+        bita  #render_xloop_mask
+        bne   CSR_DontCheckXFrontier   
+        
         ldb   x_pixel,u
         ldy   rsv_image_subset,u
         addb  image_subset_x1_offset,y
         stb   rsv_x1_pixel,u
+        
+        cmpb  #screen_left
+        bcs   CSR_SetOutOfRange
+        
         ldy   image_set,u
         addb  image_x_size,y
         stb   rsv_x2_pixel,u
         
+        cmpb  #screen_right
+        bhi   CSR_SetOutOfRange
+        bra   CSR_DontCheckXFrontier_end        
+        
+CSR_DontCheckXFrontier  
+        ldb   x_pixel,u
+        ldy   rsv_image_subset,u
+        addb  image_subset_x1_offset,y
+        stb   rsv_x1_pixel,u
+        
+        ldy   image_set,u
+        addb  image_x_size,y
+        stb   rsv_x2_pixel,u      
+
+CSR_DontCheckXFrontier_end        
         lda   rsv_render_flags,u
         anda  #:rsv_render_outofrange_mask  ; unset out of range flag
         sta   rsv_render_flags,u

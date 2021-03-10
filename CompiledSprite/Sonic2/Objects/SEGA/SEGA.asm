@@ -56,7 +56,7 @@ SEGA_Routines
         lbra  Sonic
                                                        
 SEGA_MainInit
-        lda   #4
+        lda   #1
         sta   priority,u
         lda   subtype,u
         sta   routine,u
@@ -107,13 +107,13 @@ SEGA_Init                                             * ObjB0_Init:
         
         * Disable background save and XY refresh on SEGA logo 
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask
         sta   render_flags,u        
         
         * Init all sub objects
         stu   SEGA_Init_01+1,pcr
         ldd   #(ObjID_SEGA<+8)+Sub_Trails
-        ldy   #$F07F
+        ldy   #$E07F
         
         ldx   #Obj_Trails1
         std   ,x
@@ -140,7 +140,7 @@ SEGA_Init                                             * ObjB0_Init:
         stu   image_set,x                                
         
         ldd   #(ObjID_SEGA<+8)+Sub_Sonic
-        ldy   #$E87F
+        ldy   #$E87A
         
         ldx   #Obj_Sonic1
         std   ,x
@@ -188,7 +188,7 @@ SEGA_Init_01
         lda   status,x
         ora   #status_x_orientation
         sta   status,x
-        ldb   #2
+        ldb   #0
         stb   priority,x
         
         ldx   #Obj_Sonic2
@@ -340,7 +340,7 @@ SEGA_RunLeft_continue                                 * loc_3A312:
         adda  #$03
         sta   routine_secondary,u                                                      
                                                       *     addq.b  #2,routine(a0)
-        lda   #$C                                     *     move.w  #$C,objoff_2A(a0)
+        lda   #$B                                     *     move.w  #$C,objoff_2A(a0)
         sta   b_nbFrames,u
                                                       *     move.b  #1,objoff_2C(a0)
                                                       *     move.b  #-1,objoff_2D(a0)
@@ -349,35 +349,62 @@ SEGA_RunLeft_continue                                 * loc_3A312:
                                                       * 
 SEGA_MidWipe                                          * ObjB0_MidWipe:
 
+        stu   SEGA_MidWipe_01+1,pcr
+
         * Unset x mirror on Trails
         ldx   #Obj_Trails1
+        ldb   y_pixel,x
+        decb
+        lda   #$18
+        tfr   d,u
+        stu   xy_pixel,x
         lda   render_flags,x
         anda   #:render_xmirror_mask
-        sta   render_flags,x
+        sta   render_flags,x        
+        ldb   #2
+        stb   priority,x
+        
         ldx   #Obj_Trails2
         sta   render_flags,x
+        stu   xy_pixel,x
+        stb   priority,x        
+                
         ldx   #Obj_Trails3
         sta   render_flags,x
         ldy   #Img_SegaTrails_3
-        sty   image_set,x              
+        sty   image_set,x
+        stu   xy_pixel,x
+        stb   priority,x        
+        
         ldx   #Obj_Trails4
         sta   render_flags,x
         ldy   #Img_SegaTrails_4
-        sty   image_set,x              
+        sty   image_set,x
+        stu   xy_pixel,x
+        stb   priority,x                      
         
         * Unset x mirror on Sonic
         ldx   #Obj_Sonic1
+        ldb   #$10
+        stb   x_pixel,x        
         lda   status,x
         anda   #:status_x_orientation
         sta   status,x
+        
         ldx   #Obj_Sonic2
+        stb   x_pixel,x
         sta   status,x
+        
         ldx   #Obj_Sonic3
+        stb   x_pixel,x        
         sta   status,x
 
         * Set Sega Logo
         ldd   #Img_SegaLogo_1
         std   image_set,u  
+        
+SEGA_MidWipe_01
+        ldu   #$0000        
         
         * Fade out Trails
         ldx   #Obj_PaletteHandler
