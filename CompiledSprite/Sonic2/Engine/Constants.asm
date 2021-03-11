@@ -52,6 +52,7 @@ _nextSubRoutine               equ $FA
 
 image_x_size                  equ 4
 image_y_size                  equ 5
+image_center_offset           equ 6
 
 image_subset_x1_offset        equ 4
 image_subset_y1_offset        equ 5
@@ -152,7 +153,8 @@ rsv_render_displaysprite_mask equ $04 ; (bit 2) if a sprite need to be rendered 
 rsv_render_outofrange_mask    equ $08 ; (bit 3) if a sprite is out of range for full rendering in screen
 
 rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w
-*rsv_image_set                equ 44 ; and 45 ; reference to current image set w
+rsv_image_center_offset       equ 44 ; 0 or 1 offset that indicate if image center is even or odd (DRS_XYToAddress)
+* ne sert plus                       ; and 45 ; reference to current image set w
 rsv_image_subset              equ 46 ; and 47 ; reference to current image regarding mirror flags w
 rsv_mapping_frame             equ 48 ; and 49 ; reference to current image regarding mirror flags, overlay flag and x precision w
 rsv_xy1_pixel                 equ 50          ;

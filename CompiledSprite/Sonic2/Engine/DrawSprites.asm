@@ -101,6 +101,7 @@ DRS_ProcessEachPriorityLevelB0
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB0              ; branch if no more free space
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
+        suba  rsv_image_center_offset,x
         jsr   DRS_XYToAddress
 *        ldu   rsv_image_subset,x
 *        stu   rsv_prev_image_subset_0,x        
@@ -111,8 +112,8 @@ DRS_ProcessEachPriorityLevelB0
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
         leau  ,y                            ; cell_end for background data
-        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
+        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
         jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
@@ -130,7 +131,12 @@ DRS_dyn3B0
         bitb  #render_overlay_mask
         beq   DRS_NoOverlayB0
         ora   #rsv_prev_render_overlay_mask
+        bra   DRS_UpdateRenderFlagB0
+        
 DRS_NoOverlayB0
+        anda   #:rsv_prev_render_overlay_mask
+
+DRS_UpdateRenderFlagB0        
         sta   rsv_prev_render_flags_0,x     ; set the onscreen flag and save overlay flag
         
 DRS_NextObjectB0        
@@ -140,6 +146,7 @@ DRS_NextObjectB0
         
 DRS_DrawWithoutBackupB0
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
+        suba  rsv_image_center_offset,x        
         jsr   DRS_XYToAddress
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
@@ -147,8 +154,8 @@ DRS_DrawWithoutBackupB0
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
-        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
+        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
         jsr   ,x                            ; draw sprite on working screen buffer
         bra   DRS_dyn3B0          
 
@@ -170,26 +177,26 @@ DRS_XYToAddress
         subb  #$1C
         lsra                                ; x=x/2, sprites moves by 2 pixels on x axis
         lsra                                ; x=x/2, RAMA RAMB enterlace  
-        bcs   DRS_XYToAddressRAMBFirst      ; Branch if write must begin in RAMB first
-DRS_XYToAddressRAMAFirst
+        bcs   DRS_XYToAddressRAM2First      ; Branch if write must begin in RAMB first
+DRS_XYToAddressRAM1First
         sta   DRS_dyn1+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         mul
 DRS_dyn1        
         addd  #$0000                        ; (dynamic) RAMA start at $0000
-        std   Glb_Sprite_Screen_Pos_PartA
+        std   Glb_Sprite_Screen_Pos_Part2
         ora   #$20                          ; add $2000 to d register
-        std   Glb_Sprite_Screen_Pos_PartB        
+        std   Glb_Sprite_Screen_Pos_Part1     
         rts
-DRS_XYToAddressRAMBFirst
+DRS_XYToAddressRAM2First
         sta   DRS_dyn2+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         mul
 DRS_dyn2        
         addd  #$2000                        ; (dynamic) RAMB start at $0000
-        std   Glb_Sprite_Screen_Pos_PartA
+        std   Glb_Sprite_Screen_Pos_Part2
         subd  #$1FFF
-        std   Glb_Sprite_Screen_Pos_PartB
+        std   Glb_Sprite_Screen_Pos_Part1
         rts
         
 DRS_ProcessEachPriorityLevelB1
@@ -207,6 +214,7 @@ DRS_ProcessEachPriorityLevelB1
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB1              ; branch if no more free space
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
+        suba  rsv_image_center_offset,x
         jsr   DRS_XYToAddress
         *ldu   rsv_image_subset,x
         *stu   rsv_prev_image_subset_1,x          
@@ -217,8 +225,8 @@ DRS_ProcessEachPriorityLevelB1
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u        
         leau  ,y                            ; cell_end for background data
-        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
+        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
         jsr   ,x                            ; backup background and draw sprite on working screen buffer
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
@@ -236,7 +244,12 @@ DRS_dyn3B1
         bitb  #render_overlay_mask
         beq   DRS_NoOverlayB1
         ora   #rsv_prev_render_overlay_mask
+        bra   DRS_UpdateRenderFlagB1
+        
 DRS_NoOverlayB1
+        anda   #:rsv_prev_render_overlay_mask
+
+DRS_UpdateRenderFlagB1
         sta   rsv_prev_render_flags_1,x     ; set the onscreen flag and save overlay flag
                 
 DRS_NextObjectB1        
@@ -246,6 +259,7 @@ DRS_NextObjectB1
         
 DRS_DrawWithoutBackupB1
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
+        suba  rsv_image_center_offset,x        
         jsr   DRS_XYToAddress
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame        
@@ -253,7 +267,7 @@ DRS_DrawWithoutBackupB1
         sta   $E7E5                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u        
-        ldy   #Glb_Sprite_Screen_Pos_PartB  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_PartA   ; to be used with compiled sprites in a single program
+        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
+        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
         jsr   ,x                            ; draw sprite on working screen buffer
         bra   DRS_dyn3B1

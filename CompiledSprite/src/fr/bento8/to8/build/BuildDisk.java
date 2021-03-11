@@ -288,8 +288,8 @@ public class BuildDisk
 						curSubSprite.setName(cur_variant);
 						if (cur_variant.contains("B")) {
 							logger.debug("\t\t- BackupBackground/Draw/Erase");
-							asm = new AssemblyGenerator(new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant),
-									Game.generatedCodeDirName + "/" + object.getValue().name, 0);
+							SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant);
+							asm = new AssemblyGenerator(ss, Game.generatedCodeDirName + "/" + object.getValue().name, 0);
 							asm.compileCode("A000");
 							// La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 							// 16 octets supplémentaires pour IRQ 12 octets du bckp registres et 4 pour les appels sous programmes
@@ -299,17 +299,18 @@ public class BuildDisk
 							curSubSprite.y1_offset = asm.getY1_offset();
 							curSubSprite.x_size = asm.getX_size();
 							curSubSprite.y_size = asm.getY_size();
+							curSubSprite.center_offset = ss.center_offset;
 
 							logger.debug("Exomize ...");
 							curSubSprite.draw = new SubSpriteBin(curSubSprite);
-							curSubSprite.draw.setName("bckDraw");
+							curSubSprite.draw.setName(cur_variant);
 							curSubSprite.draw.bin = exomize(asm.getBckDrawBINFile());
 							curSubSprite.draw.fileIndex = new DataIndex();
 							curSubSprite.draw.uncompressedSize = asm.getDSize();
 							object.getValue().subSpritesBin.add(curSubSprite.draw);
 
 							curSubSprite.erase = new SubSpriteBin(curSubSprite);
-							curSubSprite.erase.setName("erase");
+							curSubSprite.erase.setName(cur_variant+" E");
 							curSubSprite.erase.bin = exomize(asm.getEraseBINFile());
 							curSubSprite.erase.fileIndex = new DataIndex();
 							curSubSprite.erase.uncompressedSize = asm.getESize();
@@ -318,19 +319,19 @@ public class BuildDisk
 
 						if (cur_variant.contains("D")) {
 							logger.debug("\t\t- Draw");
-							sasm = new SimpleAssemblyGenerator(
-									new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant),
-									Game.generatedCodeDirName + "/" + object.getValue().name, 0);
+							SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant);
+							sasm = new SimpleAssemblyGenerator(ss, Game.generatedCodeDirName + "/" + object.getValue().name, 0);
 							sasm.compileCode("A000");
 							curSubSprite.nb_cell = 0;
 							curSubSprite.x1_offset = sasm.getX1_offset();
 							curSubSprite.y1_offset = sasm.getY1_offset();
 							curSubSprite.x_size = sasm.getX_size();
 							curSubSprite.y_size = sasm.getY_size();
+							curSubSprite.center_offset = ss.center_offset;							
 
 							logger.debug("Exomize ...");
 							curSubSprite.draw = new SubSpriteBin(curSubSprite);
-							curSubSprite.draw.setName("draw");
+							curSubSprite.draw.setName(cur_variant);
 							curSubSprite.draw.bin = exomize(sasm.getDrawBINFile());
 							curSubSprite.draw.fileIndex = new DataIndex();
 							curSubSprite.draw.uncompressedSize = sasm.getDSize();
@@ -883,9 +884,10 @@ public class BuildDisk
 		// this version go up to +102 so it's fine
 		
 		List<String> line = new ArrayList<String>();
-		int imageSet_header = 6, imageSubSet_header = 6;
+		int imageSet_header = 7, imageSubSet_header = 6;
 		int x_size = 0;
 		int y_size = 0;
+		int center_offset = 0;
 		int n_offset = 0;
 		int n_x1 = 0;
 		int n_y1 = 0;
@@ -1032,6 +1034,7 @@ public class BuildDisk
 		for (Entry<String, SubSprite> subSprite : sprite.subSprites.entrySet()) {
 			x_size = subSprite.getValue().x_size;
 			y_size = subSprite.getValue().y_size;
+			center_offset = subSprite.getValue().center_offset;
 			break;
 		}
 		
@@ -1041,6 +1044,7 @@ public class BuildDisk
 		line.add(String.format("$%1$02X", xy_offset)); // unsigned value		
 		line.add(String.format("$%1$02X", x_size)); // unsigned value
 		line.add(String.format("$%1$02X", y_size)); // unsigned value
+		line.add(String.format("$%1$02X", center_offset)); // unsigned value
 		
 		if (nb0_offset+nd0_offset+nb1_offset+nd1_offset>0) {
 			line.add(String.format("$%1$02X", nb0_offset)); // unsigned value

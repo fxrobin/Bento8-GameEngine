@@ -31,6 +31,7 @@ public class SimpleAssemblyGenerator{
 	boolean FORWARD = true;
 	boolean REARWARD = false;
 	public String spriteName;
+	public boolean spriteCenterEven;
 	private int cyclesDFrameCode;
 	private int sizeDFrameCode;
 	
@@ -67,6 +68,7 @@ public class SimpleAssemblyGenerator{
 	}
 	
 	public SimpleAssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
+		spriteCenterEven = (spriteSheet.center % 2) == 0;
 		spriteName = spriteSheet.getName();
 		x1_offset = spriteSheet.getSubImageX1Offset(imageNum);
 		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
@@ -85,13 +87,13 @@ public class SimpleAssemblyGenerator{
 		//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 		
 		destDir += "/"+spriteName;
-		asmDrawFileName = destDir+"_Draw.ASM";
+		asmDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
 		File file = new File (asmDrawFileName);
 		file.getParentFile().mkdirs();		
 		asmDFile = Paths.get(asmDrawFileName);
-		lstDrawFileName = destDir+"_Draw.lst";
+		lstDrawFileName = destDir+"_"+spriteSheet.variant+".lst";
 		lstDFile = Paths.get(lstDrawFileName);
-		binDrawFileName = destDir+"_Draw.BIN";
+		binDrawFileName = destDir+"_"+spriteSheet.variant+".BIN";
 		binDFile = Paths.get(binDrawFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
@@ -171,9 +173,9 @@ public class SimpleAssemblyGenerator{
 				Files.createFile(asmDFile);
 
 				Files.write(asmDFile, getCodeFrameDrawStart("IMGD.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmDFile, getCodeFrameDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, getCodeFrameDrawEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			} else {
 				// change ORG adress in existing ASM file

@@ -153,6 +153,8 @@ CSR_UpdSpriteImageBasedOnMirror
         lda   render_flags,u                ; set image to display based on x and y mirror flags
         anda  #render_xmirror_mask!render_ymirror_mask
         ldy   image_set,u
+        ldb   image_center_offset,y
+        stb   rsv_image_center_offset,u        
         ldb   a,y
         leay  b,y                           ; read image set index
         sty   rsv_image_subset,u
@@ -219,8 +221,9 @@ CSR_NextObject
 
 CSR_CheckVerticalPosition
         lda   x_pixel,u                     ; compute mapping_frame 
-        anda  #$01                          ; index of sub image is encoded in two bits: 00|B0, 01|D0, 10|B1, 11|D1 
-        asla                                ; set bit2 for 1px shifted image 
+        anda  #$01                          ; index of sub image is encoded in two bits: 00|B0, 01|D0, 10|B1, 11|D1
+        eora  rsv_image_center_offset,u     ; case of odd image center switch shifted image with normal 
+        asla                                ; set bit2 for 1px shifted image  
         ldb   render_flags,u            
         andb  #render_overlay_mask          ; set bit1 for normal (background save) or overlay sprite (no background save)
         beq   CSR_NoOverlay
@@ -245,39 +248,65 @@ CSR_NoFrameFound
         sty   rsv_mapping_frame,u
 
 CSR_CVP_Continue        
-        ldb   y_pixel,u
+        ldb   y_pixel,u                               ; y_pixel check
+        bmi   CSR_YNegative
+        
+CSR_YPositive        
         ldy   rsv_image_subset,u
         addb  image_subset_y1_offset,y
-        stb   rsv_y1_pixel,u
-
+        bmi   CSR_SetOutOfRange
         cmpb  #screen_top
         bcs   CSR_SetOutOfRange
+        bra   CSR_StoreY1
+         
+CSR_YNegative        
+        ldy   rsv_image_subset,u
+        addb  image_subset_y1_offset,y
+        cmpb  #screen_top
+        bcs   CSR_SetOutOfRange
+
+CSR_StoreY1        
+        stb   rsv_y1_pixel,u
         
         ldy   image_set,u
         addb  image_y_size,y
-        stb   rsv_y2_pixel,u
-
+        bcs   CSR_SetOutOfRange
         cmpb  #screen_bottom
         bhi   CSR_SetOutOfRange
-        
-        lda   render_flags,u
+        stb   rsv_y2_pixel,u
+                
+        lda   render_flags,u                          ; x_pixel check
         bita  #render_xloop_mask
         bne   CSR_DontCheckXFrontier   
         
         ldb   x_pixel,u
+        bmi   CSR_XNegative        
+
+CSR_XPositive
         ldy   rsv_image_subset,u
         addb  image_subset_x1_offset,y
-        stb   rsv_x1_pixel,u
+        bmi   CSR_SetOutOfRange
+        cmpb  #screen_left
+        bcs   CSR_SetOutOfRange
+        bra   CSR_StoreX1
         
+
+CSR_XNegative
+        ldy   rsv_image_subset,u
+        addb  image_subset_x1_offset,y
         cmpb  #screen_left
         bcs   CSR_SetOutOfRange
         
+CSR_StoreX1
+        stb   rsv_x1_pixel,u
+        
         ldy   image_set,u
         addb  image_x_size,y
-        stb   rsv_x2_pixel,u
-        
+        bcs   CSR_SetOutOfRange
         cmpb  #screen_right
         bhi   CSR_SetOutOfRange
+        
+        stb   rsv_x2_pixel,u
         bra   CSR_DontCheckXFrontier_end        
         
 CSR_DontCheckXFrontier  

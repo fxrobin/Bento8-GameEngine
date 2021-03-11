@@ -30,14 +30,14 @@ Init
         std   image_set,u
         ldb   #$01
         stb   priority,u
-        ldd   #$807F
+        ldd   #$301C
         std   xy_pixel,u
         lda   routine,u
         adda  #$03
         sta   routine,u   
         
 Move
-        lda   Dpad_Held
+        lda   Dpad_Press
         ldb   Fire_Press
 TestLeft
         bita  #c1_button_left_mask
@@ -79,7 +79,7 @@ TIS_SubRoutines
         lbra  Walk        
         
 Run
-        ldd   #Img_SonicRun
+        *ldd   #Img_SonicRun
         std   image_set,u
         lda   render_flags,u
         anda  #:render_overlay_mask
@@ -89,7 +89,7 @@ Run
         sta   routine_secondary,u
         rts
 Fall
-        ldd   #Img_SonicFall
+        *ldd   #Img_SonicFall
         std   image_set,u
         lda   render_flags,u
         ora   #render_overlay_mask
@@ -99,7 +99,7 @@ Fall
         sta   routine_secondary,u
         rts
 Breathe     
-        ldd   #Img_SonicBreathe
+        *ldd   #Img_SonicBreathe
         std   image_set,u
         lda   render_flags,u
         ora   #render_overlay_mask
@@ -109,7 +109,7 @@ Breathe
         sta   routine_secondary,u
         rts
 Walk
-        ldd   #Img_SonicWalk
+        *ldd   #Img_SonicWalk
         std   image_set,u
         lda   render_flags,u
         anda  #:render_overlay_mask

@@ -16,6 +16,7 @@ public class SubSprite {
 	public int x1_offset;	
 	public int y1_offset;
 	public int nb_cell;
+	public int center_offset;
 	
 	public SubSprite(Sprite p) {
 		parent = p;

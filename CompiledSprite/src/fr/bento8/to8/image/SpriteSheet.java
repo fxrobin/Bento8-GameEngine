@@ -20,6 +20,7 @@ public class SpriteSheet {
 	
 	private BufferedImage image;
 	private String name;
+	public String variant;
 	ColorModel colorModel;
 	private int width; // largeur totale de l'image
 	private int height; // longueur totale de l'image
@@ -34,10 +35,12 @@ public class SpriteSheet {
 	int[] y1_offset; // position haut gauche de l'image par rapport au centre		
 	int[] x_size; // largeur de l'image en pixel (sans les pixels transparents)		
 	int[] y_size; // hauteur de l'image en pixel (sans les pixels transparents)		
-	int center; // position du centre de l'image (dans le référentiel pixels)
+	public int center; // position du centre de l'image (dans le référentiel pixels)
+	public int center_offset; // est ce que le centre est pair (0) ou impair (1)
 
 	public SpriteSheet(String tag, String file, int nbImages, String variant) {
 		try {
+			this.variant = variant;
 			subImageNb = nbImages;
 			image = ImageIO.read(new File(file));
 			name = tag;
@@ -108,7 +111,8 @@ public class SpriteSheet {
 		x_size = new int[subImageNb];		
 		y_size = new int[subImageNb];
 		
-		center = (int) ((Math.ceil(height/2.0)-1)*40) +  subImageWidth/8;
+		center = (int)((Math.ceil(height/2.0)-1)*40) +  subImageWidth/8;
+		center_offset = (subImageWidth / 2) % 2;
 		
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		
@@ -205,26 +209,34 @@ public class SpriteSheet {
 			}
 			
 			if (variant.contains("1")) {
-				// Décallage de l'image de 1px à droite pour chaque ligne
-				for (int y=0; y<height; y++) {
+				byte pixelSave = 0;
+				byte dataSave = 0;
+				// Décalage de l'image de 1px à droite pour chaque ligne
+				for (int y = 0; y < height; y++) {
 					for (int x = 79; x >= 1; x -= 2) {
-	                    if (x == 79) {
-	                    	// Le pixel en fin de ligne revient au début de cette ligne
-	                    	pixels[position][0][0+(80*y)]=pixels[position][1][x+(80*y)];
-	                    	data[position][0][0+(80*y)]=data[position][1][x+(80*y)];
-	                    } else {
-	                    	pixels[position][0][(x+1)+(80*y)]=pixels[position][1][x+(80*y)];
-	                    	data[position][0][(x+1)+(80*y)]=data[position][1][x+(80*y)];
-	                    }
+						if (x == 79) {
+							// Le pixel en fin de ligne revient au début de cette ligne
+							pixelSave = pixels[position][1][x + (80 * y)];
+							dataSave = data[position][1][x + (80 * y)];
+						} else {
+							pixels[position][0][(x + 1) + (80 * y)] = pixels[position][1][x + (80 * y)];
+							data[position][0][(x + 1) + (80 * y)] = data[position][1][x + (80 * y)];
+						}
 
-                    	pixels[position][1][x+(80*y)]=pixels[position][1][(x-1)+(80*y)];
-                    	data[position][1][x+(80*y)]=data[position][1][(x-1)+(80*y)];
-					
-                    	pixels[position][1][(x-1)+(80*y)]=pixels[position][0][x+(80*y)];
-                    	data[position][1][(x-1)+(80*y)]=data[position][0][x+(80*y)];
-					
-                    	pixels[position][0][x+(80*y)]=pixels[position][0][(x-1)+(80*y)];
-                    	data[position][0][x+(80*y)]=data[position][0][(x-1)+(80*y)];
+						pixels[position][1][x + (80 * y)] = pixels[position][1][(x - 1) + (80 * y)];
+						data[position][1][x + (80 * y)] = data[position][1][(x - 1) + (80 * y)];
+
+						pixels[position][1][(x - 1) + (80 * y)] = pixels[position][0][x + (80 * y)];
+						data[position][1][(x - 1) + (80 * y)] = data[position][0][x + (80 * y)];
+
+						pixels[position][0][x + (80 * y)] = pixels[position][0][(x - 1) + (80 * y)];
+						data[position][0][x + (80 * y)] = data[position][0][(x - 1) + (80 * y)];
+
+						if (x == 1) {
+							// Le pixel en fin de ligne revient au début de cette ligne
+							pixels[position][0][0 + (80 * y)] = pixelSave;
+							data[position][0][0 + (80 * y)] = dataSave;
+						}
 					}
 				}
 			}

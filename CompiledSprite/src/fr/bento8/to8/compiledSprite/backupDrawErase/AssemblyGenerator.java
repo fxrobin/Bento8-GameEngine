@@ -29,6 +29,7 @@ public class AssemblyGenerator{
 
 	boolean FORWARD = true;
 	public String spriteName;
+	public boolean spriteCenterEven;
 	private int cyclesDFrameCode;
 	private int sizeDFrameCode;
 	private int cyclesEFrameCode;
@@ -65,35 +66,36 @@ public class AssemblyGenerator{
 
 	public AssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteName = spriteSheet.getName();
+		spriteCenterEven = (spriteSheet.center % 2) == 0;
 		x1_offset = spriteSheet.getSubImageX1Offset(imageNum);
 		y1_offset = spriteSheet.getSubImageY1Offset(imageNum);
 		x_size = spriteSheet.getSubImageXSize(imageNum);
 		y_size = spriteSheet.getSubImageYSize(imageNum);
 
-		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
+		logger.debug("Planche:"+spriteSheet.getName()+" "+spriteSheet.variant+" image:"+imageNum);
 		logger.debug("X1Offset: "+getX1_offset());
 		logger.debug("Y1Offset: "+getY1_offset());
 		logger.debug("XSize: "+getX_size());
 		logger.debug("YSize: "+getY_size());		
 		logger.debug("Center: "+spriteSheet.getCenter());
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-		//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
+		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 		
 		destDir += "/"+spriteName;
-		asmBckDrawFileName = destDir+"_BckDraw.ASM";
+		asmBckDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
 		File file = new File (asmBckDrawFileName);
 		file.getParentFile().mkdirs();		
 		asmDFile = Paths.get(asmBckDrawFileName);
-		lstBckDrawFileName = destDir+"_BckDraw.lst";
+		lstBckDrawFileName = destDir+"_"+spriteSheet.variant+".lst";
 		lstDFile = Paths.get(lstBckDrawFileName);
-		binBckDrawFileName = destDir+"_BckDraw.BIN";
+		binBckDrawFileName = destDir+"_"+spriteSheet.variant+".BIN";
 		binDFile = Paths.get(binBckDrawFileName);
 		
-		asmEraseFileName = destDir+"_Erase.ASM";
+		asmEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.ASM";
 		asmEFile = Paths.get(asmEraseFileName);
-		lstEraseFileName = destDir+"_Erase.lst";
+		lstEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.lst";
 		lstEFile = Paths.get(lstEraseFileName);
-		binEraseFileName = destDir+"_Erase.BIN";
+		binEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.BIN";
 		binEFile = Paths.get(binEraseFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
@@ -122,7 +124,7 @@ public class AssemblyGenerator{
 
 			logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
 			logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
-			//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
+			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
 			cs.buildCode(FORWARD);
@@ -220,9 +222,9 @@ public class AssemblyGenerator{
 				Files.createFile(asmDFile);
 
 				Files.write(asmDFile, getCodeFrameBckDrawStart("IMGD.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmDFile, getCodeFrameBckDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameBckDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, getCodeFrameBckDrawEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			} else {
 				// change ORG adress in existing ASM file
@@ -280,8 +282,8 @@ public class AssemblyGenerator{
 				dataSize.add(String.format("DataSize equ $%1$04X", getEraseDataSize() & 0xFFFF));
 				
 				Files.write(asmEFile, getCodeFrameEraseStart("IMGE.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-				Files.write(asmEFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmEFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, getCodeFrameEraseEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, dataSize, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 			} else {
