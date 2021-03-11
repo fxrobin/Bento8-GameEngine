@@ -112,7 +112,19 @@ public class SpriteSheet {
 		y_size = new int[subImageNb];
 		
 		center = (int)((Math.ceil(height/2.0)-1)*40) +  subImageWidth/8;
-		center_offset = (subImageWidth / 2) % 2;
+		
+		// Correction positionnement sprite en fonction de la position du centre
+		center_offset = subImageWidth % 8;
+		switch (center_offset) {
+		case 0 : center_offset = 0; break;
+		case 1 : center_offset = 1; break;
+		case 2 : center_offset = 0; break;
+		case 3 : center_offset = 1; break;
+		case 4 : center_offset = 2; break;
+		case 5 : center_offset = 2; break;
+		case 6 : center_offset = 3; break;
+		case 7 : center_offset = 3; break;
+		}
 		
 		for (int position = 0; position < subImageNb; position++) { // Parcours de toutes les sous-images
 			int index = subImageWidth*position;		

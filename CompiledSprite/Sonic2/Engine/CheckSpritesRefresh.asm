@@ -221,8 +221,8 @@ CSR_NextObject
 
 CSR_CheckVerticalPosition
         lda   x_pixel,u                     ; compute mapping_frame 
-        anda  #$01                          ; index of sub image is encoded in two bits: 00|B0, 01|D0, 10|B1, 11|D1
-        eora  rsv_image_center_offset,u     ; case of odd image center switch shifted image with normal 
+        eora  rsv_image_center_offset,u     ; case of odd image center switch shifted image with normal
+        anda  #$01                          ; index of sub image is encoded in two bits: 00|B0, 01|D0, 10|B1, 11|D1         
         asla                                ; set bit2 for 1px shifted image  
         ldb   render_flags,u            
         andb  #render_overlay_mask          ; set bit1 for normal (background save) or overlay sprite (no background save)
