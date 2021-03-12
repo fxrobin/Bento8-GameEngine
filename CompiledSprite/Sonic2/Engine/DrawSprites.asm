@@ -174,7 +174,11 @@ DRS_DrawWithoutBackupB0
 
 DRS_XYToAddress
         suba  #$30
-        subb  #$1C
+        bcc   DRS_XYToAddressPositive
+        suba  #$60                          ; get x position one line up, skipping (160-255)
+        decb
+DRS_XYToAddressPositive        
+        subb  #$1C                          ; TODO same thing as x for negative case
         lsra                                ; x=x/2, sprites moves by 2 pixels on x axis
         lsra                                ; x=x/2, RAMA RAMB enterlace  
         bcs   DRS_XYToAddressRAM2First      ; Branch if write must begin in RAMB first

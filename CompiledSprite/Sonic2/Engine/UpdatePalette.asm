@@ -25,7 +25,7 @@ White_palette  fdb   $ff0f          *@globals
                fdb   $ff0f
                fdb   $ff0f
 
-UpdatePalette
+UpdatePalette *@globals
     	ldx   Ptr_palette
     	clr   cpt                      * compteur couleur a 0
         lda   cpt			           *

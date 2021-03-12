@@ -206,6 +206,10 @@ Sonic_Routines                                   *off_12E76:      offsetTable
                                                  *; spawn more stars
 Sonic_Init                                       *Obj0E_Sonic_Init:
 
+		ldd   #Pal_TitleScreen *@IgnoreUndefined
+		std   Ptr_palette
+		jsr   UpdatePalette
+
         * Activate IRQ for Sound
         lda   $6019                           
         ora   #$20

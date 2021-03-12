@@ -248,65 +248,46 @@ CSR_NoFrameFound
         sty   rsv_mapping_frame,u
 
 CSR_CVP_Continue        
-        ldb   y_pixel,u                               ; y_pixel check
-        bmi   CSR_YNegative
-        
-CSR_YPositive        
+        ldb   y_pixel,u                               ; check if sprite is fully in screen vertical range
         ldy   rsv_image_subset,u
         addb  image_subset_y1_offset,y
-        bmi   CSR_SetOutOfRange
-        cmpb  #screen_top
-        bcs   CSR_SetOutOfRange
-        bra   CSR_StoreY1
-         
-CSR_YNegative        
-        ldy   rsv_image_subset,u
-        addb  image_subset_y1_offset,y
-        cmpb  #screen_top
-        bcs   CSR_SetOutOfRange
-
-CSR_StoreY1        
-        stb   rsv_y1_pixel,u
-        
-        ldy   image_set,u
-        addb  image_y_size,y
-        bcs   CSR_SetOutOfRange
         cmpb  #screen_bottom
         bhi   CSR_SetOutOfRange
+        cmpb  #screen_top
+        blo   CSR_SetOutOfRange        
+        stb   rsv_y1_pixel,u
+        ldy   image_set,u
+        addb  image_y_size,y
+        cmpb  #screen_bottom
+        bhi   CSR_SetOutOfRange
+        cmpb  #screen_top
+        blo   CSR_SetOutOfRange        
         stb   rsv_y2_pixel,u
+        cmpb  rsv_y1_pixel,u                          ; check wrapping
+        blo   CSR_SetOutOfRange
                 
-        lda   render_flags,u                          ; x_pixel check
+        lda   render_flags,u                          ; check if sprite is fully in screen horizontal range
         bita  #render_xloop_mask
         bne   CSR_DontCheckXFrontier   
         
         ldb   x_pixel,u
-        bmi   CSR_XNegative        
-
-CSR_XPositive
         ldy   rsv_image_subset,u
         addb  image_subset_x1_offset,y
-        bmi   CSR_SetOutOfRange
-        cmpb  #screen_left
-        bcs   CSR_SetOutOfRange
-        bra   CSR_StoreX1
-        
-
-CSR_XNegative
-        ldy   rsv_image_subset,u
-        addb  image_subset_x1_offset,y
-        cmpb  #screen_left
-        bcs   CSR_SetOutOfRange
-        
-CSR_StoreX1
-        stb   rsv_x1_pixel,u
-        
-        ldy   image_set,u
-        addb  image_x_size,y
-        bcs   CSR_SetOutOfRange
         cmpb  #screen_right
         bhi   CSR_SetOutOfRange
-        
+        cmpb  #screen_left
+        blo   CSR_SetOutOfRange
+        stb   rsv_x1_pixel,u
+        ldy   image_set,u
+        addb  image_x_size,y
+        cmpb  #screen_right
+        bhi   CSR_SetOutOfRange
+        cmpb  #screen_left
+        blo   CSR_SetOutOfRange
         stb   rsv_x2_pixel,u
+        cmpb  rsv_x1_pixel,u                          ; check wrapping
+        blo   CSR_SetOutOfRange 
+                
         bra   CSR_DontCheckXFrontier_end        
         
 CSR_DontCheckXFrontier  
@@ -391,14 +372,14 @@ CSR_SubEraseSearchB0
 CSR_SubEraseCheckCollisionB0
         ldd   rsv_prev_xy1_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 and rsv_prev_y_pixel_0 in one instruction
         cmpa  rsv_x2_pixel,u                ;     entry : x_pixel + rsv_mapping_frame.x_size
-        bhs   CSR_SubEraseSearchB0
+        bhi   CSR_SubEraseSearchB0
         cmpb  rsv_y2_pixel,u                ;     entry : y_pixel + rsv_mapping_frame.y_size
-        bhs   CSR_SubEraseSearchB0
+        bhi   CSR_SubEraseSearchB0
         ldd   rsv_prev_xy2_pixel_0,y        ; sub entry : rsv_prev_x_pixel_0 + rsv_prev_mapping_frame_0.x_size and rsv_prev_y_pixel_0 + rsv_prev_mapping_frame_0.y_size in one instruction
         cmpa  rsv_x1_pixel,u                ;     entry : x_pixel
-        bls   CSR_SubEraseSearchB0
+        blo   CSR_SubEraseSearchB0
         cmpb  rsv_y1_pixel,u                ;     entry : y_pixel
-        bls   CSR_SubEraseSearchB0
+        blo   CSR_SubEraseSearchB0
         
         ldy   cur_ptr_sub_obj_erase
         bra   CSR_SetEraseTrue              ; found a collision

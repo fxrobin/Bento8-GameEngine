@@ -21,7 +21,7 @@
                                        *; freeObject:
 DeleteObject_x *@globals               *DeleteObject:
         pshs  d,x,u                    *    movea.l a0,a1
-        leax  ,u                       *; sub_164E8:
+        leau  ,x                       *; sub_164E8:
         bra   DOB_Start
         
 DeleteObject *@globals                 *DeleteObject2:

@@ -611,8 +611,6 @@ public class BuildDisk
 						asmLoadAct.add("        ldb   #$63                     * load page 3");						
 						asmLoadAct.add("        stb   $E7E6                    * in cardtridge space ($0000-$3FFF)");
 						asmLoadAct.add("        jsr   ClearCartMem");						
-
-						content += "        INCLUD CLRCARTM\n";
 					}
 
 					if (act.bgFileName != null) {
@@ -628,7 +626,6 @@ public class BuildDisk
 						asmLoadAct.add("        jsr   UpdatePalette");
 
 						content += "        INCLUD PALETTE\n";
-						content += "        INCLUD UPDTPAL\n";
 					}
 				}
 			}

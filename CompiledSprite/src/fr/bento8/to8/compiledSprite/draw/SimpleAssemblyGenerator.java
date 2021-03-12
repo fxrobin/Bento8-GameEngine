@@ -84,7 +84,7 @@ public class SimpleAssemblyGenerator{
 		logger.debug("Center: "+spriteSheet.getCenter());
 		
 		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-		//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
+		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 		
 		destDir += "/"+spriteName;
 		asmDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
@@ -115,7 +115,7 @@ public class SimpleAssemblyGenerator{
 			sizeSpriteCode1 = regOpt.getAsmCodeSize();
 
 			logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
-			//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
+			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
 			cs.buildCode(REARWARD);

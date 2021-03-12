@@ -37,7 +37,7 @@ LevelMainLoop
 _IRQ
         lda   $E7E5
         sta   _IRQ_end+1                              ; backup data page
-        * jsr   PSGFrame
+        jsr   PSGFrame
         * jsr   PSGSFXFrame
 _IRQ_end        
         lda   #$00
@@ -135,7 +135,7 @@ Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of obje
         
 Object_RAM *@globals
 Reserved_Object_RAM
-Obj_MainCharacter             fdb   $0103
+Obj_MainCharacter             fdb   $0203
                               rmb   object_size-2,0
 Obj_Sidekick                  rmb   object_size,0
 Reserved_Object_RAM_End
@@ -159,6 +159,7 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
 * Routines
 * ==============================================================================
+        * a rendre dynamique a partir du properties game mode
         INCLUD WAITVBL
         INCLUD READJPDS
         INCLUD RUNOBJTS
@@ -174,9 +175,11 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD UNSETDSP
         INCLUD DRAWSPR
         INCLUD BGBALLOC
-        INCLUD BGBFREE   
-       * INCLUD PLAYPCM * A rendre dynamique 
-       * INCLUD PSGLIB  * A rendre dynamique   
+        INCLUD BGBFREE 
+        INCLUD CLRCARTM  
+        INCLUD UPDTPAL        
+        INCLUD PLAYPCM * A rendre dynamique 
+        INCLUD PSGLIB  * A rendre dynamique   
         
 * ==============================================================================
 * Level Specific Generated Data
@@ -185,6 +188,6 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD IMAGEIDX
         INCLUD ANIMSCPT
         INCLUD OBJINDEX
-        * INCLUD SOUNDIDX * A rendre dynamique
+        INCLUD SOUNDIDX * A rendre dynamique
         INCLUD LOADACT
                                                                  

@@ -26,16 +26,38 @@ SonicAndTailsIn
         bra   SATI_Routines
 
 SATI_Routines
+        lbra  SATI_clearScreen
         lbra  SATI_fadeIn
         lbra  SATI_fadeOut        
         lbra  SATI_Wait
+        lbra  SATI_End
  
-SATI_fadeIn
+SATI_clearScreen
         ldx   #$0000
-        *jsr   ClearCartMem        
+        jsr   ClearCartMem        
         
         ldd   #Img_SonicAndTailsIn
         std   image_set,u
+        
+        ldd   #$807F
+        std   xy_pixel,u
+        
+        lda   render_flags,u
+        ora   #render_overlay_mask
+        sta   render_flags,u   
+        
+        ldb   #1
+        stb   priority,u     
+        
+        lda   routine,u
+        adda  #$03
+        sta   routine,u   
+
+        jmp   DisplaySprite
+
+SATI_fadeIn
+        ldx   #$0000
+        jsr   ClearCartMem        
 
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
@@ -44,16 +66,20 @@ SATI_fadeIn
         std   ext_variables,x
         ldd   #Pal_SonicAndTailsIn *@IgnoreUndefined
         std   ext_variables+2,x    
+        
         lda   routine,u
         adda  #$03
-        sta   routine,u          
-SATI_fadeIn_return        
-        rts    
+        sta   routine,u    
+           
+        ldd   #$0000
+        std   Vint_runcount           
+              
+        jmp   DisplaySprite    
                 
 SATI_fadeOut
         ldd   Vint_runcount
         cmpd  #3*50 ; 3 seconds
-        bne   SATI_fadeOut_continue
+        beq   SATI_fadeOut_continue
         rts
 
 SATI_fadeOut_continue        
@@ -73,12 +99,33 @@ SATI_fadeOut_continue
 SATI_Wait
         ldx   #Obj_PaletteHandler
         tst   ,x
-        beq   SATI_Wait_continue
+        beq   SATI_clearScreen_end
         rts
         
-SATI_Wait_continue
+SATI_clearScreen_end
+        ldx   #$1111
+        jsr   ClearCartMem
+        
+        lda   $E7DD                    * set border color
+        anda  #$F0
+        adda  #1
+        sta   $E7DD
+        anda  #$0F
+        adda  #$80
+        sta   screen_border_color+1    * maj WaitVBL
+                     
+        lda   routine,u
+        adda  #$03
+        sta   routine,u    
+        rts            
+                
+SATI_End
+        ldx   #$1111
+        jsr   ClearCartMem  
         jsr   DeleteObject                    
         ldd   #(ObjID_TitleScreen<+8)+$03             ; Replace this object with Title Screen Object subtype 3
         std   ,u
+        ldu   #Obj_PaletteHandler
+        jsr   ClearObj        
         rts  
                         
