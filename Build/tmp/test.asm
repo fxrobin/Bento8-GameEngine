@@ -1,3 +1,3 @@
-(main)PlayPCM
+(main)test
         org $A000
 
