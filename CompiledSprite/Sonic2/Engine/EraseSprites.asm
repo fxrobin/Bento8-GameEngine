@@ -155,6 +155,7 @@ ESP_CallEraseRoutineB0
 ESP_CallEraseRoutineB0_00        
         ldu   #$0000                        ; restore u (pointer to object)
         ldd   rsv_bgdata_0,u                ; cell_start
+        subd  #16
         andb  #256-cell_size                ; round cell_start to cell size
         tfr   d,x                           ; cell_start rounded stored in x
                         
@@ -208,6 +209,7 @@ ESP_CallEraseRoutineB1
 ESP_CallEraseRoutineB1_00        
         ldu   #$0000                        ; restore u (pointer to object)
         ldd   rsv_bgdata_1,u                ; cell_start
+        subd  #16
         andb  #256-cell_size                ; round cell_start to cell size
         tfr   d,x                           ; cell_start rounded stored in x
                         
