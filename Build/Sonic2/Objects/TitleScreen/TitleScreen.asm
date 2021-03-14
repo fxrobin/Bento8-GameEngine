@@ -207,8 +207,8 @@ Sonic_Routines                                   *off_12E76:      offsetTable
 Sonic_Init                                       *Obj0E_Sonic_Init:
 
 		ldd   #Pal_TitleScreen *@IgnoreUndefined
-		std   Ptr_palette
-		jsr   UpdatePalette
+		std   Cur_palette
+        clr   Refresh_palette                    * will call refresh palette after next VBL
 
         * Activate IRQ for Sound
         lda   $6019                           
@@ -385,7 +385,7 @@ Sonic_SetPal_TitleScreenAfterWait                *+
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
 
         *ldd   #Pal_TitleScreen                   *        lea     (Pal_133EC).l,a1
-        *std   Ptr_palette                        *        lea     (Normal_palette).w,a2
+        *std   Cur_palette                        *        lea     (Normal_palette).w,a2
                                                  *
         * not implemented                        *        moveq   #$F,d6
         * switch pointer to                      *-       move.w  (a1)+,(a2)+
@@ -487,7 +487,7 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldd   #$FF
         std   b_TitleScr_final_state,u            *        st      objoff_2F(a0)
         *ldd   #White_palette                     *        lea     (Normal_palette_line3).w,a1
-        *std   Ptr_palette                        *        move.w  #$EEE,d0
+        *std   cur_palette                        *        move.w  #$EEE,d0
                                                  *
         * not implemented                        *        moveq   #$F,d6
         * switch pointer to                      *-       move.w  d0,(a1)+

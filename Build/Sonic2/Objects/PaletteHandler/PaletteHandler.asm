@@ -11,19 +11,6 @@
 ; Appel a une routine interne de l'objet : utiliser les branchements ((l)b__), ne pas utiliser les sauts.
 ; Utilisation de l'adressage indexe pour acceder a des donnees internes de l'objet : utilisation de "mon_tableau,pcr" pour charger l'adresse du tableau dans un registre
 ;
-; Palettes
-; --------
-; 4x pal of 16 colors (first is transparent)
-; init state:
-;    Pal1 - LargeStar, Tails
-;    Pal0,2,3 - Black
-;
-; sequence of TitleScreen :
-;    Pal3 - fade in - Emblem
-;    Pal0 - set - Sonic
-;    Pal2 - set - White
-;    Pal2 - fade in - Background
-;
 ; Colors
 ; ------
 ; Genesis/Megadrive: 8 values for each component (BGR) 0, 2, 4, 6, 8, A, C, E
@@ -65,11 +52,10 @@
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
-pal_src      equ ext_variables         * pointeur vers palette source
-pal_dst      equ ext_variables+2       * pointeur vers palette destination
+pal_src      equ ext_variables         * ptr to source pal
+pal_dst      equ ext_variables+2       * ptr to destination pal
 
 PaletteHandler
-
         lda   routine,u
         sta   *+4,pcr
         bra   PaletteHandler_Routines
@@ -85,8 +71,10 @@ PaletteHandler_Init
         lda   #$10    
         sta   pal_cycles,pcr
         
-        ldy   pal_src,u                * copie de la palette source dans pal_cur
-        leax  pal_cur,pcr
+        ldy   pal_src,u
+        cmpy  #Dyn_palette             * Source pal is already current pal, no copy
+        beq   PaletteHandler_Main
+        ldx   #Dyn_palette
         ldd   ,y
         std   ,x
         ldd   2,y
@@ -122,8 +110,9 @@ PaletteHandler_Init
                                                  
 PaletteHandler_Main
         ldx   pal_dst,u
-        leay  pal_cur,pcr
-        clr   pal_idx,pcr   
+        ldy   #Dyn_palette
+        lda   #$10
+        sta   pal_idx,pcr   
         dec   pal_cycles,pcr           * decremente le compteur du nombre de frame
         bne   PHI_Loop                 * on reboucle si nombre de frame n'est pas realise
         jmp   ClearObj                 * auto-destruction de l'objet
@@ -165,25 +154,19 @@ PHI_SetPalSaveBleu
         stb   1,y                      * sauvegarde de la nouvelle valeur bleue
 								       
 PHI_SetPalNext                             
-        lda   pal_idx,pcr              * Lecture index couleur
-        asla
-        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
-        lda   ,y                       * chargement de la nouvelle couleur courante
-        sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
-        stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
         leay  2,y                      * on avance le pointeur vers la nouvelle couleur source
         leax  2,x                      * on avance le pointeur vers la nouvelle couleur dest
-        inc   pal_idx,pcr
-        lda   pal_idx,pcr
-        cmpa  #$10  
+        dec   pal_idx,pcr
         bne   PHI_Loop                 * on reboucle si fin de liste pas atteinte
+        ldd   #Dyn_palette
+        std   Cur_palette
+        clr   Refresh_palette          * will call refresh palette after next VBL
         rts        
 
 * ---------------------------------------------------------------------------
 * Local data
 * ---------------------------------------------------------------------------
         
-pal_cur      rmb 32,0
 pal_mask     fcb $0F                   * masque pour l'aternance du traitemet vert/rouge
 pal_cycles   fcb $00
 pal_buffer   fdb $00                   * buffer de comparaison

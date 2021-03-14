@@ -62,7 +62,7 @@ SATI_fadeIn
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x                 
-        ldd   #Black_palette *@IgnoreUndefined
+        ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Pal_SonicAndTailsIn *@IgnoreUndefined
         std   ext_variables+2,x    
@@ -86,7 +86,7 @@ SATI_fadeOut_continue
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x                 
-        ldd   #Pal_SonicAndTailsIn *@IgnoreUndefined
+        ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Black_palette *@IgnoreUndefined
         std   ext_variables+2,x  

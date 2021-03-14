@@ -360,7 +360,7 @@ SEGA_EndWipe
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x
-        ldd   #Pal_SEGAMid *@IgnoreUndefined
+        ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Pal_SEGAEnd *@IgnoreUndefined
         std   ext_variables+2,x
@@ -399,7 +399,7 @@ SEGA_fadeOut
         ldx   #Obj_PaletteHandler
         lda   #ObjID_PaletteHandler
         sta   id,x
-        ldd   #Pal_SEGAEnd *@IgnoreUndefined
+        ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
         ldd   #Black_palette *@IgnoreUndefined
         std   ext_variables+2,x

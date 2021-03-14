@@ -22,8 +22,9 @@ InitIRQ
 * Main Loop
 * ==============================================================================
 LevelMainLoop
-        jsr   WaitVBL      
-        jsr   ReadJoypads
+        jsr   WaitVBL    
+        jsr   UpdatePalette
+        jsr   ReadJoypads        
         jsr   RunObjects
         jsr   CheckSpritesRefresh
         jsr   EraseSprites

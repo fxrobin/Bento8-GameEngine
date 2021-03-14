@@ -18,6 +18,6 @@ LoadAct
         stb   $E7E6                    * in cardtridge space ($0000-$3FFF)
         jsr   ClearCartMem
         ldd   #Pal_SEGA
-        std   Ptr_palette
-        jsr   UpdatePalette
+        std   Cur_palette
+        clr   Refresh_palette
         rts

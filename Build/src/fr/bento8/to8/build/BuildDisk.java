@@ -622,8 +622,8 @@ public class BuildDisk
 					
 					if (act.paletteName != null) {
 						asmLoadAct.add("        ldd   #" + act.paletteName);
-						asmLoadAct.add("        std   Ptr_palette");
-						asmLoadAct.add("        jsr   UpdatePalette");
+						asmLoadAct.add("        std   Cur_palette");
+						asmLoadAct.add("        clr   Refresh_palette");
 
 						content += "        INCLUD PALETTE\n";
 					}
