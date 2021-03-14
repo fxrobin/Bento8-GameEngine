@@ -1,0 +1,173 @@
+(main)IMGD.ASM
+	ORG $A000
+	SETDP $FF
+BCKDRAW_Img_tailsHand
+	STS SSAV_Img_tailsHand+1,PCR
+
+	STD DYN_POS+1,PCR
+	LEAS ,U
+	LDU ,Y
+	LEAU 362,U
+
+	LDA -80,U
+	LDB 120,U
+	PSHS B,A
+	LDA 80,U
+	LDB -120,U
+	PSHS B,A
+	LDA -40,U
+	PSHS A
+	LDA #$0b
+	STA 120,U
+	LDA #$00
+	STA -80,U
+	STA -40,U
+	LDA 40,U
+	LDB ,U
+	PSHS U,B,A
+	LDA #$dd
+	STA -120,U
+	LDA #$b0
+	STA ,U
+	LDA #$a0
+	STA 40,U
+	STA 80,U
+	LEAU 280,U
+
+	LDA -80,U
+	PSHS A
+	LDA #$d0
+	STA -80,U
+	LDA -120,U
+	LDB ,U
+	PSHS B,A
+	LDA 80,U
+	LDB -40,U
+	PSHS B,A
+	LDA 40,U
+	LDB 120,U
+	PSHS U,B,A
+	LDA #$b0
+	STA -120,U
+	LDA #$dd
+	STA 80,U
+	STA 120,U
+	LDA #$db
+	STA -40,U
+	STA ,U
+	STA 40,U
+	LEAU 240,U
+
+	LDD 39,U
+	PSHS D
+	LDA #$57
+	ANDB #$0F
+	ORB #$d0
+	STD 39,U
+	LDA -80,U
+	LDB 79,U
+	PSHS B,A
+	LDA #$dd
+	STA -80,U
+	LDD -41,U
+	PSHS D
+	ANDA #$F0
+	ANDB #$0F
+	ADDD #$05d0
+	STD -41,U
+	LDD -1,U
+	PSHS U,D
+	ANDA #$F0
+	ANDB #$0F
+	ADDD #$07d0
+	STD -1,U
+	LDA #$56
+	STA 79,U
+DYN_POS
+
+	LDU #$0000
+	LEAU 401,U
+
+	LDX 80,U
+	LDY ,U
+	PSHS Y,X
+	LDD #$dd0d
+	STD ,U
+	LDD 120,U
+	LDX 40,U
+	PSHS X,D
+	LDA -120,U
+	PSHS A
+	ANDA #$F0
+	ORA #$0d
+	STA -120,U
+	LDD #$b00b
+	STD 80,U
+	STD 120,U
+	LDA #$0d
+	STD 40,U
+	LDD -40,U
+	PSHS D
+	LDA #$d0
+	ANDB #$0F
+	ORB #$00
+	STD -40,U
+	LDD -80,U
+	PSHS U,D
+	ANDA #$F0
+	ANDB #$0F
+	ADDD #$00d0
+	STD -80,U
+	LEAU 280,U
+
+	LDD 40,U
+	PSHS D
+	LDA #$0d
+	ANDB #$0F
+	ORB #$d0
+	STD 40,U
+	LDD 80,U
+	PSHS D
+	LDA #$0b
+	ANDB #$0F
+	ORB #$d0
+	STD 80,U
+	LDA 120,U
+	LDX ,U
+	LDY -120,U
+	PSHS Y,X,A
+	LDD -40,U
+	LDX -80,U
+	PSHS U,X,D
+	LDD #$ddbb
+	STD -80,U
+	LDB #$bd
+	STD -40,U
+	LDA #$bd
+	STD ,U
+	LDD #$db0b
+	STD -120,U
+	STA 120,U
+	LEAU 220,U
+
+	LDA -60,U
+	LDB -20,U
+	PSHS B,A
+	LDA #$3b
+	STA -60,U
+	LDA #$5d
+	STA -20,U
+	LDA 20,U
+	LDB 60,U
+	PSHS U,B,A
+	LDA #$63
+	STA 20,U
+	LDA #$75
+	STA 60,U
+	LEAU ,S
+SSAV_Img_tailsHand
+	LDS #$0000
+	RTS
+
+(info)
+

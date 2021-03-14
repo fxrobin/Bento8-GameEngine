@@ -1,0 +1,132 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_SegaSonic_43
+	STS ERASE_SSAV_Img_SegaSonic_43+1,PCR
+
+	LEAS ,U
+ERASE_CODE_Img_SegaSonic_43_1
+	PULS A,U
+	STA ,U
+
+	PULS A,U
+	STA 120,U
+
+	PULS A,B
+	STA 80,U
+	STB 40,U
+
+	PULS A,B
+	STA ,U
+	STB -40,U
+
+	PULS A,B
+	STA -80,U
+	STB -120,U
+
+	PULS A,U
+	STA -40,U
+
+	PULS D,X,Y
+	STD 120,U
+	STX 80,U
+	STY 40,U
+
+	PULS D
+	STD ,U
+
+	PULS A,B
+	STA -120,U
+	STB -80,U
+
+	PULS A,B,U
+	STA 80,U
+	STB 120,U
+
+	PULS A,B
+	STA ,U
+	STB 40,U
+
+	PULS A,B
+	STA -80,U
+	STB -40,U
+
+	PULS A
+	STA -120,U
+
+	PULS A,U
+	STA 60,U
+
+	PULS A,B
+	STA 20,U
+	STB -20,U
+
+	PULS A
+	STA -60,U
+
+	PULS A,U
+	STA 120,U
+
+	PULS A,B
+	STA 80,U
+	STB 40,U
+
+	PULS A,B
+	STA -40,U
+	STB ,U
+
+	PULS A,B
+	STA -120,U
+	STB -80,U
+
+	PULS A,U
+	STA 120,U
+
+	PULS A,B
+	STA 40,U
+	STB 80,U
+
+	PULS A,B
+	STA -40,U
+	STB ,U
+
+	PULS A,B
+	STA -120,U
+	STB -80,U
+
+	PULS A,B,U
+	STA 80,U
+	STB 120,U
+
+	PULS D,X
+	STD -41,U
+	STX -81,U
+
+	PULS A,X,Y
+	STA -121,U
+	STX -1,U
+	STY 39,U
+
+	PULS A,B,U
+	STA 80,U
+	STB 120,U
+
+	PULS A,B
+	STA ,U
+	STB -40,U
+
+	PULS A,B
+	STA -80,U
+	STB 40,U
+
+	PULS A
+	STA -120,U
+
+	LEAU ,S
+ERASE_SSAV_Img_SegaSonic_43
+	LDS #$0000
+	RTS
+
+(info)
+
+DataSize equ $0050

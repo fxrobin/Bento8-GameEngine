@@ -1,0 +1,638 @@
+/*--------------------------------------------------------------*
+ * Compilé avec C6809 v0.83                                     *
+ *--------------------------------------------------------------*
+ * Fichier source      : .\Sonic2\GeneratedCode\GameModeLoader.asm
+ * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
+ * Contenu :
+ *     Main     0:GMENGINE.ASM 1189
+ *     Include  0:CONSTANT.ASM 5768
+ *     Include  0:EXOMIZER.ASM 2111
+ *--------------------------------------------------------------*/
+
+Macro Pass
+Pass1
+Pass2
+     99                                   INCLUD CONSTANT
+    100                           * --------------------------------------->>
+    101                           * Constants
+    102                           *
+    103                           * Naming convention
+    104                           * -----------------
+    105                           * - lower case
+    106                           * - underscore-separated names
+    107                           *
+    108                           * --------------------------------------->>
+    109
+    110                           * =======================================>>
+    111                           * TO8 Registers
+    112                           * =======================================>>
+    113
+    114                  6049     dk_lecteur                    equ $6049
+    115                  604A     dk_piste                      equ $604A
+    116                  604B     dk_pisteL                     equ $604B
+    117                  604C     dk_secteur                    equ $604C
+    118                  604F     dk_destination                equ $604F
+    119
+    120                           * =======================================>>
+    121                           * Display Constants
+    122                           * =======================================>>
+    123
+    124                  00A0     screen_width                  equ 160 ; s>>
+    125                  001C     screen_top                    equ 28 ; in>>
+    126                  00E3     screen_bottom                 equ 28+199 >>
+    127                  0030     screen_left                   equ 48 ; in>>
+    128                  00CF     screen_right                  equ 48+159 >>
+    129                  0008     nb_priority_levels            equ 8   ; n>>
+    130
+    131                           * =======================================>>
+    132                           * Physics Constants
+    133                           * =======================================>>
+    134
+    135                  0038     gravity                       equ $38 ; G>>
+    136
+    137                           * =======================================>>
+    138                           * Animation Constants
+    139                           * =======================================>>
+    140
+    141                  00FF     _resetAnim                    equ $FF
+    142                  00FE     _goBackNFrames                equ $FE
+    143                  00FD     _goToAnimation                equ $FD
+    144                  00FC     _nextRoutine                  equ $FC
+    145                  00FB     _resetAnimAndSubRoutine       equ $FB
+    146                  00FA     _nextSubRoutine               equ $FA
+    147
+    148                           * =======================================>>
+    149                           * Images Constants
+    150                           * =======================================>>
+    151
+    152                  0004     image_x_size                  equ 4
+    153                  0005     image_y_size                  equ 5
+    154                  0006     image_center_offset           equ 6
+    155
+    156                  0004     image_subset_x1_offset        equ 4
+    157                  0005     image_subset_y1_offset        equ 5
+    158
+    159                  0000     page_draw_routine             equ 0
+    160                  0001     draw_routine                  equ 1
+    161                  0003     page_erase_routine            equ 3
+    162                  0004     erase_routine                 equ 4
+    163                  0006     erase_nb_cell                 equ 6
+    164
+    165                           * =======================================>>
+    166                           * Sound Constants
+    167                           * =======================================>>
+    168
+    169                  0000     pcm_page        equ 0
+    170                  0001     pcm_start_addr  equ 1
+    171                  0003     pcm_end_addr    equ 3
+    172                  0005     pcm_meta_size   equ 5
+    173
+    174                           * =======================================>>
+    175                           * Object Constants
+    176                           * =======================================>>
+    177
+    178                  0002     nb_reserved_objects           equ 2
+    179                  001B     nb_dynamic_objects            equ 27
+    180                  0003     nb_level_objects              equ 3
+    181                  0020     nb_objects                    equ 32 * ma>>
+    182
+    183                           * --------------------------------------->>
+    184                           * Object Status Table offsets
+    185                           * --------------------------------------->>
+    186
+    187                  005A     object_size                   equ 90 ; th>>
+    188                  005A     next_object                   equ object_>>
+    189
+    190                  0000     id                            equ 0      >>
+    191                  0001     subtype                       equ 1      >>
+    192                  0002     render_flags                  equ 2
+    193
+    194                           * --- render_flags bitfield variables --->>
+    195                  0001     render_xmirror_mask           equ $01 ; (>>
+    196                  0002     render_ymirror_mask           equ $02 ; (>>
+    197                  0004     render_overlay_mask           equ $04 ; (>>
+    198                  0008     render_motionless_mask        equ $08 ; (>>
+    199                  0010     render_playfieldcoord_mask    equ $10 ; (>>
+    200                  0020     render_hide_mask              equ $20 ; (>>
+    201                  0040     render_todelete_mask          equ $40 ; (>>
+    202                  0080     render_xloop_mask             equ $80 ; (>>
+    203                            
+    204                  0003     priority                      equ 3      >>
+    205                  0004     anim                          equ 4  ; an>>
+    206                  0006     prev_anim                     equ 6  ; an>>
+    207                  0008     anim_frame                    equ 8      >>
+    208                  0009     anim_frame_duration           equ 9      >>
+    209                  000A     image_set                     equ 10 ; an>>
+    210                  000C     x_pos                         equ 12 ; an>>
+    211                  000E     x_sub                         equ 14     >>
+    212                  000F     y_pos                         equ 15 ; an>>
+    213                  0011     y_sub                         equ 17     >>
+    214                  0012     xy_pixel                      equ 18     >>
+    215                  0012     x_pixel                       equ 18     >>
+    216                  0013     y_pixel                       equ 19     >>
+    217                  0014     x_vel                         equ 20 ; an>>
+    218                  0016     y_vel                         equ 22 ; an>>
+    219                  0018     routine                       equ 24     >>
+    220                  0019     routine_secondary             equ 25     >>
+    221                  001A     status                        equ 26
+    222
+    223                           * --- status bitfield variables for objec>>
+    224                  0001     status_x_orientation          equ   $01 ;>>
+    225                  0002     status_y_orientation          equ   $02 ;>>
+    226                  0004     status_bit2                   equ   $04 ;>>
+    227                  0008     status_mainchar_standing      equ   $08 ;>>
+    228                  0010     status_sidekick_standing      equ   $10 ;>>
+    229                  0020     status_mainchar_pushing       equ   $20 ;>>
+    230                  0040     status_sidekick_pushing       equ   $40 ;>>
+    231                  0080     status_bit7                   equ   $80 ;>>
+    232
+    233                           * --- status bitfield variables for Main >>
+    234                  0002     status_inair                  equ   $02 ;>>
+    235                  0004     status_jumporroll             equ   $04 ;>>
+    236                  0008     status_norgroundnorfall       equ   $08 ;>>
+    237                  0010     status_jumpingafterrolling    equ   $10 ;>>
+    238                  0020     status_pushing                equ   $20 ;>>
+    239                  0040     status_underwater             equ   $40 ;>>
+    240
+    241                  001B     ext_variables                 equ 27 ; to>>
+    242
+    243                           * --------------------------------------->>
+    244                           * reserved variables (engine)
+    245
+    246                  0029     rsv_render_flags              equ 41
+    247
+    248                           * --- rsv_render_flags bitfield variables>>
+    249                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
+    250                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
+    251                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
+    252                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
+    253
+    254                  002A     rsv_prev_anim                 equ 42 ; an>>
+    255                  002C     rsv_image_center_offset       equ 44 ; 0 >>
+    256                           * ne sert plus                       ; an>>
+    257                  002E     rsv_image_subset              equ 46 ; an>>
+    258                  0030     rsv_mapping_frame             equ 48 ; an>>
+    259                  0032     rsv_xy1_pixel                 equ 50     >>
+    260                  0032     rsv_x1_pixel                  equ 50     >>
+    261                  0033     rsv_y1_pixel                  equ 51     >>
+    262                  0034     rsv_xy2_pixel                 equ 52     >>
+    263                  0034     rsv_x2_pixel                  equ 52     >>
+    264                  0035     rsv_y2_pixel                  equ 53     >>
+    265
+    266                           * --------------------------------------->>
+    267                           * reserved variables (engine) - buffer sp>>
+    268
+    269                  0036     rsv_buffer_0                  equ 54 ; St>>
+    270                  0036     rsv_priority_0                equ 54 ; in>>
+    271                  0037     rsv_priority_prev_obj_0       equ 55 ; an>>
+    272                  0039     rsv_priority_next_obj_0       equ 57 ; an>>
+    273                           *rsv_prev_image_subset_0       equ 59 ; a>>
+    274                  003D     rsv_prev_mapping_frame_0      equ 61 ; an>>
+    275                  003F     rsv_bgdata_0                  equ 63 ; an>>
+    276                  0041     rsv_prev_xy_pixel_0           equ 65 ;
+    277                  0041     rsv_prev_x_pixel_0            equ 65 ; pr>>
+    278                  0042     rsv_prev_y_pixel_0            equ 66 ; pr>>
+    279                  0043     rsv_prev_xy1_pixel_0          equ 67 ;
+    280                  0043     rsv_prev_x1_pixel_0           equ 67 ; pr>>
+    281                  0044     rsv_prev_y1_pixel_0           equ 68 ; pr>>
+    282                  0045     rsv_prev_xy2_pixel_0          equ 69 ;
+    283                  0045     rsv_prev_x2_pixel_0           equ 69 ; pr>>
+    284                  0046     rsv_prev_y2_pixel_0           equ 70 ; pr>>
+    285                  0047     rsv_prev_render_flags_0       equ 71 ;
+    286                           * --- rsv_prev_render_flags_0 bitfield va>>
+    287                  0001     rsv_prev_render_overlay_mask  equ $01 ; (>>
+    288                  0080     rsv_prev_render_onscreen_mask equ $80 ; (>>
+    289
+    290                  0048     rsv_buffer_1                  equ 72 ; St>>
+    291                  0048     rsv_priority_1                equ 72 ; in>>
+    292                  0049     rsv_priority_prev_obj_1       equ 73 ; an>>
+    293                  004B     rsv_priority_next_obj_1       equ 75 ; an>>
+    294                           *rsv_prev_image_subset_1       equ 77 ; a>>
+    295                  004F     rsv_prev_mapping_frame_1      equ 79 ; an>>
+    296                  0051     rsv_bgdata_1                  equ 81 ; an>>
+    297                  0053     rsv_prev_xy_pixel_1           equ 83 ;
+    298                  0053     rsv_prev_x_pixel_1            equ 83 ; pr>>
+    299                  0054     rsv_prev_y_pixel_1            equ 84 ; pr>>
+    300                  0055     rsv_prev_xy1_pixel_1          equ 85 ;
+    301                  0055     rsv_prev_x1_pixel_1           equ 85 ; pr>>
+    302                  0056     rsv_prev_y1_pixel_1           equ 86 ; pr>>
+    303                  0057     rsv_prev_xy2_pixel_1          equ 87 ;
+    304                  0057     rsv_prev_x2_pixel_1           equ 87 ; pr>>
+    305                  0058     rsv_prev_y2_pixel_1           equ 88 ; pr>>
+    306                  0059     rsv_prev_render_flags_1       equ 89 ;
+    307
+    308                  0000     buf_priority                  equ 0  ; of>>
+    309                  0001     buf_priority_prev_obj         equ 1  ;
+    310                  0003     buf_priority_next_obj         equ 3  ;
+    311                           *buf_prev_image_subset         equ 5  ;
+    312                  0007     buf_prev_mapping_frame        equ 7  ;
+    313                  0009     buf_bgdata                    equ 9  ;
+    314                  000B     buf_prev_xy_pixel             equ 11 ;
+    315                  000B     buf_prev_x_pixel              equ 11 ;
+    316                  000C     buf_prev_y_pixel              equ 12 ;
+    317                  000D     buf_prev_xy1_pixel            equ 13 ;
+    318                  000D     buf_prev_x1_pixel             equ 13 ;
+    319                  000E     buf_prev_y1_pixel             equ 14 ;
+    320                  000F     buf_prev_xy2_pixel            equ 15 ;
+    321                  000F     buf_prev_x2_pixel             equ 15 ;
+    322                  0010     buf_prev_y2_pixel             equ 16 ;
+    323                  0011     buf_prev_render_flags         equ 17 ;
+    324
+     22        4000                       org   $4000
+     23                  40               setdp $40
+    325                                   INCLUD EXOMIZER
+    326                           * Exomizer2 algorithm, backward with litt>>
+    327                           * by Fool-DupleX, PrehisTO and Sam from P>>
+    328                           *
+    329                           * This routine decrunches data compressed>>
+    330                           * backward with litterals.
+    331                           * This routine was developed and tested o>>
+    332
+    333                            
+    334                           * The Exomizer2 decruncher starts here.
+    335                           * call with a JSR exo2 or equivalent.
+    336                           *
+    337                           * Input    : U = pointer to end of compre>>
+    338                           *            Y = pointer to end of output>>
+    339                           * Output   : Y = pointer to first byte of>>
+    340                           * Modifies : Y.
+    341                           *
+    342                           * All registers are preserved except Y.
+    343                           * This code self modifies and cannot be r>>
+    344                           * This code must be contained within a si>>
+    345                           * be located anywhere in RAM.
+    346
+    347  5+10  4000 34   7F       exo2    pshs    u,y,x,dp,d,cc           *>>
+    348  6     4002 1F   50               tfr     pc,d                    *>>
+    349  6     4004 1F   8B               tfr     a,dp
+    350  4+5   4006 31   8D 00A9          leay    biba,pcr                *>>
+    351  2     400A 5F                    clrb
+    352  4     400B D7   8D               stb     <bitbuf+1               *>>
+    353
+    354  2     400D 4F            nxt     clra
+    355  5+2   400E 34   06               pshs    a,b
+    356  2     4010 C5   0F               bitb    #$0f                    *>>
+    357  3     4012 26   03               bne     skp
+    358  3     4014 8E   0001             ldx     #$0001                  *>>
+    359  2     4017 C6   04       skp     ldb     #4                      *>>
+    360  7     4019 8D   6D               bsr     getbits
+    361  4+2   401B E7   A0               stb     ,y+                     *>>
+    362  2     401D 53                    comb                            *>>
+    363  6+0   401E 69   E4       roll    rol     ,s
+    364  2     4020 49                    rola
+    365  2     4021 5C                    incb
+    366  3     4022 2B   FA               bmi     roll
+    367  4+0   4024 E6   E4               ldb     ,s
+    368  5+3   4026 AF   A1               stx     ,y++                    *>>
+    369  4+4   4028 30   8B               leax    d,x                     *>>
+    370  5+2   402A 35   06               puls    a,b
+    371  2     402C 5C                    incb
+    372  2     402D C1   34               cmpb    #52                     *>>
+    373  3     402F 26   DC               bne     nxt
+    374                            
+    375  6+1   4031 10AE 66       go      ldy     6,s                     *>>
+    376  2     4034 C6   01       mloop   ldb     #1                      *>>
+    377  7     4036 8D   50               bsr     getbits                 *>>
+    378  3     4038 26   15               bne     cpy                     *>>
+    379  4     403A D7   45               stb     <idx+1                  *>>
+    380        403C 8C                    fcb     $8c                     *>>
+    381  6     403D 0C   45       rbl     inc     <idx+1                  *>>
+    382  2     403F 5C                    incb
+    383  7     4040 8D   46               bsr     getbits
+    384  3     4042 27   F9               beq     rbl
+    385
+    386  2     4044 C6   00       idx     ldb     #$00                    *>>
+    387  2     4046 C1   10               cmpb    #$10                    *>>
+    388  3     4048 27   37               beq     endr
+    389  3     404A 25   0F               blo     coffs                   *>>
+    390  2     404C 5A                    decb                            *>>
+    391  7     404D 8D   39               bsr     getbits                 *>>
+    392
+    393  6     404F 1F   01       cpy     tfr     d,x                     *>>
+    394  4+2   4051 A6   C2       cpyl    lda     ,-u
+    395  4+2   4053 A7   A2               sta     ,-y
+    396  4+1   4055 30   1F               leax    -1,x
+    397  3     4057 26   F8               bne     cpyl
+    398  3     4059 20   D9               bra     mloop
+    399
+    400  7     405B 8D   44       coffs   bsr     cook                    *>>
+    401  5+2   405D 34   06               pshs    d
+    402  4+1   405F 30   8C 4B            leax    <tab1,pcr
+    403  5     4062 1083 0003             cmpd    #$03
+    404  3     4066 24   01               bhs     scof
+    405  3     4068 3A                    abx
+    406  7     4069 8D   1B       scof    bsr     getbix
+    407  4+1   406B EB   03               addb    3,x
+    408  7     406D 8D   32               bsr     cook
+    409  5     406F DD   77               std     <offs+2
+    410  5+2   4071 35   10               puls    x
+    411
+    412  4+1   4073 31   3F       cpy2    leay    -1,y                    *>>
+    413  4+4   4075 A6   A9 1234  offs    lda     $1234,y                 *>>
+    414  4+0   4079 A7   A4               sta     ,y
+    415  4+1   407B 30   1F               leax    -1,x
+    416  3     407D 26   F4               bne     cpy2
+    417  3     407F 20   B3               bra     mloop
+    418
+    419  6+1   4081 10AF 66       endr    sty     6,s                     *>>
+    420  5+12  4084 35   FF               puls    cc,d,dp,x,y,u,pc        *>>
+    421
+    422                           * getbits  : get 0 to 16 bits from input >>
+    423                           * Input    : B = bit count, U points to i>>
+    424                           * Output   : D = bits
+    425                           * Modifies : D,U.
+    426
+    427  4+0   4086 E6   84       getbix  ldb     ,x
+    428  6+2   4088 6F   E2       getbits clr     ,-s                     *>>
+    429  6+2   408A 6F   E2               clr     ,-s
+    430  2     408C 86   12       bitbuf  lda     #$12                    *>>
+    431  3     408E 20   09               bra     get3
+    432  4+2   4090 A6   C2       get1    lda     ,-u
+    433  2     4092 46            get2    rora
+    434  3     4093 27   FB               beq     get1                    *>>
+    435  6+1   4095 69   61               rol     1,s
+    436  6+0   4097 69   E4               rol     ,s
+    437  2     4099 5A            get3    decb
+    438  3     409A 2A   F6               bpl     get2
+    439  4     409C 97   8D               sta     <bitbuf+1               *>>
+    440  5+3   409E EC   E1               ldd     ,s++
+    441  5     40A0 39                    rts                             *>>
+    442                            
+    443                           * cook     : computes base[index] + readb>>
+    444                           * Input    : B = index
+    445                           * Output   : D = base[index] + readbits(&>>
+    446                           * Modifies : D,X,U.
+    447
+    448  4+5   40A1 30   8D 000E  cook    leax    biba,pcr
+    449  3     40A5 3A                    abx                             *>>
+    450  2     40A6 58                    aslb                            *>>
+    451  3     40A7 3A                    abx
+    452  7     40A8 8D   DC               bsr     getbix                  *>>
+    453  6+1   40AA E3   01               addd    1,x                     *>>
+    454  5     40AC 39                    rts
+    455
+    456                           * Values used in the switch (index)
+    457        40AD 04 02 04      tab1    fcb     4,2,4
+    458        40B0 10 30 20              fcb     16,48,32
+    459
+    460        40B3               biba    rmb     156,0                   *>>
+     25
+     26        414F               GameModeLoader *@globals
+     27  3     414F CE   41CE             ldu   #current_game_mode_data+7 *>>
+     28  5+2   4152 34   40               pshs  u
+     29                            
+     30        4154               GameModeLoader_continue
+     31                  60               setdp $60
+     32  2     4154 86   60               lda   #$60
+     33  6     4156 1F   8B               tfr   a,dp                     * >>
+     34
+     35  5+3   4158 EC   C1               ldd   ,u++
+     36  3     415A 2A   07               bpl   GMEContinue              * >>
+     37  4     415C 10CE 9FFF             lds   #$9FFF                   * >>
+     38  4     4160 7E   6100             jmp   $6100                    * >>
+     39        4163               GMEContinue
+     40  4     4163 97   4C               sta   <dk_secteur              * >>
+     41  5     4165 F7   41A8             stb   DKDernierBloc+2          * >>
+     42                            
+     43  4+2   4168 E6   C0               ldb   ,u+                      * >>
+     44  2     416A 1D                    sex                            * >>
+     45  2     416B 84   01               anda  #$01                     * >>
+     46  2     416D C4   7F               andb  #$7F                     * >>
+     47  4     416F 97   49               sta   <dk_lecteur
+     48  2     4171 86   00               lda   #$00
+     49  5     4173 DD   4A               std   <dk_piste
+     50                            
+     51  2     4175 C6   00               ldb   #$00                     * >>
+     52  5     4177 DD   4F               std   <dk_destination
+     53                            
+     54  5+4   4179 37   26               pulu  d,y                      * >>
+     55  5     417B B7   41B8             sta   NegOffset+3              * >>
+     56  5     417E F7   41BA             stb   Page+1
+     57                            
+     58  5+2   4181 34   40               pshs  u
+     59
+     60        4183               DKLecture
+     61  2     4183 86   02               lda   #$02
+     62  4     4185 97   48               sta   <$6048                   * >>
+     63        4187               DKCO
+     64  8     4187 BD   E82A             jsr   $E82A                    * >>
+     65  6     418A 0C   4C               inc   <dk_secteur              * >>
+     66  4     418C 96   4C               lda   <dk_secteur              * >>
+     67  2     418E 81   10               cmpa  #$10                     * >>
+     68  3     4190 23   10               bls   DKContinue               * >>
+     69  2     4192 86   01               lda   #$01                     * >>
+     70  4     4194 97   4C               sta   <dk_secteur              * >>
+     71  6     4196 0C   4B               inc   <dk_pisteL               * >>
+     72  4     4198 96   4B               lda   <dk_pisteL
+     73  2     419A 81   4F               cmpa  #$4F                     * >>
+     74  3     419C 23   04               bls   DKContinue               * >>
+     75  6     419E 0F   4B               clr   <dk_pisteL               * >>
+     76  6     41A0 0C   49               inc   <dk_lecteur              * >>
+     77        41A2               DKContinue
+     78  6     41A2 0C   4F               inc   <$604F                   * >>
+     79  5     41A4 DE   4F               ldu   <$604F                   * >>
+     80        41A6               DKDernierBloc
+     81  5     41A6 1183 0000             cmpu  #0                       * >>
+     82  3     41AA 23   DB               bls   DKCO                     * >>
+     83  5     41AC B6   41B8             lda   NegOffset+3              * >>
+     84  3     41AF 27   08               beq   Page                     * >>
+     85  4+4   41B1 33   C9 0100          leau  $0100,u                  * >>
+     86        41B5               NegOffset
+     87  4+4   41B5 33   C9 FE00          leau  $FE00,u                  * >>
+     88        41B9               Page
+     89  2     41B9 86   00               lda   #0                       * >>
+     90  5     41BB B7   E7E5             sta   $E7E5                    * >>
+     91  8     41BE BD   4000             jsr   exo2                     * >>
+     92  5+2   41C1 35   40               puls  u
+     93  3     41C3 20   8F               bra   GameModeLoader_continue
+     94        41C5               fill
+     95        41C5                       rmb   7-((fill-exo2)%7),0      * >>
+     96                            
+     97        41C7               current_game_mode_data *@globals
+     98
+
+000000 Total Errors
+
+000181 Total Symbols
+     0x          Equ   0004 anim
+     0x          Equ   0008 anim_frame
+     0x          Equ   0009 anim_frame_duration
+     2x          Label 40B3 biba
+     2x          Label 408C bitbuf
+     0x          Equ   0009 buf_bgdata
+     0x          Equ   0007 buf_prev_mapping_frame
+     0x          Equ   0011 buf_prev_render_flags
+     0x          Equ   000D buf_prev_x1_pixel
+     0x          Equ   000F buf_prev_x2_pixel
+     0x          Equ   000D buf_prev_xy1_pixel
+     0x          Equ   000F buf_prev_xy2_pixel
+     0x          Equ   000B buf_prev_xy_pixel
+     0x          Equ   000B buf_prev_x_pixel
+     0x          Equ   000E buf_prev_y1_pixel
+     0x          Equ   0010 buf_prev_y2_pixel
+     0x          Equ   000C buf_prev_y_pixel
+     0x          Equ   0000 buf_priority
+     0x          Equ   0003 buf_priority_next_obj
+     0x          Equ   0001 buf_priority_prev_obj
+     1x          Label 405B coffs
+     2x          Label 40A1 cook
+     1x          Label 404F cpy
+     1x          Label 4073 cpy2
+     1x          Label 4051 cpyl
+     1x          Label 41C7 current_game_mode_data
+     1x          Label 4187 DKCO
+     2x          Label 41A2 DKContinue
+     1x          Label 41A6 DKDernierBloc
+     0x          Label 4183 DKLecture
+     1x          Equ   604F dk_destination
+     2x          Equ   6049 dk_lecteur
+     1x          Equ   604A dk_piste
+     3x          Equ   604B dk_pisteL
+     4x          Equ   604C dk_secteur
+     0x          Equ   0001 draw_routine
+     1x          Label 4081 endr
+     0x          Equ   0006 erase_nb_cell
+     0x          Equ   0004 erase_routine
+     2x          Label 4000 exo2
+     0x          Equ   001B ext_variables
+     1x          Label 41C5 fill
+     0x          Label 414F GameModeLoader
+     1x          Label 4154 GameModeLoader_continue
+     1x          Label 4090 get1
+     1x          Label 4092 get2
+     1x          Label 4099 get3
+     4x          Label 4088 getbits
+     2x          Label 4086 getbix
+     1x          Label 4163 GMEContinue
+     0x          Label 4031 go
+     0x          Equ   0038 gravity
+     0x          Equ   0000 id
+     2x          Label 4044 idx
+     0x          Equ   0006 image_center_offset
+     0x          Equ   000A image_set
+     0x          Equ   0004 image_subset_x1_offset
+     0x          Equ   0005 image_subset_y1_offset
+     0x          Equ   0004 image_x_size
+     0x          Equ   0005 image_y_size
+     2x          Label 4034 mloop
+     0x          Equ   001B nb_dynamic_objects
+     0x          Equ   0003 nb_level_objects
+     0x          Equ   0020 nb_objects
+     0x          Equ   0008 nb_priority_levels
+     0x          Equ   0002 nb_reserved_objects
+     2x          Label 41B5 NegOffset
+     0x          Equ   005A next_object
+     1x          Label 400D nxt
+     1x          Equ   005A object_size
+     1x          Label 4075 offs
+     2x          Label 41B9 Page
+     0x          Equ   0000 page_draw_routine
+     0x          Equ   0003 page_erase_routine
+     0x          Equ   0003 pcm_end_addr
+     0x          Equ   0005 pcm_meta_size
+     0x          Equ   0000 pcm_page
+     0x          Equ   0001 pcm_start_addr
+     0x          Equ   0006 prev_anim
+     0x          Equ   0003 priority
+     1x          Label 403D rbl
+     0x          Equ   0002 render_flags
+     0x          Equ   0020 render_hide_mask
+     0x          Equ   0008 render_motionless_mask
+     0x          Equ   0004 render_overlay_mask
+     0x          Equ   0010 render_playfieldcoord_mask
+     0x          Equ   0040 render_todelete_mask
+     0x          Equ   0080 render_xloop_mask
+     0x          Equ   0001 render_xmirror_mask
+     0x          Equ   0002 render_ymirror_mask
+     1x          Label 401E roll
+     0x          Equ   0018 routine
+     0x          Equ   0019 routine_secondary
+     0x          Equ   003F rsv_bgdata_0
+     0x          Equ   0051 rsv_bgdata_1
+     0x          Equ   0036 rsv_buffer_0
+     0x          Equ   0048 rsv_buffer_1
+     0x          Equ   002C rsv_image_center_offset
+     0x          Equ   002E rsv_image_subset
+     0x          Equ   0030 rsv_mapping_frame
+     0x          Equ   002A rsv_prev_anim
+     0x          Equ   003D rsv_prev_mapping_frame_0
+     0x          Equ   004F rsv_prev_mapping_frame_1
+     0x          Equ   0047 rsv_prev_render_flags_0
+     0x          Equ   0059 rsv_prev_render_flags_1
+     0x          Equ   0080 rsv_prev_render_onscreen_mask
+     0x          Equ   0001 rsv_prev_render_overlay_mask
+     0x          Equ   0043 rsv_prev_x1_pixel_0
+     0x          Equ   0055 rsv_prev_x1_pixel_1
+     0x          Equ   0045 rsv_prev_x2_pixel_0
+     0x          Equ   0057 rsv_prev_x2_pixel_1
+     0x          Equ   0043 rsv_prev_xy1_pixel_0
+     0x          Equ   0055 rsv_prev_xy1_pixel_1
+     0x          Equ   0045 rsv_prev_xy2_pixel_0
+     0x          Equ   0057 rsv_prev_xy2_pixel_1
+     0x          Equ   0041 rsv_prev_xy_pixel_0
+     0x          Equ   0053 rsv_prev_xy_pixel_1
+     0x          Equ   0041 rsv_prev_x_pixel_0
+     0x          Equ   0053 rsv_prev_x_pixel_1
+     0x          Equ   0044 rsv_prev_y1_pixel_0
+     0x          Equ   0056 rsv_prev_y1_pixel_1
+     0x          Equ   0046 rsv_prev_y2_pixel_0
+     0x          Equ   0058 rsv_prev_y2_pixel_1
+     0x          Equ   0042 rsv_prev_y_pixel_0
+     0x          Equ   0054 rsv_prev_y_pixel_1
+     0x          Equ   0036 rsv_priority_0
+     0x          Equ   0048 rsv_priority_1
+     0x          Equ   0039 rsv_priority_next_obj_0
+     0x          Equ   004B rsv_priority_next_obj_1
+     0x          Equ   0037 rsv_priority_prev_obj_0
+     0x          Equ   0049 rsv_priority_prev_obj_1
+     0x          Equ   0001 rsv_render_checkrefresh_mask
+     0x          Equ   0004 rsv_render_displaysprite_mask
+     0x          Equ   0002 rsv_render_erasesprite_mask
+     0x          Equ   0029 rsv_render_flags
+     0x          Equ   0008 rsv_render_outofrange_mask
+     0x          Equ   0032 rsv_x1_pixel
+     0x          Equ   0034 rsv_x2_pixel
+     0x          Equ   0032 rsv_xy1_pixel
+     0x          Equ   0034 rsv_xy2_pixel
+     0x          Equ   0033 rsv_y1_pixel
+     0x          Equ   0035 rsv_y2_pixel
+     1x          Label 4069 scof
+     0x          Equ   00E3 screen_bottom
+     0x          Equ   0030 screen_left
+     0x          Equ   00CF screen_right
+     0x          Equ   001C screen_top
+     0x          Equ   00A0 screen_width
+     1x          Label 4017 skp
+     0x          Equ   001A status
+     0x          Equ   0004 status_bit2
+     0x          Equ   0080 status_bit7
+     0x          Equ   0002 status_inair
+     0x          Equ   0010 status_jumpingafterrolling
+     0x          Equ   0004 status_jumporroll
+     0x          Equ   0020 status_mainchar_pushing
+     0x          Equ   0008 status_mainchar_standing
+     0x          Equ   0008 status_norgroundnorfall
+     0x          Equ   0020 status_pushing
+     0x          Equ   0040 status_sidekick_pushing
+     0x          Equ   0010 status_sidekick_standing
+     0x          Equ   0040 status_underwater
+     0x          Equ   0001 status_x_orientation
+     0x          Equ   0002 status_y_orientation
+     0x          Equ   0001 subtype
+     1x          Label 40AD tab1
+     0x          Equ   0012 xy_pixel
+     0x          Equ   0012 x_pixel
+     0x          Equ   000C x_pos
+     0x          Equ   000E x_sub
+     0x          Equ   0014 x_vel
+     0x          Equ   0013 y_pixel
+     0x          Equ   000F y_pos
+     0x          Equ   0011 y_sub
+     0x          Equ   0016 y_vel
+     0x          Equ   00FE _goBackNFrames
+     0x          Equ   00FD _goToAnimation
+     0x          Equ   00FC _nextRoutine
+     0x          Equ   00FA _nextSubRoutine
+     0x          Equ   00FF _resetAnim
+     0x          Equ   00FB _resetAnimAndSubRoutine
+

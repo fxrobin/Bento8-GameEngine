@@ -1,0 +1,59 @@
+(main)IMGD.ASM
+	ORG $A000
+	SETDP $FF
+BCKDRAW_Img_star_2
+	STS SSAV_Img_star_2+1,PCR
+
+	STD DYN_POS+1,PCR
+	LEAS ,U
+	LDU ,Y
+	LDA ,U
+	LDB -120,U
+	PSHS B,A
+	ANDB #$0F
+	ORB #$d0
+	STB -120,U
+	LDA -80,U
+	PSHS A
+	ANDA #$0F
+	ORA #$c0
+	STA -80,U
+	LDA -40,U
+	PSHS A
+	ANDA #$0F
+	ORA #$b0
+	STA -40,U
+	LDA 40,U
+	PSHS A
+	ANDA #$0F
+	ORA #$b0
+	STA 40,U
+	LDA 80,U
+	PSHS A
+	ANDA #$0F
+	ORA #$c0
+	STA 80,U
+	LDA 120,U
+	PSHS U,A
+	ANDA #$0F
+	ORA #$d0
+	STA 120,U
+	LDA #$0c
+	STA ,U
+DYN_POS
+
+	LDU #$0000
+	LEAU -1,U
+
+	LDA ,U
+	PSHS U,A
+	ANDA #$F0
+	ORA #$0c
+	STA ,U
+	LEAU ,S
+SSAV_Img_star_2
+	LDS #$0000
+	RTS
+
+(info)
+

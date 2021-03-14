@@ -45,7 +45,10 @@ PlayPCM_NextChunk
         nop
         bra   PlayPCM_ReadChunk
         
-PlayPCM_End        
+PlayPCM_End
+        lda   #$00
+        sta   $e7cd
+                
         ldd   #$fbfc  ! Mute by CRA to
         anda  $e7cf   ! avoid sound when
         sta   $e7cf   ! $e7cd is written
