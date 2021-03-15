@@ -68,7 +68,7 @@ ERASE_CODE_Img_SegaSonic_42_1
 	PULS A,X,Y
 	STA -79,U
 	STX -81,U
-	STY -121,U
+	STY -41,U
 
 	PULS D,X,Y
 	STD 39,U
@@ -76,9 +76,9 @@ ERASE_CODE_Img_SegaSonic_42_1
 	STY -119,U
 
 	PULS A,B,X
-	STA 80,U
-	STB 120,U
-	STX -41,U
+	STA 120,U
+	STB 80,U
+	STX -121,U
 
 	PULS D,X,U
 	PSHU D,X

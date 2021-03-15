@@ -38,84 +38,84 @@ DRAW_Img_emblemFront04
 
 	LDB #$12
 	LDX #$1166
-	LDY #$66c0
+	LDY #$66b0
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$00
-	LDY #$66ec
+	LDY #$66db
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$6610
-	LDY #$66ee
+	LDY #$66dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDX #$1677
-	LDY #$76ee
+	LDY #$76dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDX #$1777
-	LDY #$77ee
+	LDY #$77dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDX #$1771
-	LDY #$73ee
+	LDY #$73dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$77
 	LDX #$1330
-	LDY #$13ee
+	LDY #$13dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDX #$1310
-	LDY #$03ee
+	LDY #$03dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$33
 	LDX #$3610
-	LDY #$01ee
+	LDY #$01dd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDX #$0010
-	LDY #$00ee
+	LDY #$00dd
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$0c10
+	LDX #$0b10
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$00
-	LDX #$cc10
-	LDY #$000e
+	LDX #$bb10
+	LDY #$000d
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$ccc0
+	LDX #$bbb0
 	LDY #$0002
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDA #$cc
-	LDX #$ccc1
+	LDA #$bb
+	LDX #$bbb1
 	LDY #$0022
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$1cc1
+	LDX #$1bb1
 	LDY #$0222
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$1ccc
+	LDX #$1bbb
 	LDY #$2122
 	PSHU D,X,Y
 	LEAU -34,U
@@ -128,11 +128,24 @@ DRAW_Img_emblemFront04
 	PSHU D,X,Y
 	LEAU -34,U
 
+	LDY #$bb22
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDX #$21cc
 	LDY #$cc22
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$21dd
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDX #$22cc
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDA #$cc
+	LDX #$22dd
 	LDY #$dd22
 	PSHU D,X,Y
 	LEAU -34,U
@@ -140,25 +153,12 @@ DRAW_Img_emblemFront04
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$22dd
+	LDX #$2200
+	LDY #$d022
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$dd
-	LDX #$22ee
-	LDY #$ee22
-	PSHU D,X,Y
-	LEAU -34,U
-
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDX #$2200
-	LDY #$e022
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDA #$ee
 	LDX #$2222
 	LDY #$0222
 	PSHU D,X,Y
@@ -202,7 +202,7 @@ DYN_POS
 	LEAU -34,U
 
 	LDX #$1066
-	LDY #$61e7
+	LDY #$61d7
 	PSHU D,X,Y
 	LEAU -34,U
 
@@ -244,22 +244,22 @@ DYN_POS
 
 	LDA #$37
 	LDX #$0000
-	LDY #$1e17
+	LDY #$1d17
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$33
-	LDY #$1e12
+	LDY #$1d12
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$cc00
-	LDY #$1e13
+	LDX #$bb00
+	LDY #$1d13
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$07
-	LDY #$e013
+	LDY #$d013
 	PSHU D,X,Y
 	LEAU -34,U
 
@@ -268,57 +268,57 @@ DYN_POS
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDA #$c0
+	LDA #$b0
 	LDY #$0213
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDA #$cc
+	LDA #$bb
 	LDY #$1213
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$cc12
+	LDX #$bb12
 	LDY #$1233
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDB #$00
-	LDX #$cc11
+	LDX #$bb11
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDB #$22
-	LDX #$ccc1
-	LDY #$c133
+	LDX #$bbb1
+	LDY #$b133
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDX #$bbbb
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDX #$cccc
+	LDY #$c133
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDX #$dddd
-	LDY #$d133
+	LDY #$cc33
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDY #$dd33
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDY #$dd32
+	LDY #$cc32
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD -42,U
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
 	ORB #$30
 	STD -42,U
-	LDD #$dd22
-	LDX #$0eee
-	LDY #$ee32
+	LDD #$cc22
+	LDX #$0ddd
+	LDY #$dd32
 	PSHU D,X,Y
 	LEAU -36,U
 
@@ -327,16 +327,16 @@ DYN_POS
 	ANDB #$0F
 	ORB #$20
 	STD -40,U
-	LDD #$dd22
-	LDX #$20ee
+	LDD #$cc22
+	LDX #$20dd
 	PSHU D,X
 	LEAU -36,U
 
-	LDX #$22ee
+	LDX #$22dd
 	PSHU D,X
 	LEAU -35,U
 
-	LDA #$ee
+	LDA #$dd
 	LDX #$2222
 	LDY #$0022
 	PSHU A,X,Y

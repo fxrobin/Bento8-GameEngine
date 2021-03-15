@@ -10,7 +10,7 @@
         org   $6100
 
         jsr   LoadAct
-        * jsr   PSGInit
+        jsr   PSGInit
 
 InitIRQ        
         ldd   #_IRQ                                   ; map IRQ routine                
@@ -162,6 +162,7 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
         * a rendre dynamique a partir du properties game mode
         INCLUD WAITVBL
+        * INCLUD WAITVBLR
         INCLUD READJPDS
         INCLUD RUNOBJTS
         INCLUD MRKOBJGN        

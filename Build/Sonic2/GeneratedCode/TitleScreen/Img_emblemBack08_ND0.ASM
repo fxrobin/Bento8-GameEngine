@@ -12,19 +12,19 @@ DRAW_Img_emblemBack08
 	STA 100,U
 	LDA 60,U
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 60,U
-	LDA #$d1
+	LDA #$c1
 	STA 20,U
-	LDA #$ce
+	LDA #$bd
 	STA -20,U
-	LDA #$cd
+	LDA #$bc
 	STA -60,U
-	LDA #$0c
+	LDA #$0b
 	STA -100,U
 	LEAU -258,U
 
-	LDD #$000c
+	LDD #$000b
 	STD 117,U
 	LDD 78,U
 	LDA #$00
@@ -34,220 +34,220 @@ DRAW_Img_emblemBack08
 	LDD 38,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD 38,U
 	STA 77,U
-	LDD #$e000
+	LDD #$d000
 	STD 36,U
 	LDA #$88
-	LDX #$e000
-	LDY #$00d1
+	LDX #$d000
+	LDY #$00c1
 	PSHU A,X,Y
 	LEAU -35,U
 
 	LDB #$88
-	LDY #$00ce
+	LDY #$00bd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$9999
 	STD -8,U
 	LDD #$8888
-	LDY #$00cd
+	LDY #$00bc
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999e
+	LDD #$999d
 	STD -8,U
 	LDD #$8888
-	LDY #$000c
+	LDY #$000b
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999e
+	LDD #$999d
 	STD -8,U
 	LDD #$8888
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999e
+	LDD #$999d
 	STD -8,U
 	LDD #$8888
-	LDX #$e00c
-	LDY #$1c0c
+	LDX #$d00b
+	LDY #$1b0b
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999e
+	LDD #$999d
 	STD -8,U
 	LDD -42,U
-	LDA #$de
+	LDA #$cd
 	ANDB #$F0
-	ORB #$0e
+	ORB #$0d
 	STD -42,U
 	LDD #$8888
-	LDX #$e000
-	LDY #$e1cc
+	LDX #$d000
+	LDY #$d1bb
 	PSHU D,X,Y
 	LEAU -36,U
 
-	LDD #$999e
+	LDD #$999d
 	LDX #$8888
-	LDY #$e000
+	LDY #$d000
 	PSHU D,X,Y
 	LEAU -33,U
 
 	STA -7,U
-	LDD #$9e81
-	LDX #$18e0
-	LDY #$00cd
+	LDD #$9d81
+	LDX #$18d0
+	LDY #$00bc
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$99
 	STA -7,U
 	LDD -41,U
-	LDA #$0c
+	LDA #$0b
 	ANDB #$0F
 	ORB #$10
 	STD -41,U
-	LDD #$9e8c
-	LDX #$c8e0
-	LDY #$000c
+	LDD #$9d8b
+	LDX #$b8d0
+	LDY #$000b
 	PSHU D,X,Y
 	LEAU -35,U
 
-	LDD #$999e
-	LDX #$8cc8
-	LDY #$e000
+	LDD #$999d
+	LDX #$8bb8
+	LDY #$d000
 	PSHU D,X,Y
 	LEAU -32,U
 
 	STD -8,U
 	LDD #$8888
-	LDX #$e000
-	LDY #$00e1
+	LDX #$d000
+	LDY #$00d1
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999e
+	LDD #$999d
 	STD -8,U
 	LDD #$8118
-	LDY #$00de
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDD #$999e
-	STD -8,U
-	LDD #$8cc8
 	LDY #$00cd
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999e
+	LDD #$999d
 	STD -8,U
-	LDD #$8888
-	LDY #$00cc
+	LDD #$8bb8
+	LDY #$00bc
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$999d
 	STD -8,U
 	LDD #$8888
-	LDY #$000c
+	LDY #$00bb
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999d
+	LDD #$999c
+	STD -8,U
+	LDD #$8888
+	LDY #$000b
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDD #$999c
 	STD -8,U
 	LDD #$8888
 	LDY #$0000
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999d
+	LDD #$999c
 	STD -8,U
 	LDD #$8888
-	LDX #$c000
+	LDX #$b000
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$999d
-	STD -8,U
-	LDD #$8888
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDD #$999d
+	LDD #$999c
 	STD -8,U
 	LDD #$8888
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99ed
+	LDD #$999c
 	STD -8,U
 	LDD #$8888
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99ed
+	LDD #$99dc
 	STD -8,U
 	LDD #$8888
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99dd
+	LDD #$99dc
+	STD -8,U
+	LDD #$8888
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDD #$99cc
 	STD -8,U
 	LDD #$8886
 	LDX #$0000
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99de
+	LDD #$99cd
 	STD -8,U
 	LDD #$8887
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99de
+	LDD #$99cd
 	STD -8,U
 	LDD #$8887
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99de
+	LDD #$99cd
 	STD -8,U
 	LDD #$8887
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99dc
+	LDD #$99cb
 	STD -8,U
-	LDD #$886e
+	LDD #$886d
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99dc
-	STD -8,U
-	LDD #$887e
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDD #$99e8
+	LDD #$99cb
 	STD -8,U
 	LDD #$887d
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99e8
+	LDD #$99d8
 	STD -8,U
-	LDD #$887d
+	LDD #$887c
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99c8
+	LDD #$99d8
 	STD -8,U
-	LDD #$81ed
+	LDD #$887c
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDD #$99b8
+	STD -8,U
+	LDD #$81dc
 	PSHU D,X,Y
 DYN_POS
 
@@ -257,29 +257,29 @@ DYN_POS
 	LDD -1,U
 	ANDA #$F0
 	ANDB #$0F
-	ADDD #$0c10
+	ADDD #$0b10
 	STD -1,U
 	LEAU -159,U
 
 	LDD 118,U
 	ANDA #$F0
 	ANDB #$0F
-	ADDD #$00e0
+	ADDD #$00d0
 	STD 118,U
-	LDD #$00d1
+	LDD #$00c1
 	STD 78,U
-	LDB #$ce
+	LDB #$bd
 	STD 38,U
-	LDX #$00cd
+	LDX #$00bc
 	PSHU A,X
 	LEAU -37,U
 
 	LDA -4,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA -4,U
 	LDA #$00
-	LDX #$000c
+	LDX #$000b
 	PSHU A,X
 	LEAU -37,U
 
@@ -287,13 +287,13 @@ DYN_POS
 	ANDA #$F0
 	ORA #$08
 	STA -5,U
-	LDD #$6d00
+	LDD #$6c00
 	PSHU D,X
 	LEAU -36,U
 
 	LDA -6,U
 	ANDA #$F0
-	ORA #$0c
+	ORA #$0b
 	STA -6,U
 	LDD -41,U
 	LDA #$00
@@ -301,7 +301,7 @@ DYN_POS
 	ORB #$10
 	STD -41,U
 	LDA #$88
-	LDX #$6d00
+	LDX #$6c00
 	LDY #$0000
 	PSHU A,X,Y
 	LEAU -36,U
@@ -309,10 +309,10 @@ DYN_POS
 	LDD -40,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD -40,U
-	LDD #$99dc
-	LDX #$886d
+	LDD #$99cb
+	LDX #$886c
 	PSHU D,X,Y
 	LEAU -34,U
 
@@ -320,64 +320,64 @@ DYN_POS
 	LEAU -32,U
 
 	STD -8,U
-	LDD #$886d
+	LDD #$886c
 	LDX #$0000
-	LDY #$00d1
+	LDY #$00c1
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99dc
+	LDD #$99cb
 	STD -8,U
-	LDD #$886d
-	LDX #$00de
-	LDY #$ccd1
+	LDD #$886c
+	LDX #$00cd
+	LDY #$bbc1
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99dc
+	LDD #$99cb
 	STD -8,U
 	LDD -42,U
 	ANDA #$0F
 	ORA #$10
-	LDB #$cd
+	LDB #$bc
 	STD -42,U
-	LDD #$886d
-	LDX #$00cd
-	LDY #$1dce
+	LDD #$886c
+	LDX #$00bc
+	LDY #$1cbd
 	PSHU D,X,Y
 	LEAU -36,U
 
-	LDD #$99dc
-	LDX #$886d
-	LDY #$000c
+	LDD #$99cb
+	LDX #$886c
+	LDY #$000b
 	PSHU D,X,Y
 	LEAU -33,U
 
 	STA -7,U
-	LDD #$dc88
-	LDX #$6d00
-	LDY #$00e1
+	LDD #$cb88
+	LDX #$6c00
+	LDY #$00d1
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$99
 	STA -7,U
-	LDA #$dc
-	LDY #$00de
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDA #$99
-	STA -7,U
-	LDD #$dc11
+	LDA #$cb
 	LDY #$00cd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDA #$99
 	STA -7,U
-	LDD #$dcee
-	LDY #$00cc
+	LDD #$cb11
+	LDY #$00bc
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDA #$99
+	STA -7,U
+	LDD #$cbdd
+	LDY #$00bb
 	PSHU D,X,Y
 	LEAU -34,U
 
@@ -388,122 +388,122 @@ DYN_POS
 	ANDB #$0F
 	ORB #$10
 	STD -41,U
-	LDD #$dcee
-	LDY #$000c
+	LDD #$cbdd
+	LDY #$000b
 	PSHU D,X,Y
 	LEAU -35,U
 
-	LDD #$99dc
-	LDX #$cc7d
+	LDD #$99cb
+	LDX #$bb7c
 	LDY #$0000
 	PSHU D,X,Y
 	LEAU -32,U
 
 	STD -8,U
-	LDD #$ee7d
+	LDD #$dd7c
 	LDX #$0000
-	LDY #$00e1
+	LDY #$00d1
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99dc
+	LDD #$99cb
 	STD -8,U
-	LDD #$cc7d
-	LDY #$00de
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDD #$99e8
-	STD -8,U
-	LDD #$887d
+	LDD #$bb7c
 	LDY #$00cd
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99e8
+	LDD #$99d8
 	STD -8,U
-	LDD #$88ed
-	LDY #$00cc
+	LDD #$887c
+	LDY #$00bc
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99e8
+	LDD #$99d8
 	STD -8,U
-	LDD #$88ed
-	LDY #$000c
+	LDD #$88dc
+	LDY #$00bb
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99e8
+	LDD #$99d8
 	STD -8,U
-	LDD #$88ed
+	LDD #$88dc
+	LDY #$000b
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99c8
+	LDD #$99d8
 	STD -8,U
-	LDD #$88ed
+	LDD #$88dc
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDD #$99b8
+	STD -8,U
+	LDD #$88dc
 	LDY #$0000
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99c8
+	LDD #$99b8
 	STD -8,U
-	LDD #$88ed
+	LDD #$88dc
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$99c8
+	LDD #$99b8
 	STD -8,U
-	LDD #$88de
+	LDD #$88cd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$9988
 	STD -8,U
-	LDD #$88de
+	LDD #$88cd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$9988
 	STD -8,U
-	LDD #$88de
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDD #$9e88
-	STD -8,U
-	LDD #$88de
-	PSHU D,X,Y
-	LEAU -34,U
-
-	LDD #$9e88
-	STD -8,U
-	LDD #$88dc
+	LDD #$88cd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$9d88
 	STD -8,U
-	LDD #$88dc
+	LDD #$88cd
 	PSHU D,X,Y
 	LEAU -34,U
 
 	LDD #$9d88
 	STD -8,U
-	LDD #$88dc
+	LDD #$88cb
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$ed88
+	LDD #$9c88
 	STD -8,U
-	LDD #$88e0
+	LDD #$88cb
 	PSHU D,X,Y
 	LEAU -34,U
 
-	LDD #$ed18
+	LDD #$9c88
 	STD -8,U
-	LDD #$88e0
+	LDD #$88cb
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDD #$dc88
+	STD -8,U
+	LDD #$88d0
+	PSHU D,X,Y
+	LEAU -34,U
+
+	LDD #$dc18
+	STD -8,U
+	LDD #$88d0
 	PSHU D,X,Y
 	RTS
 

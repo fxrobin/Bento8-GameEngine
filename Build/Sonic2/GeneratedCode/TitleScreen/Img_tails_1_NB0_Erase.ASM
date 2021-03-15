@@ -295,14 +295,12 @@ ERASE_CODE_Img_tails_1_1
 	STD 39,U
 	STX 41,U
 
-	PULS A,X,U
-	PSHU A,X
-
-	PULS D
-	STD -40,U
-
-	PULS A,X,Y
+	PULS A,B,X,U
+	PSHU B,X
 	STA -38,U
+
+	PULS D,X,Y
+	STD -40,U
 	STX -119,U
 	STY -79,U
 

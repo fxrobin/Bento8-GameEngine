@@ -15,13 +15,13 @@ ERASE_CODE_Img_tailsHand_1
 	STB -20,U
 
 	PULS D,X,U
-	STD -40,U
-	STX -80,U
+	STD -80,U
+	STX ,U
 
 	PULS A,X,Y
 	STA 120,U
-	STX ,U
-	STY -120,U
+	STX -120,U
+	STY -40,U
 
 	PULS D,X
 	STD 80,U
@@ -39,8 +39,8 @@ ERASE_CODE_Img_tailsHand_1
 	STY 40,U
 
 	PULS D,X
-	STD 80,U
-	STX ,U
+	STD ,U
+	STX 80,U
 
 	PULS D,U
 	STD -1,U
@@ -53,35 +53,35 @@ ERASE_CODE_Img_tailsHand_1
 	STB 79,U
 	STX 39,U
 
+	PULS A,U
+	STA 120,U
+
+	PULS A,B
+	STA -80,U
+	STB -40,U
+
+	PULS A,B
+	STA 80,U
+	STB -120,U
+
+	PULS A,B
+	STA 40,U
+	STB ,U
+
 	PULS A,B,U
+	STA -80,U
+	STB -40,U
+
+	PULS A,B
 	STA 40,U
 	STB 120,U
 
 	PULS A,B
-	STA 80,U
-	STB -40,U
-
-	PULS A,B
-	STA -120,U
-	STB ,U
-
-	PULS A
-	STA -80,U
-
-	PULS A,B,U
-	STA 40,U
-	STB ,U
-
-	PULS A,B
-	STA -40,U
+	STA ,U
 	STB 80,U
 
-	PULS A,B
-	STA -120,U
-	STB -80,U
-
 	PULS A
-	STA 120,U
+	STA -120,U
 
 	LEAU ,S
 ERASE_SSAV_Img_tailsHand

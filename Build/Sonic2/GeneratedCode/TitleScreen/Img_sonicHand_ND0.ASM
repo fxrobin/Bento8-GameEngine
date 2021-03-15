@@ -28,31 +28,31 @@ DRAW_Img_sonicHand
 	STD -1,U
 	LDD -41,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	LDB #$33
 	STD -41,U
-	LDD #$ddd3
+	LDD #$ccc3
 	STD -81,U
-	LDD #$dbdd
+	LDD #$cbcc
 	STD -121,U
 	LEAU -280,U
 
-	LDB #$db
+	LDB #$cb
 	STD -1,U
 	LDA #$bb
 	STD -41,U
-	LDB #$dd
+	LDB #$cc
 	STD -81,U
 	STD -121,U
-	LDD #$b0bd
+	LDD #$b0bc
 	STD 119,U
-	LDB #$0d
+	LDB #$0c
 	STD 79,U
 	LDD #$000b
 	STD 39,U
 	LEAU -181,U
 
-	LDB #$bd
+	LDB #$bc
 	STD -20,U
 	LDA #$0b
 	STD 20,U
@@ -62,18 +62,18 @@ DRAW_Img_sonicHand
 	STA -21,U
 	LEAU -178,U
 
-	LDD #$00bd
+	LDD #$00bc
 	STD 118,U
 	LDB #$bb
 	STD 78,U
 	STD 38,U
 	LDA 117,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA 117,U
 	LDA 77,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA 77,U
 	LDA 37,U
 	ANDA #$F0
@@ -84,7 +84,7 @@ DRAW_Img_sonicHand
 	PSHU A,X
 	LEAU -37,U
 
-	LDA #$d0
+	LDA #$c0
 	PSHU A,X
 	LEAU -37,U
 
@@ -106,12 +106,12 @@ DRAW_Img_sonicHand
 	LDD -81,U
 	LDA #$0b
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -81,U
 	LDD -121,U
-	LDA #$bd
+	LDA #$bc
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -121,U
 	LDD -83,U
 	ANDA #$F0
@@ -120,59 +120,59 @@ DRAW_Img_sonicHand
 	STD -83,U
 	LDD -123,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	LDB #$00
 	STD -123,U
-	LDA #$d0
+	LDA #$c0
 	PSHU A,X
 	LEAU -156,U
 
 	LDA -4,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA -4,U
-	LDX #$bddd
+	LDX #$bccc
 	PSHU B,X
 	LEAU -37,U
 
 	LDA #$b0
-	LDX #$bdbd
+	LDX #$bcbc
 	PSHU A,X
 	LEAU -37,U
 
-	LDX #$ddbd
+	LDX #$ccbc
 	PSHU A,X
 	LEAU -37,U
 
 	LDD -42,U
 	ANDA #$0F
-	ORA #$d0
+	ORA #$c0
 	LDB #$0b
 	STD -42,U
 	LDD -82,U
 	ANDA #$0F
-	ORA #$d0
-	LDB #$d0
+	ORA #$c0
+	LDB #$c0
 	STD -82,U
-	LDA #$db
+	LDA #$cb
 	STA -83,U
 	LDA -121,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA -121,U
 	LDA -123,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA -123,U
 	LDA #$b0
 	STA -43,U
-	LDX #$ddbb
+	LDX #$ccbb
 	PSHU A,X
 	LEAU -160,U
 
 	LDA ,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA ,U
 DYN_POS
 
@@ -232,38 +232,38 @@ DYN_POS
 	STD 40,U
 	LDA #$33
 	STA ,U
-	LDA #$dd
+	LDA #$cc
 	STA -40,U
 	STA -80,U
 	LDD -121,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	LDB #$bb
 	STD -121,U
 	LEAU -201,U
 
 	LDD 40,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	LDB #$00
 	STD 40,U
 	LDD 1,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD 1,U
 	LDD -39,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -39,U
 	LDA ,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA ,U
 	LDA -40,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA -40,U
 	LEAU -197,U
 
@@ -273,7 +273,7 @@ DYN_POS
 	STA 117,U
 	LDA 77,U
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA 77,U
 	LDA 37,U
 	ANDA #$F0
@@ -282,19 +282,19 @@ DYN_POS
 	LDD -42,U
 	LDA #$bb
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -42,U
 	LDD -82,U
 	LDA #$bb
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -82,U
 	LDD -122,U
 	LDA #$0b
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -122,U
-	LDD #$bddd
+	LDD #$bccc
 	STD 78,U
 	LDA #$bb
 	STD 38,U
@@ -303,16 +303,16 @@ DYN_POS
 	STA -83,U
 	LDA #$00
 	STA -123,U
-	LDA #$db
+	LDA #$cb
 	STD 118,U
-	LDX #$bbdd
+	LDX #$bbcc
 	PSHU A,X
 	LEAU -159,U
 
 	LDD ,U
 	LDA #$0b
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD ,U
 	LDA #$00
 	STA -1,U
@@ -321,26 +321,26 @@ DYN_POS
 	LDD 118,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD 118,U
 	LDD 78,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD 78,U
 	LDD 38,U
 	LDA #$00
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD 38,U
 	STA 117,U
 	STA 77,U
 	STA 37,U
-	LDX #$00dd
+	LDX #$00cc
 	PSHU A,X
 	LEAU -37,U
 
-	LDX #$00bd
+	LDX #$00bc
 	PSHU A,X
 	LEAU -37,U
 
@@ -354,7 +354,7 @@ DYN_POS
 	PSHU A,X
 	LEAU -37,U
 
-	LDX #$00db
+	LDX #$00cb
 	PSHU A,X
 	LEAU -37,U
 
@@ -365,21 +365,21 @@ DYN_POS
 	LEAU -37,U
 
 	LDD -41,U
-	LDA #$d0
+	LDA #$c0
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -41,U
 	LDD -81,U
-	LDA #$d0
+	LDA #$c0
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -81,U
 	LDD -121,U
 	ANDA #$F0
 	ANDB #$0F
-	ADDD #$0dd0
+	ADDD #$0cc0
 	STD -121,U
-	LDD #$dd0b
+	LDD #$cc0b
 	STD -123,U
 	LDD #$0b00
 	STD -43,U
@@ -395,15 +395,15 @@ DYN_POS
 	STA 41,U
 	LDA 1,U
 	ANDA #$0F
-	ORA #$d0
+	ORA #$c0
 	STA 1,U
 	LDA -41,U
 	ANDA #$0F
-	ORA #$d0
+	ORA #$c0
 	STA -41,U
 	LDA #$0b
 	STA 39,U
-	LDA #$bd
+	LDA #$bc
 	STA -1,U
 	RTS
 

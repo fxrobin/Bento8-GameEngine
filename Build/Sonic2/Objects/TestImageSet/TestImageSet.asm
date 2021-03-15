@@ -22,24 +22,30 @@ TestImageSet
         bra   TitleScreen_Routines
 
 TitleScreen_Routines
-        lbra  Init
+        lbra  Init1
+        lbra  Init2
         lbra  Move
 
-Init
-        ldd   #Img_SonicAndTailsIn
+Init1
+        ldx   #$0000
+        jsr   ClearCartMem    
+        
+        ldd   #Img_SonicWalk
         std   image_set,u
         ldb   #$01
         stb   priority,u
         ldd   #$807F
         std   xy_pixel,u
-        
-        lda   render_flags,u
-        ora   #render_overlay_mask
-        sta   render_flags,u
-        
         lda   routine,u
         adda  #$03
         sta   routine,u   
+        
+Init2
+        ldx   #$0000
+        jsr   ClearCartMem    
+        lda   routine,u
+        adda  #$03
+        sta   routine,u           
         
 Move
         lda   Dpad_Press
@@ -47,29 +53,21 @@ Move
 TestLeft
         bita  #c1_button_left_mask
         beq   TestRight   
-        lda   x_pixel,u
-        suba  #$10                                              
-        sta   x_pixel,u
+        dec   x_pixel,u
         bra   TestUp
 TestRight        
         bita  #c1_button_right_mask
         beq   TestUp   
-        lda   x_pixel,u
-        adda  #$10                                              
-        sta   x_pixel,u
+        inc   x_pixel,u
 TestUp
         bita  #c1_button_up_mask
         beq   TestDown   
-        lda   y_pixel,u
-        suba  #$10                                              
-        sta   y_pixel,u
+        dec   y_pixel,u
         bra   TestBtn
 TestDown
         bita  #c1_button_down_mask
         beq   TestBtn   
-        lda   y_pixel,u
-        adda  #$10                                              
-        sta   y_pixel,u    
+        inc   y_pixel,u     
 TestBtn
         bitb  #c1_button_A_mask
         beq   Continue
@@ -92,7 +90,7 @@ TIS_SubRoutines
         lbra  Walk        
         
 Run
-        *ldd   #Img_SonicRun
+        ldd   #Img_SonicRun
         std   image_set,u
         lda   render_flags,u
         anda  #:render_overlay_mask
@@ -102,7 +100,7 @@ Run
         sta   routine_secondary,u
         rts
 Fall
-        *ldd   #Img_SonicFall
+        ldd   #Img_SonicFall
         std   image_set,u
         lda   render_flags,u
         ora   #render_overlay_mask
@@ -112,7 +110,7 @@ Fall
         sta   routine_secondary,u
         rts
 Breathe     
-        *ldd   #Img_SonicBreathe
+        ldd   #Img_SonicBreathe
         std   image_set,u
         lda   render_flags,u
         ora   #render_overlay_mask

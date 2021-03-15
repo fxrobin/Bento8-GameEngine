@@ -27,28 +27,28 @@ DRAW_Img_emblemFront07
 	PSHU A,X,Y
 	LEAU -35,U
 
-	LDA #$cc
-	LDX #$cccc
-	LDY #$cccc
+	LDA #$bb
+	LDX #$bbbb
+	LDY #$bbbb
 	PSHU A,X,Y
 	LEAU -35,U
 
-	LDA #$ee
-	LDX #$eeee
-	LDY #$eeec
-	PSHU A,X,Y
-	LEAU -35,U
-
-	PSHU A,X,Y
-	LEAU -35,U
-
+	LDA #$dd
+	LDX #$dddd
+	LDY #$dddb
 	PSHU A,X,Y
 	LEAU -35,U
 
 	PSHU A,X,Y
 	LEAU -35,U
 
-	LDY #$eee0
+	PSHU A,X,Y
+	LEAU -35,U
+
+	PSHU A,X,Y
+	LEAU -35,U
+
+	LDY #$ddd0
 	PSHU A,X,Y
 	LEAU -35,U
 
@@ -67,36 +67,36 @@ DRAW_Img_emblemFront07
 	LEAU -35,U
 
 	LDD -42,U
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
 	ORB #$10
 	STD -42,U
-	LDX #$00cc
-	LDY #$0c00
+	LDX #$00bb
+	LDY #$0b00
 	PSHU A,X,Y
 	LEAU -37,U
 
 	LDD -40,U
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
-	ORB #$c0
+	ORB #$b0
 	STD -40,U
-	LDX #$eeee
+	LDX #$dddd
 	PSHU A,X
 	LEAU -37,U
 
 	PSHU A,X
 	LEAU -35,U
 
-	LDY #$eee1
+	LDY #$ddd1
 	PSHU A,X,Y
 	LEAU -35,U
 
 	PSHU A,X,Y
 	LEAU -35,U
 
-	LDA #$1e
-	LDY #$eeec
+	LDA #$1d
+	LDY #$dddb
 	PSHU A,X,Y
 DYN_POS
 
@@ -126,10 +126,10 @@ DYN_POS
 
 	LDA -5,U
 	ANDA #$F0
-	ORA #$0c
+	ORA #$0b
 	STA -5,U
-	LDD #$cccc
-	LDX #$cccc
+	LDD #$bbbb
+	LDX #$bbbb
 	PSHU D,X
 	LEAU -36,U
 
@@ -137,8 +137,8 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
-	LDX #$eeee
+	LDD #$dddd
+	LDX #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -146,7 +146,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -154,7 +154,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -162,7 +162,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -170,7 +170,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -178,7 +178,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -186,7 +186,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -194,7 +194,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
+	LDD #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -202,7 +202,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$ee11
+	LDD #$dd11
 	LDX #$1111
 	PSHU D,X
 	LEAU -36,U
@@ -211,8 +211,8 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$ee0c
-	LDX #$cccc
+	LDD #$dd0b
+	LDX #$bbbb
 	PSHU D,X
 	LEAU -36,U
 
@@ -220,8 +220,8 @@ DYN_POS
 	ANDA #$F0
 	ORA #$01
 	STA -5,U
-	LDD #$eeee
-	LDX #$eeec
+	LDD #$dddd
+	LDX #$dddb
 	PSHU D,X
 	LEAU -36,U
 
@@ -229,8 +229,8 @@ DYN_POS
 	ANDA #$F0
 	ORA #$00
 	STA -5,U
-	LDD #$eeee
-	LDX #$eeee
+	LDD #$dddd
+	LDX #$dddd
 	PSHU D,X
 	LEAU -36,U
 
@@ -238,7 +238,7 @@ DYN_POS
 	ANDA #$F0
 	ORA #$00
 	STA -5,U
-	LDD #$edee
+	LDD #$dcdd
 	PSHU D,X
 	LEAU -36,U
 
@@ -246,11 +246,11 @@ DYN_POS
 	ANDA #$F0
 	ORA #$00
 	STA -5,U
-	LDD #$edee
+	LDD #$dcdd
 	PSHU D,X
 	LEAU -36,U
 
-	LDA #$ee
+	LDA #$dd
 	PSHU D,X
 	RTS
 

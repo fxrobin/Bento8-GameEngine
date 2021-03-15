@@ -330,31 +330,13 @@ BCKDRAW_Img_SegaSonic_42
 	PSHU D,X
 	LEAU 281,U
 
-	LDD -80,U
-	PSHS D
-	ANDA #$F0
-	ORA #$07
-	LDB #$7c
-	STD -80,U
-	LDD -40,U
-	PSHS D
-	ANDA #$F0
-	ORA #$07
-	LDB #$7c
-	STD -40,U
-	LDA 121,U
-	LDB -78,U
-	PSHS B,A
-	LDA -38,U
-	LDB 81,U
+	LDA -78,U
+	LDB -38,U
 	LDX -119,U
 	PSHS X,B,A
 	LDA #$c3
 	STA -78,U
 	STA -38,U
-	LDA #$cc
-	STA 81,U
-	STA 121,U
 	LDD -121,U
 	PSHS D
 	LDA #$12
@@ -368,13 +350,31 @@ BCKDRAW_Img_SegaSonic_42
 	ORB #$30
 	STD 1,U
 	LDD 41,U
-	PSHS U,D
+	PSHS D
 	LDA #$7c
 	ANDB #$0F
 	ORB #$30
 	STD 41,U
 	LDD #$77cd
 	STD -119,U
+	LDD -80,U
+	PSHS D
+	ANDA #$F0
+	ORA #$07
+	LDB #$7c
+	STD -80,U
+	LDD -40,U
+	PSHS D
+	ANDA #$F0
+	ORA #$07
+	LDB #$7c
+	STD -40,U
+	LDA 81,U
+	LDB 121,U
+	PSHS U,B,A
+	LDA #$cc
+	STA 81,U
+	STA 121,U
 	LEAU 282,U
 
 	LDA 120,U

@@ -4,472 +4,451 @@
  * Fichier source      : .\Sonic2\GeneratedCode\Boot.asm
  * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
  * Contenu :
- *     Main     0:BOOT.ASM     3607
+ *     Main     0:BOOT.ASM     2913
  *     Include  0:GLOBALS.ASM  6645
  *--------------------------------------------------------------*/
 
 Macro Pass
 Pass1
 Pass2
-    215                                   INCLUD GLOBALS
-    216                           * Generated Code
-    217
-    218                  414F     GameModeLoader equ $414F
-    219                  41C7     current_game_mode_data equ $41C7
-    220                  0001     ObjID_SonicAndTailsIn equ 1
-    221                  0002     ObjID_SEGA equ 2
-    222                  0003     ObjID_PaletteHandler equ 3
-    223                  0004     ObjID_TitleScreen equ 4
-    224                  613F     Glb_Sprite_Screen_Pos_Part1 equ $613F
-    225                  6141     Glb_Sprite_Screen_Pos_Part2 equ $6141
-    226                  662D     Object_RAM equ $662D
-    227                  7188     screen_border_color equ $7188
-    228                  71A5     Vint_runcount equ $71A5
-    229                  0001     c1_button_up_mask equ $0001
-    230                  0002     c1_button_down_mask equ $0002
-    231                  0004     c1_button_left_mask equ $0004
-    232                  0008     c1_button_right_mask equ $0008
-    233                  0010     c2_button_up_mask equ $0010
-    234                  0020     c2_button_down_mask equ $0020
-    235                  0040     c2_button_left_mask equ $0040
-    236                  0080     c2_button_right_mask equ $0080
-    237                  0040     c1_button_A_mask equ $0040
-    238                  0080     c2_button_A_mask equ $0080
-    239                  71A9     Joypads_Held equ $71A9
-    240                  71A9     Dpad_Held equ $71A9
-    241                  71AA     Fire_Held equ $71AA
-    242                  71AB     Joypads_Press equ $71AB
-    243                  71AB     Dpad_Press equ $71AB
-    244                  71AC     Fire_Press equ $71AC
-    245                  7216     MarkObjGone equ $7216
-    246                  7218     DisplaySprite_x equ $7218
-    247                  721E     DisplaySprite equ $721E
-    248                  7297     AnimateSprite equ $7297
-    249                  735C     DeleteObject_x equ $735C
-    250                  7362     DeleteObject equ $7362
-    251                  7424     ClearObj equ $7424
-    252                  7CD4     ClearCartMem equ $7CD4
-    253                  7D0F     Refresh_palette equ $7D0F
-    254                  7D10     Cur_palette equ $7D10
-    255                  7D12     Dyn_palette equ $7D12
-    256                  7D32     Black_palette equ $7D32
-    257                  7D52     White_palette equ $7D52
-    258                  7D72     UpdatePalette equ $7D72
-    259                  7D9A     PlayPCM equ $7D9A
-    260                  7DF1     PSGInit equ $7DF1
-    261                  7E03     PSGPlayNoRepeat equ $7E03
-    262                  7E31     PSGStop equ $7E31
-    263                  7E5A     PSGResume equ $7E5A
-    264                  7EA5     PSGCancelLoop equ $7EA5
-    265                  7EA9     PSGGetStatus equ $7EA9
-    266                  7EAD     PSGSetMusicVolumeAttenuation equ $7EAD
-    267                  7F0C     PSGSilenceChannels equ $7F0C
-    268                  7F21     PSGRestoreVolumes equ $7F21
-    269                  7F95     PSGSFXPlayLoop equ $7F95
-    270                  7FE1     PSGSFXStop equ $7FE1
-    271                  8057     PSGSFXCancelLoop equ $8057
-    272                  805B     PSGSFXGetStatus equ $805B
-    273                  805F     PSGFrame equ $805F
-    274                  8119     _sendVolume2PSG equ $8119
-    275                  816C     PSGSFXFrame equ $816C
-    276                  81C9     _SFXsetLoopPoint equ $81C9
-    277                  8215     Img_SonicAndTailsIn equ $8215
-    278                  8225     Img_SegaLogo_2 equ $8225
-    279                  8235     Img_SegaLogo_1 equ $8235
-    280                  8245     Img_SegaTrails_1 equ $8245
-    281                  825E     Img_SegaSonic_12 equ $825E
-    282                  827F     Img_SegaSonic_23 equ $827F
-    283                  82A0     Img_SegaSonic_13 equ $82A0
-    284                  82C1     Img_SegaSonic_32 equ $82C1
-    285                  82E2     Img_SegaSonic_21 equ $82E2
-    286                  8303     Img_SegaSonic_43 equ $8303
-    287                  8324     Img_SegaSonic_11 equ $8324
-    288                  8345     Img_SegaSonic_33 equ $8345
-    289                  8366     Img_SegaSonic_22 equ $8366
-    290                  8387     Img_SegaSonic_41 equ $8387
-    291                  83A8     Img_SegaSonic_31 equ $83A8
-    292                  83C9     Img_SegaSonic_42 equ $83C9
-    293                  83EA     Img_SegaTrails_6 equ $83EA
-    294                  83FA     Img_SegaTrails_5 equ $83FA
-    295                  840A     Img_SegaTrails_4 equ $840A
-    296                  841A     Img_SegaTrails_3 equ $841A
-    297                  842A     Img_SegaTrails_2 equ $842A
-    298                  8443     Img_star_4 equ $8443
-    299                  8457     Img_star_3 equ $8457
-    300                  846B     Img_sonicHand equ $846B
-    301                  8482     Img_star_2 equ $8482
-    302                  849D     Img_star_1 equ $849D
-    303                  84B8     Img_emblemBack08 equ $84B8
-    304                  84C8     Img_emblemBack07 equ $84C8
-    305                  84D8     Img_emblemBack09 equ $84D8
-    306                  84E8     Img_emblemBack04 equ $84E8
-    307                  84F8     Img_emblemBack03 equ $84F8
-    308                  8508     Img_emblemBack06 equ $8508
-    309                  8518     Img_emblemBack05 equ $8518
-    310                  8528     Img_tails_5 equ $8528
-    311                  853F     Img_tails_4 equ $853F
-    312                  8553     Img_tails_3 equ $8553
-    313                  8567     Img_tails_2 equ $8567
-    314                  857B     Img_tails_1 equ $857B
-    315                  858F     Img_tailsHand equ $858F
-    316                  85A6     Img_sonic_1 equ $85A6
-    317                  85BA     Img_sonic_2 equ $85BA
-    318                  85CE     Img_emblemBack02 equ $85CE
-    319                  85DE     Img_emblemBack01 equ $85DE
-    320                  85EE     Img_sonic_5 equ $85EE
-    321                  8605     Img_sonic_3 equ $8605
-    322                  8619     Img_sonic_4 equ $8619
-    323                  862D     Img_emblemFront07 equ $862D
-    324                  863D     Img_emblemFront08 equ $863D
-    325                  864D     Img_emblemFront05 equ $864D
-    326                  865D     Img_emblemFront06 equ $865D
-    327                  866D     Img_emblemFront03 equ $866D
-    328                  867D     Img_emblemFront04 equ $867D
-    329                  868D     Img_emblemFront01 equ $868D
-    330                  869D     Img_emblemFront02 equ $869D
-    331                  86AE     Ani_SegaSonic_3 equ $86AE
-    332                  86B8     Ani_SegaSonic_2 equ $86B8
-    333                  86C2     Ani_SegaSonic_1 equ $86C2
-    334                  86CC     Ani_smallStar equ $86CC
-    335                  86D2     Ani_largeStar equ $86D2
-    336                  86DE     Ani_tails equ $86DE
-    337                  86EA     Ani_sonic equ $86EA
-    338                  613F     Glb_Sprite_Screen_Pos_Part1 equ $613F
-    339                  6141     Glb_Sprite_Screen_Pos_Part2 equ $6141
-    340                  662D     Object_RAM equ $662D
-    341                  7188     screen_border_color equ $7188
-    342                  71A5     Vint_runcount equ $71A5
-    343                  0001     c1_button_up_mask equ $0001
-    344                  0002     c1_button_down_mask equ $0002
-    345                  0004     c1_button_left_mask equ $0004
-    346                  0008     c1_button_right_mask equ $0008
-    347                  0010     c2_button_up_mask equ $0010
-    348                  0020     c2_button_down_mask equ $0020
-    349                  0040     c2_button_left_mask equ $0040
-    350                  0080     c2_button_right_mask equ $0080
-    351                  0040     c1_button_A_mask equ $0040
-    352                  0080     c2_button_A_mask equ $0080
-    353                  71A9     Joypads_Held equ $71A9
-    354                  71A9     Dpad_Held equ $71A9
-    355                  71AA     Fire_Held equ $71AA
-    356                  71AB     Joypads_Press equ $71AB
-    357                  71AB     Dpad_Press equ $71AB
-    358                  71AC     Fire_Press equ $71AC
-    359                  7216     MarkObjGone equ $7216
-    360                  7218     DisplaySprite_x equ $7218
-    361                  721E     DisplaySprite equ $721E
-    362                  7297     AnimateSprite equ $7297
-    363                  735C     DeleteObject_x equ $735C
-    364                  7362     DeleteObject equ $7362
-    365                  7424     ClearObj equ $7424
-    366                  7CD4     ClearCartMem equ $7CD4
-    367                  7D0F     Refresh_palette equ $7D0F
-    368                  7D10     Cur_palette equ $7D10
-    369                  7D12     Dyn_palette equ $7D12
-    370                  7D32     Black_palette equ $7D32
-    371                  7D52     White_palette equ $7D52
-    372                  7D72     UpdatePalette equ $7D72
-    373                  7D9A     PlayPCM equ $7D9A
-    374                  7DF1     PSGInit equ $7DF1
-    375                  7E03     PSGPlayNoRepeat equ $7E03
-    376                  7E31     PSGStop equ $7E31
-    377                  7E5A     PSGResume equ $7E5A
-    378                  7EA5     PSGCancelLoop equ $7EA5
-    379                  7EA9     PSGGetStatus equ $7EA9
-    380                  7EAD     PSGSetMusicVolumeAttenuation equ $7EAD
-    381                  7F0C     PSGSilenceChannels equ $7F0C
-    382                  7F21     PSGRestoreVolumes equ $7F21
-    383                  7F95     PSGSFXPlayLoop equ $7F95
-    384                  7FE1     PSGSFXStop equ $7FE1
-    385                  8057     PSGSFXCancelLoop equ $8057
-    386                  805B     PSGSFXGetStatus equ $805B
-    387                  805F     PSGFrame equ $805F
-    388                  8119     _sendVolume2PSG equ $8119
-    389                  816C     PSGSFXFrame equ $816C
-    390                  81C9     _SFXsetLoopPoint equ $81C9
-    391                  8215     Img_SonicAndTailsIn equ $8215
-    392                  8225     Img_SegaLogo_2 equ $8225
-    393                  8235     Img_SegaLogo_1 equ $8235
-    394                  8245     Img_SegaTrails_1 equ $8245
-    395                  825E     Img_SegaSonic_12 equ $825E
-    396                  827F     Img_SegaSonic_23 equ $827F
-    397                  82A0     Img_SegaSonic_13 equ $82A0
-    398                  82C1     Img_SegaSonic_32 equ $82C1
-    399                  82E2     Img_SegaSonic_21 equ $82E2
-    400                  8303     Img_SegaSonic_43 equ $8303
-    401                  8324     Img_SegaSonic_11 equ $8324
-    402                  8345     Img_SegaSonic_33 equ $8345
-    403                  8366     Img_SegaSonic_22 equ $8366
-    404                  8387     Img_SegaSonic_41 equ $8387
-    405                  83A8     Img_SegaSonic_31 equ $83A8
-    406                  83C9     Img_SegaSonic_42 equ $83C9
-    407                  83EA     Img_SegaTrails_6 equ $83EA
-    408                  83FA     Img_SegaTrails_5 equ $83FA
-    409                  840A     Img_SegaTrails_4 equ $840A
-    410                  841A     Img_SegaTrails_3 equ $841A
-    411                  842A     Img_SegaTrails_2 equ $842A
-    412                  8443     Img_star_4 equ $8443
-    413                  8457     Img_star_3 equ $8457
-    414                  846B     Img_sonicHand equ $846B
-    415                  8482     Img_star_2 equ $8482
-    416                  849D     Img_star_1 equ $849D
-    417                  84B8     Img_emblemBack08 equ $84B8
-    418                  84C8     Img_emblemBack07 equ $84C8
-    419                  84D8     Img_emblemBack09 equ $84D8
-    420                  84E8     Img_emblemBack04 equ $84E8
-    421                  84F8     Img_emblemBack03 equ $84F8
-    422                  8508     Img_emblemBack06 equ $8508
-    423                  8518     Img_emblemBack05 equ $8518
-    424                  8528     Img_tails_5 equ $8528
-    425                  853F     Img_tails_4 equ $853F
-    426                  8553     Img_tails_3 equ $8553
-    427                  8567     Img_tails_2 equ $8567
-    428                  857B     Img_tails_1 equ $857B
-    429                  858F     Img_tailsHand equ $858F
-    430                  85A6     Img_sonic_1 equ $85A6
-    431                  85BA     Img_sonic_2 equ $85BA
-    432                  85CE     Img_emblemBack02 equ $85CE
-    433                  85DE     Img_emblemBack01 equ $85DE
-    434                  85EE     Img_sonic_5 equ $85EE
-    435                  8605     Img_sonic_3 equ $8605
-    436                  8619     Img_sonic_4 equ $8619
-    437                  862D     Img_emblemFront07 equ $862D
-    438                  863D     Img_emblemFront08 equ $863D
-    439                  864D     Img_emblemFront05 equ $864D
-    440                  865D     Img_emblemFront06 equ $865D
-    441                  866D     Img_emblemFront03 equ $866D
-    442                  867D     Img_emblemFront04 equ $867D
-    443                  868D     Img_emblemFront01 equ $868D
-    444                  869D     Img_emblemFront02 equ $869D
-    445                  86AE     Ani_SegaSonic_3 equ $86AE
-    446                  86B8     Ani_SegaSonic_2 equ $86B8
-    447                  86C2     Ani_SegaSonic_1 equ $86C2
-    448                  86CC     Ani_smallStar equ $86CC
-    449                  86D2     Ani_largeStar equ $86D2
-    450                  86DE     Ani_tails equ $86DE
-    451                  86EA     Ani_sonic equ $86EA
-    452                  89F3     Pcm_SEGA equ $89F3
-    453                  89FE     Psg_TitleScreen equ $89FE
-    454                  8A38     Pal_SEGA equ $8A38
-    455                  8A58     Pal_TitleScreen equ $8A58
-    456                  8A78     Pal_SEGAMid equ $8A78
-    457                  8A98     Pal_SonicAndTailsIn equ $8A98
-    458                  8AB8     Pal_SEGAEnd equ $8AB8
-    459                  A20B     gmboot equ $A20B
-    460                  A500     boot_dernier_bloc equ $A500
+    194                                   INCLUD GLOBALS
+    195                           * Generated Code
+    196
+    197                  414F     GameModeLoader equ $414F
+    198                  41C7     current_game_mode_data equ $41C7
+    199                  0001     ObjID_SonicAndTailsIn equ 1
+    200                  0002     ObjID_SEGA equ 2
+    201                  0003     ObjID_PaletteHandler equ 3
+    202                  0004     ObjID_TitleScreen equ 4
+    203                  6142     Glb_Sprite_Screen_Pos_Part1 equ $6142
+    204                  6144     Glb_Sprite_Screen_Pos_Part2 equ $6144
+    205                  6630     Object_RAM equ $6630
+    206                  7182     screen_border_color equ $7182
+    207                  71A8     Vint_runcount equ $71A8
+    208                  0001     c1_button_up_mask equ $0001
+    209                  0002     c1_button_down_mask equ $0002
+    210                  0004     c1_button_left_mask equ $0004
+    211                  0008     c1_button_right_mask equ $0008
+    212                  0010     c2_button_up_mask equ $0010
+    213                  0020     c2_button_down_mask equ $0020
+    214                  0040     c2_button_left_mask equ $0040
+    215                  0080     c2_button_right_mask equ $0080
+    216                  0040     c1_button_A_mask equ $0040
+    217                  0080     c2_button_A_mask equ $0080
+    218                  71AC     Joypads_Held equ $71AC
+    219                  71AC     Dpad_Held equ $71AC
+    220                  71AD     Fire_Held equ $71AD
+    221                  71AE     Joypads_Press equ $71AE
+    222                  71AE     Dpad_Press equ $71AE
+    223                  71AF     Fire_Press equ $71AF
+    224                  7219     MarkObjGone equ $7219
+    225                  721B     DisplaySprite_x equ $721B
+    226                  7221     DisplaySprite equ $7221
+    227                  729A     AnimateSprite equ $729A
+    228                  735F     DeleteObject_x equ $735F
+    229                  7365     DeleteObject equ $7365
+    230                  7427     ClearObj equ $7427
+    231                  7CD7     ClearCartMem equ $7CD7
+    232                  7D11     Refresh_palette equ $7D11
+    233                  7D12     Cur_palette equ $7D12
+    234                  7D14     Dyn_palette equ $7D14
+    235                  7D34     Black_palette equ $7D34
+    236                  7D54     White_palette equ $7D54
+    237                  7D74     UpdatePalette equ $7D74
+    238                  7D9C     PlayPCM equ $7D9C
+    239                  7DF3     PSGInit equ $7DF3
+    240                  7E05     PSGPlayNoRepeat equ $7E05
+    241                  7E33     PSGStop equ $7E33
+    242                  7E5C     PSGResume equ $7E5C
+    243                  7EA7     PSGCancelLoop equ $7EA7
+    244                  7EAB     PSGGetStatus equ $7EAB
+    245                  7EAF     PSGSetMusicVolumeAttenuation equ $7EAF
+    246                  7F0E     PSGSilenceChannels equ $7F0E
+    247                  7F23     PSGRestoreVolumes equ $7F23
+    248                  7F97     PSGSFXPlayLoop equ $7F97
+    249                  7FE3     PSGSFXStop equ $7FE3
+    250                  8059     PSGSFXCancelLoop equ $8059
+    251                  805D     PSGSFXGetStatus equ $805D
+    252                  8061     PSGFrame equ $8061
+    253                  811B     _sendVolume2PSG equ $811B
+    254                  816E     PSGSFXFrame equ $816E
+    255                  81CB     _SFXsetLoopPoint equ $81CB
+    256                  8217     Img_SonicAndTailsIn equ $8217
+    257                  8227     Img_SegaLogo_2 equ $8227
+    258                  8237     Img_SegaLogo_1 equ $8237
+    259                  8247     Img_SegaTrails_1 equ $8247
+    260                  8260     Img_SegaSonic_12 equ $8260
+    261                  8281     Img_SegaSonic_23 equ $8281
+    262                  82A2     Img_SegaSonic_13 equ $82A2
+    263                  82C3     Img_SegaSonic_32 equ $82C3
+    264                  82E4     Img_SegaSonic_21 equ $82E4
+    265                  8305     Img_SegaSonic_43 equ $8305
+    266                  8326     Img_SegaSonic_11 equ $8326
+    267                  8347     Img_SegaSonic_33 equ $8347
+    268                  8368     Img_SegaSonic_22 equ $8368
+    269                  8389     Img_SegaSonic_41 equ $8389
+    270                  83AA     Img_SegaSonic_31 equ $83AA
+    271                  83CB     Img_SegaSonic_42 equ $83CB
+    272                  83EC     Img_SegaTrails_6 equ $83EC
+    273                  83FC     Img_SegaTrails_5 equ $83FC
+    274                  840C     Img_SegaTrails_4 equ $840C
+    275                  841C     Img_SegaTrails_3 equ $841C
+    276                  842C     Img_SegaTrails_2 equ $842C
+    277                  8445     Img_star_4 equ $8445
+    278                  8459     Img_star_3 equ $8459
+    279                  846D     Img_sonicHand equ $846D
+    280                  8484     Img_star_2 equ $8484
+    281                  849F     Img_star_1 equ $849F
+    282                  84BA     Img_emblemBack08 equ $84BA
+    283                  84CA     Img_emblemBack07 equ $84CA
+    284                  84DA     Img_emblemBack09 equ $84DA
+    285                  84EA     Img_emblemBack04 equ $84EA
+    286                  84FA     Img_emblemBack03 equ $84FA
+    287                  850A     Img_emblemBack06 equ $850A
+    288                  851A     Img_emblemBack05 equ $851A
+    289                  852A     Img_tails_5 equ $852A
+    290                  8541     Img_tails_4 equ $8541
+    291                  8555     Img_tails_3 equ $8555
+    292                  8569     Img_tails_2 equ $8569
+    293                  857D     Img_tails_1 equ $857D
+    294                  8591     Img_tailsHand equ $8591
+    295                  85A8     Img_sonic_1 equ $85A8
+    296                  85BC     Img_sonic_2 equ $85BC
+    297                  85D0     Img_emblemBack02 equ $85D0
+    298                  85E0     Img_emblemBack01 equ $85E0
+    299                  85F0     Img_sonic_5 equ $85F0
+    300                  8607     Img_sonic_3 equ $8607
+    301                  861B     Img_sonic_4 equ $861B
+    302                  862F     Img_emblemFront07 equ $862F
+    303                  863F     Img_emblemFront08 equ $863F
+    304                  864F     Img_emblemFront05 equ $864F
+    305                  865F     Img_emblemFront06 equ $865F
+    306                  866F     Img_emblemFront03 equ $866F
+    307                  867F     Img_emblemFront04 equ $867F
+    308                  868F     Img_emblemFront01 equ $868F
+    309                  869F     Img_emblemFront02 equ $869F
+    310                  86B0     Ani_SegaSonic_3 equ $86B0
+    311                  86BA     Ani_SegaSonic_2 equ $86BA
+    312                  86C4     Ani_SegaSonic_1 equ $86C4
+    313                  86CE     Ani_smallStar equ $86CE
+    314                  86D4     Ani_largeStar equ $86D4
+    315                  86E0     Ani_tails equ $86E0
+    316                  86EC     Ani_sonic equ $86EC
+    317                  6142     Glb_Sprite_Screen_Pos_Part1 equ $6142
+    318                  6144     Glb_Sprite_Screen_Pos_Part2 equ $6144
+    319                  6630     Object_RAM equ $6630
+    320                  7182     screen_border_color equ $7182
+    321                  71A8     Vint_runcount equ $71A8
+    322                  0001     c1_button_up_mask equ $0001
+    323                  0002     c1_button_down_mask equ $0002
+    324                  0004     c1_button_left_mask equ $0004
+    325                  0008     c1_button_right_mask equ $0008
+    326                  0010     c2_button_up_mask equ $0010
+    327                  0020     c2_button_down_mask equ $0020
+    328                  0040     c2_button_left_mask equ $0040
+    329                  0080     c2_button_right_mask equ $0080
+    330                  0040     c1_button_A_mask equ $0040
+    331                  0080     c2_button_A_mask equ $0080
+    332                  71AC     Joypads_Held equ $71AC
+    333                  71AC     Dpad_Held equ $71AC
+    334                  71AD     Fire_Held equ $71AD
+    335                  71AE     Joypads_Press equ $71AE
+    336                  71AE     Dpad_Press equ $71AE
+    337                  71AF     Fire_Press equ $71AF
+    338                  7219     MarkObjGone equ $7219
+    339                  721B     DisplaySprite_x equ $721B
+    340                  7221     DisplaySprite equ $7221
+    341                  729A     AnimateSprite equ $729A
+    342                  735F     DeleteObject_x equ $735F
+    343                  7365     DeleteObject equ $7365
+    344                  7427     ClearObj equ $7427
+    345                  7CD7     ClearCartMem equ $7CD7
+    346                  7D11     Refresh_palette equ $7D11
+    347                  7D12     Cur_palette equ $7D12
+    348                  7D14     Dyn_palette equ $7D14
+    349                  7D34     Black_palette equ $7D34
+    350                  7D54     White_palette equ $7D54
+    351                  7D74     UpdatePalette equ $7D74
+    352                  7D9C     PlayPCM equ $7D9C
+    353                  7DF3     PSGInit equ $7DF3
+    354                  7E05     PSGPlayNoRepeat equ $7E05
+    355                  7E33     PSGStop equ $7E33
+    356                  7E5C     PSGResume equ $7E5C
+    357                  7EA7     PSGCancelLoop equ $7EA7
+    358                  7EAB     PSGGetStatus equ $7EAB
+    359                  7EAF     PSGSetMusicVolumeAttenuation equ $7EAF
+    360                  7F0E     PSGSilenceChannels equ $7F0E
+    361                  7F23     PSGRestoreVolumes equ $7F23
+    362                  7F97     PSGSFXPlayLoop equ $7F97
+    363                  7FE3     PSGSFXStop equ $7FE3
+    364                  8059     PSGSFXCancelLoop equ $8059
+    365                  805D     PSGSFXGetStatus equ $805D
+    366                  8061     PSGFrame equ $8061
+    367                  811B     _sendVolume2PSG equ $811B
+    368                  816E     PSGSFXFrame equ $816E
+    369                  81CB     _SFXsetLoopPoint equ $81CB
+    370                  8217     Img_SonicAndTailsIn equ $8217
+    371                  8227     Img_SegaLogo_2 equ $8227
+    372                  8237     Img_SegaLogo_1 equ $8237
+    373                  8247     Img_SegaTrails_1 equ $8247
+    374                  8260     Img_SegaSonic_12 equ $8260
+    375                  8281     Img_SegaSonic_23 equ $8281
+    376                  82A2     Img_SegaSonic_13 equ $82A2
+    377                  82C3     Img_SegaSonic_32 equ $82C3
+    378                  82E4     Img_SegaSonic_21 equ $82E4
+    379                  8305     Img_SegaSonic_43 equ $8305
+    380                  8326     Img_SegaSonic_11 equ $8326
+    381                  8347     Img_SegaSonic_33 equ $8347
+    382                  8368     Img_SegaSonic_22 equ $8368
+    383                  8389     Img_SegaSonic_41 equ $8389
+    384                  83AA     Img_SegaSonic_31 equ $83AA
+    385                  83CB     Img_SegaSonic_42 equ $83CB
+    386                  83EC     Img_SegaTrails_6 equ $83EC
+    387                  83FC     Img_SegaTrails_5 equ $83FC
+    388                  840C     Img_SegaTrails_4 equ $840C
+    389                  841C     Img_SegaTrails_3 equ $841C
+    390                  842C     Img_SegaTrails_2 equ $842C
+    391                  8445     Img_star_4 equ $8445
+    392                  8459     Img_star_3 equ $8459
+    393                  846D     Img_sonicHand equ $846D
+    394                  8484     Img_star_2 equ $8484
+    395                  849F     Img_star_1 equ $849F
+    396                  84BA     Img_emblemBack08 equ $84BA
+    397                  84CA     Img_emblemBack07 equ $84CA
+    398                  84DA     Img_emblemBack09 equ $84DA
+    399                  84EA     Img_emblemBack04 equ $84EA
+    400                  84FA     Img_emblemBack03 equ $84FA
+    401                  850A     Img_emblemBack06 equ $850A
+    402                  851A     Img_emblemBack05 equ $851A
+    403                  852A     Img_tails_5 equ $852A
+    404                  8541     Img_tails_4 equ $8541
+    405                  8555     Img_tails_3 equ $8555
+    406                  8569     Img_tails_2 equ $8569
+    407                  857D     Img_tails_1 equ $857D
+    408                  8591     Img_tailsHand equ $8591
+    409                  85A8     Img_sonic_1 equ $85A8
+    410                  85BC     Img_sonic_2 equ $85BC
+    411                  85D0     Img_emblemBack02 equ $85D0
+    412                  85E0     Img_emblemBack01 equ $85E0
+    413                  85F0     Img_sonic_5 equ $85F0
+    414                  8607     Img_sonic_3 equ $8607
+    415                  861B     Img_sonic_4 equ $861B
+    416                  862F     Img_emblemFront07 equ $862F
+    417                  863F     Img_emblemFront08 equ $863F
+    418                  864F     Img_emblemFront05 equ $864F
+    419                  865F     Img_emblemFront06 equ $865F
+    420                  866F     Img_emblemFront03 equ $866F
+    421                  867F     Img_emblemFront04 equ $867F
+    422                  868F     Img_emblemFront01 equ $868F
+    423                  869F     Img_emblemFront02 equ $869F
+    424                  86B0     Ani_SegaSonic_3 equ $86B0
+    425                  86BA     Ani_SegaSonic_2 equ $86BA
+    426                  86C4     Ani_SegaSonic_1 equ $86C4
+    427                  86CE     Ani_smallStar equ $86CE
+    428                  86D4     Ani_largeStar equ $86D4
+    429                  86E0     Ani_tails equ $86E0
+    430                  86EC     Ani_sonic equ $86EC
+    431                  89F5     Pcm_SEGA equ $89F5
+    432                  8A00     Psg_TitleScreen equ $8A00
+    433                  8A3A     Pal_SEGA equ $8A3A
+    434                  8A5A     Pal_TitleScreen equ $8A5A
+    435                  8A7A     Pal_SEGAMid equ $8A7A
+    436                  8A9A     Pal_SonicAndTailsIn equ $8A9A
+    437                  8ABA     Pal_SEGAEnd equ $8ABA
+    438                  A20B     gmboot equ $A20B
+    439                  A500     boot_dernier_bloc equ $A500
      15        6200                       org   $6200
      16
-     17                           *****************************************>>
-     18                           * Animation de la palette: fondu vers une>>
-     19                           *****************************************>>
-     20                           * Ecriture en $E7DB de l'adresse ou sera >>
-     21                           *
-     22                           * les adresses vont de deux en deux car i>>
-     23                           * couleur: 0, adresse: 00
-     24                           * couleur: 1, adresse: 02
-     25                           * couleur: 2, adresse: 04
-     26                           * ...
-     27                           *
-     28                           * Deux ecritures en $E7DA (auto-increment>>
-     29                           *                          positionnee en>>
-     30                           *
-     31                           *                             V V V V    >>
-     32                           * Premiere adresse        fondamentale V >>
-     33                           *
-     34                           * Deuxieme adresse            X X X M    >>
-     35                           * auto-incrementee        bit de marquage>>
-     36                           *                       (incrustation vid>>
-     37                           *
-     38                           * Attention: les instructions suivantes e>>
-     39                           * ASL, ASR, CLR, COM, DEL, INC, LSL, LSR,>>
-     40                           * un seul appel sur $E7DA va lire $E7DA p>>
-     41                           * Sur $E7DA il faut donc utiliser l'instr>>
-     42                           *****************************************>>
-     43
-     44        6200               PalInit
-     45                  62               setdp $62
-     46  2     6200 86   62               lda   #$62
-     47  6     6202 1F   8B               tfr   a,dp                     * >>
-     48  6     6204 0F   7E               clr   <pal_idx
-     49  3     6206 8E   62E7             ldx   #pal_len                 * >>
-     50  3     6209 CE   62DB             ldu   #pal_from                * >>
-     51        620C               PalRun
-     52  4+0   620C A6   C4               lda   ,u                         >>
-     53  5     620E B4   62EE             anda  pal_mask                 * >>
-     54  2     6211 C6   FF               ldb   #$FF                     * >>
-     55  4     6213 D4   EE               andb  <pal_mask                * >>
-     56  4     6215 D7   78               stb   <pal_buffer              * >>
-     57  2     6217 C6   11               ldb   #$11                     * >>
-     58  4     6219 D4   EE               andb  <pal_mask                * >>
-     59  4     621B D7   79               stb   <pal_buffer+1            * >>
-     60  4     621D 91   78               cmpa  <pal_buffer              * >>
-     61  3     621F 27   0E               beq   PalVRSuivante            * >>
-     62  3     6221 22   06               bhi   PalVRDec                 * >>
-     63  4+0   6223 A6   C4               lda   ,u                       * >>
-     64  4     6225 9B   79               adda  <pal_buffer+1            * >>
-     65  3     6227 20   04               bra   PalVRSave                * >>
-     66        6229               PalVRDec
-     67  4+0   6229 A6   C4               lda   ,u                       * >>
-     68  4     622B 90   79               suba  <pal_buffer+1            * >>
-     69        622D               PalVRSave
-     70  4+0   622D A7   C4               sta   ,u                       * >>
-     71        622F               PalVRSuivante
-     72  6     622F 03   EE               com   <pal_mask                * >>
-     73  3     6231 2B   D9               bmi   PalRun                   * >>
-     74                            
-     75        6233               SetPalBleu
-     76  4+1   6233 E6   41               ldb   1,u                        >>
-     77  2     6235 C1   0F               cmpb  #$0F                     * >>
-     78  3     6237 27   08               beq   SetPalNext               * >>
-     79  3     6239 22   03               bhi   SetPalBleudec            * >>
-     80  2     623B 5C                    incb                           * >>
-     81  3     623C 20   01               bra   SetPalSaveBleu           * >>
-     82        623E               SetPalBleudec
-     83  2     623E 5A                    decb                           * >>
-     84        623F               SetPalSaveBleu
-     85  4+1   623F E7   41               stb   1,u                      * >>
-     86                            
-     87        6241               SetPalNext
-     88  4     6241 96   7E               lda   <pal_idx                 * >>
-     89  5     6243 B7   E7DB             sta   $E7DB                    * >>
-     90  2     6246 8B   02               adda  #$02                     * >>
-     91  4     6248 97   7E               sta   <pal_idx                 * >>
-     92  4+0   624A A6   C4               lda   ,u                       * >>
-     93  5     624C B7   E7DA             sta   $E7DA                    * >>
-     94  5     624F F7   E7DA             stb   $E7DA                    * >>
-     95  4     6252 96   7E               lda   <pal_idx                 * >>
-     96  4+0   6254 A1   84               cmpa  ,x                       * >>
-     97  3     6256 26   E9               bne   SetPalNext               * >>
-     98  4+1   6258 33   42               leau  2,u                      * >>
-     99  4+1   625A 30   01               leax  1,x                      * >>
-    100  4     625C 8C   62ED             cmpx  #end_pal_len             * >>
-    101  3     625F 26   AB               bne   PalRun                   * >>
-    102                            
-    103        6261               Vsync_1
-    104  7     6261 7D   E7E7             tst   $E7E7                    * >>
-    105  3     6264 2A   FB               bpl   Vsync_1                  * >>
-    106        6266               Vsync_2
-    107  7     6266 7D   E7E7             tst   $E7E7                    * >>
-    108  3     6269 2B   FB               bmi   Vsync_2                  * >>
-    109                            
-    110  6     626B 0A   ED               dec   <pal_cycles              * >>
-    111  3     626D 26   91               bne   PalInit                  * >>
-    112  3     626F 20   0F               bra   InitVideo                * >>
-    113        6271                       rmb   7,0                      * >>
-    114                            
-    115        6278               pal_buffer
-    116        6278 42                    fcb   $42                      * >>
-    117        6279 41                    fcb   $41                      * >>
-    118        627A 53                    fcb   $53                      * >>
-    119        627B 49                    fcb   $49                      * >>
-    120        627C 43                    fcb   $43                      * >>
-    121        627D 32                    fcb   $32                      * >>
-    122                            
-    123        627E               pal_idx
-    124        627E 00                    fcb   $00                      * >>
-    125        627F 00                    fcb   $00                      * >>
-    126                            
-    127                           *---------------------------------------->>
-    128                           * A partir de ce point le code doit comme>>
-    129                           *---------------------------------------->>
-    130
+     17        6200               PalInit
+     18                  62               setdp $62
+     19  2     6200 86   62               lda   #$62
+     20  6     6202 1F   8B               tfr   a,dp                     * >>
+     21                            
+     22        6204               Vsync_1
+     23  6     6204 0F   7E               clr   <pal_idx
+     24  3     6206 8E   62E7             ldx   #pal_len                 * >>
+     25  3     6209 CE   62DB             ldu   #pal_from                * >>
+     26                            
+     27  7     620C 7D   E7E7             tst   $E7E7                    * >>
+     28  3     620F 2A   F3               bpl   Vsync_1                  * >>
+     29        6211               Vsync_2
+     30  7     6211 7D   E7E7             tst   $E7E7                    * >>
+     31  3     6214 2B   FB               bmi   Vsync_2                  * >>
+     32                            
+     33  4     6216 108E 0140             ldy   #0320                    * >>
+     34        621A               Tempo
+     35  4+1   621A 31   3F               leay  -1,y
+     36  3     621C 26   FC               bne   Tempo                    * >>
+     37                            
+     38  6     621E 0A   ED               dec   <pal_cycles              * >>
+     39  3     6220 27   5E               beq   InitVideo                * >>
+     40                            
+     41        6222               PalRun
+     42  4+0   6222 A6   C4               lda   ,u                         >>
+     43  4     6224 94   EE               anda  <pal_mask                * >>
+     44  2     6226 C6   FF               ldb   #$FF                     * >>
+     45  4     6228 D4   EE               andb  <pal_mask                * >>
+     46  4     622A D7   78               stb   <pal_buffer              * >>
+     47  2     622C C6   11               ldb   #$11                     * >>
+     48  4     622E D4   EE               andb  <pal_mask                * >>
+     49  4     6230 D7   79               stb   <pal_buffer+1            * >>
+     50  4     6232 91   78               cmpa  <pal_buffer              * >>
+     51  3     6234 27   0E               beq   PalVRSuivante            * >>
+     52  3     6236 22   06               bhi   PalVRDec                 * >>
+     53  4+0   6238 A6   C4               lda   ,u                       * >>
+     54  4     623A 9B   79               adda  <pal_buffer+1            * >>
+     55  3     623C 20   04               bra   PalVRSave                * >>
+     56        623E               PalVRDec
+     57  4+0   623E A6   C4               lda   ,u                       * >>
+     58  4     6240 90   79               suba  <pal_buffer+1            * >>
+     59        6242               PalVRSave
+     60  4+0   6242 A7   C4               sta   ,u                       * >>
+     61        6244               PalVRSuivante
+     62  6     6244 03   EE               com   <pal_mask                * >>
+     63  3     6246 2B   DA               bmi   PalRun                   * >>
+     64                            
+     65        6248               SetPalBleu
+     66  4+1   6248 E6   41               ldb   1,u                        >>
+     67  2     624A C1   0F               cmpb  #$0F                     * >>
+     68  3     624C 27   08               beq   SetPalNext               * >>
+     69  3     624E 22   03               bhi   SetPalBleudec            * >>
+     70  2     6250 5C                    incb                           * >>
+     71  3     6251 20   01               bra   SetPalSaveBleu           * >>
+     72        6253               SetPalBleudec
+     73  2     6253 5A                    decb                           * >>
+     74        6254               SetPalSaveBleu
+     75  4+1   6254 E7   41               stb   1,u                      * >>
+     76                            
+     77        6256               SetPalNext
+     78  4     6256 96   7E               lda   <pal_idx                 * >>
+     79  5     6258 B7   E7DB             sta   $E7DB                    * >>
+     80  2     625B 8B   02               adda  #$02                     * >>
+     81  4     625D 97   7E               sta   <pal_idx                 * >>
+     82  4+0   625F A6   C4               lda   ,u                       * >>
+     83  5     6261 B7   E7DA             sta   $E7DA                    * >>
+     84  5     6264 F7   E7DA             stb   $E7DA                    * >>
+     85  4     6267 96   7E               lda   <pal_idx                 * >>
+     86  4+0   6269 A1   84               cmpa  ,x                       * >>
+     87  3     626B 26   E9               bne   SetPalNext               * >>
+     88  4+1   626D 33   42               leau  2,u                      * >>
+     89  4+1   626F 30   01               leax  1,x                      * >>
+     90  4     6271 8C   62ED             cmpx  #end_pal_len             * >>
+     91  3     6274 26   AC               bne   PalRun                   * >>
+     92  3     6276 20   8C               bra   Vsync_1
+     93                            
+     94        6278               pal_buffer
+     95        6278 42                    fcb   $42                      * >>
+     96        6279 41                    fcb   $41                      * >>
+     97        627A 53                    fcb   $53                      * >>
+     98        627B 49                    fcb   $49                      * >>
+     99        627C 43                    fcb   $43                      * >>
+    100        627D 32                    fcb   $32                      * >>
+    101                            
+    102        627E               pal_idx
+    103        627E 00                    fcb   $00                      * >>
+    104        627F 00                    fcb   $00                      * >>
+    105                            
+    106                           *---------------------------------------->>
+    107                           * A partir de ce point le code doit comme>>
+    108                           *---------------------------------------->>
+    109
+    110                           *****************************************>>
+    111                           * Initialisation du mode video
+    112                           *****************************************>>
+    113        6280               InitVideo
+    114  2     6280 1A   50               orcc  #$50                     * >>
+    115  4     6282 10CE 9FFF             lds   #$9FFF                   * >>
+    116  2     6286 86   7B               lda   #$7B                     * >>
+    117  5     6288 B7   E7DC             sta   $E7DC
+    118                            
+    119                           *****************************************>>
+    120                           * Initialisation de la commutation de pag>>
+    121                           *****************************************>>
+    122  5     628B F6   6081             ldb   $6081                    * >>
+    123  2     628E CA   10               orb   #$10                     * >>
+    124  5     6290 F7   6081             stb   $6081                    * >>
+    125  5     6293 F7   E7E7             stb   $E7E7                    * >>
+    126  2     6296 86   04               lda   #$04
+    127  5     6298 B7   E7E5             sta   $E7E5                    * >>
+    128                            
+    129                           *****************************************>>
+    130                           * Lecture des donnees depuis la disquette>>
     131                           *****************************************>>
-    132                           * Initialisation du mode video
-    133                           *****************************************>>
-    134        6280               InitVideo
-    135  2     6280 1A   50               orcc  #$50                     * >>
-    136  4     6282 10CE 9FFF             lds   #$9FFF                   * >>
-    137  2     6286 86   7B               lda   #$7B                     * >>
-    138  5     6288 B7   E7DC             sta   $E7DC
-    139                            
-    140                           *****************************************>>
-    141                           * Initialisation de la commutation de pag>>
-    142                           *****************************************>>
-    143  5     628B F6   6081             ldb   $6081                    * >>
-    144  2     628E CA   10               orb   #$10                     * >>
-    145  5     6290 F7   6081             stb   $6081                    * >>
-    146  5     6293 F7   E7E7             stb   $E7E7                    * >>
-    147  2     6296 86   04               lda   #$04
-    148  5     6298 B7   E7E5             sta   $E7E5                    * >>
-    149                            
-    150                           *****************************************>>
-    151                           * Lecture des donnees depuis la disquette>>
-    152                           *****************************************>>
-    153        629B               DKLecture
-    154                  60               setdp $60
-    155  2     629B 86   60               lda   #$60
-    156  6     629D 1F   8B               tfr   a,dp                     * >>
-    157                            
-    158  3     629F CC   0000             ldd   #$0000
-    159  4     62A2 97   49               sta   <$6049                   * >>
-    160  5     62A4 DD   4A               std   <$604A                   * >>
-    161  2     62A6 86   02               lda   #$02
-    162  4     62A8 97   4C               sta   <$604C                   * >>
-    163  4     62AA 97   48               sta   <$6048                   * >>
-    164  2     62AC 86   A0               lda   #$A0                     * >>
-    165  5     62AE DD   4F               std   <$604F
-    166        62B0               DKCO
-    167  8     62B0 BD   E82A             jsr   $E82A                    * >>
-    168  6     62B3 0C   4C               inc   <$604C                   * >>
-    169  4     62B5 96   4C               lda   <$604C                   * >>
-    170  2     62B7 81   10               cmpa  #$10                     * >>
-    171  3     62B9 23   10               bls   DKContinue               * >>
-    172  2     62BB 86   01               lda   #$01                     * >>
-    173  4     62BD 97   4C               sta   <$604C                   * >>
-    174  6     62BF 0C   4B               inc   <$604B                   * >>
-    175  4     62C1 96   4B               lda   <$604B
-    176  2     62C3 81   4F               cmpa  #$4F                     * >>
-    177  3     62C5 23   04               bls   DKContinue               * >>
-    178  6     62C7 0F   4B               clr   <$604B                   * >>
-    179  6     62C9 0C   49               inc   <$6049                   * >>
-    180        62CB               DKContinue
-    181  6     62CB 0C   4F               inc   <$604F                   * >>
-    182  5     62CD DC   4F               ldd   <$604F                   * >>
-    183        62CF               dk_dernier_bloc
-    184  5     62CF 1083 A500             cmpd  #boot_dernier_bloc       * >>
-    185  3     62D3 23   DB               bls   DKCO                     * >>
-    186  3     62D5 CE   A20B             ldu   #gmboot
-    187  4     62D8 7E   A000             jmp   $A000
-    188
-    189                           * donnees pour le fondu de palette
-    190                           *****************************************>>
-    191
-    192        62DB               pal_from
-    193        62DB 0000                  fdb   $0000                    * >>
-    194        62DD F00F                  fdb   $F00F                    * >>
-    195        62DF FF0F                  fdb   $FF0F                    * >>
-    196        62E1 7707                  fdb   $7707                    * >>
-    197        62E3 AA03                  fdb   $AA03                    * >>
-    198        62E5 330A                  fdb   $330A                    * >>
-    199                            
-    200        62E7               pal_len
-    201        62E7 0C                    fcb   $0C                      * >>
-    202        62E8 0E                    fcb   $0E                      * >>
-    203        62E9 10                    fcb   $10                      * >>
-    204        62EA 16                    fcb   $16                      * >>
-    205        62EB 18                    fcb   $18                      * >>
-    206        62EC 20                    fcb   $20                      * >>
-    207        62ED               end_pal_len
-    208                            
-    209        62ED               pal_cycles
-    210        62ED 0F                    fcb   $0F                      * >>
-    211                            
-    212        62EE               pal_mask
-    213        62EE 0F                    fcb   $0F                      * >>
-    214
+    132        629B               DKLecture
+    133                  60               setdp $60
+    134  2     629B 86   60               lda   #$60
+    135  6     629D 1F   8B               tfr   a,dp                     * >>
+    136                            
+    137  3     629F CC   0000             ldd   #$0000
+    138  4     62A2 97   49               sta   <$6049                   * >>
+    139  5     62A4 DD   4A               std   <$604A                   * >>
+    140  2     62A6 86   02               lda   #$02
+    141  4     62A8 97   4C               sta   <$604C                   * >>
+    142  4     62AA 97   48               sta   <$6048                   * >>
+    143  2     62AC 86   A0               lda   #$A0                     * >>
+    144  5     62AE DD   4F               std   <$604F
+    145        62B0               DKCO
+    146  8     62B0 BD   E82A             jsr   $E82A                    * >>
+    147  6     62B3 0C   4C               inc   <$604C                   * >>
+    148  4     62B5 96   4C               lda   <$604C                   * >>
+    149  2     62B7 81   10               cmpa  #$10                     * >>
+    150  3     62B9 23   10               bls   DKContinue               * >>
+    151  2     62BB 86   01               lda   #$01                     * >>
+    152  4     62BD 97   4C               sta   <$604C                   * >>
+    153  6     62BF 0C   4B               inc   <$604B                   * >>
+    154  4     62C1 96   4B               lda   <$604B
+    155  2     62C3 81   4F               cmpa  #$4F                     * >>
+    156  3     62C5 23   04               bls   DKContinue               * >>
+    157  6     62C7 0F   4B               clr   <$604B                   * >>
+    158  6     62C9 0C   49               inc   <$6049                   * >>
+    159        62CB               DKContinue
+    160  6     62CB 0C   4F               inc   <$604F                   * >>
+    161  5     62CD DC   4F               ldd   <$604F                   * >>
+    162        62CF               dk_dernier_bloc
+    163  5     62CF 1083 A500             cmpd  #boot_dernier_bloc       * >>
+    164  3     62D3 23   DB               bls   DKCO                     * >>
+    165  3     62D5 CE   A20B             ldu   #gmboot
+    166  4     62D8 7E   A000             jmp   $A000
+    167
+    168                           * donnees pour le fondu de palette
+    169                           *****************************************>>
+    170
+    171        62DB               pal_from
+    172        62DB 0000                  fdb   $0000                    * >>
+    173        62DD F00F                  fdb   $F00F                    * >>
+    174        62DF FF0F                  fdb   $FF0F                    * >>
+    175        62E1 7707                  fdb   $7707                    * >>
+    176        62E3 AA03                  fdb   $AA03                    * >>
+    177        62E5 330A                  fdb   $330A                    * >>
+    178                            
+    179        62E7               pal_len
+    180        62E7 0C                    fcb   $0C                      * >>
+    181        62E8 0E                    fcb   $0E                      * >>
+    182        62E9 10                    fcb   $10                      * >>
+    183        62EA 16                    fcb   $16                      * >>
+    184        62EB 18                    fcb   $18                      * >>
+    185        62EC 20                    fcb   $20                      * >>
+    186        62ED               end_pal_len
+    187                            
+    188        62ED               pal_cycles
+    189        62ED 10                    fcb   $10                      * >>
+    190                            
+    191        62EE               pal_mask
+    192        62EE 0F                    fcb   $0F                      * >>
+    193
 
 000000 Total Errors
 
-000152 Total Symbols
-     0x          Equ   7297 AnimateSprite
-     0x          Equ   86D2 Ani_largeStar
-     0x          Equ   86C2 Ani_SegaSonic_1
-     0x          Equ   86B8 Ani_SegaSonic_2
-     0x          Equ   86AE Ani_SegaSonic_3
-     0x          Equ   86CC Ani_smallStar
-     0x          Equ   86EA Ani_sonic
-     0x          Equ   86DE Ani_tails
-     0x          Equ   7D32 Black_palette
+000153 Total Symbols
+     0x          Equ   729A AnimateSprite
+     0x          Equ   86D4 Ani_largeStar
+     0x          Equ   86C4 Ani_SegaSonic_1
+     0x          Equ   86BA Ani_SegaSonic_2
+     0x          Equ   86B0 Ani_SegaSonic_3
+     0x          Equ   86CE Ani_smallStar
+     0x          Equ   86EC Ani_sonic
+     0x          Equ   86E0 Ani_tails
+     0x          Equ   7D34 Black_palette
      1x          Equ   A500 boot_dernier_bloc
      0x          Equ   0040 c1_button_A_mask
      0x          Equ   0002 c1_button_down_mask
@@ -481,136 +460,137 @@ Pass2
      0x          Equ   0040 c2_button_left_mask
      0x          Equ   0080 c2_button_right_mask
      0x          Equ   0010 c2_button_up_mask
-     0x          Equ   7CD4 ClearCartMem
-     0x          Equ   7424 ClearObj
+     0x          Equ   7CD7 ClearCartMem
+     0x          Equ   7427 ClearObj
      0x          Equ   41C7 current_game_mode_data
-     0x          Equ   7D10 Cur_palette
-     0x          Equ   7362 DeleteObject
-     0x          Equ   735C DeleteObject_x
-     0x          Equ   721E DisplaySprite
-     0x          Equ   7218 DisplaySprite_x
+     0x          Equ   7D12 Cur_palette
+     0x          Equ   7365 DeleteObject
+     0x          Equ   735F DeleteObject_x
+     0x          Equ   7221 DisplaySprite
+     0x          Equ   721B DisplaySprite_x
      1x          Label 62B0 DKCO
      2x          Label 62CB DKContinue
      0x          Label 629B DKLecture
      0x          Label 62CF dk_dernier_bloc
-     0x          Equ   71A9 Dpad_Held
-     0x          Equ   71AB Dpad_Press
-     0x          Equ   7D12 Dyn_palette
+     0x          Equ   71AC Dpad_Held
+     0x          Equ   71AE Dpad_Press
+     0x          Equ   7D14 Dyn_palette
      1x          Label 62ED end_pal_len
-     0x          Equ   71AA Fire_Held
-     0x          Equ   71AC Fire_Press
+     0x          Equ   71AD Fire_Held
+     0x          Equ   71AF Fire_Press
      0x          Equ   414F GameModeLoader
-     0x          Equ   613F Glb_Sprite_Screen_Pos_Part1
-     0x          Equ   6141 Glb_Sprite_Screen_Pos_Part2
+     0x          Equ   6142 Glb_Sprite_Screen_Pos_Part1
+     0x          Equ   6144 Glb_Sprite_Screen_Pos_Part2
      1x          Equ   A20B gmboot
-     0x          Equ   85DE Img_emblemBack01
-     0x          Equ   85CE Img_emblemBack02
-     0x          Equ   84F8 Img_emblemBack03
-     0x          Equ   84E8 Img_emblemBack04
-     0x          Equ   8518 Img_emblemBack05
-     0x          Equ   8508 Img_emblemBack06
-     0x          Equ   84C8 Img_emblemBack07
-     0x          Equ   84B8 Img_emblemBack08
-     0x          Equ   84D8 Img_emblemBack09
-     0x          Equ   868D Img_emblemFront01
-     0x          Equ   869D Img_emblemFront02
-     0x          Equ   866D Img_emblemFront03
-     0x          Equ   867D Img_emblemFront04
-     0x          Equ   864D Img_emblemFront05
-     0x          Equ   865D Img_emblemFront06
-     0x          Equ   862D Img_emblemFront07
-     0x          Equ   863D Img_emblemFront08
-     0x          Equ   8235 Img_SegaLogo_1
-     0x          Equ   8225 Img_SegaLogo_2
-     0x          Equ   8324 Img_SegaSonic_11
-     0x          Equ   825E Img_SegaSonic_12
-     0x          Equ   82A0 Img_SegaSonic_13
-     0x          Equ   82E2 Img_SegaSonic_21
-     0x          Equ   8366 Img_SegaSonic_22
-     0x          Equ   827F Img_SegaSonic_23
-     0x          Equ   83A8 Img_SegaSonic_31
-     0x          Equ   82C1 Img_SegaSonic_32
-     0x          Equ   8345 Img_SegaSonic_33
-     0x          Equ   8387 Img_SegaSonic_41
-     0x          Equ   83C9 Img_SegaSonic_42
-     0x          Equ   8303 Img_SegaSonic_43
-     0x          Equ   8245 Img_SegaTrails_1
-     0x          Equ   842A Img_SegaTrails_2
-     0x          Equ   841A Img_SegaTrails_3
-     0x          Equ   840A Img_SegaTrails_4
-     0x          Equ   83FA Img_SegaTrails_5
-     0x          Equ   83EA Img_SegaTrails_6
-     0x          Equ   8215 Img_SonicAndTailsIn
-     0x          Equ   846B Img_sonicHand
-     0x          Equ   85A6 Img_sonic_1
-     0x          Equ   85BA Img_sonic_2
-     0x          Equ   8605 Img_sonic_3
-     0x          Equ   8619 Img_sonic_4
-     0x          Equ   85EE Img_sonic_5
-     0x          Equ   849D Img_star_1
-     0x          Equ   8482 Img_star_2
-     0x          Equ   8457 Img_star_3
-     0x          Equ   8443 Img_star_4
-     0x          Equ   858F Img_tailsHand
-     0x          Equ   857B Img_tails_1
-     0x          Equ   8567 Img_tails_2
-     0x          Equ   8553 Img_tails_3
-     0x          Equ   853F Img_tails_4
-     0x          Equ   8528 Img_tails_5
+     0x          Equ   85E0 Img_emblemBack01
+     0x          Equ   85D0 Img_emblemBack02
+     0x          Equ   84FA Img_emblemBack03
+     0x          Equ   84EA Img_emblemBack04
+     0x          Equ   851A Img_emblemBack05
+     0x          Equ   850A Img_emblemBack06
+     0x          Equ   84CA Img_emblemBack07
+     0x          Equ   84BA Img_emblemBack08
+     0x          Equ   84DA Img_emblemBack09
+     0x          Equ   868F Img_emblemFront01
+     0x          Equ   869F Img_emblemFront02
+     0x          Equ   866F Img_emblemFront03
+     0x          Equ   867F Img_emblemFront04
+     0x          Equ   864F Img_emblemFront05
+     0x          Equ   865F Img_emblemFront06
+     0x          Equ   862F Img_emblemFront07
+     0x          Equ   863F Img_emblemFront08
+     0x          Equ   8237 Img_SegaLogo_1
+     0x          Equ   8227 Img_SegaLogo_2
+     0x          Equ   8326 Img_SegaSonic_11
+     0x          Equ   8260 Img_SegaSonic_12
+     0x          Equ   82A2 Img_SegaSonic_13
+     0x          Equ   82E4 Img_SegaSonic_21
+     0x          Equ   8368 Img_SegaSonic_22
+     0x          Equ   8281 Img_SegaSonic_23
+     0x          Equ   83AA Img_SegaSonic_31
+     0x          Equ   82C3 Img_SegaSonic_32
+     0x          Equ   8347 Img_SegaSonic_33
+     0x          Equ   8389 Img_SegaSonic_41
+     0x          Equ   83CB Img_SegaSonic_42
+     0x          Equ   8305 Img_SegaSonic_43
+     0x          Equ   8247 Img_SegaTrails_1
+     0x          Equ   842C Img_SegaTrails_2
+     0x          Equ   841C Img_SegaTrails_3
+     0x          Equ   840C Img_SegaTrails_4
+     0x          Equ   83FC Img_SegaTrails_5
+     0x          Equ   83EC Img_SegaTrails_6
+     0x          Equ   8217 Img_SonicAndTailsIn
+     0x          Equ   846D Img_sonicHand
+     0x          Equ   85A8 Img_sonic_1
+     0x          Equ   85BC Img_sonic_2
+     0x          Equ   8607 Img_sonic_3
+     0x          Equ   861B Img_sonic_4
+     0x          Equ   85F0 Img_sonic_5
+     0x          Equ   849F Img_star_1
+     0x          Equ   8484 Img_star_2
+     0x          Equ   8459 Img_star_3
+     0x          Equ   8445 Img_star_4
+     0x          Equ   8591 Img_tailsHand
+     0x          Equ   857D Img_tails_1
+     0x          Equ   8569 Img_tails_2
+     0x          Equ   8555 Img_tails_3
+     0x          Equ   8541 Img_tails_4
+     0x          Equ   852A Img_tails_5
      1x          Label 6280 InitVideo
-     0x          Equ   71A9 Joypads_Held
-     0x          Equ   71AB Joypads_Press
-     0x          Equ   7216 MarkObjGone
-     0x          Equ   662D Object_RAM
+     0x          Equ   71AC Joypads_Held
+     0x          Equ   71AE Joypads_Press
+     0x          Equ   7219 MarkObjGone
+     0x          Equ   6630 Object_RAM
      0x          Equ   0003 ObjID_PaletteHandler
      0x          Equ   0002 ObjID_SEGA
      0x          Equ   0001 ObjID_SonicAndTailsIn
      0x          Equ   0004 ObjID_TitleScreen
-     1x          Label 6200 PalInit
-     2x          Label 620C PalRun
-     1x          Label 6229 PalVRDec
-     1x          Label 622D PalVRSave
-     1x          Label 622F PalVRSuivante
+     0x          Label 6200 PalInit
+     2x          Label 6222 PalRun
+     1x          Label 623E PalVRDec
+     1x          Label 6242 PalVRSave
+     1x          Label 6244 PalVRSuivante
      5x          Label 6278 pal_buffer
      1x          Label 62ED pal_cycles
      1x          Label 62DB pal_from
      4x          Label 627E pal_idx
      1x          Label 62E7 pal_len
      4x          Label 62EE pal_mask
-     0x          Equ   8A38 Pal_SEGA
-     0x          Equ   8AB8 Pal_SEGAEnd
-     0x          Equ   8A78 Pal_SEGAMid
-     0x          Equ   8A98 Pal_SonicAndTailsIn
-     0x          Equ   8A58 Pal_TitleScreen
-     0x          Equ   89F3 Pcm_SEGA
-     0x          Equ   7D9A PlayPCM
-     0x          Equ   7EA5 PSGCancelLoop
-     0x          Equ   805F PSGFrame
-     0x          Equ   7EA9 PSGGetStatus
-     0x          Equ   7DF1 PSGInit
-     0x          Equ   7E03 PSGPlayNoRepeat
-     0x          Equ   7F21 PSGRestoreVolumes
-     0x          Equ   7E5A PSGResume
-     0x          Equ   7EAD PSGSetMusicVolumeAttenuation
-     0x          Equ   8057 PSGSFXCancelLoop
-     0x          Equ   816C PSGSFXFrame
-     0x          Equ   805B PSGSFXGetStatus
-     0x          Equ   7F95 PSGSFXPlayLoop
-     0x          Equ   7FE1 PSGSFXStop
-     0x          Equ   7F0C PSGSilenceChannels
-     0x          Equ   7E31 PSGStop
-     0x          Equ   89FE Psg_TitleScreen
-     0x          Equ   7D0F Refresh_palette
-     0x          Equ   7188 screen_border_color
-     0x          Label 6233 SetPalBleu
-     1x          Label 623E SetPalBleudec
-     2x          Label 6241 SetPalNext
-     1x          Label 623F SetPalSaveBleu
-     0x          Equ   7D72 UpdatePalette
-     0x          Equ   71A5 Vint_runcount
-     1x          Label 6261 Vsync_1
-     1x          Label 6266 Vsync_2
-     0x          Equ   7D52 White_palette
-     0x          Equ   8119 _sendVolume2PSG
-     0x          Equ   81C9 _SFXsetLoopPoint
+     0x          Equ   8A3A Pal_SEGA
+     0x          Equ   8ABA Pal_SEGAEnd
+     0x          Equ   8A7A Pal_SEGAMid
+     0x          Equ   8A9A Pal_SonicAndTailsIn
+     0x          Equ   8A5A Pal_TitleScreen
+     0x          Equ   89F5 Pcm_SEGA
+     0x          Equ   7D9C PlayPCM
+     0x          Equ   7EA7 PSGCancelLoop
+     0x          Equ   8061 PSGFrame
+     0x          Equ   7EAB PSGGetStatus
+     0x          Equ   7DF3 PSGInit
+     0x          Equ   7E05 PSGPlayNoRepeat
+     0x          Equ   7F23 PSGRestoreVolumes
+     0x          Equ   7E5C PSGResume
+     0x          Equ   7EAF PSGSetMusicVolumeAttenuation
+     0x          Equ   8059 PSGSFXCancelLoop
+     0x          Equ   816E PSGSFXFrame
+     0x          Equ   805D PSGSFXGetStatus
+     0x          Equ   7F97 PSGSFXPlayLoop
+     0x          Equ   7FE3 PSGSFXStop
+     0x          Equ   7F0E PSGSilenceChannels
+     0x          Equ   7E33 PSGStop
+     0x          Equ   8A00 Psg_TitleScreen
+     0x          Equ   7D11 Refresh_palette
+     0x          Equ   7182 screen_border_color
+     0x          Label 6248 SetPalBleu
+     1x          Label 6253 SetPalBleudec
+     2x          Label 6256 SetPalNext
+     1x          Label 6254 SetPalSaveBleu
+     1x          Label 621A Tempo
+     0x          Equ   7D74 UpdatePalette
+     0x          Equ   71A8 Vint_runcount
+     2x          Label 6204 Vsync_1
+     1x          Label 6211 Vsync_2
+     0x          Equ   7D54 White_palette
+     0x          Equ   811B _sendVolume2PSG
+     0x          Equ   81CB _SFXsetLoopPoint
 

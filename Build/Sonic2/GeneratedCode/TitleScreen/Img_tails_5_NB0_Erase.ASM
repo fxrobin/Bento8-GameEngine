@@ -329,18 +329,16 @@ ERASE_CODE_Img_tails_5_1
 	PULS A,X,U
 	PSHU A,X
 
-	PULS D
-	STD -119,U
-
-	PULS A,X
-	STA -43,U
-	STX -39,U
-
 	PULS A,B,X,Y
-	STA -117,U
-	STB -83,U
-	STX -3,U
-	STY -79,U
+	STA -83,U
+	STB -117,U
+	STX -39,U
+	STY -119,U
+
+	PULS A,X,Y
+	STA -43,U
+	STX -79,U
+	STY -3,U
 
 	PULS D,U
 	STD 79,U
@@ -372,16 +370,16 @@ ERASE_CODE_Img_tails_5_1
 
 	PULS D,X,Y
 	STD 42,U
+	STX 6,U
+	STY 126,U
+
+	PULS D,X,Y
+	STD 46,U
 	STX 82,U
-	STY 86,U
+	STY 122,U
 
 	PULS D,X,Y
-	STD 6,U
-	STX 126,U
-	STY 46,U
-
-	PULS D,X,Y
-	STD 122,U
+	STD 86,U
 	STX 124,U
 	STY 120,U
 
@@ -412,15 +410,15 @@ ERASE_CODE_Img_tails_5_1
 	PSHU D,X
 
 	PULS D,X
-	STD 6,U
-	STX 4,U
+	STD 4,U
+	STX 6,U
 
 	PULS D,X,U
 	PSHU D,X
 
 	PULS D,X
-	STD 6,U
-	STX 4,U
+	STD 4,U
+	STX 6,U
 
 	PULS A,X,U
 	PSHU A,X
@@ -701,18 +699,18 @@ ERASE_CODE_Img_tails_5_1
 
 	PULS A,X,Y
 	STA 42,U
-	STX 76,U
-	STY 40,U
-
-	PULS A,B,X,Y
-	STA -4,U
-	STB -119,U
-	STX 36,U
-	STY -38,U
+	STX -40,U
+	STY -80,U
 
 	PULS D,X
-	STD -40,U
-	STX -80,U
+	STD 40,U
+	STX -38,U
+
+	PULS A,B,X,Y
+	STA -119,U
+	STB -4,U
+	STX 36,U
+	STY 76,U
 
 	PULS A,B,U
 	STA ,U

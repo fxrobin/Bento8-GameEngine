@@ -41,10 +41,6 @@ WaitVBL
 WaitVBL_01
         tst   $E7E7              * le faisceau est dans l'ecran
         bmi   WaitVBL_01         * tant que le bit est a 1 on boucle
-        
-        ldd   Vint_runcount
-        addd  #1
-        std   Vint_runcount
                         
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage
@@ -62,6 +58,10 @@ am_SwapVideoPage
         ldb   $E7C3              * charge l'identifiant de la demi-page 0 configuree en espace ecran
         eorb  #$01               * alterne bit0 = 0 ou 1 changement demi-page de la page 0 visible dans l'espace ecran
         stb   $E7C3
+        
+        ldd   Vint_runcount
+        addd  #1
+        std   Vint_runcount        
         rts
         
 Vint_runcount rmb   $2,0 *@globals

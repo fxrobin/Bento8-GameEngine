@@ -14,43 +14,33 @@
         INCLUD GLOBALS
         org   $6200
 
-********************************************************************************
-* Animation de la palette: fondu vers une couleur cible PAL_TO
-********************************************************************************
-* Ecriture en $E7DB de l'adresse ou sera stockee la couleur.
-*
-* les adresses vont de deux en deux car il y a deux octets a stocker par couleur.
-* couleur: 0, adresse: 00
-* couleur: 1, adresse: 02
-* couleur: 2, adresse: 04
-* ...
-*
-* Deux ecritures en $E7DA (auto-increment a partir de l'adresse couleur
-*                          positionnee en $E7DB) pour la valeur de couleur.
-*
-*                             V V V V                 R R R R
-* Premiere adresse        fondamentale V          fondamentale R
-*
-* Deuxieme adresse            X X X M                 B B B B
-* auto-incrementee        bit de marquage         fondamentale B
-*                       (incrustation video)
-*
-* Attention: les instructions suivantes effectuent une lecture avant l'ecriture
-* ASL, ASR, CLR, COM, DEL, INC, LSL, LSR, NEG, ROL, RDR
-* un seul appel sur $E7DA va lire $E7DA puis ecrire sur la seconde adresse $E7DA 
-* Sur $E7DA il faut donc utiliser l'instruction ST pour ecrire
-********************************************************************************   
-
 PalInit
         setdp $62
         lda   #$62
-        tfr   a,dp                     * positionne la direct page a 60
+        tfr   a,dp                     * positionne la direct page a 62
+        
+Vsync_1
         clr   <pal_idx
         ldx   #pal_len                 * index limite de chargement pour couleur courante 
         ldu   #pal_from                * chargement pointeur valeur des couleurs actuelles
+                                
+        tst   $E7E7                    * le faisceau n'est pas dans l'ecran utile
+        bpl   Vsync_1                  * tant que le bit est a 0 on boucle
+Vsync_2                                 
+        tst   $E7E7                    * le faisceau est dans l'ecran utile
+        bmi   Vsync_2                  * tant que le bit est a 1 on boucle
+        
+        ldy   #0320                    * 40 lignes * 8 cycles
+Tempo        
+        leay  -1,y
+        bne   Tempo                    * tempo pour etre dans la bordure invisible   
+								        
+        dec   <pal_cycles              * decremente le compteur du nombre de frame
+        beq   InitVideo                * si termine
+        
 PalRun
         lda   ,u			           * chargement de la composante verte et rouge
-        anda  pal_mask                 * on efface la valeur vert ou rouge par masque
+        anda  <pal_mask                * on efface la valeur vert ou rouge par masque
         ldb   #$FF                     * composante verte et rouge couleur cible
         andb  <pal_mask                * on efface la valeur vert ou rouge par masque
         stb   <pal_buffer              * on stocke la valeur cible pour comparaison
@@ -99,18 +89,7 @@ SetPalNext
         leax  1,x                      * on avance le pointeur vers la nouvelle limite
         cmpx  #end_pal_len             * test de fin de liste
         bne   PalRun                   * on reboucle si fin de liste pas atteinte
-								       
-Vsync_1                                
-        tst   $E7E7                    * le faisceau n'est pas dans l'ecran
-        bpl   Vsync_1                  * tant que le bit est a 0 on boucle
-Vsync_2                                 
-        tst   $E7E7                    * le faisceau est dans l'ecran
-        bmi   Vsync_2                  * tant que le bit est a 1 on boucle
-								        
-        dec   <pal_cycles              * decremente le compteur du nombre de frame
-        bne   PalInit                  * on reboucle si nombre de frame n'est pas realise
-        bra   InitVideo                * saut de la signature de boot
-        rmb   7,0                      * 7 octets de libre
+        bra   Vsync_1
         
 pal_buffer                             
         fcb   $42                      * B et buffer de comparaison
@@ -207,7 +186,7 @@ pal_len
 end_pal_len
    
 pal_cycles
-        fcb   $0F                      * nombre de frames de la transition (VSYNC)
+        fcb   $10                      * nombre de frames de la transition (VSYNC)
 								       
 pal_mask                               
         fcb   $0F                      * masque pour l'aternance du traitemet vert/rouge

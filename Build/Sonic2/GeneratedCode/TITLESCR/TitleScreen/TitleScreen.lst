@@ -4,8 +4,8 @@
  * Fichier source      : .\Sonic2\GeneratedCode\TITLESCR\TitleScreen\TitleScreen.asm
  * Fichier destination : .\Sonic2\GeneratedCode\TMP.BIN
  * Contenu :
- *     Main     0:TITLESCR.ASM 20003
- *     Include  0:GLOBALS.ASM  6492
+ *     Main     0:TITLESCR.ASM 20005
+ *     Include  0:GLOBALS.ASM  6596
  *     Include  0:CONSTANT.ASM 5768
  *--------------------------------------------------------------*/
 
@@ -21,11 +21,11 @@ Pass2
    1186                  0002     ObjID_SEGA equ 2
    1187                  0003     ObjID_PaletteHandler equ 3
    1188                  0004     ObjID_TitleScreen equ 4
-   1189                  613C     Glb_Sprite_Screen_Pos_Part1 equ $613C
-   1190                  613E     Glb_Sprite_Screen_Pos_Part2 equ $613E
-   1191                  662A     Object_RAM equ $662A
-   1192                  7185     screen_border_color equ $7185
-   1193                  71A2     Vint_runcount equ $71A2
+   1189                  6142     Glb_Sprite_Screen_Pos_Part1 equ $6142
+   1190                  6144     Glb_Sprite_Screen_Pos_Part2 equ $6144
+   1191                  6630     Object_RAM equ $6630
+   1192                  7182     screen_border_color equ $7182
+   1193                  71A8     Vint_runcount equ $71A8
    1194                  0001     c1_button_up_mask equ $0001
    1195                  0002     c1_button_down_mask equ $0002
    1196                  0004     c1_button_left_mask equ $0004
@@ -36,482 +36,486 @@ Pass2
    1201                  0080     c2_button_right_mask equ $0080
    1202                  0040     c1_button_A_mask equ $0040
    1203                  0080     c2_button_A_mask equ $0080
-   1204                  71A6     Joypads_Held equ $71A6
-   1205                  71A6     Dpad_Held equ $71A6
-   1206                  71A7     Fire_Held equ $71A7
-   1207                  71A8     Joypads_Press equ $71A8
-   1208                  71A8     Dpad_Press equ $71A8
-   1209                  71A9     Fire_Press equ $71A9
-   1210                  7213     MarkObjGone equ $7213
-   1211                  7215     DisplaySprite_x equ $7215
-   1212                  721B     DisplaySprite equ $721B
-   1213                  7294     AnimateSprite equ $7294
-   1214                  7359     DeleteObject_x equ $7359
-   1215                  735F     DeleteObject equ $735F
-   1216                  7421     ClearObj equ $7421
-   1217                  7CD1     ClearCartMem equ $7CD1
-   1218                  7D0C     Ptr_palette equ $7D0C
-   1219                  7D0E     Black_palette equ $7D0E
-   1220                  7D2E     White_palette equ $7D2E
-   1221                  7D4E     UpdatePalette equ $7D4E
-   1222                  7D6E     PlayPCM equ $7D6E
-   1223                  7DC5     PSGInit equ $7DC5
-   1224                  7DD7     PSGPlayNoRepeat equ $7DD7
-   1225                  7E05     PSGStop equ $7E05
-   1226                  7E2E     PSGResume equ $7E2E
-   1227                  7E79     PSGCancelLoop equ $7E79
-   1228                  7E7D     PSGGetStatus equ $7E7D
-   1229                  7E81     PSGSetMusicVolumeAttenuation equ $7E81
-   1230                  7EE0     PSGSilenceChannels equ $7EE0
-   1231                  7EF5     PSGRestoreVolumes equ $7EF5
-   1232                  7F69     PSGSFXPlayLoop equ $7F69
-   1233                  7FB5     PSGSFXStop equ $7FB5
-   1234                  802B     PSGSFXCancelLoop equ $802B
-   1235                  802F     PSGSFXGetStatus equ $802F
-   1236                  8033     PSGFrame equ $8033
-   1237                  80ED     _sendVolume2PSG equ $80ED
-   1238                  8140     PSGSFXFrame equ $8140
-   1239                  819D     _SFXsetLoopPoint equ $819D
-   1240                  81E9     Img_SonicAndTailsIn equ $81E9
-   1241                  81F9     Img_SegaLogo_2 equ $81F9
-   1242                  8209     Img_SegaLogo_1 equ $8209
-   1243                  8219     Img_SegaTrails_1 equ $8219
-   1244                  8232     Img_SegaSonic_12 equ $8232
-   1245                  8253     Img_SegaSonic_23 equ $8253
-   1246                  8274     Img_SegaSonic_13 equ $8274
-   1247                  8295     Img_SegaSonic_32 equ $8295
-   1248                  82B6     Img_SegaSonic_21 equ $82B6
-   1249                  82D7     Img_SegaSonic_43 equ $82D7
-   1250                  82F8     Img_SegaSonic_11 equ $82F8
-   1251                  8319     Img_SegaSonic_33 equ $8319
-   1252                  833A     Img_SegaSonic_22 equ $833A
-   1253                  835B     Img_SegaSonic_41 equ $835B
-   1254                  837C     Img_SegaSonic_31 equ $837C
-   1255                  839D     Img_SegaSonic_42 equ $839D
-   1256                  83BE     Img_SegaTrails_6 equ $83BE
-   1257                  83CE     Img_SegaTrails_5 equ $83CE
-   1258                  83DE     Img_SegaTrails_4 equ $83DE
-   1259                  83EE     Img_SegaTrails_3 equ $83EE
-   1260                  83FE     Img_SegaTrails_2 equ $83FE
-   1261                  8417     Img_star_4 equ $8417
-   1262                  842B     Img_star_3 equ $842B
-   1263                  843F     Img_sonicHand equ $843F
-   1264                  8456     Img_star_2 equ $8456
-   1265                  8471     Img_star_1 equ $8471
-   1266                  848C     Img_emblemBack08 equ $848C
-   1267                  849C     Img_emblemBack07 equ $849C
-   1268                  84AC     Img_emblemBack09 equ $84AC
-   1269                  84BC     Img_emblemBack04 equ $84BC
-   1270                  84CC     Img_emblemBack03 equ $84CC
-   1271                  84DC     Img_emblemBack06 equ $84DC
-   1272                  84EC     Img_emblemBack05 equ $84EC
-   1273                  84FC     Img_tails_5 equ $84FC
-   1274                  8513     Img_tails_4 equ $8513
-   1275                  8527     Img_tails_3 equ $8527
-   1276                  853B     Img_tails_2 equ $853B
-   1277                  854F     Img_tails_1 equ $854F
-   1278                  8563     Img_tailsHand equ $8563
-   1279                  857A     Img_sonic_1 equ $857A
-   1280                  858E     Img_sonic_2 equ $858E
-   1281                  85A2     Img_emblemBack02 equ $85A2
-   1282                  85B2     Img_emblemBack01 equ $85B2
-   1283                  85C2     Img_sonic_5 equ $85C2
-   1284                  85D9     Img_sonic_3 equ $85D9
-   1285                  85ED     Img_sonic_4 equ $85ED
-   1286                  8601     Img_emblemFront07 equ $8601
-   1287                  8611     Img_emblemFront08 equ $8611
-   1288                  8621     Img_emblemFront05 equ $8621
-   1289                  8631     Img_emblemFront06 equ $8631
-   1290                  8641     Img_emblemFront03 equ $8641
-   1291                  8651     Img_emblemFront04 equ $8651
-   1292                  8661     Img_emblemFront01 equ $8661
-   1293                  8671     Img_emblemFront02 equ $8671
-   1294                  8682     Ani_SegaSonic_3 equ $8682
-   1295                  868C     Ani_SegaSonic_2 equ $868C
-   1296                  8696     Ani_SegaSonic_1 equ $8696
-   1297                  86A0     Ani_smallStar equ $86A0
-   1298                  86A6     Ani_largeStar equ $86A6
-   1299                  86B2     Ani_tails equ $86B2
-   1300                  86BE     Ani_sonic equ $86BE
-   1301                  613C     Glb_Sprite_Screen_Pos_Part1 equ $613C
-   1302                  613E     Glb_Sprite_Screen_Pos_Part2 equ $613E
-   1303                  662A     Object_RAM equ $662A
-   1304                  7185     screen_border_color equ $7185
-   1305                  71A2     Vint_runcount equ $71A2
-   1306                  0001     c1_button_up_mask equ $0001
-   1307                  0002     c1_button_down_mask equ $0002
-   1308                  0004     c1_button_left_mask equ $0004
-   1309                  0008     c1_button_right_mask equ $0008
-   1310                  0010     c2_button_up_mask equ $0010
-   1311                  0020     c2_button_down_mask equ $0020
-   1312                  0040     c2_button_left_mask equ $0040
-   1313                  0080     c2_button_right_mask equ $0080
-   1314                  0040     c1_button_A_mask equ $0040
-   1315                  0080     c2_button_A_mask equ $0080
-   1316                  71A6     Joypads_Held equ $71A6
-   1317                  71A6     Dpad_Held equ $71A6
-   1318                  71A7     Fire_Held equ $71A7
-   1319                  71A8     Joypads_Press equ $71A8
-   1320                  71A8     Dpad_Press equ $71A8
-   1321                  71A9     Fire_Press equ $71A9
-   1322                  7213     MarkObjGone equ $7213
-   1323                  7215     DisplaySprite_x equ $7215
-   1324                  721B     DisplaySprite equ $721B
-   1325                  7294     AnimateSprite equ $7294
-   1326                  7359     DeleteObject_x equ $7359
-   1327                  735F     DeleteObject equ $735F
-   1328                  7421     ClearObj equ $7421
-   1329                  7CD1     ClearCartMem equ $7CD1
-   1330                  7D0C     Ptr_palette equ $7D0C
-   1331                  7D0E     Black_palette equ $7D0E
-   1332                  7D2E     White_palette equ $7D2E
-   1333                  7D4E     UpdatePalette equ $7D4E
-   1334                  7D6E     PlayPCM equ $7D6E
-   1335                  7DC5     PSGInit equ $7DC5
-   1336                  7DD7     PSGPlayNoRepeat equ $7DD7
-   1337                  7E05     PSGStop equ $7E05
-   1338                  7E2E     PSGResume equ $7E2E
-   1339                  7E79     PSGCancelLoop equ $7E79
-   1340                  7E7D     PSGGetStatus equ $7E7D
-   1341                  7E81     PSGSetMusicVolumeAttenuation equ $7E81
-   1342                  7EE0     PSGSilenceChannels equ $7EE0
-   1343                  7EF5     PSGRestoreVolumes equ $7EF5
-   1344                  7F69     PSGSFXPlayLoop equ $7F69
-   1345                  7FB5     PSGSFXStop equ $7FB5
-   1346                  802B     PSGSFXCancelLoop equ $802B
-   1347                  802F     PSGSFXGetStatus equ $802F
-   1348                  8033     PSGFrame equ $8033
-   1349                  80ED     _sendVolume2PSG equ $80ED
-   1350                  8140     PSGSFXFrame equ $8140
-   1351                  819D     _SFXsetLoopPoint equ $819D
-   1352                  81E9     Img_SonicAndTailsIn equ $81E9
-   1353                  81F9     Img_SegaLogo_2 equ $81F9
-   1354                  8209     Img_SegaLogo_1 equ $8209
-   1355                  8219     Img_SegaTrails_1 equ $8219
-   1356                  8232     Img_SegaSonic_12 equ $8232
-   1357                  8253     Img_SegaSonic_23 equ $8253
-   1358                  8274     Img_SegaSonic_13 equ $8274
-   1359                  8295     Img_SegaSonic_32 equ $8295
-   1360                  82B6     Img_SegaSonic_21 equ $82B6
-   1361                  82D7     Img_SegaSonic_43 equ $82D7
-   1362                  82F8     Img_SegaSonic_11 equ $82F8
-   1363                  8319     Img_SegaSonic_33 equ $8319
-   1364                  833A     Img_SegaSonic_22 equ $833A
-   1365                  835B     Img_SegaSonic_41 equ $835B
-   1366                  837C     Img_SegaSonic_31 equ $837C
-   1367                  839D     Img_SegaSonic_42 equ $839D
-   1368                  83BE     Img_SegaTrails_6 equ $83BE
-   1369                  83CE     Img_SegaTrails_5 equ $83CE
-   1370                  83DE     Img_SegaTrails_4 equ $83DE
-   1371                  83EE     Img_SegaTrails_3 equ $83EE
-   1372                  83FE     Img_SegaTrails_2 equ $83FE
-   1373                  8417     Img_star_4 equ $8417
-   1374                  842B     Img_star_3 equ $842B
-   1375                  843F     Img_sonicHand equ $843F
-   1376                  8456     Img_star_2 equ $8456
-   1377                  8471     Img_star_1 equ $8471
-   1378                  848C     Img_emblemBack08 equ $848C
-   1379                  849C     Img_emblemBack07 equ $849C
-   1380                  84AC     Img_emblemBack09 equ $84AC
-   1381                  84BC     Img_emblemBack04 equ $84BC
-   1382                  84CC     Img_emblemBack03 equ $84CC
-   1383                  84DC     Img_emblemBack06 equ $84DC
-   1384                  84EC     Img_emblemBack05 equ $84EC
-   1385                  84FC     Img_tails_5 equ $84FC
-   1386                  8513     Img_tails_4 equ $8513
-   1387                  8527     Img_tails_3 equ $8527
-   1388                  853B     Img_tails_2 equ $853B
-   1389                  854F     Img_tails_1 equ $854F
-   1390                  8563     Img_tailsHand equ $8563
-   1391                  857A     Img_sonic_1 equ $857A
-   1392                  858E     Img_sonic_2 equ $858E
-   1393                  85A2     Img_emblemBack02 equ $85A2
-   1394                  85B2     Img_emblemBack01 equ $85B2
-   1395                  85C2     Img_sonic_5 equ $85C2
-   1396                  85D9     Img_sonic_3 equ $85D9
-   1397                  85ED     Img_sonic_4 equ $85ED
-   1398                  8601     Img_emblemFront07 equ $8601
-   1399                  8611     Img_emblemFront08 equ $8611
-   1400                  8621     Img_emblemFront05 equ $8621
-   1401                  8631     Img_emblemFront06 equ $8631
-   1402                  8641     Img_emblemFront03 equ $8641
-   1403                  8651     Img_emblemFront04 equ $8651
-   1404                  8661     Img_emblemFront01 equ $8661
-   1405                  8671     Img_emblemFront02 equ $8671
-   1406                  8682     Ani_SegaSonic_3 equ $8682
-   1407                  868C     Ani_SegaSonic_2 equ $868C
-   1408                  8696     Ani_SegaSonic_1 equ $8696
-   1409                  86A0     Ani_smallStar equ $86A0
-   1410                  86A6     Ani_largeStar equ $86A6
-   1411                  86B2     Ani_tails equ $86B2
-   1412                  86BE     Ani_sonic equ $86BE
-   1413                  89C7     Pcm_SEGA equ $89C7
-   1414                  89D2     Psg_TitleScreen equ $89D2
-   1415                  8A0C     Pal_SEGA equ $8A0C
-   1416                  8A2C     Pal_TitleScreen equ $8A2C
-   1417                  8A4C     Pal_SEGAMid equ $8A4C
-   1418                  8A6C     Pal_SonicAndTailsIn equ $8A6C
-   1419                  8A8C     Pal_SEGAEnd equ $8A8C
-   1420
-   1421                                   INCLUD CONSTANT
-   1422                           * --------------------------------------->>
-   1423                           * Constants
-   1424                           *
-   1425                           * Naming convention
-   1426                           * -----------------
-   1427                           * - lower case
-   1428                           * - underscore-separated names
-   1429                           *
-   1430                           * --------------------------------------->>
-   1431
-   1432                           * =======================================>>
-   1433                           * TO8 Registers
-   1434                           * =======================================>>
+   1204                  71AC     Joypads_Held equ $71AC
+   1205                  71AC     Dpad_Held equ $71AC
+   1206                  71AD     Fire_Held equ $71AD
+   1207                  71AE     Joypads_Press equ $71AE
+   1208                  71AE     Dpad_Press equ $71AE
+   1209                  71AF     Fire_Press equ $71AF
+   1210                  7219     MarkObjGone equ $7219
+   1211                  721B     DisplaySprite_x equ $721B
+   1212                  7221     DisplaySprite equ $7221
+   1213                  729A     AnimateSprite equ $729A
+   1214                  735F     DeleteObject_x equ $735F
+   1215                  7365     DeleteObject equ $7365
+   1216                  7427     ClearObj equ $7427
+   1217                  7CD7     ClearCartMem equ $7CD7
+   1218                  7D11     Refresh_palette equ $7D11
+   1219                  7D12     Cur_palette equ $7D12
+   1220                  7D14     Dyn_palette equ $7D14
+   1221                  7D34     Black_palette equ $7D34
+   1222                  7D54     White_palette equ $7D54
+   1223                  7D74     UpdatePalette equ $7D74
+   1224                  7D9C     PlayPCM equ $7D9C
+   1225                  7DF3     PSGInit equ $7DF3
+   1226                  7E05     PSGPlayNoRepeat equ $7E05
+   1227                  7E33     PSGStop equ $7E33
+   1228                  7E5C     PSGResume equ $7E5C
+   1229                  7EA7     PSGCancelLoop equ $7EA7
+   1230                  7EAB     PSGGetStatus equ $7EAB
+   1231                  7EAF     PSGSetMusicVolumeAttenuation equ $7EAF
+   1232                  7F0E     PSGSilenceChannels equ $7F0E
+   1233                  7F23     PSGRestoreVolumes equ $7F23
+   1234                  7F97     PSGSFXPlayLoop equ $7F97
+   1235                  7FE3     PSGSFXStop equ $7FE3
+   1236                  8059     PSGSFXCancelLoop equ $8059
+   1237                  805D     PSGSFXGetStatus equ $805D
+   1238                  8061     PSGFrame equ $8061
+   1239                  811B     _sendVolume2PSG equ $811B
+   1240                  816E     PSGSFXFrame equ $816E
+   1241                  81CB     _SFXsetLoopPoint equ $81CB
+   1242                  8217     Img_SonicAndTailsIn equ $8217
+   1243                  8227     Img_SegaLogo_2 equ $8227
+   1244                  8237     Img_SegaLogo_1 equ $8237
+   1245                  8247     Img_SegaTrails_1 equ $8247
+   1246                  8260     Img_SegaSonic_12 equ $8260
+   1247                  8281     Img_SegaSonic_23 equ $8281
+   1248                  82A2     Img_SegaSonic_13 equ $82A2
+   1249                  82C3     Img_SegaSonic_32 equ $82C3
+   1250                  82E4     Img_SegaSonic_21 equ $82E4
+   1251                  8305     Img_SegaSonic_43 equ $8305
+   1252                  8326     Img_SegaSonic_11 equ $8326
+   1253                  8347     Img_SegaSonic_33 equ $8347
+   1254                  8368     Img_SegaSonic_22 equ $8368
+   1255                  8389     Img_SegaSonic_41 equ $8389
+   1256                  83AA     Img_SegaSonic_31 equ $83AA
+   1257                  83CB     Img_SegaSonic_42 equ $83CB
+   1258                  83EC     Img_SegaTrails_6 equ $83EC
+   1259                  83FC     Img_SegaTrails_5 equ $83FC
+   1260                  840C     Img_SegaTrails_4 equ $840C
+   1261                  841C     Img_SegaTrails_3 equ $841C
+   1262                  842C     Img_SegaTrails_2 equ $842C
+   1263                  8445     Img_star_4 equ $8445
+   1264                  8459     Img_star_3 equ $8459
+   1265                  846D     Img_sonicHand equ $846D
+   1266                  8484     Img_star_2 equ $8484
+   1267                  849F     Img_star_1 equ $849F
+   1268                  84BA     Img_emblemBack08 equ $84BA
+   1269                  84CA     Img_emblemBack07 equ $84CA
+   1270                  84DA     Img_emblemBack09 equ $84DA
+   1271                  84EA     Img_emblemBack04 equ $84EA
+   1272                  84FA     Img_emblemBack03 equ $84FA
+   1273                  850A     Img_emblemBack06 equ $850A
+   1274                  851A     Img_emblemBack05 equ $851A
+   1275                  852A     Img_tails_5 equ $852A
+   1276                  8541     Img_tails_4 equ $8541
+   1277                  8555     Img_tails_3 equ $8555
+   1278                  8569     Img_tails_2 equ $8569
+   1279                  857D     Img_tails_1 equ $857D
+   1280                  8591     Img_tailsHand equ $8591
+   1281                  85A8     Img_sonic_1 equ $85A8
+   1282                  85BC     Img_sonic_2 equ $85BC
+   1283                  85D0     Img_emblemBack02 equ $85D0
+   1284                  85E0     Img_emblemBack01 equ $85E0
+   1285                  85F0     Img_sonic_5 equ $85F0
+   1286                  8607     Img_sonic_3 equ $8607
+   1287                  861B     Img_sonic_4 equ $861B
+   1288                  862F     Img_emblemFront07 equ $862F
+   1289                  863F     Img_emblemFront08 equ $863F
+   1290                  864F     Img_emblemFront05 equ $864F
+   1291                  865F     Img_emblemFront06 equ $865F
+   1292                  866F     Img_emblemFront03 equ $866F
+   1293                  867F     Img_emblemFront04 equ $867F
+   1294                  868F     Img_emblemFront01 equ $868F
+   1295                  869F     Img_emblemFront02 equ $869F
+   1296                  86B0     Ani_SegaSonic_3 equ $86B0
+   1297                  86BA     Ani_SegaSonic_2 equ $86BA
+   1298                  86C4     Ani_SegaSonic_1 equ $86C4
+   1299                  86CE     Ani_smallStar equ $86CE
+   1300                  86D4     Ani_largeStar equ $86D4
+   1301                  86E0     Ani_tails equ $86E0
+   1302                  86EC     Ani_sonic equ $86EC
+   1303                  6142     Glb_Sprite_Screen_Pos_Part1 equ $6142
+   1304                  6144     Glb_Sprite_Screen_Pos_Part2 equ $6144
+   1305                  6630     Object_RAM equ $6630
+   1306                  7182     screen_border_color equ $7182
+   1307                  71A8     Vint_runcount equ $71A8
+   1308                  0001     c1_button_up_mask equ $0001
+   1309                  0002     c1_button_down_mask equ $0002
+   1310                  0004     c1_button_left_mask equ $0004
+   1311                  0008     c1_button_right_mask equ $0008
+   1312                  0010     c2_button_up_mask equ $0010
+   1313                  0020     c2_button_down_mask equ $0020
+   1314                  0040     c2_button_left_mask equ $0040
+   1315                  0080     c2_button_right_mask equ $0080
+   1316                  0040     c1_button_A_mask equ $0040
+   1317                  0080     c2_button_A_mask equ $0080
+   1318                  71AC     Joypads_Held equ $71AC
+   1319                  71AC     Dpad_Held equ $71AC
+   1320                  71AD     Fire_Held equ $71AD
+   1321                  71AE     Joypads_Press equ $71AE
+   1322                  71AE     Dpad_Press equ $71AE
+   1323                  71AF     Fire_Press equ $71AF
+   1324                  7219     MarkObjGone equ $7219
+   1325                  721B     DisplaySprite_x equ $721B
+   1326                  7221     DisplaySprite equ $7221
+   1327                  729A     AnimateSprite equ $729A
+   1328                  735F     DeleteObject_x equ $735F
+   1329                  7365     DeleteObject equ $7365
+   1330                  7427     ClearObj equ $7427
+   1331                  7CD7     ClearCartMem equ $7CD7
+   1332                  7D11     Refresh_palette equ $7D11
+   1333                  7D12     Cur_palette equ $7D12
+   1334                  7D14     Dyn_palette equ $7D14
+   1335                  7D34     Black_palette equ $7D34
+   1336                  7D54     White_palette equ $7D54
+   1337                  7D74     UpdatePalette equ $7D74
+   1338                  7D9C     PlayPCM equ $7D9C
+   1339                  7DF3     PSGInit equ $7DF3
+   1340                  7E05     PSGPlayNoRepeat equ $7E05
+   1341                  7E33     PSGStop equ $7E33
+   1342                  7E5C     PSGResume equ $7E5C
+   1343                  7EA7     PSGCancelLoop equ $7EA7
+   1344                  7EAB     PSGGetStatus equ $7EAB
+   1345                  7EAF     PSGSetMusicVolumeAttenuation equ $7EAF
+   1346                  7F0E     PSGSilenceChannels equ $7F0E
+   1347                  7F23     PSGRestoreVolumes equ $7F23
+   1348                  7F97     PSGSFXPlayLoop equ $7F97
+   1349                  7FE3     PSGSFXStop equ $7FE3
+   1350                  8059     PSGSFXCancelLoop equ $8059
+   1351                  805D     PSGSFXGetStatus equ $805D
+   1352                  8061     PSGFrame equ $8061
+   1353                  811B     _sendVolume2PSG equ $811B
+   1354                  816E     PSGSFXFrame equ $816E
+   1355                  81CB     _SFXsetLoopPoint equ $81CB
+   1356                  8217     Img_SonicAndTailsIn equ $8217
+   1357                  8227     Img_SegaLogo_2 equ $8227
+   1358                  8237     Img_SegaLogo_1 equ $8237
+   1359                  8247     Img_SegaTrails_1 equ $8247
+   1360                  8260     Img_SegaSonic_12 equ $8260
+   1361                  8281     Img_SegaSonic_23 equ $8281
+   1362                  82A2     Img_SegaSonic_13 equ $82A2
+   1363                  82C3     Img_SegaSonic_32 equ $82C3
+   1364                  82E4     Img_SegaSonic_21 equ $82E4
+   1365                  8305     Img_SegaSonic_43 equ $8305
+   1366                  8326     Img_SegaSonic_11 equ $8326
+   1367                  8347     Img_SegaSonic_33 equ $8347
+   1368                  8368     Img_SegaSonic_22 equ $8368
+   1369                  8389     Img_SegaSonic_41 equ $8389
+   1370                  83AA     Img_SegaSonic_31 equ $83AA
+   1371                  83CB     Img_SegaSonic_42 equ $83CB
+   1372                  83EC     Img_SegaTrails_6 equ $83EC
+   1373                  83FC     Img_SegaTrails_5 equ $83FC
+   1374                  840C     Img_SegaTrails_4 equ $840C
+   1375                  841C     Img_SegaTrails_3 equ $841C
+   1376                  842C     Img_SegaTrails_2 equ $842C
+   1377                  8445     Img_star_4 equ $8445
+   1378                  8459     Img_star_3 equ $8459
+   1379                  846D     Img_sonicHand equ $846D
+   1380                  8484     Img_star_2 equ $8484
+   1381                  849F     Img_star_1 equ $849F
+   1382                  84BA     Img_emblemBack08 equ $84BA
+   1383                  84CA     Img_emblemBack07 equ $84CA
+   1384                  84DA     Img_emblemBack09 equ $84DA
+   1385                  84EA     Img_emblemBack04 equ $84EA
+   1386                  84FA     Img_emblemBack03 equ $84FA
+   1387                  850A     Img_emblemBack06 equ $850A
+   1388                  851A     Img_emblemBack05 equ $851A
+   1389                  852A     Img_tails_5 equ $852A
+   1390                  8541     Img_tails_4 equ $8541
+   1391                  8555     Img_tails_3 equ $8555
+   1392                  8569     Img_tails_2 equ $8569
+   1393                  857D     Img_tails_1 equ $857D
+   1394                  8591     Img_tailsHand equ $8591
+   1395                  85A8     Img_sonic_1 equ $85A8
+   1396                  85BC     Img_sonic_2 equ $85BC
+   1397                  85D0     Img_emblemBack02 equ $85D0
+   1398                  85E0     Img_emblemBack01 equ $85E0
+   1399                  85F0     Img_sonic_5 equ $85F0
+   1400                  8607     Img_sonic_3 equ $8607
+   1401                  861B     Img_sonic_4 equ $861B
+   1402                  862F     Img_emblemFront07 equ $862F
+   1403                  863F     Img_emblemFront08 equ $863F
+   1404                  864F     Img_emblemFront05 equ $864F
+   1405                  865F     Img_emblemFront06 equ $865F
+   1406                  866F     Img_emblemFront03 equ $866F
+   1407                  867F     Img_emblemFront04 equ $867F
+   1408                  868F     Img_emblemFront01 equ $868F
+   1409                  869F     Img_emblemFront02 equ $869F
+   1410                  86B0     Ani_SegaSonic_3 equ $86B0
+   1411                  86BA     Ani_SegaSonic_2 equ $86BA
+   1412                  86C4     Ani_SegaSonic_1 equ $86C4
+   1413                  86CE     Ani_smallStar equ $86CE
+   1414                  86D4     Ani_largeStar equ $86D4
+   1415                  86E0     Ani_tails equ $86E0
+   1416                  86EC     Ani_sonic equ $86EC
+   1417                  89F5     Pcm_SEGA equ $89F5
+   1418                  8A00     Psg_TitleScreen equ $8A00
+   1419                  8A3A     Pal_SEGA equ $8A3A
+   1420                  8A5A     Pal_TitleScreen equ $8A5A
+   1421                  8A7A     Pal_SEGAMid equ $8A7A
+   1422                  8A9A     Pal_SonicAndTailsIn equ $8A9A
+   1423                  8ABA     Pal_SEGAEnd equ $8ABA
+   1424
+   1425                                   INCLUD CONSTANT
+   1426                           * --------------------------------------->>
+   1427                           * Constants
+   1428                           *
+   1429                           * Naming convention
+   1430                           * -----------------
+   1431                           * - lower case
+   1432                           * - underscore-separated names
+   1433                           *
+   1434                           * --------------------------------------->>
    1435
-   1436                  6049     dk_lecteur                    equ $6049
-   1437                  604A     dk_piste                      equ $604A
-   1438                  604B     dk_pisteL                     equ $604B
-   1439                  604C     dk_secteur                    equ $604C
-   1440                  604F     dk_destination                equ $604F
-   1441
-   1442                           * =======================================>>
-   1443                           * Display Constants
-   1444                           * =======================================>>
+   1436                           * =======================================>>
+   1437                           * TO8 Registers
+   1438                           * =======================================>>
+   1439
+   1440                  6049     dk_lecteur                    equ $6049
+   1441                  604A     dk_piste                      equ $604A
+   1442                  604B     dk_pisteL                     equ $604B
+   1443                  604C     dk_secteur                    equ $604C
+   1444                  604F     dk_destination                equ $604F
    1445
-   1446                  00A0     screen_width                  equ 160 ; s>>
-   1447                  001C     screen_top                    equ 28 ; in>>
-   1448                  00E3     screen_bottom                 equ 28+199 >>
-   1449                  0030     screen_left                   equ 48 ; in>>
-   1450                  00CF     screen_right                  equ 48+159 >>
-   1451                  0008     nb_priority_levels            equ 8   ; n>>
-   1452
-   1453                           * =======================================>>
-   1454                           * Physics Constants
-   1455                           * =======================================>>
+   1446                           * =======================================>>
+   1447                           * Display Constants
+   1448                           * =======================================>>
+   1449
+   1450                  00A0     screen_width                  equ 160 ; s>>
+   1451                  001C     screen_top                    equ 28 ; in>>
+   1452                  00E3     screen_bottom                 equ 28+199 >>
+   1453                  0030     screen_left                   equ 48 ; in>>
+   1454                  00CF     screen_right                  equ 48+159 >>
+   1455                  0008     nb_priority_levels            equ 8   ; n>>
    1456
-   1457                  0038     gravity                       equ $38 ; G>>
-   1458
+   1457                           * =======================================>>
+   1458                           * Physics Constants
    1459                           * =======================================>>
-   1460                           * Animation Constants
-   1461                           * =======================================>>
+   1460
+   1461                  0038     gravity                       equ $38 ; G>>
    1462
-   1463                  00FF     _resetAnim                    equ $FF
-   1464                  00FE     _goBackNFrames                equ $FE
-   1465                  00FD     _goToAnimation                equ $FD
-   1466                  00FC     _nextRoutine                  equ $FC
-   1467                  00FB     _resetAnimAndSubRoutine       equ $FB
-   1468                  00FA     _nextSubRoutine               equ $FA
-   1469
-   1470                           * =======================================>>
-   1471                           * Images Constants
-   1472                           * =======================================>>
+   1463                           * =======================================>>
+   1464                           * Animation Constants
+   1465                           * =======================================>>
+   1466
+   1467                  00FF     _resetAnim                    equ $FF
+   1468                  00FE     _goBackNFrames                equ $FE
+   1469                  00FD     _goToAnimation                equ $FD
+   1470                  00FC     _nextRoutine                  equ $FC
+   1471                  00FB     _resetAnimAndSubRoutine       equ $FB
+   1472                  00FA     _nextSubRoutine               equ $FA
    1473
-   1474                  0004     image_x_size                  equ 4
-   1475                  0005     image_y_size                  equ 5
-   1476                  0006     image_center_offset           equ 6
+   1474                           * =======================================>>
+   1475                           * Images Constants
+   1476                           * =======================================>>
    1477
-   1478                  0004     image_subset_x1_offset        equ 4
-   1479                  0005     image_subset_y1_offset        equ 5
-   1480
-   1481                  0000     page_draw_routine             equ 0
-   1482                  0001     draw_routine                  equ 1
-   1483                  0003     page_erase_routine            equ 3
-   1484                  0004     erase_routine                 equ 4
-   1485                  0006     erase_nb_cell                 equ 6
-   1486
-   1487                           * =======================================>>
-   1488                           * Sound Constants
-   1489                           * =======================================>>
+   1478                  0004     image_x_size                  equ 4
+   1479                  0005     image_y_size                  equ 5
+   1480                  0006     image_center_offset           equ 6
+   1481
+   1482                  0004     image_subset_x1_offset        equ 4
+   1483                  0005     image_subset_y1_offset        equ 5
+   1484
+   1485                  0000     page_draw_routine             equ 0
+   1486                  0001     draw_routine                  equ 1
+   1487                  0003     page_erase_routine            equ 3
+   1488                  0004     erase_routine                 equ 4
+   1489                  0006     erase_nb_cell                 equ 6
    1490
-   1491                  0000     pcm_page        equ 0
-   1492                  0001     pcm_start_addr  equ 1
-   1493                  0003     pcm_end_addr    equ 3
-   1494                  0005     pcm_meta_size   equ 5
-   1495
-   1496                           * =======================================>>
-   1497                           * Object Constants
-   1498                           * =======================================>>
+   1491                           * =======================================>>
+   1492                           * Sound Constants
+   1493                           * =======================================>>
+   1494
+   1495                  0000     pcm_page        equ 0
+   1496                  0001     pcm_start_addr  equ 1
+   1497                  0003     pcm_end_addr    equ 3
+   1498                  0005     pcm_meta_size   equ 5
    1499
-   1500                  0002     nb_reserved_objects           equ 2
-   1501                  001B     nb_dynamic_objects            equ 27
-   1502                  0003     nb_level_objects              equ 3
-   1503                  0020     nb_objects                    equ 32 * ma>>
-   1504
-   1505                           * --------------------------------------->>
-   1506                           * Object Status Table offsets
-   1507                           * --------------------------------------->>
+   1500                           * =======================================>>
+   1501                           * Object Constants
+   1502                           * =======================================>>
+   1503
+   1504                  0002     nb_reserved_objects           equ 2
+   1505                  001B     nb_dynamic_objects            equ 27
+   1506                  0003     nb_level_objects              equ 3
+   1507                  0020     nb_objects                    equ 32 * ma>>
    1508
-   1509                  005A     object_size                   equ 90 ; th>>
-   1510                  005A     next_object                   equ object_>>
-   1511
-   1512                  0000     id                            equ 0      >>
-   1513                  0001     subtype                       equ 1      >>
-   1514                  0002     render_flags                  equ 2
+   1509                           * --------------------------------------->>
+   1510                           * Object Status Table offsets
+   1511                           * --------------------------------------->>
+   1512
+   1513                  005A     object_size                   equ 90 ; th>>
+   1514                  005A     next_object                   equ object_>>
    1515
-   1516                           * --- render_flags bitfield variables --->>
-   1517                  0001     render_xmirror_mask           equ $01 ; (>>
-   1518                  0002     render_ymirror_mask           equ $02 ; (>>
-   1519                  0004     render_overlay_mask           equ $04 ; (>>
-   1520                  0008     render_motionless_mask        equ $08 ; (>>
-   1521                  0010     render_playfieldcoord_mask    equ $10 ; (>>
-   1522                  0020     render_hide_mask              equ $20 ; (>>
-   1523                  0040     render_todelete_mask          equ $40 ; (>>
-   1524                  0080     render_xloop_mask             equ $80 ; (>>
-   1525                            
-   1526                  0003     priority                      equ 3      >>
-   1527                  0004     anim                          equ 4  ; an>>
-   1528                  0006     prev_anim                     equ 6  ; an>>
-   1529                  0008     anim_frame                    equ 8      >>
-   1530                  0009     anim_frame_duration           equ 9      >>
-   1531                  000A     image_set                     equ 10 ; an>>
-   1532                  000C     x_pos                         equ 12 ; an>>
-   1533                  000E     x_sub                         equ 14     >>
-   1534                  000F     y_pos                         equ 15 ; an>>
-   1535                  0011     y_sub                         equ 17     >>
-   1536                  0012     xy_pixel                      equ 18     >>
-   1537                  0012     x_pixel                       equ 18     >>
-   1538                  0013     y_pixel                       equ 19     >>
-   1539                  0014     x_vel                         equ 20 ; an>>
-   1540                  0016     y_vel                         equ 22 ; an>>
-   1541                  0018     routine                       equ 24     >>
-   1542                  0019     routine_secondary             equ 25     >>
-   1543                  001A     status                        equ 26
-   1544
-   1545                           * --- status bitfield variables for objec>>
-   1546                  0001     status_x_orientation          equ   $01 ;>>
-   1547                  0002     status_y_orientation          equ   $02 ;>>
-   1548                  0004     status_bit2                   equ   $04 ;>>
-   1549                  0008     status_mainchar_standing      equ   $08 ;>>
-   1550                  0010     status_sidekick_standing      equ   $10 ;>>
-   1551                  0020     status_mainchar_pushing       equ   $20 ;>>
-   1552                  0040     status_sidekick_pushing       equ   $40 ;>>
-   1553                  0080     status_bit7                   equ   $80 ;>>
-   1554
-   1555                           * --- status bitfield variables for Main >>
-   1556                  0002     status_inair                  equ   $02 ;>>
-   1557                  0004     status_jumporroll             equ   $04 ;>>
-   1558                  0008     status_norgroundnorfall       equ   $08 ;>>
-   1559                  0010     status_jumpingafterrolling    equ   $10 ;>>
-   1560                  0020     status_pushing                equ   $20 ;>>
-   1561                  0040     status_underwater             equ   $40 ;>>
-   1562
-   1563                  001B     ext_variables                 equ 27 ; to>>
-   1564
-   1565                           * --------------------------------------->>
-   1566                           * reserved variables (engine)
-   1567
-   1568                  0029     rsv_render_flags              equ 41
-   1569
-   1570                           * --- rsv_render_flags bitfield variables>>
-   1571                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
-   1572                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
-   1573                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
-   1574                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
-   1575
-   1576                  002A     rsv_prev_anim                 equ 42 ; an>>
-   1577                  002C     rsv_image_center_offset       equ 44 ; 0 >>
-   1578                           * ne sert plus                       ; an>>
-   1579                  002E     rsv_image_subset              equ 46 ; an>>
-   1580                  0030     rsv_mapping_frame             equ 48 ; an>>
-   1581                  0032     rsv_xy1_pixel                 equ 50     >>
-   1582                  0032     rsv_x1_pixel                  equ 50     >>
-   1583                  0033     rsv_y1_pixel                  equ 51     >>
-   1584                  0034     rsv_xy2_pixel                 equ 52     >>
-   1585                  0034     rsv_x2_pixel                  equ 52     >>
-   1586                  0035     rsv_y2_pixel                  equ 53     >>
-   1587
-   1588                           * --------------------------------------->>
-   1589                           * reserved variables (engine) - buffer sp>>
-   1590
-   1591                  0036     rsv_buffer_0                  equ 54 ; St>>
-   1592                  0036     rsv_priority_0                equ 54 ; in>>
-   1593                  0037     rsv_priority_prev_obj_0       equ 55 ; an>>
-   1594                  0039     rsv_priority_next_obj_0       equ 57 ; an>>
-   1595                           *rsv_prev_image_subset_0       equ 59 ; a>>
-   1596                  003D     rsv_prev_mapping_frame_0      equ 61 ; an>>
-   1597                  003F     rsv_bgdata_0                  equ 63 ; an>>
-   1598                  0041     rsv_prev_xy_pixel_0           equ 65 ;
-   1599                  0041     rsv_prev_x_pixel_0            equ 65 ; pr>>
-   1600                  0042     rsv_prev_y_pixel_0            equ 66 ; pr>>
-   1601                  0043     rsv_prev_xy1_pixel_0          equ 67 ;
-   1602                  0043     rsv_prev_x1_pixel_0           equ 67 ; pr>>
-   1603                  0044     rsv_prev_y1_pixel_0           equ 68 ; pr>>
-   1604                  0045     rsv_prev_xy2_pixel_0          equ 69 ;
-   1605                  0045     rsv_prev_x2_pixel_0           equ 69 ; pr>>
-   1606                  0046     rsv_prev_y2_pixel_0           equ 70 ; pr>>
-   1607                  0047     rsv_prev_render_flags_0       equ 71 ;
-   1608                           * --- rsv_prev_render_flags_0 bitfield va>>
-   1609                  0001     rsv_prev_render_overlay_mask  equ $01 ; (>>
-   1610                  0080     rsv_prev_render_onscreen_mask equ $80 ; (>>
-   1611
-   1612                  0048     rsv_buffer_1                  equ 72 ; St>>
-   1613                  0048     rsv_priority_1                equ 72 ; in>>
-   1614                  0049     rsv_priority_prev_obj_1       equ 73 ; an>>
-   1615                  004B     rsv_priority_next_obj_1       equ 75 ; an>>
-   1616                           *rsv_prev_image_subset_1       equ 77 ; a>>
-   1617                  004F     rsv_prev_mapping_frame_1      equ 79 ; an>>
-   1618                  0051     rsv_bgdata_1                  equ 81 ; an>>
-   1619                  0053     rsv_prev_xy_pixel_1           equ 83 ;
-   1620                  0053     rsv_prev_x_pixel_1            equ 83 ; pr>>
-   1621                  0054     rsv_prev_y_pixel_1            equ 84 ; pr>>
-   1622                  0055     rsv_prev_xy1_pixel_1          equ 85 ;
-   1623                  0055     rsv_prev_x1_pixel_1           equ 85 ; pr>>
-   1624                  0056     rsv_prev_y1_pixel_1           equ 86 ; pr>>
-   1625                  0057     rsv_prev_xy2_pixel_1          equ 87 ;
-   1626                  0057     rsv_prev_x2_pixel_1           equ 87 ; pr>>
-   1627                  0058     rsv_prev_y2_pixel_1           equ 88 ; pr>>
-   1628                  0059     rsv_prev_render_flags_1       equ 89 ;
-   1629
-   1630                  0000     buf_priority                  equ 0  ; of>>
-   1631                  0001     buf_priority_prev_obj         equ 1  ;
-   1632                  0003     buf_priority_next_obj         equ 3  ;
-   1633                           *buf_prev_image_subset         equ 5  ;
-   1634                  0007     buf_prev_mapping_frame        equ 7  ;
-   1635                  0009     buf_bgdata                    equ 9  ;
-   1636                  000B     buf_prev_xy_pixel             equ 11 ;
-   1637                  000B     buf_prev_x_pixel              equ 11 ;
-   1638                  000C     buf_prev_y_pixel              equ 12 ;
-   1639                  000D     buf_prev_xy1_pixel            equ 13 ;
-   1640                  000D     buf_prev_x1_pixel             equ 13 ;
-   1641                  000E     buf_prev_y1_pixel             equ 14 ;
-   1642                  000F     buf_prev_xy2_pixel            equ 15 ;
-   1643                  000F     buf_prev_x2_pixel             equ 15 ;
-   1644                  0010     buf_prev_y2_pixel             equ 16 ;
-   1645                  0011     buf_prev_render_flags         equ 17 ;
+   1516                  0000     id                            equ 0      >>
+   1517                  0001     subtype                       equ 1      >>
+   1518                  0002     render_flags                  equ 2
+   1519
+   1520                           * --- render_flags bitfield variables --->>
+   1521                  0001     render_xmirror_mask           equ $01 ; (>>
+   1522                  0002     render_ymirror_mask           equ $02 ; (>>
+   1523                  0004     render_overlay_mask           equ $04 ; (>>
+   1524                  0008     render_motionless_mask        equ $08 ; (>>
+   1525                  0010     render_playfieldcoord_mask    equ $10 ; (>>
+   1526                  0020     render_hide_mask              equ $20 ; (>>
+   1527                  0040     render_todelete_mask          equ $40 ; (>>
+   1528                  0080     render_xloop_mask             equ $80 ; (>>
+   1529                            
+   1530                  0003     priority                      equ 3      >>
+   1531                  0004     anim                          equ 4  ; an>>
+   1532                  0006     prev_anim                     equ 6  ; an>>
+   1533                  0008     anim_frame                    equ 8      >>
+   1534                  0009     anim_frame_duration           equ 9      >>
+   1535                  000A     image_set                     equ 10 ; an>>
+   1536                  000C     x_pos                         equ 12 ; an>>
+   1537                  000E     x_sub                         equ 14     >>
+   1538                  000F     y_pos                         equ 15 ; an>>
+   1539                  0011     y_sub                         equ 17     >>
+   1540                  0012     xy_pixel                      equ 18     >>
+   1541                  0012     x_pixel                       equ 18     >>
+   1542                  0013     y_pixel                       equ 19     >>
+   1543                  0014     x_vel                         equ 20 ; an>>
+   1544                  0016     y_vel                         equ 22 ; an>>
+   1545                  0018     routine                       equ 24     >>
+   1546                  0019     routine_secondary             equ 25     >>
+   1547                  001A     status                        equ 26
+   1548
+   1549                           * --- status bitfield variables for objec>>
+   1550                  0001     status_x_orientation          equ   $01 ;>>
+   1551                  0002     status_y_orientation          equ   $02 ;>>
+   1552                  0004     status_bit2                   equ   $04 ;>>
+   1553                  0008     status_mainchar_standing      equ   $08 ;>>
+   1554                  0010     status_sidekick_standing      equ   $10 ;>>
+   1555                  0020     status_mainchar_pushing       equ   $20 ;>>
+   1556                  0040     status_sidekick_pushing       equ   $40 ;>>
+   1557                  0080     status_bit7                   equ   $80 ;>>
+   1558
+   1559                           * --- status bitfield variables for Main >>
+   1560                  0002     status_inair                  equ   $02 ;>>
+   1561                  0004     status_jumporroll             equ   $04 ;>>
+   1562                  0008     status_norgroundnorfall       equ   $08 ;>>
+   1563                  0010     status_jumpingafterrolling    equ   $10 ;>>
+   1564                  0020     status_pushing                equ   $20 ;>>
+   1565                  0040     status_underwater             equ   $40 ;>>
+   1566
+   1567                  001B     ext_variables                 equ 27 ; to>>
+   1568
+   1569                           * --------------------------------------->>
+   1570                           * reserved variables (engine)
+   1571
+   1572                  0029     rsv_render_flags              equ 41
+   1573
+   1574                           * --- rsv_render_flags bitfield variables>>
+   1575                  0001     rsv_render_checkrefresh_mask  equ $01 ; (>>
+   1576                  0002     rsv_render_erasesprite_mask   equ $02 ; (>>
+   1577                  0004     rsv_render_displaysprite_mask equ $04 ; (>>
+   1578                  0008     rsv_render_outofrange_mask    equ $08 ; (>>
+   1579
+   1580                  002A     rsv_prev_anim                 equ 42 ; an>>
+   1581                  002C     rsv_image_center_offset       equ 44 ; 0 >>
+   1582                           * ne sert plus                       ; an>>
+   1583                  002E     rsv_image_subset              equ 46 ; an>>
+   1584                  0030     rsv_mapping_frame             equ 48 ; an>>
+   1585                  0032     rsv_xy1_pixel                 equ 50     >>
+   1586                  0032     rsv_x1_pixel                  equ 50     >>
+   1587                  0033     rsv_y1_pixel                  equ 51     >>
+   1588                  0034     rsv_xy2_pixel                 equ 52     >>
+   1589                  0034     rsv_x2_pixel                  equ 52     >>
+   1590                  0035     rsv_y2_pixel                  equ 53     >>
+   1591
+   1592                           * --------------------------------------->>
+   1593                           * reserved variables (engine) - buffer sp>>
+   1594
+   1595                  0036     rsv_buffer_0                  equ 54 ; St>>
+   1596                  0036     rsv_priority_0                equ 54 ; in>>
+   1597                  0037     rsv_priority_prev_obj_0       equ 55 ; an>>
+   1598                  0039     rsv_priority_next_obj_0       equ 57 ; an>>
+   1599                           *rsv_prev_image_subset_0       equ 59 ; a>>
+   1600                  003D     rsv_prev_mapping_frame_0      equ 61 ; an>>
+   1601                  003F     rsv_bgdata_0                  equ 63 ; an>>
+   1602                  0041     rsv_prev_xy_pixel_0           equ 65 ;
+   1603                  0041     rsv_prev_x_pixel_0            equ 65 ; pr>>
+   1604                  0042     rsv_prev_y_pixel_0            equ 66 ; pr>>
+   1605                  0043     rsv_prev_xy1_pixel_0          equ 67 ;
+   1606                  0043     rsv_prev_x1_pixel_0           equ 67 ; pr>>
+   1607                  0044     rsv_prev_y1_pixel_0           equ 68 ; pr>>
+   1608                  0045     rsv_prev_xy2_pixel_0          equ 69 ;
+   1609                  0045     rsv_prev_x2_pixel_0           equ 69 ; pr>>
+   1610                  0046     rsv_prev_y2_pixel_0           equ 70 ; pr>>
+   1611                  0047     rsv_prev_render_flags_0       equ 71 ;
+   1612                           * --- rsv_prev_render_flags_0 bitfield va>>
+   1613                  0001     rsv_prev_render_overlay_mask  equ $01 ; (>>
+   1614                  0080     rsv_prev_render_onscreen_mask equ $80 ; (>>
+   1615
+   1616                  0048     rsv_buffer_1                  equ 72 ; St>>
+   1617                  0048     rsv_priority_1                equ 72 ; in>>
+   1618                  0049     rsv_priority_prev_obj_1       equ 73 ; an>>
+   1619                  004B     rsv_priority_next_obj_1       equ 75 ; an>>
+   1620                           *rsv_prev_image_subset_1       equ 77 ; a>>
+   1621                  004F     rsv_prev_mapping_frame_1      equ 79 ; an>>
+   1622                  0051     rsv_bgdata_1                  equ 81 ; an>>
+   1623                  0053     rsv_prev_xy_pixel_1           equ 83 ;
+   1624                  0053     rsv_prev_x_pixel_1            equ 83 ; pr>>
+   1625                  0054     rsv_prev_y_pixel_1            equ 84 ; pr>>
+   1626                  0055     rsv_prev_xy1_pixel_1          equ 85 ;
+   1627                  0055     rsv_prev_x1_pixel_1           equ 85 ; pr>>
+   1628                  0056     rsv_prev_y1_pixel_1           equ 86 ; pr>>
+   1629                  0057     rsv_prev_xy2_pixel_1          equ 87 ;
+   1630                  0057     rsv_prev_x2_pixel_1           equ 87 ; pr>>
+   1631                  0058     rsv_prev_y2_pixel_1           equ 88 ; pr>>
+   1632                  0059     rsv_prev_render_flags_1       equ 89 ;
+   1633
+   1634                  0000     buf_priority                  equ 0  ; of>>
+   1635                  0001     buf_priority_prev_obj         equ 1  ;
+   1636                  0003     buf_priority_next_obj         equ 3  ;
+   1637                           *buf_prev_image_subset         equ 5  ;
+   1638                  0007     buf_prev_mapping_frame        equ 7  ;
+   1639                  0009     buf_bgdata                    equ 9  ;
+   1640                  000B     buf_prev_xy_pixel             equ 11 ;
+   1641                  000B     buf_prev_x_pixel              equ 11 ;
+   1642                  000C     buf_prev_y_pixel              equ 12 ;
+   1643                  000D     buf_prev_xy1_pixel            equ 13 ;
+   1644                  000D     buf_prev_x1_pixel             equ 13 ;
+   1645                  000E     buf_prev_y1_pixel             equ 14 ;
+   1646                  000F     buf_prev_xy2_pixel            equ 15 ;
+   1647                  000F     buf_prev_x2_pixel             equ 15 ;
+   1648                  0010     buf_prev_y2_pixel             equ 16 ;
+   1649                  0011     buf_prev_render_flags         equ 17 ;
      75        A000                       org   $A000
      76
      77                           * --------------------------------------->>
      78                           * Object Status Table index
      79                           * - objects with a dedicated adress (no d>>
      80                           * --------------------------------------->>
-     81                  662A     TitleScr_This           equ Object_RAM
-     82                  662A     Obj_Sonic               equ TitleScr_This>>
-     83                  6684     Obj_Tails               equ TitleScr_This>>
-     84                  66DE     Obj_LargeStar           equ TitleScr_This>>
-     85                  6738     Obj_SmallStar           equ TitleScr_This>>
-     86                  6792     Obj_SonicHand           equ TitleScr_This>>
-     87                  67EC     Obj_TailsHand           equ TitleScr_This>>
-     88                  6846     Obj_EmblemFront01       equ TitleScr_This>>
-     89                  68A0     Obj_EmblemFront02       equ TitleScr_This>>
-     90                  68FA     Obj_EmblemFront03       equ TitleScr_This>>
-     91                  6954     Obj_EmblemFront04       equ TitleScr_This>>
-     92                  69AE     Obj_EmblemFront05       equ TitleScr_This>>
-     93                  6A08     Obj_EmblemFront06       equ TitleScr_This>>
-     94                  6A62     Obj_EmblemFront07       equ TitleScr_This>>
-     95                  6ABC     Obj_EmblemFront08       equ TitleScr_This>>
-     96                  6B16     Obj_EmblemBack01        equ TitleScr_This>>
-     97                  6B70     Obj_EmblemBack02        equ TitleScr_This>>
-     98                  6BCA     Obj_EmblemBack03        equ TitleScr_This>>
-     99                  6C24     Obj_EmblemBack04        equ TitleScr_This>>
-    100                  6C7E     Obj_EmblemBack05        equ TitleScr_This>>
-    101                  6CD8     Obj_EmblemBack06        equ TitleScr_This>>
-    102                  6D32     Obj_EmblemBack07        equ TitleScr_This>>
-    103                  6D8C     Obj_EmblemBack08        equ TitleScr_This>>
-    104                  6DE6     Obj_EmblemBack09        equ TitleScr_This>>
-    105                  6E40     Obj_PaletteHandler      equ TitleScr_This>>
-    106                  6E9A     Obj_PaletteHandler2     equ TitleScr_This>>
-    107                  6EF4     Obj_PaletteHandler3     equ TitleScr_This>>
-    108                  6F4E     TitleScr_Object_RAM_End equ TitleScr_This>>
+     81                  6630     TitleScr_This           equ Object_RAM
+     82                  6630     Obj_Sonic               equ TitleScr_This>>
+     83                  668A     Obj_Tails               equ TitleScr_This>>
+     84                  66E4     Obj_LargeStar           equ TitleScr_This>>
+     85                  673E     Obj_SmallStar           equ TitleScr_This>>
+     86                  6798     Obj_SonicHand           equ TitleScr_This>>
+     87                  67F2     Obj_TailsHand           equ TitleScr_This>>
+     88                  684C     Obj_EmblemFront01       equ TitleScr_This>>
+     89                  68A6     Obj_EmblemFront02       equ TitleScr_This>>
+     90                  6900     Obj_EmblemFront03       equ TitleScr_This>>
+     91                  695A     Obj_EmblemFront04       equ TitleScr_This>>
+     92                  69B4     Obj_EmblemFront05       equ TitleScr_This>>
+     93                  6A0E     Obj_EmblemFront06       equ TitleScr_This>>
+     94                  6A68     Obj_EmblemFront07       equ TitleScr_This>>
+     95                  6AC2     Obj_EmblemFront08       equ TitleScr_This>>
+     96                  6B1C     Obj_EmblemBack01        equ TitleScr_This>>
+     97                  6B76     Obj_EmblemBack02        equ TitleScr_This>>
+     98                  6BD0     Obj_EmblemBack03        equ TitleScr_This>>
+     99                  6C2A     Obj_EmblemBack04        equ TitleScr_This>>
+    100                  6C84     Obj_EmblemBack05        equ TitleScr_This>>
+    101                  6CDE     Obj_EmblemBack06        equ TitleScr_This>>
+    102                  6D38     Obj_EmblemBack07        equ TitleScr_This>>
+    103                  6D92     Obj_EmblemBack08        equ TitleScr_This>>
+    104                  6DEC     Obj_EmblemBack09        equ TitleScr_This>>
+    105                  6E46     Obj_PaletteHandler      equ TitleScr_This>>
+    106                  6EA0     Obj_PaletteHandler2     equ TitleScr_This>>
+    107                  6EFA     Obj_PaletteHandler3     equ TitleScr_This>>
+    108                  6F54     TitleScr_Object_RAM_End equ TitleScr_This>>
     109
     110                           * --------------------------------------->>
     111                           * Object Status Table offsets
@@ -612,9 +616,9 @@ Pass2
     206                                                                    >>
     207        A066               Sonic_Init                               >>
     208
-    209  3     A066 CC   8A2C                   ldd   #Pal_TitleScreen *@Ig>>
-    210  6     A069 FD   7D0C                   std   Ptr_palette
-    211  8     A06C BD   7D4E                   jsr   UpdatePalette
+    209  3     A066 CC   8A5A                   ldd   #Pal_TitleScreen *@Ig>>
+    210  6     A069 FD   7D12                   std   Cur_palette
+    211  7     A06C 7F   7D11             clr   Refresh_palette            >>
     212
     213                                   * Activate IRQ for Sound
     214  5     A06F B6   6019             lda   $6019
@@ -625,15 +629,15 @@ Pass2
     219  4+1   A079 A6   C8 19            lda   routine_secondary,u
     220  2     A07C 8B   03               adda  #$03
     221  4+1   A07E A7   C8 19            sta   routine_secondary,u        >>
-    222  3     A081 CC   857A             ldd   #Img_sonic_1
+    222  3     A081 CC   85A8             ldd   #Img_sonic_1
     223  5+1   A084 ED   4A               std   image_set,u                >>
-    224  3     A086 CC   86BE             ldd   #Ani_sonic                 >>
+    224  3     A086 CC   86EC             ldd   #Ani_sonic                 >>
     225  5+1   A089 ED   44               std   anim,u                     >>
     226                                   * sonic est invisible a cette pos>>
     227  3     A08B CC   0000             ldd   #$0000
     228  5+1   A08E ED   C8 12            std   xy_pixel,u                 >>
     229                                                                    >>
-    230  3     A091 8E   66DE             ldx   #Obj_LargeStar             >>
+    230  3     A091 8E   66E4             ldx   #Obj_LargeStar             >>
     231  2     A094 86   04               lda   #ObjID_TitleScreen
     232  4+1   A096 A7   00               sta   id,x                       >>
     233  2     A098 C6   0F               ldb   #Sub_LargeStar
@@ -660,123 +664,123 @@ Pass2
     254  4+1   A0AC A7   C8 19            sta   routine_secondary,u        >>
     255                            
     256                                   * Create emblem tiles
-    257  3     A0AF 8E   6846             ldx   #Obj_EmblemFront01
+    257  3     A0AF 8E   684C             ldx   #Obj_EmblemFront01
     258  2     A0B2 86   04               lda   #ObjID_TitleScreen
     259  2     A0B4 C6   09               ldb   #Sub_EmblemFront
     260  4+1   A0B6 A7   00               sta   id,x
     261  4+1   A0B8 E7   01               stb   subtype,x
-    262  4     A0BA 108E 8661             ldy   #Img_emblemFront01
+    262  4     A0BA 108E 868F             ldy   #Img_emblemFront01
     263  6+1   A0BE 10AF 0A                     sty   image_set,x
     264                            
-    265  3     A0C1 8E   68A0             ldx   #Obj_EmblemFront02
+    265  3     A0C1 8E   68A6             ldx   #Obj_EmblemFront02
     266  4+1   A0C4 A7   00               sta   id,x
     267  4+1   A0C6 E7   01               stb   subtype,x
-    268  4     A0C8 108E 8671             ldy   #Img_emblemFront02
+    268  4     A0C8 108E 869F             ldy   #Img_emblemFront02
     269  6+1   A0CC 10AF 0A                     sty   image_set,x
     270                            
-    271  3     A0CF 8E   68FA             ldx   #Obj_EmblemFront03
+    271  3     A0CF 8E   6900             ldx   #Obj_EmblemFront03
     272  4+1   A0D2 A7   00               sta   id,x
     273  4+1   A0D4 E7   01               stb   subtype,x
-    274  4     A0D6 108E 8641             ldy   #Img_emblemFront03
+    274  4     A0D6 108E 866F             ldy   #Img_emblemFront03
     275  6+1   A0DA 10AF 0A                     sty   image_set,x
     276                            
-    277  3     A0DD 8E   6954             ldx   #Obj_EmblemFront04
+    277  3     A0DD 8E   695A             ldx   #Obj_EmblemFront04
     278  4+1   A0E0 A7   00               sta   id,x
     279  4+1   A0E2 E7   01               stb   subtype,x
-    280  4     A0E4 108E 8651             ldy   #Img_emblemFront04
+    280  4     A0E4 108E 867F             ldy   #Img_emblemFront04
     281  6+1   A0E8 10AF 0A                     sty   image_set,x
     282                            
-    283  3     A0EB 8E   69AE                   ldx   #Obj_EmblemFront05
+    283  3     A0EB 8E   69B4                   ldx   #Obj_EmblemFront05
     284  4+1   A0EE A7   00               sta   id,x
     285  4+1   A0F0 E7   01               stb   subtype,x
-    286  4     A0F2 108E 8621             ldy   #Img_emblemFront05
+    286  4     A0F2 108E 864F             ldy   #Img_emblemFront05
     287  6+1   A0F6 10AF 0A                     sty   image_set,x
     288                            
-    289  3     A0F9 8E   6A08             ldx   #Obj_EmblemFront06
+    289  3     A0F9 8E   6A0E             ldx   #Obj_EmblemFront06
     290  4+1   A0FC A7   00               sta   id,x
     291  4+1   A0FE E7   01               stb   subtype,x
-    292  4     A100 108E 8631             ldy   #Img_emblemFront06
+    292  4     A100 108E 865F             ldy   #Img_emblemFront06
     293  6+1   A104 10AF 0A                     sty   image_set,x
     294                            
-    295  3     A107 8E   6A62             ldx   #Obj_EmblemFront07
+    295  3     A107 8E   6A68             ldx   #Obj_EmblemFront07
     296  4+1   A10A A7   00               sta   id,x
     297  4+1   A10C E7   01               stb   subtype,x
-    298  4     A10E 108E 8601             ldy   #Img_emblemFront07
+    298  4     A10E 108E 862F             ldy   #Img_emblemFront07
     299  6+1   A112 10AF 0A                     sty   image_set,x
     300                            
-    301  3     A115 8E   6ABC             ldx   #Obj_EmblemFront08
+    301  3     A115 8E   6AC2             ldx   #Obj_EmblemFront08
     302  4+1   A118 A7   00               sta   id,x
     303  4+1   A11A E7   01               stb   subtype,x
-    304  4     A11C 108E 8611             ldy   #Img_emblemFront08
+    304  4     A11C 108E 863F             ldy   #Img_emblemFront08
     305  6+1   A120 10AF 0A                     sty   image_set,x
     306                            
-    307  3     A123 8E   6B16             ldx   #Obj_EmblemBack01
+    307  3     A123 8E   6B1C             ldx   #Obj_EmblemBack01
     308  2     A126 C6   0C               ldb   #Sub_EmblemBack
     309  4+1   A128 A7   00               sta   id,x
     310  4+1   A12A E7   01               stb   subtype,x
-    311  4     A12C 108E 85B2             ldy   #Img_emblemBack01
+    311  4     A12C 108E 85E0             ldy   #Img_emblemBack01
     312  6+1   A130 10AF 0A                     sty   image_set,x
     313                            
-    314  3     A133 8E   6B70             ldx   #Obj_EmblemBack02
+    314  3     A133 8E   6B76             ldx   #Obj_EmblemBack02
     315  4+1   A136 A7   00               sta   id,x
     316  4+1   A138 E7   01               stb   subtype,x
-    317  4     A13A 108E 85A2             ldy   #Img_emblemBack02
+    317  4     A13A 108E 85D0             ldy   #Img_emblemBack02
     318  6+1   A13E 10AF 0A                     sty   image_set,x
     319                            
-    320  3     A141 8E   6BCA             ldx   #Obj_EmblemBack03
+    320  3     A141 8E   6BD0             ldx   #Obj_EmblemBack03
     321  4+1   A144 A7   00               sta   id,x
     322  4+1   A146 E7   01               stb   subtype,x
-    323  4     A148 108E 84CC             ldy   #Img_emblemBack03
+    323  4     A148 108E 84FA             ldy   #Img_emblemBack03
     324  6+1   A14C 10AF 0A                     sty   image_set,x
     325                            
-    326  3     A14F 8E   6C24                   ldx   #Obj_EmblemBack04
+    326  3     A14F 8E   6C2A                   ldx   #Obj_EmblemBack04
     327  4+1   A152 A7   00               sta   id,x
     328  4+1   A154 E7   01               stb   subtype,x
-    329  4     A156 108E 84BC             ldy   #Img_emblemBack04
+    329  4     A156 108E 84EA             ldy   #Img_emblemBack04
     330  6+1   A15A 10AF 0A                     sty   image_set,x
     331                            
-    332  3     A15D 8E   6C7E             ldx   #Obj_EmblemBack05
+    332  3     A15D 8E   6C84             ldx   #Obj_EmblemBack05
     333  4+1   A160 A7   00               sta   id,x
     334  4+1   A162 E7   01               stb   subtype,x
-    335  4     A164 108E 84EC             ldy   #Img_emblemBack05
+    335  4     A164 108E 851A             ldy   #Img_emblemBack05
     336  6+1   A168 10AF 0A                     sty   image_set,x
     337                            
-    338  3     A16B 8E   6CD8             ldx   #Obj_EmblemBack06
+    338  3     A16B 8E   6CDE             ldx   #Obj_EmblemBack06
     339  4+1   A16E A7   00               sta   id,x
     340  4+1   A170 E7   01               stb   subtype,x
-    341  4     A172 108E 84DC             ldy   #Img_emblemBack06
+    341  4     A172 108E 850A             ldy   #Img_emblemBack06
     342  6+1   A176 10AF 0A                     sty   image_set,x
     343                            
-    344  3     A179 8E   6D32             ldx   #Obj_EmblemBack07
+    344  3     A179 8E   6D38             ldx   #Obj_EmblemBack07
     345  4+1   A17C A7   00               sta   id,x
     346  4+1   A17E E7   01               stb   subtype,x
-    347  4     A180 108E 849C             ldy   #Img_emblemBack07
+    347  4     A180 108E 84CA             ldy   #Img_emblemBack07
     348  6+1   A184 10AF 0A                     sty   image_set,x
     349                            
-    350  3     A187 8E   6D8C             ldx   #Obj_EmblemBack08
+    350  3     A187 8E   6D92             ldx   #Obj_EmblemBack08
     351  4+1   A18A A7   00               sta   id,x
     352  4+1   A18C E7   01               stb   subtype,x
-    353  4     A18E 108E 848C             ldy   #Img_emblemBack08
+    353  4     A18E 108E 84BA             ldy   #Img_emblemBack08
     354  6+1   A192 10AF 0A                     sty   image_set,x
     355                            
-    356  3     A195 8E   6DE6                   ldx   #Obj_EmblemBack09
+    356  3     A195 8E   6DEC                   ldx   #Obj_EmblemBack09
     357  4+1   A198 A7   00               sta   id,x
     358  4+1   A19A E7   01               stb   subtype,x
-    359  4     A19C 108E 84AC             ldy   #Img_emblemBack09
+    359  4     A19C 108E 84DA             ldy   #Img_emblemBack09
     360  6+1   A1A0 10AF 0A                     sty   image_set,x
     361                            
-    362  3     A1A3 8E   6EF4             ldx   #Obj_PaletteHandler3       >>
+    362  3     A1A3 8E   6EFA             ldx   #Obj_PaletteHandler3       >>
     363  2     A1A6 86   03               lda   #ObjID_PaletteHandler
     364  4+1   A1A8 A7   00               sta   id,x                       >>
     365  6+1   A1AA 6F   01               clr   subtype,x                  >>
-    366  3     A1AC CC   7D0E             ldd   #Black_palette *@IgnoreUnde>>
+    366  3     A1AC CC   7D34             ldd   #Black_palette *@IgnoreUnde>>
     367  5+1   A1AF ED   88 1B            std   ext_variables,x
-    368  3     A1B2 CC   8A2C             ldd   #Pal_TitleScreen *@IgnoreUn>>
+    368  3     A1B2 CC   8A5A             ldd   #Pal_TitleScreen *@IgnoreUn>>
     369  5+1   A1B5 ED   88 1D            std   ext_variables+2,x
     370  2     A1B8 86   FF               lda   #$FF
     371  4     A1BA 97   22               sta   b_TitleScr_music_is_playing>>
-    372  3     A1BC 8E   89D2             ldx   #Psg_TitleScreen  *@IgnoreU>>
-    373  4     A1BF 7E   7DD7             jmp   PSGPlayNoRepeat            >>
+    372  3     A1BC 8E   8A00             ldx   #Psg_TitleScreen  *@IgnoreU>>
+    373  4     A1BF 7E   7E05             jmp   PSGPlayNoRepeat            >>
     374                                                                    >>
     375                                                                    >>
     376        A1C2               Sonic_SetPal_TitleScreen                 >>
@@ -791,7 +795,7 @@ Pass2
     385  4+1   A1D1 A7   C8 19            sta   routine_secondary,u        >>
     386
     387                                   *ldd   #Pal_TitleScreen          >>
-    388                                   *std   Ptr_palette               >>
+    388                                   *std   Cur_palette               >>
     389                                                                    >>
     390                                   * not implemented                >>
     391                                   * switch pointer to              >>
@@ -836,22 +840,22 @@ Pass2
     430                                                                    >>
     431                            
     432        A201               MoveObjects_KeepPosition                 >>
-    433  4     A201 7E   721B             jmp   DisplaySprite              >>
+    433  4     A201 7E   7221             jmp   DisplaySprite              >>
     434                                                                    >>
     435                                                                    >>
     436        A204               TitleScreen_Animate                      >>
     437                                   * no more offset table           >>
-    438  8     A204 BD   7294             jsr   AnimateSprite              >>
-    439  4     A207 7E   721B             jmp   DisplaySprite              >>
+    438  8     A204 BD   729A             jsr   AnimateSprite              >>
+    439  4     A207 7E   7221             jmp   DisplaySprite              >>
     440                                                                    >>
     441                                                                    >>
     442        A20A               Sonic_CreateHand                         >>
     443  4+1   A20A A6   C8 19            lda   routine_secondary,u
     444  2     A20D 8B   03               adda  #$03
     445  4+1   A20F A7   C8 19            sta   routine_secondary,u        >>
-    446  3     A212 CC   85C2             ldd   #Img_sonic_5
+    446  3     A212 CC   85F0             ldd   #Img_sonic_5
     447  5+1   A215 ED   4A               std   image_set,u                >>
-    448  3     A217 8E   6792             ldx   #Obj_SonicHand             >>
+    448  3     A217 8E   6798             ldx   #Obj_SonicHand             >>
     449  2     A21A 86   04               lda   #ObjID_TitleScreen
     450  4+1   A21C A7   00               sta   id,x                       >>
     451  2     A21E 86   12               lda   #Sub_SonicHand
@@ -862,7 +866,7 @@ Pass2
     456  2     A224 8A   0C               ora   #render_overlay_mask!render>>
     457  4+1   A226 A7   42               sta   render_flags,u
     458                            
-    459  4     A228 7E   721B             jmp   DisplaySprite              >>
+    459  4     A228 7E   7221             jmp   DisplaySprite              >>
     460                                                                    >>
     461                                                                    >>
     462        A22B               Sonic_CreateTails                        >>
@@ -872,13 +876,13 @@ Pass2
     466  4+1   A234 A6   C8 19            lda   routine_secondary,u
     467  2     A237 8B   03               adda  #$03
     468  4+1   A239 A7   C8 19            sta   routine_secondary,u        >>
-    469  3     A23C 8E   6684             ldx   #Obj_Tails                 >>
+    469  3     A23C 8E   668A             ldx   #Obj_Tails                 >>
     470  2     A23F 86   04               lda   #ObjID_TitleScreen
     471  4+1   A241 A7   00               sta   id,x                       >>
     472  2     A243 86   06               lda   #Sub_Tails
     473  4+1   A245 A7   01               sta   subtype,x                  >>
     474        A247               Sonic_CreateTails_BeforeWait             >>
-    475  4     A247 7E   721B             jmp   DisplaySprite              >>
+    475  4     A247 7E   7221             jmp   DisplaySprite              >>
     476                                                                    >>
     477                                                                    >>
     478        A24A               Sonic_FadeInBackground                   >>
@@ -893,7 +897,7 @@ Pass2
     487  3     A261 CC   00FF             ldd   #$FF
     488  5+1   A264 ED   C8 21            std   b_TitleScr_final_state,u   >>
     489                                   *ldd   #White_palette            >>
-    490                                   *std   Ptr_palette               >>
+    490                                   *std   cur_palette               >>
     491                                                                    >>
     492                                   * not implemented                >>
     493                                   * switch pointer to              >>
@@ -906,7 +910,7 @@ Pass2
     500                                   *sta   subtype,x                 >>
     501                                   * not implemented                >>
     502        A267               Sonic_FadeInBackground_NotYet            >>
-    503  4     A267 7E   721B             jmp   DisplaySprite              >>
+    503  4     A267 7E   7221             jmp   DisplaySprite              >>
     504                                                                    >>
     505                                                                    >>
     506        A26A               Sonic_CreateSmallStar                    >>
@@ -915,7 +919,7 @@ Pass2
     509  5+1   A26A EC   C8 1B            ldd   w_TitleScr_time_frame_count>>
     510  5     A26D 1083 0190             cmpd  #$190                      >>
     511  3     A271 27   03               beq   Sonic_CreateSmallStar_After>>
-    512  4     A273 7E   721B             jmp   DisplaySprite              >>
+    512  4     A273 7E   7221             jmp   DisplaySprite              >>
     513                                                                    >>
     514                                                                    >>
     515                                   * not implemented                >>
@@ -923,7 +927,7 @@ Pass2
     517                                   * not implemented                >>
     518                                                                    >>
     519        A276               Sonic_CreateSmallStar_AfterWait          >>
-    520  3     A276 8E   6738             ldx   #Obj_SmallStar             >>
+    520  3     A276 8E   673E             ldx   #Obj_SmallStar             >>
     521  2     A279 86   04               lda   #ObjID_TitleScreen
     522  4+1   A27B A7   00               sta   id,x                       >>
     523  2     A27D 86   15               lda   #Sub_SmallStar
@@ -933,7 +937,7 @@ Pass2
     527  4+1   A286 A7   C8 19            sta   routine_secondary,u        >>
     528                                   * not implemented                >>
     529                                   * not implemented                >>
-    530  4     A289 7E   721B             jmp   DisplaySprite              >>
+    530  4     A289 7E   7221             jmp   DisplaySprite              >>
     531                                                                    >>
     532                                                                    >>
     533        A28C               CyclingPal                               >>
@@ -952,7 +956,7 @@ Pass2
     546                                  *ldd   ,x
     547                                  *std   Normal_palette+$E
     548        A28C               CyclingPal_NotYet                        >>
-    549  4     A28C 7E   721B             jmp   DisplaySprite              >>
+    549  4     A28C 7E   7221             jmp   DisplaySprite              >>
     550                                                                    >>
     551                                                                    >>
     552        A28F               CyclingPal_TitleScreen                   >>
@@ -1005,9 +1009,9 @@ Pass2
     599                                                                    >>
     600  2     A2C4 C6   05               ldb   #$05
     601  4+1   A2C6 E7   43               stb   priority,u
-    602  3     A2C8 CC   86B2             ldd   #Ani_tails
+    602  3     A2C8 CC   86E0             ldd   #Ani_tails
     603  5+1   A2CB ED   44               std   anim,u                     >>
-    604  3     A2CD CC   854F             ldd   #Img_tails_1               >>
+    604  3     A2CD CC   857D             ldd   #Img_tails_1               >>
     605  5+1   A2D0 ED   4A               std   image_set,u                >>
     606  5     A2D2 39                    rts                              >>
     607                                                                    >>
@@ -1023,7 +1027,7 @@ Pass2
     617  4+1   A2E0 A6   C8 19            lda   routine_secondary,u
     618  2     A2E3 8B   03               adda  #$03
     619  4+1   A2E5 A7   C8 19            sta   routine_secondary,u        >>
-    620  3     A2E8 8E   67EC             ldx   #Obj_TailsHand             >>
+    620  3     A2E8 8E   67F2             ldx   #Obj_TailsHand             >>
     621  2     A2EB 86   04               lda   #ObjID_TitleScreen         >>
     622  4+1   A2ED A7   00               sta   id,x
     623  2     A2EF 86   18               lda   #Sub_TailsHand
@@ -1036,7 +1040,7 @@ Pass2
     630                            
     631                                                                    >>
     632        A2F9               Tails_DisplaySprite                      >>
-    633  4     A2F9 7E   721B             jmp   DisplaySprite              >>
+    633  4     A2F9 7E   7221             jmp   DisplaySprite              >>
     634                                                                    >>
     635        A2FC               Tails_xy_data                            >>
     636        A2FC 5B 57                 fcb   $5B,$57                    >>
@@ -1087,7 +1091,7 @@ Pass2
     681  4+1   A330 A7   C8 19            sta   routine_secondary,u        >>
     682                                                                    >>
     683                                                                    >>
-    684  4     A333 7E   721B             jmp   DisplaySprite              >>
+    684  4     A333 7E   7221             jmp   DisplaySprite              >>
     685                            
     686        A336               EmblemFront_DisplaySprite
     687                                   * Overlay sprite will never chang>>
@@ -1176,10 +1180,10 @@ Pass2
     770  4+1   A374 A6   C8 19            lda   routine_secondary,u
     771  2     A377 8B   03               adda  #$03
     772  4+1   A379 A7   C8 19            sta   routine_secondary,u        >>
-    773  3     A37C CC   8456             ldd   #Img_star_2
+    773  3     A37C CC   8484             ldd   #Img_star_2
     774  5+1   A37F ED   4A               std   image_set,u                >>
     775                                   * not implemented                >>
-    776  3     A381 CC   86A6             ldd   #Ani_largeStar
+    776  3     A381 CC   86D4             ldd   #Ani_largeStar
     777  5+1   A384 ED   44               std   anim,u                     >>
     778  2     A386 C6   01               ldb   #$01
     779  4+1   A388 E7   43               stb   priority,u                 >>
@@ -1217,7 +1221,7 @@ Pass2
     811  5     A3C2 1083 0012             cmpd  #LargeStar_xy_data_end-Larg>>
     812                                                                    >>
     813  3     A3C6 25   03               blo   LargeStar_MoveContinue
-    814  4     A3C8 7E   735F             jmp   DeleteObject               >>
+    814  4     A3C8 7E   7365             jmp   DeleteObject               >>
     815        A3CB               LargeStar_MoveContinue
     816  5+1   A3CB ED   C8 1F            std   w_TitleScr_xy_data_index,u >>
     817  4+1   A3CE 30   8C 06            leax  <LargeStar_xy_data-2,pcr
@@ -1264,7 +1268,7 @@ Pass2
     858  4+1   A3FC A6   C8 19            lda   routine_secondary,u
     859  2     A3FF 8B   03               adda  #$03
     860  4+1   A401 A7   C8 19            sta   routine_secondary,u        >>
-    861  3     A404 CC   843F             ldd   #Img_sonicHand
+    861  3     A404 CC   846D             ldd   #Img_sonicHand
     862  5+1   A407 ED   4A               std   image_set,u                >>
     863  2     A409 86   03               lda   #3
     864  4+1   A40B A7   43               sta   priority,u                 >>
@@ -1272,7 +1276,7 @@ Pass2
     866  5+1   A410 ED   C8 12            std   xy_pixel,u                 >>
     867                                                                    >>
     868                                                                    >>
-    869  4     A413 7E   721B             jmp   DisplaySprite
+    869  4     A413 7E   7221             jmp   DisplaySprite
     870                            
     871        A416               SonicHand_DisplaySprite                  >>
     872                                   * Change sprite to overlay
@@ -1280,7 +1284,7 @@ Pass2
     874  2     A418 8A   0C               ora   #render_overlay_mask!render>>
     875  4+1   A41A A7   42               sta   render_flags,u
     876                            
-    877  4     A41C 7E   721B             jmp   DisplaySprite              >>
+    877  4     A41C 7E   7221             jmp   DisplaySprite              >>
     878                                                                    >>
     879                                                                    >>
     880        A41F               SonicHand_Move                           >>
@@ -1317,7 +1321,7 @@ Pass2
     911  4+1   A443 A6   C8 19            lda   routine_secondary,u
     912  2     A446 8B   03               adda  #$03
     913  4+1   A448 A7   C8 19            sta   routine_secondary,u        >>
-    914  3     A44B CC   8563             ldd   #Img_tailsHand
+    914  3     A44B CC   8591             ldd   #Img_tailsHand
     915  5+1   A44E ED   4A               std   image_set,u                >>
     916  2     A450 86   03               lda   #3
     917  4+1   A452 A7   43               sta   priority,u                 >>
@@ -1325,7 +1329,7 @@ Pass2
     919  5+1   A457 ED   C8 12            std   xy_pixel,u                 >>
     920                                                                    >>
     921                                                                    >>
-    922  4     A45A 7E   721B             jmp   DisplaySprite
+    922  4     A45A 7E   7221             jmp   DisplaySprite
     923                            
     924        A45D               TailsHand_DisplaySprite                  >>
     925                                   * Change sprite to overlay
@@ -1333,7 +1337,7 @@ Pass2
     927  2     A45F 8A   0C               ora   #render_overlay_mask!render>>
     928  4+1   A461 A7   42               sta   render_flags,u
     929                            
-    930  4     A463 7E   721B             jmp   DisplaySprite              >>
+    930  4     A463 7E   7221             jmp   DisplaySprite              >>
     931                                                                    >>
     932                                                                    >>
     933        A466               TailsHand_Move                           >>
@@ -1368,18 +1372,18 @@ Pass2
     962  4+1   A485 A6   C8 19            lda   routine_secondary,u
     963  2     A488 8B   03               adda  #$03
     964  4+1   A48A A7   C8 19            sta   routine_secondary,u        >>
-    965  3     A48D CC   8456             ldd   #Img_star_2
+    965  3     A48D CC   8484             ldd   #Img_star_2
     966  5+1   A490 ED   4A               std   image_set,u                >>
     967  2     A492 86   07               lda   #7
     968  4+1   A494 A7   43               sta   priority,u                 >>
     969  3     A496 CC   A80F             ldd   #$A80F
     970  5+1   A499 ED   C8 12            std   xy_pixel,u                 >>
     971                                                                    >>
-    972  3     A49C CC   86A0             ldd   #Ani_smallStar
+    972  3     A49C CC   86CE             ldd   #Ani_smallStar
     973  5+1   A49F ED   44               std   anim,u                     >>
     974  3     A4A1 CC   0071             ldd   #$71
     975  5+1   A4A4 ED   C8 1D            std   w_TitleScr_time_frame_count>>
-    976  4     A4A7 7E   721B             jmp   DisplaySprite              >>
+    976  4     A4A7 7E   7221             jmp   DisplaySprite              >>
     977                                                                    >>
     978                                                                    >>
     979        A4AA               SmallStar_Move                           >>
@@ -1387,13 +1391,13 @@ Pass2
     981  4     A4AD 83   0001             subd  #1                         >>
     982  5+1   A4B0 ED   C8 1D            std   w_TitleScr_time_frame_count>>
     983  3     A4B3 2A   03               bpl   SmallStar_MoveContinue
-    984  4     A4B5 7E   735F             jmp   DeleteObject               >>
+    984  4     A4B5 7E   7365             jmp   DeleteObject               >>
     985        A4B8               SmallStar_MoveContinue
     986  6+1   A4B8 6A   C8 12            dec   x_pixel,u                  >>
     987  6+1   A4BB 6C   C8 13            inc   y_pixel,u                  >>
     988                                   * no more offset table           >>
-    989  8     A4BE BD   7294             jsr   AnimateSprite              >>
-    990  4     A4C1 7E   721B             jmp   DisplaySprite              >>
+    989  8     A4BE BD   729A             jsr   AnimateSprite              >>
+    990  4     A4C1 7E   7221             jmp   DisplaySprite              >>
     991                                                                    >>
     992
     993                           * --------------------------------------->>
@@ -1406,7 +1410,7 @@ Pass2
    1000        A4C5               TitleScreen_SetFinalState                >>
    1001  6+1   A4C5 6D   C8 21            tst   b_TitleScr_final_state,u   >>
    1002  3     A4C8 26   FA               bne  TitleScreen_SetFinalState_rt>>
-   1003  5     A4CA B6   71A9             lda   Fire_Press                 >>
+   1003  5     A4CA B6   71AF             lda   Fire_Press                 >>
    1004                                                                    >>
    1005  2     A4CD 84   C0               anda  #c1_button_A_mask!c2_button>>
    1006                                                                    >>
@@ -1416,12 +1420,12 @@ Pass2
    1010  5+1   A4D4 ED   C8 21            std   b_TitleScr_final_state,u   >>
    1011  2     A4D7 86   18               lda   #24
    1012  4+1   A4D9 A7   C8 19            sta   routine_secondary,u        >>
-   1013  3     A4DC CC   85C2             ldd   #Img_sonic_5
+   1013  3     A4DC CC   85F0             ldd   #Img_sonic_5
    1014  5+1   A4DF ED   4A               std   image_set,u                >>
    1015  3     A4E1 CC   7427             ldd   #$7427
    1016  5+1   A4E4 ED   C8 12            std   xy_pixel,u                 >>
    1017                                                                    >>
-   1018  3     A4E7 8E   6792             ldx   #Obj_SonicHand             >>
+   1018  3     A4E7 8E   6798             ldx   #Obj_SonicHand             >>
    1019                                   * not implemented                >>
    1020  2     A4EA 86   04               lda   #ObjID_TitleScreen         >>
    1021  4+1   A4EC A7   00               sta   id,x
@@ -1429,20 +1433,20 @@ Pass2
    1023  4+1   A4F0 A7   88 18            sta   routine,x                  >>
    1024  2     A4F3 86   02               lda   #2
    1025  4+1   A4F5 A7   03               sta   priority,x                 >>
-   1026  3     A4F7 CC   843F             ldd   #Img_sonicHand
+   1026  3     A4F7 CC   846D             ldd   #Img_sonicHand
    1027  5+1   A4FA ED   0A               std   image_set,x                >>
    1028  2     A4FC 86   06               lda   #6
    1029  4+1   A4FE A7   88 19            sta   routine_secondary,x        >>
    1030  3     A501 CC   9050             ldd   #$9050
    1031  5+1   A504 ED   88 12            std   xy_pixel,x                 >>
    1032                                                                    >>
-   1033  3     A507 8E   6684             ldx   #Obj_Tails                 >>
+   1033  3     A507 8E   668A             ldx   #Obj_Tails                 >>
    1034                                   * not implemented                >>
    1035  2     A50A 86   04               lda   #ObjID_TitleScreen
    1036  4+1   A50C A7   00               sta   id,x                       >>
    1037  2     A50E 86   06               lda   #Sub_Tails
    1038  4+1   A510 A7   88 18            sta   routine,x                  >>
-   1039  3     A513 CC   84FC             ldd   #Img_tails_5
+   1039  3     A513 CC   852A             ldd   #Img_tails_5
    1040  5+1   A516 ED   0A               std   image_set,x                >>
    1041  2     A518 86   09               lda   #9
    1042  4+1   A51A A7   88 19            sta   routine_secondary,x        >>
@@ -1451,7 +1455,7 @@ Pass2
    1045  3     A521 CC   542F             ldd   #$542F
    1046  5+1   A524 ED   88 12            std   xy_pixel,x                 >>
    1047                                                                    >>
-   1048  3     A527 8E   67EC             ldx   #Obj_TailsHand             >>
+   1048  3     A527 8E   67F2             ldx   #Obj_TailsHand             >>
    1049                                   * not implemented                >>
    1050  2     A52A 86   04               lda   #ObjID_TitleScreen
    1051  4+1   A52C A7   00               sta   id,x                       >>
@@ -1459,7 +1463,7 @@ Pass2
    1053  4+1   A531 A7   88 18            sta   routine,x                  >>
    1054  2     A534 C6   02               ldb   #$02
    1055  4+1   A536 E7   03               stb   priority,x                 >>
-   1056  3     A538 CC   8563             ldd   #Img_tailsHand
+   1056  3     A538 CC   8591             ldd   #Img_tailsHand
    1057  5+1   A53B ED   0A               std   image_set,x                >>
    1058  2     A53D 86   06               lda   #6
    1059  4+1   A53F A7   88 19            sta   routine_secondary,x        >>
@@ -1500,8 +1504,8 @@ Pass2
    1094                                                                    >>
    1095  6     A548 0D   22               tst   b_TitleScr_music_is_playing>>
    1096  3     A54A 26   06               bne   TitleScreen_SetFinalState_e>>
-   1097  3     A54C 8E   89D2             ldx   #Psg_TitleScreen *@IgnoreUn>>
-   1098  4     A54F 7E   7DD7             jmp   PSGPlayNoRepeat            >>
+   1097  3     A54C 8E   8A00             ldx   #Psg_TitleScreen *@IgnoreUn>>
+   1098  4     A54F 7E   7E05             jmp   PSGPlayNoRepeat            >>
    1099        A552               TitleScreen_SetFinalState_end            >>
    1100  5     A552 39                    rts                              >>
    1101                                                                    >>
@@ -1586,19 +1590,19 @@ Pass2
 
 000000 Total Errors
 
-000392 Total Symbols
+000394 Total Symbols
      4x          Equ   0004 anim
-     2x          Equ   7294 AnimateSprite
+     2x          Equ   729A AnimateSprite
      1x          Equ   0008 anim_frame
      1x          Equ   0009 anim_frame_duration
-     1x          Equ   86A6 Ani_largeStar
-     0x          Equ   8696 Ani_SegaSonic_1
-     0x          Equ   868C Ani_SegaSonic_2
-     0x          Equ   8682 Ani_SegaSonic_3
-     1x          Equ   86A0 Ani_smallStar
-     1x          Equ   86BE Ani_sonic
-     1x          Equ   86B2 Ani_tails
-     1x          Equ   7D0E Black_palette
+     1x          Equ   86D4 Ani_largeStar
+     0x          Equ   86C4 Ani_SegaSonic_1
+     0x          Equ   86BA Ani_SegaSonic_2
+     0x          Equ   86B0 Ani_SegaSonic_3
+     1x          Equ   86CE Ani_smallStar
+     1x          Equ   86EC Ani_sonic
+     1x          Equ   86E0 Ani_tails
+     1x          Equ   7D34 Black_palette
      0x          Equ   0009 buf_bgdata
      0x          Equ   0007 buf_prev_mapping_frame
      0x          Equ   0011 buf_prev_render_flags
@@ -1626,27 +1630,29 @@ Pass2
      0x          Equ   0040 c2_button_left_mask
      0x          Equ   0080 c2_button_right_mask
      0x          Equ   0010 c2_button_up_mask
-     0x          Equ   7CD1 ClearCartMem
-     0x          Equ   7421 ClearObj
+     0x          Equ   7CD7 ClearCartMem
+     0x          Equ   7427 ClearObj
      0x          Equ   41C7 current_game_mode_data
+     1x          Equ   7D12 Cur_palette
      1x          Label A28C CyclingPal
      0x          Label A28C CyclingPal_Continue
      0x          Label A28C CyclingPal_NotYet
      0x          Label A28F CyclingPal_TitleScreen
      0x          Label A28F CyclingPal_TitleScreen_end
-     2x          Equ   735F DeleteObject
-     0x          Equ   7359 DeleteObject_x
-    16x          Equ   721B DisplaySprite
-     0x          Equ   7215 DisplaySprite_x
+     2x          Equ   7365 DeleteObject
+     0x          Equ   735F DeleteObject_x
+    16x          Equ   7221 DisplaySprite
+     0x          Equ   721B DisplaySprite_x
      0x          Equ   604F dk_destination
      0x          Equ   6049 dk_lecteur
      0x          Equ   604A dk_piste
      0x          Equ   604B dk_pisteL
      0x          Equ   604C dk_secteur
-     0x          Equ   71A6 Dpad_Held
-     0x          Equ   71A8 Dpad_Press
+     0x          Equ   71AC Dpad_Held
+     0x          Equ   71AE Dpad_Press
      0x          Equ   0001 draw_routine
      4x          Label A1EF dyn_01
+     0x          Equ   7D14 Dyn_palette
      1x          Label A33D EmblemBack
      1x          Label A34E EmblemBack_Init
      1x          Label A345 EmblemBack_Routines
@@ -1657,11 +1663,11 @@ Pass2
      0x          Equ   0006 erase_nb_cell
      0x          Equ   0004 erase_routine
      9x          Equ   001B ext_variables
-     0x          Equ   71A7 Fire_Held
-     1x          Equ   71A9 Fire_Press
+     0x          Equ   71AD Fire_Held
+     1x          Equ   71AF Fire_Press
      0x          Equ   414F GameModeLoader
-     0x          Equ   613C Glb_Sprite_Screen_Pos_Part1
-     0x          Equ   613E Glb_Sprite_Screen_Pos_Part2
+     0x          Equ   6142 Glb_Sprite_Screen_Pos_Part1
+     0x          Equ   6144 Glb_Sprite_Screen_Pos_Part2
      0x          Equ   0038 gravity
     26x          Equ   0000 id
      0x          Equ   0006 image_center_offset
@@ -1670,63 +1676,63 @@ Pass2
      0x          Equ   0005 image_subset_y1_offset
      0x          Equ   0004 image_x_size
      0x          Equ   0005 image_y_size
-     1x          Equ   85B2 Img_emblemBack01
-     1x          Equ   85A2 Img_emblemBack02
-     1x          Equ   84CC Img_emblemBack03
-     1x          Equ   84BC Img_emblemBack04
-     1x          Equ   84EC Img_emblemBack05
-     1x          Equ   84DC Img_emblemBack06
-     1x          Equ   849C Img_emblemBack07
-     1x          Equ   848C Img_emblemBack08
-     1x          Equ   84AC Img_emblemBack09
-     1x          Equ   8661 Img_emblemFront01
-     1x          Equ   8671 Img_emblemFront02
-     1x          Equ   8641 Img_emblemFront03
-     1x          Equ   8651 Img_emblemFront04
-     1x          Equ   8621 Img_emblemFront05
-     1x          Equ   8631 Img_emblemFront06
-     1x          Equ   8601 Img_emblemFront07
-     1x          Equ   8611 Img_emblemFront08
-     0x          Equ   8209 Img_SegaLogo_1
-     0x          Equ   81F9 Img_SegaLogo_2
-     0x          Equ   82F8 Img_SegaSonic_11
-     0x          Equ   8232 Img_SegaSonic_12
-     0x          Equ   8274 Img_SegaSonic_13
-     0x          Equ   82B6 Img_SegaSonic_21
-     0x          Equ   833A Img_SegaSonic_22
-     0x          Equ   8253 Img_SegaSonic_23
-     0x          Equ   837C Img_SegaSonic_31
-     0x          Equ   8295 Img_SegaSonic_32
-     0x          Equ   8319 Img_SegaSonic_33
-     0x          Equ   835B Img_SegaSonic_41
-     0x          Equ   839D Img_SegaSonic_42
-     0x          Equ   82D7 Img_SegaSonic_43
-     0x          Equ   8219 Img_SegaTrails_1
-     0x          Equ   83FE Img_SegaTrails_2
-     0x          Equ   83EE Img_SegaTrails_3
-     0x          Equ   83DE Img_SegaTrails_4
-     0x          Equ   83CE Img_SegaTrails_5
-     0x          Equ   83BE Img_SegaTrails_6
-     0x          Equ   81E9 Img_SonicAndTailsIn
-     2x          Equ   843F Img_sonicHand
-     1x          Equ   857A Img_sonic_1
-     0x          Equ   858E Img_sonic_2
-     0x          Equ   85D9 Img_sonic_3
-     0x          Equ   85ED Img_sonic_4
-     2x          Equ   85C2 Img_sonic_5
-     0x          Equ   8471 Img_star_1
-     2x          Equ   8456 Img_star_2
-     0x          Equ   842B Img_star_3
-     0x          Equ   8417 Img_star_4
-     2x          Equ   8563 Img_tailsHand
-     1x          Equ   854F Img_tails_1
-     0x          Equ   853B Img_tails_2
-     0x          Equ   8527 Img_tails_3
-     0x          Equ   8513 Img_tails_4
-     1x          Equ   84FC Img_tails_5
+     1x          Equ   85E0 Img_emblemBack01
+     1x          Equ   85D0 Img_emblemBack02
+     1x          Equ   84FA Img_emblemBack03
+     1x          Equ   84EA Img_emblemBack04
+     1x          Equ   851A Img_emblemBack05
+     1x          Equ   850A Img_emblemBack06
+     1x          Equ   84CA Img_emblemBack07
+     1x          Equ   84BA Img_emblemBack08
+     1x          Equ   84DA Img_emblemBack09
+     1x          Equ   868F Img_emblemFront01
+     1x          Equ   869F Img_emblemFront02
+     1x          Equ   866F Img_emblemFront03
+     1x          Equ   867F Img_emblemFront04
+     1x          Equ   864F Img_emblemFront05
+     1x          Equ   865F Img_emblemFront06
+     1x          Equ   862F Img_emblemFront07
+     1x          Equ   863F Img_emblemFront08
+     0x          Equ   8237 Img_SegaLogo_1
+     0x          Equ   8227 Img_SegaLogo_2
+     0x          Equ   8326 Img_SegaSonic_11
+     0x          Equ   8260 Img_SegaSonic_12
+     0x          Equ   82A2 Img_SegaSonic_13
+     0x          Equ   82E4 Img_SegaSonic_21
+     0x          Equ   8368 Img_SegaSonic_22
+     0x          Equ   8281 Img_SegaSonic_23
+     0x          Equ   83AA Img_SegaSonic_31
+     0x          Equ   82C3 Img_SegaSonic_32
+     0x          Equ   8347 Img_SegaSonic_33
+     0x          Equ   8389 Img_SegaSonic_41
+     0x          Equ   83CB Img_SegaSonic_42
+     0x          Equ   8305 Img_SegaSonic_43
+     0x          Equ   8247 Img_SegaTrails_1
+     0x          Equ   842C Img_SegaTrails_2
+     0x          Equ   841C Img_SegaTrails_3
+     0x          Equ   840C Img_SegaTrails_4
+     0x          Equ   83FC Img_SegaTrails_5
+     0x          Equ   83EC Img_SegaTrails_6
+     0x          Equ   8217 Img_SonicAndTailsIn
+     2x          Equ   846D Img_sonicHand
+     1x          Equ   85A8 Img_sonic_1
+     0x          Equ   85BC Img_sonic_2
+     0x          Equ   8607 Img_sonic_3
+     0x          Equ   861B Img_sonic_4
+     2x          Equ   85F0 Img_sonic_5
+     0x          Equ   849F Img_star_1
+     2x          Equ   8484 Img_star_2
+     0x          Equ   8459 Img_star_3
+     0x          Equ   8445 Img_star_4
+     2x          Equ   8591 Img_tailsHand
+     1x          Equ   857D Img_tails_1
+     0x          Equ   8569 Img_tails_2
+     0x          Equ   8555 Img_tails_3
+     0x          Equ   8541 Img_tails_4
+     1x          Equ   852A Img_tails_5
      1x          Label A023 Init
-     0x          Equ   71A6 Joypads_Held
-     0x          Equ   71A8 Joypads_Press
+     0x          Equ   71AC Joypads_Held
+     0x          Equ   71AE Joypads_Press
      1x          Label A360 LargeStar
      1x          Label A3A3 LargeStar_AfterWait
      1x          Label A374 LargeStar_Init
@@ -1736,7 +1742,7 @@ Pass2
      1x          Label A397 LargeStar_Wait
      2x          Label A3D9 LargeStar_xy_data
      1x          Label A3EB LargeStar_xy_data_end
-     0x          Equ   7213 MarkObjGone
+     0x          Equ   7219 MarkObjGone
      0x          Label A201 MoveObjects_KeepPosition
      0x          Equ   001B nb_dynamic_objects
      0x          Equ   0003 nb_level_objects
@@ -1744,70 +1750,70 @@ Pass2
      0x          Equ   0008 nb_priority_levels
      0x          Equ   0002 nb_reserved_objects
      0x          Equ   005A next_object
-     1x          Equ   662A Object_RAM
+     1x          Equ   6630 Object_RAM
     27x          Equ   005A object_size
      1x          Equ   0003 ObjID_PaletteHandler
      0x          Equ   0002 ObjID_SEGA
      0x          Equ   0001 ObjID_SonicAndTailsIn
      9x          Equ   0004 ObjID_TitleScreen
-     1x          Equ   6B16 Obj_EmblemBack01
-     1x          Equ   6B70 Obj_EmblemBack02
-     1x          Equ   6BCA Obj_EmblemBack03
-     1x          Equ   6C24 Obj_EmblemBack04
-     1x          Equ   6C7E Obj_EmblemBack05
-     1x          Equ   6CD8 Obj_EmblemBack06
-     1x          Equ   6D32 Obj_EmblemBack07
-     1x          Equ   6D8C Obj_EmblemBack08
-     1x          Equ   6DE6 Obj_EmblemBack09
-     1x          Equ   6846 Obj_EmblemFront01
-     1x          Equ   68A0 Obj_EmblemFront02
-     1x          Equ   68FA Obj_EmblemFront03
-     1x          Equ   6954 Obj_EmblemFront04
-     1x          Equ   69AE Obj_EmblemFront05
-     1x          Equ   6A08 Obj_EmblemFront06
-     1x          Equ   6A62 Obj_EmblemFront07
-     1x          Equ   6ABC Obj_EmblemFront08
-     1x          Equ   66DE Obj_LargeStar
-     0x          Equ   6E40 Obj_PaletteHandler
-     0x          Equ   6E9A Obj_PaletteHandler2
-     1x          Equ   6EF4 Obj_PaletteHandler3
-     1x          Equ   6738 Obj_SmallStar
-     0x          Equ   662A Obj_Sonic
-     2x          Equ   6792 Obj_SonicHand
-     2x          Equ   6684 Obj_Tails
-     2x          Equ   67EC Obj_TailsHand
+     1x          Equ   6B1C Obj_EmblemBack01
+     1x          Equ   6B76 Obj_EmblemBack02
+     1x          Equ   6BD0 Obj_EmblemBack03
+     1x          Equ   6C2A Obj_EmblemBack04
+     1x          Equ   6C84 Obj_EmblemBack05
+     1x          Equ   6CDE Obj_EmblemBack06
+     1x          Equ   6D38 Obj_EmblemBack07
+     1x          Equ   6D92 Obj_EmblemBack08
+     1x          Equ   6DEC Obj_EmblemBack09
+     1x          Equ   684C Obj_EmblemFront01
+     1x          Equ   68A6 Obj_EmblemFront02
+     1x          Equ   6900 Obj_EmblemFront03
+     1x          Equ   695A Obj_EmblemFront04
+     1x          Equ   69B4 Obj_EmblemFront05
+     1x          Equ   6A0E Obj_EmblemFront06
+     1x          Equ   6A68 Obj_EmblemFront07
+     1x          Equ   6AC2 Obj_EmblemFront08
+     1x          Equ   66E4 Obj_LargeStar
+     0x          Equ   6E46 Obj_PaletteHandler
+     0x          Equ   6EA0 Obj_PaletteHandler2
+     1x          Equ   6EFA Obj_PaletteHandler3
+     1x          Equ   673E Obj_SmallStar
+     0x          Equ   6630 Obj_Sonic
+     2x          Equ   6798 Obj_SonicHand
+     2x          Equ   668A Obj_Tails
+     2x          Equ   67F2 Obj_TailsHand
      0x          Equ   0000 page_draw_routine
      0x          Equ   0003 page_erase_routine
-     0x          Equ   8A0C Pal_SEGA
-     0x          Equ   8A8C Pal_SEGAEnd
-     0x          Equ   8A4C Pal_SEGAMid
-     0x          Equ   8A6C Pal_SonicAndTailsIn
-     2x          Equ   8A2C Pal_TitleScreen
+     0x          Equ   8A3A Pal_SEGA
+     0x          Equ   8ABA Pal_SEGAEnd
+     0x          Equ   8A7A Pal_SEGAMid
+     0x          Equ   8A9A Pal_SonicAndTailsIn
+     2x          Equ   8A5A Pal_TitleScreen
      0x          Equ   0003 pcm_end_addr
      0x          Equ   0005 pcm_meta_size
      0x          Equ   0000 pcm_page
-     0x          Equ   89C7 Pcm_SEGA
+     0x          Equ   89F5 Pcm_SEGA
      0x          Equ   0001 pcm_start_addr
-     0x          Equ   7D6E PlayPCM
+     0x          Equ   7D9C PlayPCM
      0x          Equ   0006 prev_anim
     11x          Equ   0003 priority
-     0x          Equ   7E79 PSGCancelLoop
-     0x          Equ   8033 PSGFrame
-     0x          Equ   7E7D PSGGetStatus
-     0x          Equ   7DC5 PSGInit
-     2x          Equ   7DD7 PSGPlayNoRepeat
-     0x          Equ   7EF5 PSGRestoreVolumes
-     0x          Equ   7E2E PSGResume
-     0x          Equ   7E81 PSGSetMusicVolumeAttenuation
-     0x          Equ   802B PSGSFXCancelLoop
-     0x          Equ   8140 PSGSFXFrame
-     0x          Equ   802F PSGSFXGetStatus
-     0x          Equ   7F69 PSGSFXPlayLoop
-     0x          Equ   7FB5 PSGSFXStop
-     0x          Equ   7EE0 PSGSilenceChannels
-     0x          Equ   7E05 PSGStop
-     2x          Equ   89D2 Psg_TitleScreen
-     1x          Equ   7D0C Ptr_palette
+     0x          Equ   7EA7 PSGCancelLoop
+     0x          Equ   8061 PSGFrame
+     0x          Equ   7EAB PSGGetStatus
+     0x          Equ   7DF3 PSGInit
+     2x          Equ   7E05 PSGPlayNoRepeat
+     0x          Equ   7F23 PSGRestoreVolumes
+     0x          Equ   7E5C PSGResume
+     0x          Equ   7EAF PSGSetMusicVolumeAttenuation
+     0x          Equ   8059 PSGSFXCancelLoop
+     0x          Equ   816E PSGSFXFrame
+     0x          Equ   805D PSGSFXGetStatus
+     0x          Equ   7F97 PSGSFXPlayLoop
+     0x          Equ   7FE3 PSGSFXStop
+     0x          Equ   7F0E PSGSilenceChannels
+     0x          Equ   7E33 PSGStop
+     2x          Equ   8A00 Psg_TitleScreen
+     1x          Equ   7D11 Refresh_palette
     14x          Equ   0002 render_flags
      1x          Equ   0020 render_hide_mask
      6x          Equ   0008 render_motionless_mask
@@ -1868,7 +1874,7 @@ Pass2
      0x          Equ   0034 rsv_xy2_pixel
      0x          Equ   0033 rsv_y1_pixel
      0x          Equ   0035 rsv_y2_pixel
-     0x          Equ   7185 screen_border_color
+     0x          Equ   7182 screen_border_color
      0x          Equ   00E3 screen_bottom
      0x          Equ   0030 screen_left
      0x          Equ   00CF screen_right
@@ -1952,11 +1958,11 @@ Pass2
      1x          Label A4C5 TitleScreen_SetFinalState
      1x          Label A552 TitleScreen_SetFinalState_end
      2x          Label A4C4 TitleScreen_SetFinalState_rts
-     0x          Equ   6F4E TitleScr_Object_RAM_End
-    27x          Equ   662A TitleScr_This
-     1x          Equ   7D4E UpdatePalette
-     0x          Equ   71A2 Vint_runcount
-     0x          Equ   7D2E White_palette
+     0x          Equ   6F54 TitleScr_Object_RAM_End
+    27x          Equ   6630 TitleScr_This
+     0x          Equ   7D74 UpdatePalette
+     0x          Equ   71A8 Vint_runcount
+     0x          Equ   7D54 White_palette
      0x          Equ   001F w_TitleScr_color_data_index
      6x          Equ   001D w_TitleScr_move_frame_count
      7x          Equ   001B w_TitleScr_time_frame_count
@@ -1977,6 +1983,6 @@ Pass2
      0x          Equ   00FA _nextSubRoutine
      0x          Equ   00FF _resetAnim
      0x          Equ   00FB _resetAnimAndSubRoutine
-     0x          Equ   80ED _sendVolume2PSG
-     0x          Equ   819D _SFXsetLoopPoint
+     0x          Equ   811B _sendVolume2PSG
+     0x          Equ   81CB _SFXsetLoopPoint
 

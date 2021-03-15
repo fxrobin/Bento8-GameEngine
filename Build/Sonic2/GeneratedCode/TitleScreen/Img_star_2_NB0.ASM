@@ -11,12 +11,12 @@ BCKDRAW_Img_star_2
 	LDB -120,U
 	PSHS B,A
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STB -120,U
 	LDA -80,U
 	PSHS A
 	ANDA #$0F
-	ORA #$c0
+	ORA #$b0
 	STA -80,U
 	LDA -40,U
 	PSHS A
@@ -31,14 +31,14 @@ BCKDRAW_Img_star_2
 	LDA 80,U
 	PSHS A
 	ANDA #$0F
-	ORA #$c0
+	ORA #$b0
 	STA 80,U
 	LDA 120,U
 	PSHS U,A
 	ANDA #$0F
-	ORA #$d0
+	ORA #$c0
 	STA 120,U
-	LDA #$0c
+	LDA #$0b
 	STA ,U
 DYN_POS
 
@@ -48,7 +48,7 @@ DYN_POS
 	LDA ,U
 	PSHS U,A
 	ANDA #$F0
-	ORA #$0c
+	ORA #$0b
 	STA ,U
 	LEAU ,S
 SSAV_Img_star_2

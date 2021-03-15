@@ -259,9 +259,9 @@ Obj_Index_Page
         fcb   $00
 Obj_Index_Address
         fcb   $00,$00
-        fcb   $DF,$32
-        fcb   $BC,$F8
-        fcb   $AD,$4A
+        fcb   $DF,$30
+        fcb   $BC,$F6
+        fcb   $AD,$4B
         fcb   $A0,$00
         fcb   $00,$00
         fcb   $00,$00

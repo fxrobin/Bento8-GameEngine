@@ -103,12 +103,12 @@ SATI_Wait
         rts
         
 SATI_clearScreen_end
-        ldx   #$1111
+        ldx   #$FFFF
         jsr   ClearCartMem
         
         lda   $E7DD                    * set border color
         anda  #$F0
-        adda  #1
+        adda  #$0F
         sta   $E7DD
         anda  #$0F
         adda  #$80
@@ -120,7 +120,7 @@ SATI_clearScreen_end
         rts            
                 
 SATI_End
-        ldx   #$1111
+        ldx   #$FFFF
         jsr   ClearCartMem  
         jsr   DeleteObject                    
         ldd   #(ObjID_TitleScreen<+8)+$03             ; Replace this object with Title Screen Object subtype 3

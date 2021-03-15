@@ -2,13 +2,12 @@
 * UpdatePalette
 * -------------
 * Subroutine to update palette
-* should be called quickly after WaitVBL
+* should be called just after WaitVBL
 *
 * input REG : none
-* reset REG : [d] [x]
+* reset REG : [d] [x] [y]
 * ---------------------------------------------------------------------------
 
-cpt             fcb   $00
 Refresh_palette fcb   $FF            *@globals
 Cur_palette     fdb   Dyn_palette    *@globals
 Dyn_palette     rmb   $20,0          *@globals
@@ -33,19 +32,25 @@ White_palette   fdb   $ff0f          *@globals
 UpdatePalette *@globals
         tst   Refresh_palette
         bne   UPP_return
+        
+        ldy   #0405                    * 3328 (52 lignes) - 88 (cycles apres VBL)
+UPP_Tempo        
+        leay  -1,y
+        bne   UPP_Tempo                * tempo pour etre dans la bordure invisible        
+        ldb   #$E7
+        tfr   B,DP        
     	ldx   Cur_palette
-    	clr   cpt                      * compteur couleur a 0
-        lda   cpt			           *
+    	clr   <$DB                     * indice couleur a 0
+        LDY   #$0010			       * init cpt
 UPP_SetColor
-    	asla				           * multiplication par deux de A 
-    	sta   $E7DB			           * determine l'indice de couleur (x2): 0=0, 1=2, 2=4, .. 15=30
-    	ldd   ,x++			           * chargement de la couleur et increment du poiteur Y
-    	sta   $E7DA			           * set de la couleur Vert et Rouge
-    	stb   $E7DA                    * set de la couleur Bleu
-    	inc   cpt			           * et increment de A
-    	lda   cpt
-    	cmpa  #$10                     * test fin de liste
+    	ldd   ,x++			           * chargement de la couleur et increment du poiteur x
+    	sta   <$DA			           * set de la couleur Vert et Rouge
+    	stb   <$DA                     * set de la couleur Bleu
+    	leay  -1,y
     	bne   UPP_SetColor             * on reboucle si fin de liste pas atteinte
     	com   Refresh_palette          * update flag, next run this routine will be ignored if no pal update is requested
 UPP_return
         rts
+
+        
+        

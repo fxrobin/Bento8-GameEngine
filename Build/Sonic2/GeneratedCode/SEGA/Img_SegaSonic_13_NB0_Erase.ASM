@@ -35,17 +35,17 @@ ERASE_CODE_Img_SegaSonic_13_1
 	STY -120,U
 
 	PULS D,X,U
-	STD -40,U
-	STX 120,U
+	STD 40,U
+	STX -80,U
 
 	PULS D,X,Y
-	STD -80,U
-	STX 80,U
-	STY 40,U
+	STD ,U
+	STX 120,U
+	STY 80,U
 
 	PULS D,X
 	STD -120,U
-	STX ,U
+	STX -40,U
 
 	PULS D,X,Y,U
 	STD 40,U
@@ -76,20 +76,20 @@ ERASE_CODE_Img_SegaSonic_13_1
 	PULS A
 	STA -20,U
 
-	PULS A,B,U
+	PULS A,U
+	STA -120,U
+
+	PULS A,B
+	STA 40,U
+	STB -40,U
+
+	PULS A,B
 	STA 120,U
 	STB 80,U
 
 	PULS A,B
-	STA 40,U
-	STB ,U
-
-	PULS A,B
-	STA -40,U
-	STB -120,U
-
-	PULS A
-	STA -80,U
+	STA ,U
+	STB -80,U
 
 	PULS D,U
 	STD 79,U
@@ -122,19 +122,19 @@ ERASE_CODE_Img_SegaSonic_13_1
 	STA -120,U
 
 	PULS A,U
+	STA -120,U
+
+	PULS A,B
+	STA 40,U
+	STB -40,U
+
+	PULS A,B
 	STA -80,U
-
-	PULS A,B
-	STA -40,U
-	STB ,U
-
-	PULS A,B
-	STA 120,U
-	STB -120,U
+	STB 120,U
 
 	PULS A,B
 	STA 80,U
-	STB 40,U
+	STB ,U
 
 	LEAU ,S
 ERASE_SSAV_Img_SegaSonic_13

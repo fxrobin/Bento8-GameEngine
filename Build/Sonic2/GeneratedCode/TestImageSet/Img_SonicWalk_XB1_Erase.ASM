@@ -1,0 +1,266 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_SonicWalk
+	STS ERASE_SSAV_Img_SonicWalk+1,PCR
+
+	LEAS ,U
+ERASE_CODE_Img_SonicWalk_1
+	PULS A,B,U
+	STA ,U
+	STB 40,U
+
+	PULS A
+	STA -40,U
+
+	PULS A,B,U
+	STA -1,U
+	STB 2,U
+
+	PULS A,B
+	STA 79,U
+	STB -38,U
+
+	PULS A,B
+	STA -119,U
+	STB 82,U
+
+	PULS A,B
+	STA 122,U
+	STB 42,U
+
+	PULS A,X
+	STA -81,U
+	STX -122,U
+
+	PULS A,B,X
+	STA 39,U
+	STB -41,U
+	STX -79,U
+
+	PULS A,U
+	STA 81,U
+
+	PULS A,B
+	STA -42,U
+	STB 40,U
+
+	PULS A,X,Y
+	STA -118,U
+	STX 118,U
+	STY 38,U
+
+	PULS D,X,Y
+	STD -2,U
+	STX -80,U
+	STY -120,U
+
+	PULS A,X
+	STA -40,U
+	STX 78,U
+
+	PULS A,B,X
+	STA 121,U
+	STB ,U
+	STX -122,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,B,X
+	STA 82,U
+	STB 38,U
+	STX 120,U
+
+	PULS A,B,X
+	STA 40,U
+	STB 122,U
+	STX 118,U
+
+	PULS A,B,X
+	STA 80,U
+	STB 42,U
+	STX 78,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D
+	STD 38,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X
+	STA 3,U
+	STX 39,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D
+	STD 120,U
+
+	PULS A,B,X,Y
+	STA 122,U
+	STB 42,U
+	STX 40,U
+	STY 80,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D
+	STD -120,U
+
+	PULS A,X,Y
+	STA -38,U
+	STX -80,U
+	STY -40,U
+
+	PULS A,U
+	STA -80,U
+
+	PULS D,X
+	STD 39,U
+	STX -1,U
+
+	PULS A,B,X,Y
+	STA 1,U
+	STB 41,U
+	STX -40,U
+	STY 79,U
+
+	PULS A,U
+	STA ,U
+
+	PULS A,B,U
+	STA -79,U
+	STB -39,U
+
+	PULS D
+	STD 41,U
+
+	PULS A,B
+	STA 122,U
+	STB 82,U
+
+	PULS A,B
+	STA 1,U
+	STB -82,U
+
+	PULS A,B
+	STA -119,U
+	STB -122,U
+
+	PULS A,B,X,U
+	STA -41,U
+	STB 122,U
+	STX -120,U
+
+	PULS A,B
+	STA -1,U
+	STB -79,U
+
+	PULS A,B
+	STA 119,U
+	STB 39,U
+
+	PULS A,B
+	STA 2,U
+	STB -39,U
+
+	PULS A,B
+	STA -81,U
+	STB 82,U
+
+	PULS A,B
+	STA -122,U
+	STB 79,U
+
+	PULS A
+	STA 42,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,B,X,Y
+	STA 119,U
+	STB 3,U
+	STX 121,U
+	STY 42,U
+
+	PULS D,X
+	STD 81,U
+	STX 40,U
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS D,X,Y
+	STD 42,U
+	STX 82,U
+	STY 80,U
+
+	PULS D
+	STD 40,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D,X,Y
+	STD 39,U
+	STX -40,U
+	STY 41,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D
+	STD -80,U
+
+	PULS A,B,X,Y
+	STA -38,U
+	STB -78,U
+	STX 80,U
+	STY -120,U
+
+	PULS D,X,Y
+	STD 40,U
+	STX -40,U
+	STY 120,U
+
+	PULS D,U
+	STD ,U
+
+	PULS A,U
+	STA -39,U
+
+	PULS D,X,Y
+	STD -41,U
+	STX -1,U
+	STY 39,U
+
+	PULS A,B,X,Y
+	STA -80,U
+	STB -120,U
+	STX 79,U
+	STY 119,U
+
+	LEAU ,S
+ERASE_SSAV_Img_SonicWalk
+	LDS #$0000
+	RTS
+
+(info)
+
+DataSize equ $00F0

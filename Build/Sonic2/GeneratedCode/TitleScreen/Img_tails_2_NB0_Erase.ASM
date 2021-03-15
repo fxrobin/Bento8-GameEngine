@@ -288,21 +288,21 @@ ERASE_CODE_Img_tails_2_1
 	PULS D,X,Y
 	STD 39,U
 	STX -79,U
-	STY -118,U
+	STY -39,U
+
+	PULS D,X,Y
+	STD -43,U
+	STX 37,U
+	STY -83,U
 
 	PULS D
-	STD -123,U
+	STD -3,U
 
 	PULS A,B,X,Y
 	STA -37,U
 	STB -77,U
-	STX -39,U
-	STY -43,U
-
-	PULS D,X,Y
-	STD -3,U
-	STX 37,U
-	STY -83,U
+	STX -118,U
+	STY -123,U
 
 	PULS D,U
 	STD 59,U
@@ -605,15 +605,15 @@ ERASE_CODE_Img_tails_2_1
 	STD -43,U
 
 	PULS A,B,X,Y
-	STA -83,U
-	STB -123,U
+	STA -123,U
+	STB 3,U
 	STX -39,U
-	STY -3,U
+	STY -119,U
 
 	PULS A,X,Y
-	STA 3,U
-	STX -119,U
-	STY -79,U
+	STA -83,U
+	STX -79,U
+	STY -3,U
 
 	PULS A,B,U
 	STA -20,U

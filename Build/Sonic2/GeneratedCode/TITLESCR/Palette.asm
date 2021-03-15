@@ -30,11 +30,11 @@ Pal_TitleScreen * @globals
         fdb   $ff00
         fdb   $f300
         fdb   $f80f
-        fdb   $750c
-        fdb   $530e
+        fdb   $640e
         fdb   $2205
         fdb   $000e
         fdb   $0100
+        fdb   $0000
 
 Pal_SEGAMid * @globals
         fdb   $ff0f

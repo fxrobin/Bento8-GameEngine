@@ -10,7 +10,7 @@
         org   $6100
 
         jsr   LoadAct
-        * jsr   PSGInit
+        jsr   PSGInit
 
 InitIRQ        
         ldd   #_IRQ                                   ; map IRQ routine                
@@ -22,9 +22,9 @@ InitIRQ
 * Main Loop
 * ==============================================================================
 LevelMainLoop
-        jsr   WaitVBL      
-        jsr   ReadJoypads
-        jsr   UpdatePalette        
+        jsr   WaitVBL    
+        jsr   UpdatePalette
+        jsr   ReadJoypads        
         jsr   RunObjects
         jsr   CheckSpritesRefresh
         jsr   EraseSprites
@@ -162,6 +162,7 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
         * a rendre dynamique a partir du properties game mode
         INCLUD WAITVBL
+        * INCLUD WAITVBLR
         INCLUD READJPDS
         INCLUD RUNOBJTS
         INCLUD MRKOBJGN        
@@ -466,10 +467,6 @@ WaitVBL
 WaitVBL_01
         tst   $E7E7              * le faisceau est dans l'ecran
         bmi   WaitVBL_01         * tant que le bit est a 1 on boucle
-        
-        ldd   Vint_runcount
-        addd  #1
-        std   Vint_runcount
                         
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage
@@ -487,6 +484,10 @@ am_SwapVideoPage
         ldb   $E7C3              * charge l'identifiant de la demi-page 0 configuree en espace ecran
         eorb  #$01               * alterne bit0 = 0 ou 1 changement demi-page de la page 0 visible dans l'espace ecran
         stb   $E7C3
+        
+        ldd   Vint_runcount
+        addd  #1
+        std   Vint_runcount        
         rts
         
 Vint_runcount rmb   $2,0 *@globals
@@ -2700,10 +2701,9 @@ ClearCartMem_3
 * should be called quickly after WaitVBL
 *
 * input REG : none
-* reset REG : [d] [x]
+* reset REG : [d] [x] [y]
 * ---------------------------------------------------------------------------
 
-cpt             fcb   $00
 Refresh_palette fcb   $FF            *@globals
 Cur_palette     fdb   Dyn_palette    *@globals
 Dyn_palette     rmb   $20,0          *@globals
@@ -2728,22 +2728,28 @@ White_palette   fdb   $ff0f          *@globals
 UpdatePalette *@globals
         tst   Refresh_palette
         bne   UPP_return
+        
+        ldy   #0405                    * 3328 (52 lignes) - 88 (cycles apres VBL)
+UPP_Tempo        
+        leay  -1,y
+        bne   UPP_Tempo                * tempo pour etre dans la bordure invisible        
+        ldb   #$E7
+        tfr   B,DP        
     	ldx   Cur_palette
-    	clr   cpt                      * compteur couleur a 0
-        lda   cpt			           *
+    	clr   <$DB                     * indice couleur a 0
+        LDY   #$0010			       * init cpt
 UPP_SetColor
-    	asla				           * multiplication par deux de A 
-    	sta   $E7DB			           * determine l'indice de couleur (x2): 0=0, 1=2, 2=4, .. 15=30
-    	ldd   ,x++			           * chargement de la couleur et increment du poiteur Y
-    	sta   $E7DA			           * set de la couleur Vert et Rouge
-    	stb   $E7DA                    * set de la couleur Bleu
-    	inc   cpt			           * et increment de A
-    	lda   cpt
-    	cmpa  #$10                     * test fin de liste
+    	ldd   ,x++			           * chargement de la couleur et increment du poiteur x
+    	sta   <$DA			           * set de la couleur Vert et Rouge
+    	stb   <$DA                     * set de la couleur Bleu
+    	leay  -1,y
     	bne   UPP_SetColor             * on reboucle si fin de liste pas atteinte
     	com   Refresh_palette          * update flag, next run this routine will be ignored if no pal update is requested
 UPP_return
         rts
+
+        
+        
 
 
 (include)PLAYPCM
@@ -3671,88 +3677,88 @@ PSGSFXSubstringRetAddr     rmb 2,0 ; return to this address when substring is ov
 
 Img_SonicAndTailsIn *@globals
         fcb   $07,$00,$00,$00,$88,$4F,$00,$00,$06,$00,$00,$BB,$D9,$0A
-        fcb   $D0,$04
+        fcb   $CF,$E3
 Img_SegaLogo_2 *@globals
         fcb   $07,$00,$00,$00,$5C,$39,$03,$00,$06,$00,$00,$D2,$E4,$0D
         fcb   $C1,$7E
 Img_SegaLogo_1 *@globals
         fcb   $07,$00,$00,$00,$5C,$38,$03,$00,$06,$00,$00,$D2,$E5,$09
-        fcb   $D1,$3B
+        fcb   $D1,$3D
 Img_SegaTrails_1 *@globals
         fcb   $07,$10,$00,$00,$07,$3E,$00,$00,$06,$00,$00,$10,$E0,$05
-        fcb   $DD,$BB,$00,$06,$00,$00,$E8,$E0,$05,$DC,$44
+        fcb   $DD,$B9,$00,$06,$00,$00,$E8,$E0,$05,$DC,$42
 Img_SegaSonic_12 *@globals
         fcb   $07,$14,$00,$00,$0F,$45,$00,$06,$00,$00,$00,$F8,$E3,$08
         fcb   $D7,$DD,$05,$D9,$94,$0A,$06,$00,$00,$00,$F8,$E3,$09,$C9
-        fcb   $76,$06,$DD,$53,$0A
+        fcb   $78,$06,$DD,$51,$0A
 Img_SegaSonic_23 *@globals
         fcb   $07,$14,$00,$00,$06,$1F,$00,$06,$00,$00,$00,$F1,$01,$05
         fcb   $D7,$47,$05,$D6,$61,$02,$06,$00,$00,$00,$08,$01,$05,$D4
         fcb   $12,$05,$D3,$2C,$02
 Img_SegaSonic_13 *@globals
         fcb   $07,$14,$00,$00,$06,$25,$00,$06,$00,$00,$00,$F1,$01,$06
-        fcb   $DA,$89,$05,$D2,$1C,$03,$06,$00,$00,$00,$08,$01,$06,$D7
-        fcb   $BD,$05,$D1,$0D,$03
+        fcb   $DA,$87,$05,$D2,$1C,$03,$06,$00,$00,$00,$08,$01,$06,$D7
+        fcb   $BB,$05,$D1,$0D,$03
 Img_SegaSonic_32 *@globals
         fcb   $07,$14,$00,$00,$0F,$45,$00,$06,$00,$00,$00,$F8,$E3,$09
         fcb   $C1,$1C,$06,$D4,$CF,$0A,$06,$00,$00,$00,$F8,$E3,$09,$B8
-        fcb   $BC,$06,$D1,$DE,$0A
+        fcb   $BC,$06,$D1,$DD,$0A
 Img_SegaSonic_21 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$06
-        fcb   $CD,$3B,$05,$CF,$3F,$04,$06,$00,$00,$00,$F0,$E5,$07,$DB
+        fcb   $CD,$3A,$05,$CF,$3F,$04,$06,$00,$00,$00,$F0,$E5,$07,$DB
         fcb   $3E,$05,$CD,$70,$04
 Img_SegaSonic_43 *@globals
         fcb   $07,$14,$00,$00,$06,$1F,$00,$06,$00,$00,$00,$F1,$01,$05
         fcb   $CB,$23,$05,$CA,$3B,$02,$06,$00,$00,$00,$08,$01,$06,$CA
-        fcb   $EE,$05,$C9,$53,$02
+        fcb   $ED,$05,$C9,$53,$02
 Img_SegaSonic_11 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$08
         fcb   $D3,$09,$05,$C7,$59,$04,$06,$00,$00,$00,$F0,$E5,$08,$CE
-        fcb   $35,$05,$C5,$5E,$04
+        fcb   $35,$05,$C5,$5F,$04
 Img_SegaSonic_33 *@globals
         fcb   $07,$14,$00,$00,$05,$25,$00,$06,$00,$00,$00,$F2,$01,$05
-        fcb   $C3,$28,$05,$C2,$39,$02,$06,$00,$00,$00,$08,$01,$05,$C0
-        fcb   $03,$05,$BF,$14,$02
+        fcb   $C3,$29,$05,$C2,$3A,$02,$06,$00,$00,$00,$08,$01,$05,$C0
+        fcb   $04,$05,$BF,$15,$02
 Img_SegaSonic_22 *@globals
         fcb   $07,$14,$00,$00,$0F,$47,$00,$06,$00,$00,$00,$F8,$E1,$09
-        fcb   $B0,$95,$06,$C8,$30,$0A,$06,$00,$00,$00,$F8,$E1,$09,$A8
-        fcb   $56,$06,$C5,$74,$0A
+        fcb   $B0,$95,$06,$C8,$2E,$0A,$06,$00,$00,$00,$F8,$E1,$09,$A8
+        fcb   $56,$06,$C5,$72,$0A
 Img_SegaSonic_41 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$07
-        fcb   $D6,$C3,$05,$BD,$55,$04,$06,$00,$00,$00,$F0,$E5,$07,$D2
-        fcb   $46,$05,$BB,$96,$04
+        fcb   $D6,$C3,$05,$BD,$56,$04,$06,$00,$00,$00,$F0,$E5,$07,$D2
+        fcb   $46,$05,$BB,$97,$04
 Img_SegaSonic_31 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$08
-        fcb   $C9,$60,$05,$B9,$A9,$04,$06,$00,$00,$00,$F0,$E5,$08,$C4
-        fcb   $8D,$05,$B7,$BC,$04
+        fcb   $C9,$60,$05,$B9,$AA,$04,$06,$00,$00,$00,$F0,$E5,$08,$C4
+        fcb   $8D,$05,$B7,$BD,$04
 Img_SegaSonic_42 *@globals
         fcb   $07,$14,$00,$00,$0F,$47,$00,$06,$00,$00,$00,$F8,$E1,$09
-        fcb   $A0,$00,$06,$C2,$A7,$0A,$06,$00,$00,$00,$F8,$E1,$0A,$C7
-        fcb   $A0,$06,$BF,$DC,$0A
+        fcb   $A0,$00,$06,$C2,$A5,$0A,$06,$00,$00,$00,$F8,$E1,$0A,$C7
+        fcb   $7F,$06,$BF,$DA,$0A
 Img_SegaTrails_6 *@globals
         fcb   $00,$07,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$10,$DE,$05
-        fcb   $B6,$46
+        fcb   $B6,$47
 Img_SegaTrails_5 *@globals
         fcb   $00,$07,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$00,$DE,$05
-        fcb   $B4,$D0
+        fcb   $B4,$D1
 Img_SegaTrails_4 *@globals
         fcb   $07,$00,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$E0,$DE,$05
-        fcb   $B3,$5A
+        fcb   $B3,$5B
 Img_SegaTrails_3 *@globals
         fcb   $07,$00,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$F0,$DE,$05
-        fcb   $B1,$E4
+        fcb   $B1,$E5
 Img_SegaTrails_2 *@globals
         fcb   $07,$10,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$00,$DE,$05
-        fcb   $B0,$12,$00,$06,$00,$00,$F0,$DE,$05,$AE,$38
+        fcb   $B0,$13,$00,$06,$00,$00,$F0,$DE,$05,$AE,$39
 Img_star_4 *@globals
         fcb   $07,$00,$00,$00,$0A,$16,$00,$06,$00,$00,$00,$FB,$F5,$05
-        fcb   $AB,$97,$05,$AB,$02,$02
+        fcb   $AB,$98,$05,$AB,$03,$02
 Img_star_3 *@globals
         fcb   $07,$00,$00,$00,$06,$0E,$00,$06,$00,$00,$00,$FD,$F9,$05
-        fcb   $AA,$00,$05,$A9,$A2,$01
+        fcb   $AA,$01,$05,$A9,$A3,$01
 Img_sonicHand *@globals
         fcb   $07,$00,$00,$00,$0E,$2A,$00,$06,$0D,$00,$00,$04,$01,$08
-        fcb   $BF,$38,$05,$A7,$D1,$05,$06,$B9,$51
+        fcb   $BF,$38,$05,$A7,$D1,$05,$06,$B9,$4F
 Img_star_2 *@globals
         fcb   $07,$00,$00,$00,$02,$06,$00,$06,$00,$0D,$00,$FF,$FD,$05
         fcb   $A7,$60,$05,$A7,$32,$01,$05,$A6,$C3,$05,$A6,$95,$01
@@ -3764,34 +3770,34 @@ Img_emblemBack08 *@globals
         fcb   $CD,$BA
 Img_emblemBack07 *@globals
         fcb   $07,$00,$00,$00,$1F,$1F,$00,$00,$06,$00,$00,$10,$BD,$06
-        fcb   $B5,$B9
+        fcb   $B5,$B7
 Img_emblemBack09 *@globals
         fcb   $07,$00,$00,$00,$0F,$38,$00,$00,$06,$00,$00,$30,$B3,$06
-        fcb   $B2,$4C
+        fcb   $B2,$4A
 Img_emblemBack04 *@globals
         fcb   $07,$00,$00,$00,$24,$09,$00,$00,$06,$00,$00,$EE,$B3,$05
         fcb   $A4,$0E
 Img_emblemBack03 *@globals
         fcb   $07,$00,$00,$00,$1F,$26,$00,$00,$06,$00,$00,$D0,$DD,$06
-        fcb   $AE,$6E
+        fcb   $AE,$6C
 Img_emblemBack06 *@globals
         fcb   $07,$00,$00,$00,$1F,$1C,$00,$00,$06,$00,$00,$F0,$DD,$05
         fcb   $A2,$53
 Img_emblemBack05 *@globals
         fcb   $07,$00,$00,$00,$1F,$1F,$00,$00,$06,$00,$00,$F0,$BD,$06
-        fcb   $AA,$B8
+        fcb   $AA,$B6
 Img_tails_5 *@globals
         fcb   $07,$00,$00,$00,$2B,$3F,$00,$06,$0D,$00,$00,$03,$0D,$0A
-        fcb   $B8,$B4,$07,$C9,$42,$11,$0A,$AE,$41
+        fcb   $B8,$99,$07,$C9,$43,$11,$0A,$AE,$3E
 Img_tails_4 *@globals
         fcb   $07,$00,$00,$00,$2C,$3A,$00,$06,$00,$00,$00,$03,$12,$0A
-        fcb   $A0,$00,$07,$C5,$03,$10
+        fcb   $A0,$00,$07,$C5,$02,$10
 Img_tails_3 *@globals
         fcb   $07,$00,$00,$00,$2B,$3C,$00,$06,$00,$00,$00,$04,$11,$0B
-        fcb   $CF,$C7,$07,$C0,$97,$0F
+        fcb   $CF,$BB,$07,$C0,$97,$0F
 Img_tails_2 *@globals
         fcb   $07,$00,$00,$00,$2B,$37,$00,$06,$00,$00,$00,$02,$16,$0B
-        fcb   $C3,$61,$06,$A7,$07,$0F
+        fcb   $C3,$57,$06,$A7,$05,$0F
 Img_tails_1 *@globals
         fcb   $07,$00,$00,$00,$1B,$3F,$00,$06,$00,$00,$00,$0C,$11,$0B
         fcb   $B7,$ED,$06,$A3,$99,$0E
@@ -4159,9 +4165,9 @@ Obj_Index_Page
         fcb   $00
 Obj_Index_Address
         fcb   $00,$00
-        fcb   $DF,$32
-        fcb   $BC,$F8
-        fcb   $AD,$4A
+        fcb   $DF,$30
+        fcb   $BC,$F6
+        fcb   $AD,$4B
         fcb   $A0,$00
         fcb   $00,$00
         fcb   $00,$00
@@ -4484,11 +4490,11 @@ Pal_TitleScreen * @globals
         fdb   $ff00
         fdb   $f300
         fdb   $f80f
-        fdb   $750c
-        fdb   $530e
+        fdb   $640e
         fdb   $2205
         fdb   $000e
         fdb   $0100
+        fdb   $0000
 
 Pal_SEGAMid * @globals
         fdb   $ff0f

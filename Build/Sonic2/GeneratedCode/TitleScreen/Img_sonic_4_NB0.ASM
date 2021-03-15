@@ -11,73 +11,73 @@ BCKDRAW_Img_sonic_4
 
 	LDA -39,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA -39,U
 	PULU A,X
 	PSHS U,X,A
-	LDA #$ee
-	LDX #$eeee
+	LDA #$dd
+	LDX #$dddd
 	PSHU A,X
 	LEAU 40,U
 
 	LDD 39,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ec
+	ORA #$0d
+	LDB #$db
 	STD 39,U
 	LDX 41,U
 	PSHS X
-	LDD #$eeee
+	LDD #$dddd
 	STD 41,U
 	LDA 43,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 43,U
 	PULU A,X
 	PSHS U,X,A
-	LDA #$e1
-	LDX #$eeee
+	LDA #$d1
+	LDX #$dddd
 	PSHU A,X
 	LEAU 79,U
 
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$deee
-	LDY #$eeee
+	LDX #$cddd
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 40,U
 
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$e5ee
-	LDY #$eeee
+	LDX #$d5dd
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 40,U
 
 	LDD 39,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 39,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$e5ee
-	LDY #$eeee
+	LDX #$d5dd
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 41,U
 
 	LDA 4,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 4,U
 	PULU X,Y
 	PSHS U,Y,X
-	LDD #$55ee
-	LDX #$eeee
+	LDD #$55dd
+	LDX #$dddd
 	PSHU D,X
 	LEAU 38,U
 
@@ -86,9 +86,9 @@ BCKDRAW_Img_sonic_4
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$54ee
-	LDY #$eeee
+	LDD #$dcdd
+	LDX #$54dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -97,9 +97,9 @@ BCKDRAW_Img_sonic_4
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$44ee
-	LDY #$eeee
+	LDD #$dcdd
+	LDX #$44dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -108,35 +108,35 @@ BCKDRAW_Img_sonic_4
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$deee
-	LDX #$44ee
-	LDY #$eeee
+	LDD #$cddd
+	LDX #$44dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 39,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 39,U
 	LDA 6,U
 	PSHS A
-	LDA #$e1
+	LDA #$d1
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$44ee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$44dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 41,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 38,U
 	LDA 5,U
 	PSHS A
@@ -145,15 +145,15 @@ BCKDRAW_Img_sonic_4
 	STA 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$441e
-	LDY #$eeee
+	LDX #$441d
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 40,U
 
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$441e
-	LDY #$eeee
+	LDX #$441d
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 38,U
 
@@ -161,25 +161,25 @@ BCKDRAW_Img_sonic_4
 	PSHS D
 	ANDA #$F0
 	ORA #$01
-	LDB #$ed
+	LDB #$dc
 	STD 39,U
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee44
-	LDY #$1eee
+	LDD #$dddd
+	LDX #$dd44
+	LDY #$1ddd
 	PSHU D,X,Y
 	LEAU 41,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$e4ee
-	LDY #$eee1
+	LDD #$dddd
+	LDX #$d4dd
+	LDY #$ddd1
 	PSHU D,X,Y
 	LEAU 38,U
 
@@ -189,59 +189,47 @@ BCKDRAW_Img_sonic_4
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
 	ORB #$10
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eede
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$ddcd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$e1
+	LDA #$d1
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
-	PSHU D,X,Y
-	LEAU 40,U
-
-	LDA 6,U
-	PSHS A
-	LDA #$11
-	STA 6,U
-	PULU D,X,Y
-	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -251,9 +239,9 @@ BCKDRAW_Img_sonic_4
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -263,17 +251,29 @@ BCKDRAW_Img_sonic_4
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
+	PSHU D,X,Y
+	LEAU 40,U
+
+	LDA 6,U
+	PSHS A
+	LDA #$11
+	STA 6,U
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 40,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 40,U
 	LDA 6,U
 	PSHS A
@@ -281,56 +281,56 @@ BCKDRAW_Img_sonic_4
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 42,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 38,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$eeee
-	LDY #$ed11
+	LDX #$dddd
+	LDY #$dc11
 	PSHU B,X,Y
 	LEAU 40,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 38,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$edee
-	LDY #$ece1
+	LDX #$dcdd
+	LDY #$dbd1
 	PSHU B,X,Y
 	LEAU 40,U
 
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$bbee
-	LDY #$ecee
+	LDX #$bbdd
+	LDY #$dbdd
 	PSHU B,X,Y
 	LEAU 38,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeb0
-	LDY #$eeed
+	LDD #$dddd
+	LDX #$ddb0
+	LDY #$dddc
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -339,9 +339,9 @@ BCKDRAW_Img_sonic_4
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee00
-	LDY #$deed
+	LDD #$dddd
+	LDX #$dd00
+	LDY #$cddc
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -350,9 +350,9 @@ BCKDRAW_Img_sonic_4
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee00
-	LDY #$beee
+	LDD #$dddd
+	LDX #$dd00
+	LDY #$bddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -361,9 +361,9 @@ BCKDRAW_Img_sonic_4
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee00
-	LDY #$0eee
+	LDD #$dddd
+	LDX #$dd00
+	LDY #$0ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -373,389 +373,389 @@ BCKDRAW_Img_sonic_4
 	LDA 8,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 8,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee00
-	LDY #$0dee
+	LDD #$dddd
+	LDX #$dd00
+	LDY #$0cdd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$eebd
-	LDY #$0bee
+	LDD #$dcdd
+	LDX #$ddbc
+	LDY #$0bdd
 	PSHU D,X,Y
 	LEAU 6,U
 
 	PULU A,X
 	PSHS U,X,A
-	LDX #$eeee
+	LDX #$dddd
 	PSHU B,X
 	LEAU 34,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$eed1
-	LDY #$0bee
+	LDD #$dcdd
+	LDX #$ddc1
+	LDY #$0bdd
 	PSHU D,X,Y
 	LEAU 6,U
 
 	PULU A,X
 	PSHS U,X,A
-	LDX #$eeee
+	LDX #$dddd
 	PSHU B,X
 	LEAU 34,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$ebb1
-	LDY #$0bee
+	LDD #$dcdd
+	LDX #$dbb1
+	LDY #$0bdd
 	PSHU D,X,Y
 	LEAU 6,U
 
 	PULU A,X
 	PSHS U,X,A
-	LDX #$eeee
+	LDX #$dddd
 	PSHU B,X
 	LEAU 34,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$ebbd
-	LDY #$0bee
+	LDD #$dcdd
+	LDX #$dbbc
+	LDY #$0bdd
 	PSHU D,X,Y
 	LEAU 6,U
 
 	LDD 34,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0d
-	LDB #$ee
+	ORA #$0c
+	LDB #$dd
 	STD 34,U
 	PULU A,X
 	PSHS U,X,A
-	LDX #$eeee
+	LDX #$dddd
 	PSHU B,X
 	LEAU 36,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
+	ORA #$0c
+	LDB #$dd
+	STD 38,U
+	LDA 6,U
+	PSHS A
+	STB 6,U
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$d0bb
+	LDX #$0bdd
+	LDY #$dddd
+	PSHU D,X,Y
+	LEAU 40,U
+
+	LDD 38,U
+	PSHS D
+	ANDA #$F0
 	ORA #$0d
-	LDB #$ee
+	LDB #$dd
 	STD 38,U
 	LDA 6,U
 	PSHS A
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$e0bb
-	LDX #$0bee
-	LDY #$eeee
+	LDD #$d00c
+	LDX #$0bdd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$bd
 	STD 38,U
 	LDA 6,U
 	PSHS A
-	STB 6,U
-	PULU D,X,Y
-	PSHS U,Y,X,D
-	LDD #$e00d
-	LDX #$0bee
-	LDY #$eeee
-	PSHU D,X,Y
-	LEAU 40,U
-
-	LDD 38,U
-	PSHS D
-	ANDA #$F0
-	ORA #$0e
-	LDB #$be
-	STD 38,U
-	LDA 6,U
-	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$b001
-	LDX #$0bee
-	LDY #$eeee
+	LDX #$0bdd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$e1
+	LDA #$d1
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$b001
-	LDX #$0b5e
-	LDY #$eeee
+	LDX #$0b5d
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 39,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
 	ORB #$10
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$be00
+	LDD #$bd00
 	LDX #$010b
-	LDY #$45ee
+	LDY #$45dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$0100
 	LDX #$0104
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$0100
 	LDX #$0b04
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$0b00
 	LDX #$0044
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$e1
+	LDA #$d1
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$0000
 	LDX #$0044
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$0000
 	LDX #$0044
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$b000
 	LDX #$0044
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$e040
+	LDD #$d040
 	LDX #$0044
-	LDY #$45ee
+	LDY #$45dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$1144
 	LDX #$0445
-	LDY #$4eee
+	LDY #$4ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$0144
 	LDX #$4444
-	LDY #$4eee
+	LDY #$4ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$1144
 	LDX #$4444
-	LDY #$5eee
+	LDY #$5ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$1144
 	LDX #$4444
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$ee
+	LDA #$dd
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$db44
+	LDD #$cb44
 	LDX #$4444
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 41,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$4444
-	LDX #$441e
-	LDY #$eeee
+	LDX #$441d
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$4444
-	LDX #$44ee
-	LDY #$eeee
+	LDX #$44dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$5544
-	LDX #$53ee
-	LDY #$eeee
+	LDX #$53dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 41,U
 
 	LDA 5,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$33ee
-	LDY #$eeee
+	LDX #$33dd
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 40,U
 
 	LDA 5,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
 	LDA #$55
-	LDX #$3eee
-	LDY #$1eee
+	LDX #$3ddd
+	LDY #$1ddd
 	PSHU A,X,Y
 	LEAU 40,U
 
 	LDA 5,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
 	LDA #$11
-	LDX #$55ee
-	LDY #$51ee
+	LDX #$55dd
+	LDY #$51dd
 	PSHU A,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$1344
-	LDX #$ee41
-	LDY #$eeee
+	LDX #$dd41
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$5544
-	LDX #$5e45
-	LDY #$1eee
+	LDX #$5d45
+	LDY #$1ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$5544
-	LDX #$4e04
-	LDY #$11ee
+	LDX #$4d04
+	LDY #$11dd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -763,13 +763,13 @@ BCKDRAW_Img_sonic_4
 	PSHS U,Y,X,D
 	LDD #$5444
 	LDX #$4544
-	LDY #$11ee
+	LDY #$11dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 5,U
 	PSHS A
-	LDA #$1e
+	LDA #$1d
 	STA 5,U
 	PULU X,Y
 	PSHS U,Y,X
@@ -843,13 +843,13 @@ BCKDRAW_Img_sonic_4
 	PULU A,X,Y
 	PSHS U,Y,X,A
 	LDX #$4445
-	LDY #$e344
+	LDY #$d344
 	PSHU B,X,Y
 	LEAU 42,U
 
 	LDD 41,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
 	ORB #$40
 	STD 41,U
@@ -861,7 +861,7 @@ BCKDRAW_Img_sonic_4
 	PULU A,X
 	PSHS U,X,A
 	LDA #$45
-	LDX #$ee44
+	LDX #$dd44
 	PSHU A,X
 DYN_POS
 
@@ -871,97 +871,97 @@ DYN_POS
 	LDX -79,U
 	LDY -39,U
 	PSHS Y,X
-	LDD #$eeee
+	LDD #$dddd
 	STD -79,U
 	STD -39,U
 	LDA 3,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 3,U
 	PULU A,X
 	PSHS U,X,A
-	LDX #$eeee
+	LDX #$dddd
 	PSHU B,X
 	LEAU 40,U
 
 	PULU X,Y
 	PSHS U,Y,X
-	LDD #$ee1e
-	LDX #$eeee
+	LDD #$dd1d
+	LDX #$dddd
 	PSHU D,X
 	LEAU 40,U
 
 	LDD 39,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 39,U
 	PULU X,Y
 	PSHS U,Y,X
-	LDD #$eeee
-	LDX #$eeee
+	LDD #$dddd
+	LDX #$dddd
 	PSHU D,X
 	LEAU 41,U
 
 	LDA 3,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 3,U
 	PULU A,X
 	PSHS U,X,A
-	LDX #$eeee
+	LDX #$dddd
 	PSHU B,X
 	LEAU 38,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeed
-	LDX #$e1ee
-	LDY #$eeee
+	LDD #$dddc
+	LDX #$d1dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$e1ee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$d1dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 39,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 39,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$dede
-	LDX #$51ee
-	LDY #$eeee
+	LDD #$cdcd
+	LDX #$51dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 41,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
-	LDB #$ee
+	ORA #$0d
+	LDB #$dd
 	STD 38,U
 	LDA 5,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDA #$d5
-	LDX #$5eee
-	LDY #$eeee
+	LDA #$c5
+	LDX #$5ddd
+	LDY #$dddd
 	PSHU A,X,Y
 	LEAU 40,U
 
@@ -972,9 +972,9 @@ DYN_POS
 	STA 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDA #$e5
-	LDX #$5eee
-	LDY #$eeee
+	LDA #$d5
+	LDX #$5ddd
+	LDY #$dddd
 	PSHU A,X,Y
 	LEAU 38,U
 
@@ -983,9 +983,9 @@ DYN_POS
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$544e
-	LDY #$eeee
+	LDD #$dcdd
+	LDX #$544d
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -994,21 +994,21 @@ DYN_POS
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$edee
-	LDX #$544e
-	LDY #$eeee
+	LDD #$dcdd
+	LDX #$544d
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$e1
+	LDA #$d1
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$deee
-	LDX #$444e
-	LDY #$eeee
+	LDD #$cddd
+	LDX #$444d
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1019,9 +1019,9 @@ DYN_POS
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee4e
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dd4d
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 39,U
 
@@ -1030,9 +1030,9 @@ DYN_POS
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$11ee
-	LDX #$eeee
-	LDY #$4eee
+	LDD #$11dd
+	LDX #$dddd
+	LDY #$4ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1041,9 +1041,9 @@ DYN_POS
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$11ee
-	LDX #$eeee
-	LDY #$4eee
+	LDD #$11dd
+	LDX #$dddd
+	LDY #$4ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1052,21 +1052,21 @@ DYN_POS
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$1eee
-	LDX #$eeee
-	LDY #$4eee
+	LDD #$1ddd
+	LDX #$dddd
+	LDY #$4ddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
-	LDA #$e1
+	LDA #$d1
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1077,9 +1077,9 @@ DYN_POS
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1090,9 +1090,9 @@ DYN_POS
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eee1
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$ddd1
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1103,54 +1103,54 @@ DYN_POS
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eee1
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$ddd1
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eeee
-	LDY #$eede
+	LDD #$dddd
+	LDX #$dddd
+	LDY #$ddcd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eede
-	LDY #$eece
+	LDD #$dddd
+	LDX #$ddcd
+	LDY #$ddbd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDA 6,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eebd
-	LDY #$eece
+	LDD #$dddd
+	LDX #$ddbc
+	LDY #$ddbd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1159,23 +1159,23 @@ DYN_POS
 	STB 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$ee0b
-	LDY #$eede
+	LDD #$dddd
+	LDX #$dd0b
+	LDY #$ddcd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eb00
-	LDY #$eede
+	LDD #$dddd
+	LDX #$db00
+	LDY #$ddcd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1184,9 +1184,9 @@ DYN_POS
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$eb00
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$db00
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1195,9 +1195,9 @@ DYN_POS
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
-	LDX #$e000
-	LDY #$eeee
+	LDD #$dddd
+	LDX #$d000
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1206,9 +1206,9 @@ DYN_POS
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
+	LDD #$dddd
 	LDX #$b000
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1217,9 +1217,9 @@ DYN_POS
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
+	LDD #$dddd
 	LDX #$0000
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1228,9 +1228,9 @@ DYN_POS
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$eeee
+	LDD #$dddd
 	LDX #$0000
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1240,13 +1240,13 @@ DYN_POS
 	LDA 8,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 8,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$beee
-	LDX #$00d0
-	LDY #$eeee
+	LDD #$bddd
+	LDX #$00c0
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1256,13 +1256,13 @@ DYN_POS
 	LDA 8,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 8,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$beee
-	LDX #$00d0
-	LDY #$eeee
+	LDD #$bddd
+	LDX #$00c0
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1272,21 +1272,21 @@ DYN_POS
 	LDA 8,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 8,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$beee
+	LDD #$bddd
 	LDX #$0010
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$0bee
+	LDD #$0bdd
 	LDX #$0010
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 6,U
 
@@ -1297,15 +1297,15 @@ DYN_POS
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$0bee
+	LDD #$0bdd
 	LDX #$0010
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 6,U
 
 	PULU A,X
 	PSHS U,X,A
-	LDX #$ee1e
+	LDX #$dd1d
 	PSHU B,X
 	LEAU 34,U
 
@@ -1314,39 +1314,39 @@ DYN_POS
 	STY 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$b0ee
+	LDD #$b0dd
 	LDX #$0010
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDX 6,U
 	PSHS X
-	LDA #$ee
+	LDA #$dd
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$d0ee
+	LDD #$c0dd
 	LDX #$0010
-	LDY #$40ee
+	LDY #$40dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDX 6,U
 	PSHS X
-	LDD #$eee1
+	LDD #$ddd1
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$e0ee
+	LDD #$d0dd
 	LDX #$0010
-	LDY #$40ee
+	LDY #$40dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
 	ORB #$10
 	STD 6,U
@@ -1358,16 +1358,16 @@ DYN_POS
 	STD 40,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$e0bb
+	LDD #$d0bb
 	LDX #$0010
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 42,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	LDB #$10
 	STD 38,U
 	LDA 5,U
@@ -1378,22 +1378,22 @@ DYN_POS
 	PULU A,X,Y
 	PSHS U,Y,X,A
 	LDA #$00
-	LDX #$d044
-	LDY #$eeee
+	LDX #$c044
+	LDY #$dddd
 	PSHU A,X,Y
 	LEAU 40,U
 
 	LDD 38,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
+	ORA #$0d
 	LDB #$10
 	STD 38,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
 	LDA #$00
 	LDX #$0045
-	LDY #$eeee
+	LDY #$dddd
 	PSHU A,X,Y
 	LEAU 40,U
 
@@ -1401,7 +1401,7 @@ DYN_POS
 	PSHS U,Y,X,A
 	LDA #$00
 	LDX #$0044
-	LDY #$eeee
+	LDY #$dddd
 	PSHU A,X,Y
 	LEAU 39,U
 
@@ -1409,63 +1409,63 @@ DYN_POS
 	PSHS U,Y,X,D
 	LDD #$1400
 	LDX #$0444
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$bd00
+	LDD #$bc00
 	LDX #$4454
-	LDY #$eeee
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 39,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
-	LDD #$d114
+	LDD #$c114
 	LDX #$b044
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD 6,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$1014
 	LDX #$4444
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	LDD 6,U
 	PSHS D
-	LDA #$ee
+	LDA #$dd
 	ANDB #$0F
-	ORB #$e0
+	ORB #$d0
 	STD 6,U
 	LDD 40,U
 	PSHS D
 	ANDA #$F0
 	ORA #$01
-	LDB #$d4
+	LDB #$c4
 	STD 40,U
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$1114
 	LDX #$4444
-	LDY #$44ee
+	LDY #$44dd
 	PSHU D,X,Y
 	LEAU 42,U
 
@@ -1478,8 +1478,8 @@ DYN_POS
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$4444
-	LDX #$44ee
-	LDY #$eeee
+	LDX #$44dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1492,31 +1492,31 @@ DYN_POS
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$4444
-	LDX #$45ee
-	LDY #$eeee
+	LDX #$45dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 41,U
 
 	PULU A,X,Y
 	PSHS U,Y,X,A
-	LDX #$5eee
-	LDY #$eeee
+	LDX #$5ddd
+	LDY #$dddd
 	PSHU B,X,Y
 	LEAU 39,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$4444
-	LDX #$31ee
-	LDY #$eeee
+	LDX #$31dd
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$4444
-	LDX #$1ee1
-	LDY #$eeee
+	LDX #$1dd1
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 40,U
 
@@ -1529,23 +1529,23 @@ DYN_POS
 	PULU D,X,Y
 	PSHS U,Y,X,D
 	LDD #$5445
-	LDX #$1ee1
-	LDY #$eeee
+	LDX #$1dd1
+	LDY #$dddd
 	PSHU D,X,Y
 	LEAU 42,U
 
 	PULU X,Y
 	PSHS U,Y,X
-	LDD #$eee5
-	LDX #$eeee
+	LDD #$ddd5
+	LDX #$dddd
 	PSHU D,X
 	LEAU 39,U
 
 	PULU A,X,Y
 	PSHS U,Y,X,A
 	LDA #$33
-	LDX #$5e54
-	LDY #$eeee
+	LDX #$5d54
+	LDY #$dddd
 	PSHU A,X,Y
 	LEAU 40,U
 
@@ -1559,7 +1559,7 @@ DYN_POS
 	PSHS U,Y,X,A
 	LDA #$55
 	LDX #$4540
-	LDY #$11ee
+	LDY #$11dd
 	PSHU A,X,Y
 	LEAU 41,U
 
@@ -1572,7 +1572,7 @@ DYN_POS
 	PULU X,Y
 	PSHS U,Y,X
 	LDD #$4440
-	LDX #$11ee
+	LDX #$11dd
 	PSHU D,X
 	LEAU 40,U
 
@@ -1585,14 +1585,14 @@ DYN_POS
 	PULU X,Y
 	PSHS U,Y,X
 	LDD #$4444
-	LDX #$11ee
+	LDX #$11dd
 	PSHU D,X
 	LEAU 40,U
 
 	PULU X,Y
 	PSHS U,Y,X
 	LDD #$4054
-	LDX #$511e
+	LDX #$511d
 	PSHU D,X
 	LEAU 38,U
 
@@ -1600,7 +1600,7 @@ DYN_POS
 	PSHS D
 	ANDA #$F0
 	ANDB #$0F
-	ADDD #$01e0
+	ADDD #$01d0
 	STD 5,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
@@ -1613,7 +1613,7 @@ DYN_POS
 	LDA 6,U
 	PSHS A
 	ANDA #$0F
-	ORA #$e0
+	ORA #$d0
 	STA 6,U
 	PULU A,X,Y
 	PSHS U,Y,X,A
@@ -1648,7 +1648,7 @@ DYN_POS
 	PSHS U,Y,X,A
 	LDA #$54
 	LDX #$4444
-	LDY #$e144
+	LDY #$d144
 	PSHU A,X,Y
 	LEAU 40,U
 
@@ -1656,7 +1656,7 @@ DYN_POS
 	PSHS U,Y,X,A
 	LDA #$54
 	LDX #$4444
-	LDY #$ee44
+	LDY #$dd44
 	PSHU A,X,Y
 	LEAU 40,U
 
@@ -1664,7 +1664,7 @@ DYN_POS
 	PSHS U,Y,X,A
 	LDA #$44
 	LDX #$4444
-	LDY #$ee44
+	LDY #$dd44
 	PSHU A,X,Y
 	LEAU 40,U
 
@@ -1672,14 +1672,14 @@ DYN_POS
 	PSHS U,Y,X,A
 	LDA #$44
 	LDX #$4444
-	LDY #$ee44
+	LDY #$dd44
 	PSHU A,X,Y
 	LEAU 41,U
 
 	LDD 42,U
 	PSHS D
 	ANDA #$F0
-	ORA #$0e
+	ORA #$0d
 	LDB #$14
 	STD 42,U
 	LDA 83,U
@@ -1690,7 +1690,7 @@ DYN_POS
 	PULU X,Y
 	PSHS U,Y,X
 	LDD #$4444
-	LDX #$ee54
+	LDX #$dd54
 	PSHU D,X
 	LEAU ,S
 SSAV_Img_sonic_4

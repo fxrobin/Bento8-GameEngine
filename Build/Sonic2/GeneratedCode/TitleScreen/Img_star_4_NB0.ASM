@@ -13,17 +13,17 @@ BCKDRAW_Img_star_4
 	PSHS D
 	ANDA #$F0
 	ANDB #$0F
-	ADDD #$0da0
+	ADDD #$0ca0
 	STD 79,U
 	LDA -120,U
 	PSHS A
 	ANDA #$0F
-	ORA #$d0
+	ORA #$c0
 	STA -120,U
 	LDA -80,U
 	PSHS A
 	ANDA #$0F
-	ORA #$c0
+	ORA #$b0
 	STA -80,U
 	LDA -40,U
 	PSHS A
@@ -73,13 +73,13 @@ BCKDRAW_Img_star_4
 	LDA #$0a
 	STA -79,U
 	STA 81,U
-	LDA #$0d
+	LDA #$0c
 	STA -39,U
 	STA 41,U
 	PULU A,X
 	PSHS U,X,A
 	LDA #$ba
-	LDX #$00bc
+	LDX #$00bb
 	PSHU A,X
 	LEAU 281,U
 
@@ -87,7 +87,7 @@ BCKDRAW_Img_star_4
 	PSHS D
 	ANDA #$F0
 	ANDB #$0F
-	ADDD #$0da0
+	ADDD #$0ca0
 	STD -41,U
 	LDA -120,U
 	PSHS A
@@ -117,14 +117,14 @@ BCKDRAW_Img_star_4
 	LDA 120,U
 	PSHS U,A
 	ANDA #$0F
-	ORA #$c0
+	ORA #$b0
 	STA 120,U
 	LEAU 160,U
 
 	LDA ,U
 	PSHS U,A
 	ANDA #$0F
-	ORA #$d0
+	ORA #$c0
 	STA ,U
 DYN_POS
 
@@ -135,13 +135,13 @@ DYN_POS
 	PSHS D
 	ANDA #$0F
 	ANDB #$0F
-	ADDD #$c0c0
+	ADDD #$b0b0
 	STD -41,U
 	LDA 120,U
 	LDB -120,U
 	PSHS B,A
 	ANDB #$F0
-	ORB #$0d
+	ORB #$0c
 	STB -120,U
 	LDA 39,U
 	PSHS A
@@ -150,14 +150,14 @@ DYN_POS
 	STA 39,U
 	LDD 79,U
 	PSHS D
-	LDA #$dd
+	LDA #$cc
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD 79,U
 	LDD 118,U
 	PSHS U,D
 	ANDA #$F0
-	ORA #$0c
+	ORA #$0b
 	LDB #$a0
 	STD 118,U
 	LDA #$aa
@@ -166,15 +166,15 @@ DYN_POS
 
 	LDD -101,U
 	PSHS D
-	LDA #$dd
+	LDA #$cc
 	ANDB #$0F
-	ORB #$d0
+	ORB #$c0
 	STD -101,U
 	LDD 19,U
 	PSHS D
 	ANDA #$0F
 	ANDB #$0F
-	ADDD #$c0c0
+	ADDD #$b0b0
 	STD 19,U
 	LDA -61,U
 	PSHS A
@@ -184,7 +184,7 @@ DYN_POS
 	LDA 100,U
 	PSHS U,A
 	ANDA #$F0
-	ORA #$0d
+	ORA #$0c
 	STA 100,U
 	LEAU ,S
 SSAV_Img_star_4
