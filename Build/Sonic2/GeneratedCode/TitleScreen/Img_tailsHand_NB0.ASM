@@ -9,53 +9,53 @@ BCKDRAW_Img_tailsHand
 	LDU ,Y
 	LEAU 362,U
 
-	LDA 80,U
-	LDB -120,U
+	LDA -40,U
+	LDB -80,U
 	PSHS B,A
-	LDA 120,U
-	LDB ,U
-	PSHS B,A
-	LDA 40,U
+	LDA ,U
 	PSHS A
-	LDA #$a0
-	STA 40,U
-	STA 80,U
-	LDA -80,U
-	LDB -40,U
-	PSHS U,B,A
 	LDA #$b0
 	STA ,U
 	LDA #$00
 	STA -80,U
 	STA -40,U
-	LDA #$0b
-	STA 120,U
-	LDA #$cc
-	STA -120,U
-	LEAU 280,U
-
 	LDA 40,U
-	LDB ,U
+	LDB 120,U
 	PSHS B,A
 	LDA 80,U
 	LDB -120,U
+	PSHS U,B,A
+	LDA #$a0
+	STA 40,U
+	STA 80,U
+	LDA #$cc
+	STA -120,U
+	LDA #$0b
+	STA 120,U
+	LEAU 280,U
+
+	LDA 80,U
+	LDB -80,U
 	PSHS B,A
-	LDA -80,U
-	LDB -40,U
+	LDA ,U
+	LDB 40,U
 	PSHS B,A
-	LDA 120,U
-	PSHS U,A
+	LDA -40,U
+	LDB 120,U
+	PSHS B,A
+	LDA #$c0
+	STA -80,U
+	LDA #$cc
+	STA 80,U
+	STA 120,U
 	LDA #$cb
 	STA -40,U
 	STA ,U
 	STA 40,U
-	LDA #$c0
-	STA -80,U
+	LDA -120,U
+	PSHS U,A
 	LDA #$b0
 	STA -120,U
-	LDA #$cc
-	STA 80,U
-	STA 120,U
 	LEAU 240,U
 
 	LDD 39,U
@@ -88,10 +88,10 @@ DYN_POS
 	LDU #$0000
 	LEAU 401,U
 
-	LDX ,U
+	LDX 120,U
 	LDY 80,U
 	PSHS Y,X
-	LDD 120,U
+	LDD ,U
 	LDX 40,U
 	PSHS X,D
 	LDA -120,U
@@ -105,19 +105,19 @@ DYN_POS
 	ANDB #$0F
 	ORB #$00
 	STD -40,U
-	LDD #$cc0c
-	STD ,U
-	LDD #$0c0b
-	STD 40,U
-	LDA #$b0
+	LDD #$b00b
 	STD 80,U
 	STD 120,U
+	LDA #$0c
+	STD 40,U
 	LDD -80,U
 	PSHS U,D
 	ANDA #$F0
 	ANDB #$0F
 	ADDD #$00c0
 	STD -80,U
+	LDD #$cc0c
+	STD ,U
 	LEAU 280,U
 
 	LDD 40,U
@@ -133,11 +133,11 @@ DYN_POS
 	ORB #$c0
 	STD 80,U
 	LDA 120,U
-	LDX -120,U
-	LDY -40,U
+	LDX -80,U
+	LDY ,U
 	PSHS Y,X,A
-	LDD -80,U
-	LDX ,U
+	LDD -40,U
+	LDX -120,U
 	PSHS U,X,D
 	LDD #$cb0b
 	STD -120,U

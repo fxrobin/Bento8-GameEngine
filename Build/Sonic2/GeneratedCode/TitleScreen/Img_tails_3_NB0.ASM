@@ -10,26 +10,26 @@ BCKDRAW_Img_tails_3
 	LEAU 786,U
 
 	LDA 100,U
-	LDB -100,U
+	LDB -60,U
 	PSHS B,A
+	LDA 60,U
+	LDB 20,U
+	PSHS B,A
+	LDA #$c6
+	STA 20,U
+	STA 60,U
+	LDA -20,U
+	LDB -100,U
+	PSHS U,B,A
 	ANDB #$0F
 	ORB #$30
 	STB -100,U
 	LDA #$cc
 	STA 100,U
-	LDA 60,U
-	LDB 20,U
-	PSHS B,A
-	LDA -60,U
-	LDB -20,U
-	PSHS U,B,A
-	LDA #$65
-	STA -20,U
-	LDA #$c6
-	STA 20,U
-	STA 60,U
 	LDA #$63
 	STA -60,U
+	LDA #$65
+	STA -20,U
 	LEAU 260,U
 
 	LDD -120,U
@@ -1394,18 +1394,14 @@ DYN_POS
 	PSHU A,X
 	LEAU 5,U
 
-	LDD 37,U
-	PSHS D
-	LDA #$00
-	ANDB #$0F
-	ORB #$b0
-	STD 37,U
-	LDD 77,U
-	PSHS D
-	LDA #$00
-	ANDB #$0F
-	ORB #$b0
-	STD 77,U
+	LDX 121,U
+	LDY 41,U
+	PSHS Y,X
+	LDD 117,U
+	LDX 81,U
+	PSHS X,D
+	LDD #$ba0b
+	STD 121,U
 	LDD 35,U
 	PSHS D
 	ANDA #$F0
@@ -1436,14 +1432,18 @@ DYN_POS
 	ORA #$0b
 	LDB #$bb
 	STD 115,U
-	LDX 121,U
-	LDY 117,U
-	PSHS Y,X
-	LDD #$ba0b
-	STD 121,U
-	LDD 41,U
-	LDX 81,U
-	PSHS X,D
+	LDD 37,U
+	PSHS D
+	LDA #$00
+	ANDB #$0F
+	ORB #$b0
+	STD 37,U
+	LDD 77,U
+	PSHS D
+	LDA #$00
+	ANDB #$0F
+	ORB #$b0
+	STD 77,U
 	LDA 43,U
 	PSHS A
 	ANDA #$0F
@@ -1466,6 +1466,43 @@ DYN_POS
 	PSHU D,X
 	LEAU 276,U
 
+	LDX 6,U
+	LDY -34,U
+	PSHS Y,X
+	LDD -74,U
+	PSHS D
+	LDA #$cc
+	ANDB #$0F
+	ORB #$b0
+	STD -74,U
+	LDX -119,U
+	LDY -39,U
+	PSHS Y,X
+	LDD -79,U
+	LDX -115,U
+	PSHS X,D
+	LDA -117,U
+	PSHS A
+	ANDA #$0F
+	ORA #$b0
+	STA -117,U
+	LDA -113,U
+	PSHS A
+	ANDA #$F0
+	ORA #$0b
+	STA -113,U
+	LDD #$1cbc
+	STD -115,U
+	LDD #$bb0a
+	STD 6,U
+	LDB #$aa
+	STD -34,U
+	LDD #$000b
+	STD -79,U
+	LDB #$0a
+	STD -39,U
+	LDB #$ab
+	STD -119,U
 	LDD -121,U
 	PSHS D
 	ANDA #$F0
@@ -1502,43 +1539,6 @@ DYN_POS
 	ORA #$05
 	LDB #$6c
 	STD 4,U
-	LDX -79,U
-	LDY -39,U
-	PSHS Y,X
-	LDD -115,U
-	LDX -119,U
-	PSHS X,D
-	LDD -74,U
-	PSHS D
-	LDA #$cc
-	ANDB #$0F
-	ORB #$b0
-	STD -74,U
-	LDX -34,U
-	LDY 6,U
-	PSHS Y,X
-	LDA -117,U
-	PSHS A
-	ANDA #$0F
-	ORA #$b0
-	STA -117,U
-	LDA -113,U
-	PSHS A
-	ANDA #$F0
-	ORA #$0b
-	STA -113,U
-	LDD #$bbaa
-	STD -34,U
-	LDB #$0a
-	STD 6,U
-	LDA #$00
-	STD -39,U
-	LDB #$ab
-	STD -119,U
-	LDB #$0b
-	STD -79,U
-	LDD #$1cbc
-	STD -115,U
 	PULU A,X
 	PSHS U,X,A
 	LDA #$bb

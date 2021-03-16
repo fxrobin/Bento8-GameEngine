@@ -10,13 +10,6 @@
         org   $6100
 
         jsr   LoadAct
-        jsr   PSGInit
-
-InitIRQ        
-        ldd   #_IRQ                                   ; map IRQ routine                
-        std   $6027
-        ldd   #$09C4                                  ; 09C4 for 50hz 0823 for 60hz
-        std   $E7C6                                   ; timer to 20ms      
 
 * ==============================================================================
 * Main Loop
@@ -32,19 +25,6 @@ LevelMainLoop
         jsr   DrawSprites        
         bra   LevelMainLoop
         
-* ==============================================================================
-* IRQ
-* ==============================================================================       
-_IRQ
-        lda   $E7E5
-        sta   _IRQ_end+1                              ; backup data page
-        jsr   PSGFrame
-        * jsr   PSGSFXFrame
-_IRQ_end        
-        lda   #$00
-        sta   $E7E5                                   ; restore data page
-        jmp   $E830  
-
 * ==============================================================================
 * Global Data
 *
@@ -160,9 +140,8 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
 * Routines
 * ==============================================================================
-        * a rendre dynamique a partir du properties game mode
+        * a rendre dynamique a partir des includes du game mode properties
         INCLUD WAITVBL
-        * INCLUD WAITVBLR
         INCLUD READJPDS
         INCLUD RUNOBJTS
         INCLUD MRKOBJGN        
@@ -180,8 +159,9 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD BGBFREE 
         INCLUD CLRCARTM  
         INCLUD UPDTPAL        
-        INCLUD PLAYPCM * A rendre dynamique 
-        INCLUD PSGLIB  * A rendre dynamique   
+        INCLUD PLAYPCM 
+        INCLUD PSGLIB
+        INCLUD IRQPSGRR   
         
 * ==============================================================================
 * Level Specific Generated Data
@@ -2698,7 +2678,7 @@ ClearCartMem_3
 * UpdatePalette
 * -------------
 * Subroutine to update palette
-* should be called quickly after WaitVBL
+* should be called just after WaitVBL
 *
 * input REG : none
 * reset REG : [d] [x] [y]
@@ -3672,93 +3652,209 @@ PSGSFXSubstringRetAddr     rmb 2,0 ; return to this address when substring is ov
 
 
 
+(include)IRQPSGRR
+* ---------------------------------------------------------------------------
+* IrqPsgRaster/IrqPsg
+* ------
+* IRQ Subroutine to play sound with SN76489 and render some Raster lines
+*
+* input REG : [dp] with value E7 (from Monitor ROM)
+* reset REG : none
+*
+* IrqOn
+* reset REG : [a]
+*
+* IrqOff
+* reset REG : [a]
+*
+* IrqSync
+* input REG : [a] screen line (0-199)
+*             [x] timer value
+* reset REG : [d]
+*
+* IrqSync
+* reset REG : [d]
+* ---------------------------------------------------------------------------
+       
+irq_routine       equ $6027 *@globals
+irq_timer_ctrl    equ $E7C5 *@globals
+irq_timer         equ $E7C6 *@globals
+irq_one_frame     equ 312*64-1 *@globals              ; one frame timer (lines*cycles_per_lines-1), timer launch at -1
+Irq_Raster_Page   fdb $00 *@globals
+Irq_Raster_Start  fdb $0000 *@globals
+Irq_Raster_End    fdb $0000 *@globals
+       
+IrqOn *@globals        
+        lda   $6019                           
+        ora   #$20
+        sta   $6019                                   ; STATUS register
+        andcc #$EF                                    ; tell 6809 to activate irq
+        rts
+        
+IrqOff *@globals
+        lda   $6019                           
+        anda  #$DF
+        sta   $6019                                   ; STATUS register
+        orcc  #$10                                    ; tell 6809 to activate irq
+        rts
+
+IrqSync *@globals
+        ldb   #$42
+        stb   irq_timer_ctrl
+        
+        ldb   #8                                      ; ligne * 64 (cycles par ligne) / 8 (nb cycles boucle tempo)
+        mul
+        tfr   d,y
+        leay  -32,y                                   ; manual adjustment
+
+IrqSync_1
+        tst   $E7E7                                   ;
+        bmi   IrqSync_1                               ; while spot is in a visible screen line        
+IrqSync_2
+        tst   $E7E7                                   ;
+        bpl   IrqSync_2                               ; while spot is not in a visible screen line
+IrqSync_3
+        leay  -1,y                                    ;
+        bne   IrqSync_3                               ; wait until desired line
+       
+        stx   irq_timer                               ; spot is at the end of desired line
+        rts                  
+       
+IrqPsg *@globals
+        lda   <$E5
+        sta   IrqPsg_end+1                            ; backup data page
+        jsr   PSGFrame
+       *jsr   PSGSFXFrame
+IrqPsg_end        
+        lda   #$00
+        sta   <$E5                                    ; restore data page
+        jmp   $E830                                   ; return to caller                               
+       
+IrqPsgRaster *@globals
+        lda   <$E5
+        sta   IrqPsgRaster_end+1                      ; backup data page
+        
+        lda   Irq_Raster_Page
+        sta   <$E5                                    ; load Raster data page
+        ldx   Irq_Raster_Start
+        lda   #32        
+IrqPsgRaster_1      
+        bita  <$E7
+        beq   IrqPsgRaster_1                          ; while spot is not in a visible screen col
+IrqPsgRaster_2        
+        bita  <$E7 
+        bne   IrqPsgRaster_2                          ; while spot is in a visible screen col
+                
+        mul                                           ; tempo                
+IrqPsgRaster_render
+        nop                                           ; tempo
+        nop                                           ; tempo
+        mul                                           ; tempo
+        mul                                           ; tempo
+        tfr   a,b                                     ; tempo
+        lda   #$1E
+        sta   <$DB
+        ldd   ,x++
+        stb   <$DA                                    ; 3rd cycle of sta should be near col 62
+        sta   <$DA                                    ; 3rd cycle of stb should be near col 2
+        cmpx  Irq_Raster_End
+        bne   IrqPsgRaster_render 
+
+       jsr   PSGFrame
+       *jsr   PSGSFXFrame
+IrqPsgRaster_end        
+        lda   #$00
+        sta   <$E5                                    ; restore data page
+        jmp   $E830                                   ; return to caller 
+
+
 (include)IMAGEIDX
 * Generated Code
 
 Img_SonicAndTailsIn *@globals
         fcb   $07,$00,$00,$00,$88,$4F,$00,$00,$06,$00,$00,$BB,$D9,$0A
-        fcb   $CF,$E3
+        fcb   $D1,$01
 Img_SegaLogo_2 *@globals
-        fcb   $07,$00,$00,$00,$5C,$39,$03,$00,$06,$00,$00,$D2,$E4,$0D
-        fcb   $C1,$7E
+        fcb   $07,$00,$00,$00,$5C,$39,$03,$00,$06,$00,$00,$D2,$E4,$0C
+        fcb   $C3,$98
 Img_SegaLogo_1 *@globals
-        fcb   $07,$00,$00,$00,$5C,$38,$03,$00,$06,$00,$00,$D2,$E5,$09
-        fcb   $D1,$3D
+        fcb   $07,$00,$00,$00,$5C,$38,$03,$00,$06,$00,$00,$D2,$E5,$0A
+        fcb   $C4,$74
 Img_SegaTrails_1 *@globals
         fcb   $07,$10,$00,$00,$07,$3E,$00,$00,$06,$00,$00,$10,$E0,$05
-        fcb   $DD,$B9,$00,$06,$00,$00,$E8,$E0,$05,$DC,$42
+        fcb   $DD,$BA,$00,$06,$00,$00,$E8,$E0,$05,$DC,$43
 Img_SegaSonic_12 *@globals
         fcb   $07,$14,$00,$00,$0F,$45,$00,$06,$00,$00,$00,$F8,$E3,$08
-        fcb   $D7,$DD,$05,$D9,$94,$0A,$06,$00,$00,$00,$F8,$E3,$09,$C9
-        fcb   $78,$06,$DD,$51,$0A
+        fcb   $D8,$0A,$05,$D9,$93,$0A,$06,$00,$00,$00,$F8,$E3,$08,$D0
+        fcb   $45,$06,$DD,$4F,$0A
 Img_SegaSonic_23 *@globals
         fcb   $07,$14,$00,$00,$06,$1F,$00,$06,$00,$00,$00,$F1,$01,$05
-        fcb   $D7,$47,$05,$D6,$61,$02,$06,$00,$00,$00,$08,$01,$05,$D4
-        fcb   $12,$05,$D3,$2C,$02
+        fcb   $D7,$46,$05,$D6,$60,$02,$06,$00,$00,$00,$08,$01,$05,$D4
+        fcb   $11,$05,$D3,$2B,$02
 Img_SegaSonic_13 *@globals
         fcb   $07,$14,$00,$00,$06,$25,$00,$06,$00,$00,$00,$F1,$01,$06
-        fcb   $DA,$87,$05,$D2,$1C,$03,$06,$00,$00,$00,$08,$01,$06,$D7
-        fcb   $BB,$05,$D1,$0D,$03
+        fcb   $DA,$85,$05,$D2,$1B,$03,$06,$00,$00,$00,$08,$01,$06,$D7
+        fcb   $B9,$05,$D1,$0C,$03
 Img_SegaSonic_32 *@globals
         fcb   $07,$14,$00,$00,$0F,$45,$00,$06,$00,$00,$00,$F8,$E3,$09
-        fcb   $C1,$1C,$06,$D4,$CF,$0A,$06,$00,$00,$00,$F8,$E3,$09,$B8
-        fcb   $BC,$06,$D1,$DD,$0A
+        fcb   $D6,$DB,$06,$D4,$CD,$0A,$06,$00,$00,$00,$F8,$E3,$09,$CE
+        fcb   $7B,$06,$D1,$DA,$0A
 Img_SegaSonic_21 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$06
-        fcb   $CD,$3A,$05,$CF,$3F,$04,$06,$00,$00,$00,$F0,$E5,$07,$DB
-        fcb   $3E,$05,$CD,$70,$04
+        fcb   $CD,$39,$05,$CF,$3E,$04,$06,$00,$00,$00,$F0,$E5,$07,$DB
+        fcb   $5E,$05,$CD,$6F,$04
 Img_SegaSonic_43 *@globals
         fcb   $07,$14,$00,$00,$06,$1F,$00,$06,$00,$00,$00,$F1,$01,$05
-        fcb   $CB,$23,$05,$CA,$3B,$02,$06,$00,$00,$00,$08,$01,$06,$CA
-        fcb   $ED,$05,$C9,$53,$02
+        fcb   $CB,$22,$05,$CA,$3A,$02,$06,$00,$00,$00,$08,$01,$06,$CA
+        fcb   $EC,$05,$C9,$52,$02
 Img_SegaSonic_11 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$08
-        fcb   $D3,$09,$05,$C7,$59,$04,$06,$00,$00,$00,$F0,$E5,$08,$CE
-        fcb   $35,$05,$C5,$5F,$04
+        fcb   $CB,$71,$05,$C7,$58,$04,$06,$00,$00,$00,$F0,$E5,$08,$C6
+        fcb   $9D,$05,$C5,$5D,$04
 Img_SegaSonic_33 *@globals
         fcb   $07,$14,$00,$00,$05,$25,$00,$06,$00,$00,$00,$F2,$01,$05
-        fcb   $C3,$29,$05,$C2,$3A,$02,$06,$00,$00,$00,$08,$01,$05,$C0
-        fcb   $04,$05,$BF,$15,$02
+        fcb   $C3,$27,$05,$C2,$38,$02,$06,$00,$00,$00,$08,$01,$05,$C0
+        fcb   $02,$05,$BF,$13,$02
 Img_SegaSonic_22 *@globals
-        fcb   $07,$14,$00,$00,$0F,$47,$00,$06,$00,$00,$00,$F8,$E1,$09
-        fcb   $B0,$95,$06,$C8,$2E,$0A,$06,$00,$00,$00,$F8,$E1,$09,$A8
-        fcb   $56,$06,$C5,$72,$0A
+        fcb   $07,$14,$00,$00,$0F,$47,$00,$06,$00,$00,$00,$F8,$E1,$08
+        fcb   $BE,$76,$06,$C8,$2D,$0A,$06,$00,$00,$00,$F8,$E1,$09,$C6
+        fcb   $3C,$06,$C5,$71,$0A
 Img_SegaSonic_41 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$07
-        fcb   $D6,$C3,$05,$BD,$56,$04,$06,$00,$00,$00,$F0,$E5,$07,$D2
-        fcb   $46,$05,$BB,$97,$04
+        fcb   $D6,$E1,$05,$BD,$54,$04,$06,$00,$00,$00,$F0,$E5,$07,$D2
+        fcb   $64,$05,$BB,$95,$04
 Img_SegaSonic_31 *@globals
         fcb   $07,$14,$00,$00,$07,$3F,$00,$06,$00,$00,$00,$08,$E5,$08
-        fcb   $C9,$60,$05,$B9,$AA,$04,$06,$00,$00,$00,$F0,$E5,$08,$C4
-        fcb   $8D,$05,$B7,$BD,$04
+        fcb   $B9,$A1,$05,$B9,$A8,$04,$06,$00,$00,$00,$F0,$E5,$08,$B4
+        fcb   $CE,$05,$B7,$BB,$04
 Img_SegaSonic_42 *@globals
         fcb   $07,$14,$00,$00,$0F,$47,$00,$06,$00,$00,$00,$F8,$E1,$09
-        fcb   $A0,$00,$06,$C2,$A5,$0A,$06,$00,$00,$00,$F8,$E1,$0A,$C7
-        fcb   $7F,$06,$BF,$DA,$0A
+        fcb   $BD,$E6,$06,$C2,$A5,$0A,$06,$00,$00,$00,$F8,$E1,$09,$B5
+        fcb   $82,$06,$BF,$DA,$0A
 Img_SegaTrails_6 *@globals
         fcb   $00,$07,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$10,$DE,$05
-        fcb   $B6,$47
+        fcb   $B6,$45
 Img_SegaTrails_5 *@globals
         fcb   $00,$07,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$00,$DE,$05
-        fcb   $B4,$D1
+        fcb   $B4,$CF
 Img_SegaTrails_4 *@globals
         fcb   $07,$00,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$E0,$DE,$05
-        fcb   $B3,$5B
+        fcb   $B3,$59
 Img_SegaTrails_3 *@globals
         fcb   $07,$00,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$F0,$DE,$05
-        fcb   $B1,$E5
+        fcb   $B1,$E3
 Img_SegaTrails_2 *@globals
         fcb   $07,$10,$00,$00,$0F,$44,$00,$00,$06,$00,$00,$00,$DE,$05
-        fcb   $B0,$13,$00,$06,$00,$00,$F0,$DE,$05,$AE,$39
+        fcb   $B0,$11,$00,$06,$00,$00,$F0,$DE,$05,$AE,$37
 Img_star_4 *@globals
         fcb   $07,$00,$00,$00,$0A,$16,$00,$06,$00,$00,$00,$FB,$F5,$05
-        fcb   $AB,$98,$05,$AB,$03,$02
+        fcb   $AB,$96,$05,$AB,$01,$02
 Img_star_3 *@globals
         fcb   $07,$00,$00,$00,$06,$0E,$00,$06,$00,$00,$00,$FD,$F9,$05
-        fcb   $AA,$01,$05,$A9,$A3,$01
+        fcb   $A9,$FF,$05,$A9,$A1,$01
 Img_sonicHand *@globals
         fcb   $07,$00,$00,$00,$0E,$2A,$00,$06,$0D,$00,$00,$04,$01,$08
-        fcb   $BF,$38,$05,$A7,$D1,$05,$06,$B9,$4F
+        fcb   $AF,$79,$05,$A7,$D1,$05,$06,$B9,$4F
 Img_star_2 *@globals
         fcb   $07,$00,$00,$00,$02,$06,$00,$06,$00,$0D,$00,$FF,$FD,$05
         fcb   $A7,$60,$05,$A7,$32,$01,$05,$A6,$C3,$05,$A6,$95,$01
@@ -3767,7 +3863,7 @@ Img_star_1 *@globals
         fcb   $A6,$42,$05,$A6,$1E,$01,$05,$A5,$CD,$05,$A5,$A9,$01
 Img_emblemBack08 *@globals
         fcb   $07,$00,$00,$00,$1F,$27,$00,$00,$06,$00,$00,$10,$DD,$07
-        fcb   $CD,$BA
+        fcb   $CD,$D8
 Img_emblemBack07 *@globals
         fcb   $07,$00,$00,$00,$1F,$1F,$00,$00,$06,$00,$00,$10,$BD,$06
         fcb   $B5,$B7
@@ -3788,52 +3884,52 @@ Img_emblemBack05 *@globals
         fcb   $AA,$B6
 Img_tails_5 *@globals
         fcb   $07,$00,$00,$00,$2B,$3F,$00,$06,$0D,$00,$00,$03,$0D,$0A
-        fcb   $B8,$99,$07,$C9,$43,$11,$0A,$AE,$3E
+        fcb   $B5,$8E,$07,$C9,$60,$11,$09,$AB,$27
 Img_tails_4 *@globals
-        fcb   $07,$00,$00,$00,$2C,$3A,$00,$06,$00,$00,$00,$03,$12,$0A
-        fcb   $A0,$00,$07,$C5,$02,$10
+        fcb   $07,$00,$00,$00,$2C,$3A,$00,$06,$00,$00,$00,$03,$12,$0B
+        fcb   $CE,$89,$07,$C5,$1F,$10
 Img_tails_3 *@globals
         fcb   $07,$00,$00,$00,$2B,$3C,$00,$06,$00,$00,$00,$04,$11,$0B
-        fcb   $CF,$BB,$07,$C0,$97,$0F
+        fcb   $C0,$33,$07,$C0,$B4,$0F
 Img_tails_2 *@globals
-        fcb   $07,$00,$00,$00,$2B,$37,$00,$06,$00,$00,$00,$02,$16,$0B
-        fcb   $C3,$57,$06,$A7,$05,$0F
+        fcb   $07,$00,$00,$00,$2B,$37,$00,$06,$00,$00,$00,$02,$16,$0A
+        fcb   $A9,$2B,$06,$A7,$05,$0F
 Img_tails_1 *@globals
         fcb   $07,$00,$00,$00,$1B,$3F,$00,$06,$00,$00,$00,$0C,$11,$0B
-        fcb   $B7,$ED,$06,$A3,$99,$0E
+        fcb   $B4,$C9,$06,$A3,$99,$0E
 Img_tailsHand *@globals
         fcb   $07,$00,$00,$00,$07,$12,$00,$06,$0D,$00,$00,$04,$06,$06
         fcb   $A2,$05,$05,$A1,$B1,$02,$05,$A0,$AE
+Img_island *@globals
+        fcb   $07,$00,$00,$00,$87,$29,$00,$06,$00,$00,$00,$BC,$F6,$0C
+        fcb   $B0,$8A,$09,$A6,$08,$18
 Img_sonic_1 *@globals
         fcb   $07,$00,$00,$00,$23,$42,$00,$06,$00,$00,$00,$02,$0E,$0B
-        fcb   $A9,$52,$07,$BC,$68,$14
+        fcb   $A6,$2E,$07,$BC,$85,$14
 Img_sonic_2 *@globals
         fcb   $07,$00,$00,$00,$24,$53,$00,$06,$00,$00,$00,$03,$0D,$0C
-        fcb   $CD,$86,$07,$B7,$BB,$17
+        fcb   $A0,$00,$07,$B7,$D8,$17
 Img_emblemBack02 *@globals
         fcb   $07,$00,$00,$00,$1F,$1F,$00,$00,$06,$00,$00,$D0,$BD,$07
-        fcb   $B4,$1D
+        fcb   $B4,$3A
 Img_emblemBack01 *@globals
         fcb   $07,$00,$00,$00,$0F,$37,$00,$00,$06,$00,$00,$C0,$B3,$07
-        fcb   $B0,$B9
-Img_sonic_5 *@globals
-        fcb   $07,$00,$00,$00,$23,$49,$00,$06,$0D,$00,$00,$0C,$0A,$0C
-        fcb   $BE,$6F,$07,$AC,$72,$14,$0B,$A0,$00
+        fcb   $B0,$D6
 Img_sonic_3 *@globals
-        fcb   $07,$00,$00,$00,$24,$46,$00,$06,$00,$00,$00,$0B,$0D,$0C
-        fcb   $AE,$DF,$08,$BA,$D4,$15
+        fcb   $07,$00,$00,$00,$24,$46,$00,$06,$00,$00,$00,$0B,$0D,$0D
+        fcb   $AE,$DF,$07,$AC,$72,$15
 Img_sonic_4 *@globals
-        fcb   $07,$00,$00,$00,$23,$49,$00,$06,$00,$00,$00,$0C,$0A,$0C
-        fcb   $A0,$00,$07,$A8,$3D,$14
+        fcb   $07,$00,$00,$00,$23,$49,$00,$06,$0D,$00,$00,$0C,$0A,$0D
+        fcb   $A0,$00,$07,$A8,$3D,$14,$0A,$A0,$00
 Img_emblemFront07 *@globals
         fcb   $07,$00,$00,$00,$12,$12,$00,$00,$06,$00,$00,$F7,$3D,$06
         fcb   $A0,$00
 Img_emblemFront08 *@globals
         fcb   $07,$00,$00,$00,$26,$25,$00,$00,$06,$00,$00,$10,$1D,$08
-        fcb   $B6,$2B
+        fcb   $AA,$D0
 Img_emblemFront05 *@globals
         fcb   $07,$00,$00,$00,$26,$25,$00,$00,$06,$00,$00,$C9,$1D,$08
-        fcb   $B1,$66
+        fcb   $A6,$0B
 Img_emblemFront06 *@globals
         fcb   $07,$00,$00,$00,$1F,$1F,$00,$00,$06,$00,$00,$F0,$1D,$07
         fcb   $A4,$06
@@ -3842,13 +3938,13 @@ Img_emblemFront03 *@globals
         fcb   $A0,$00
 Img_emblemFront04 *@globals
         fcb   $07,$00,$00,$00,$1B,$1F,$00,$00,$06,$00,$00,$10,$FD,$08
-        fcb   $AE,$51
+        fcb   $A2,$F6
 Img_emblemFront01 *@globals
         fcb   $07,$00,$00,$00,$3D,$03,$00,$00,$06,$00,$00,$E1,$F9,$05
         fcb   $A0,$00
 Img_emblemFront02 *@globals
         fcb   $07,$00,$00,$00,$1A,$1F,$00,$00,$06,$00,$00,$D5,$FD,$08
-        fcb   $AB,$5B
+        fcb   $A0,$00
 
 (include)ANIMSCPT
 * Generated Code
@@ -3911,7 +4007,7 @@ Obj_Index_Page
         fcb   $05
         fcb   $06
         fcb   $05
-        fcb   $08
+        fcb   $0B
         fcb   $00
         fcb   $00
         fcb   $00
@@ -4165,9 +4261,9 @@ Obj_Index_Page
         fcb   $00
 Obj_Index_Address
         fcb   $00,$00
-        fcb   $DF,$30
+        fcb   $DF,$31
         fcb   $BC,$F6
-        fcb   $AD,$4B
+        fcb   $AD,$49
         fcb   $A0,$00
         fcb   $00,$00
         fcb   $00,$00
@@ -4426,10 +4522,10 @@ Obj_Index_Address
 
 Pcm_SEGA *@globals
         fcb   $0E,$A0,$00,$DF,$F6
-        fcb   $0D,$A0,$00,$C1,$7E
+        fcb   $0D,$BE,$6F,$DF,$ED
         fcb   $FF
 Psg_TitleScreen *@globals
-        fcb   $08,$A5,$53,$AB,$5B
+        fcb   $09,$A0,$00,$A6,$08
         fcb   $FF
 
 (include)LOADACT

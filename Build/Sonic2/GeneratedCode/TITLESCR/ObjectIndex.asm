@@ -5,7 +5,7 @@ Obj_Index_Page
         fcb   $05
         fcb   $06
         fcb   $05
-        fcb   $08
+        fcb   $0B
         fcb   $00
         fcb   $00
         fcb   $00
@@ -259,9 +259,9 @@ Obj_Index_Page
         fcb   $00
 Obj_Index_Address
         fcb   $00,$00
-        fcb   $DF,$30
+        fcb   $DF,$31
         fcb   $BC,$F6
-        fcb   $AD,$4B
+        fcb   $AD,$49
         fcb   $A0,$00
         fcb   $00,$00
         fcb   $00,$00

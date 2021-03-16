@@ -181,30 +181,30 @@ BCKDRAW_Img_sonicHand
 	LEAU 281,U
 
 	LDA -119,U
-	LDX ,U
-	LDY 80,U
+	LDX 80,U
+	LDY ,U
 	PSHS Y,X,A
-	LDD -40,U
-	LDX 40,U
-	LDY 120,U
-	PSHS Y,X,D
-	LDD #$bbcc
-	STD -40,U
-	STD ,U
-	LDB #$cb
-	STD 40,U
-	LDA #$cb
-	STD 80,U
+	LDD 40,U
+	LDX 120,U
+	PSHS X,D
+	LDD #$000b
+	STD 120,U
 	LDD -121,U
 	PSHS D
 	ANDA #$F0
 	ORA #$0b
 	LDB #$00
 	STD -121,U
-	LDX -80,U
-	PSHS U,X
-	LDD #$000b
-	STD 120,U
+	LDX -40,U
+	LDD #$cbcb
+	STD 80,U
+	LDA #$bb
+	STD 40,U
+	LDB #$cc
+	STD -40,U
+	STD ,U
+	LDY -80,U
+	PSHS U,Y,X
 	LDD #$0bbc
 	STD -80,U
 	STB -119,U
@@ -223,21 +223,21 @@ BCKDRAW_Img_sonicHand
 	LDB #$54
 	STD 79,U
 	LDA 120,U
-	LDX -1,U
+	LDX -41,U
 	LDY -121,U
 	PSHS Y,X,A
 	STB 120,U
-	LDD -41,U
-	LDX -81,U
+	LDD -81,U
+	LDX -1,U
 	PSHS U,X,D
-	LDD #$ccc3
-	STD -1,U
 	LDD #$b00c
 	STD -121,U
 	LDB #$bc
 	STD -81,U
 	LDD #$cbcc
 	STD -41,U
+	LDD #$ccc3
+	STD -1,U
 	LEAU 280,U
 
 	LDA -120,U
@@ -426,10 +426,9 @@ DYN_POS
 	STA 1,U
 	LEAU 159,U
 
-	LDX -120,U
-	LDY -40,U
-	PSHS Y,X
-	LDA 82,U
+	LDX -80,U
+	PSHS X
+	LDA 42,U
 	LDB -118,U
 	PSHS B,A
 	ANDB #$0F
@@ -445,18 +444,19 @@ DYN_POS
 	ANDA #$0F
 	ORA #$c0
 	STA -38,U
-	LDA 122,U
-	LDB 42,U
-	LDX -80,U
-	PSHS X,B,A
-	LDD #$bbbb
-	STD -40,U
-	LDA #$b0
-	STD -80,U
+	LDA 82,U
+	LDB 122,U
+	LDX -40,U
+	LDY -120,U
+	PSHS Y,X,B,A
 	LDA #$cc
 	STA 42,U
 	STA 82,U
 	STA 122,U
+	LDD #$bbbb
+	STD -40,U
+	LDA #$b0
+	STD -80,U
 	LDD #$000b
 	STD -120,U
 	LDD 40,U

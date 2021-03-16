@@ -10,13 +10,6 @@
         org   $6100
 
         jsr   LoadAct
-        jsr   PSGInit
-
-InitIRQ        
-        ldd   #_IRQ                                   ; map IRQ routine                
-        std   $6027
-        ldd   #$09C4                                  ; 09C4 for 50hz 0823 for 60hz
-        std   $E7C6                                   ; timer to 20ms      
 
 * ==============================================================================
 * Main Loop
@@ -32,19 +25,6 @@ LevelMainLoop
         jsr   DrawSprites        
         bra   LevelMainLoop
         
-* ==============================================================================
-* IRQ
-* ==============================================================================       
-_IRQ
-        lda   $E7E5
-        sta   _IRQ_end+1                              ; backup data page
-        jsr   PSGFrame
-        * jsr   PSGSFXFrame
-_IRQ_end        
-        lda   #$00
-        sta   $E7E5                                   ; restore data page
-        jmp   $E830  
-
 * ==============================================================================
 * Global Data
 *
@@ -160,9 +140,8 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
 * ==============================================================================
 * Routines
 * ==============================================================================
-        * a rendre dynamique a partir du properties game mode
+        * a rendre dynamique a partir des includes du game mode properties
         INCLUD WAITVBL
-        * INCLUD WAITVBLR
         INCLUD READJPDS
         INCLUD RUNOBJTS
         INCLUD MRKOBJGN        
@@ -180,8 +159,9 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD BGBFREE 
         INCLUD CLRCARTM  
         INCLUD UPDTPAL        
-        INCLUD PLAYPCM * A rendre dynamique 
-        INCLUD PSGLIB  * A rendre dynamique   
+        INCLUD PLAYPCM 
+        INCLUD PSGLIB
+        INCLUD IRQPSGRR   
         
 * ==============================================================================
 * Level Specific Generated Data

@@ -27,16 +27,16 @@ ERASE_CODE_Img_SegaSonic_33_1
 
 	PULS D,X,U
 	STD 40,U
-	STX -120,U
+	STX ,U
 
 	PULS D,X,Y
-	STD 120,U
+	STD -120,U
 	STX 80,U
-	STY ,U
+	STY -40,U
 
 	PULS D,X
-	STD -40,U
-	STX -80,U
+	STD -80,U
+	STX 120,U
 
 	PULS D,X,U
 	STD 79,U

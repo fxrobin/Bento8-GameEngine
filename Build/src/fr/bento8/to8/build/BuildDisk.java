@@ -1226,7 +1226,7 @@ public class BuildDisk
 			pn = Pattern.compile("#([0-9a-zA-Z_]*)\\s\\*@IgnoreUndefined");  
 			m = pn.matcher(content); 			
 			while (m.find()) {
-				pn2 = Pattern.compile("(?m)^"+m.group(1));
+				pn2 = Pattern.compile("(?m)^"+m.group(1)+"\\s");
 				m2 = pn2.matcher(content);  
 				if (m2.find() == false) {					
 					content += "\n" + m.group(1) + " equ 0";

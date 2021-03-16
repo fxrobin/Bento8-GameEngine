@@ -102,10 +102,11 @@ Obj_EmblemBack06        equ TitleScr_This+(object_size*19)
 Obj_EmblemBack07        equ TitleScr_This+(object_size*20)
 Obj_EmblemBack08        equ TitleScr_This+(object_size*21)
 Obj_EmblemBack09        equ TitleScr_This+(object_size*22)
-Obj_PaletteHandler      equ TitleScr_This+(object_size*23)
-Obj_PaletteHandler2     equ TitleScr_This+(object_size*24)
-Obj_PaletteHandler3     equ TitleScr_This+(object_size*25)
-TitleScr_Object_RAM_End equ TitleScr_This+(object_size*26)
+Obj_Island              equ TitleScr_This+(object_size*23)
+Obj_PaletteHandler      equ TitleScr_This+(object_size*24)
+Obj_PaletteHandler2     equ TitleScr_This+(object_size*25)
+Obj_PaletteHandler3     equ TitleScr_This+(object_size*26)
+TitleScr_Object_RAM_End equ TitleScr_This+(object_size*27)
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -132,6 +133,7 @@ Sub_LargeStar   equ 15
 Sub_SonicHand   equ 18
 Sub_SmallStar   equ 21
 Sub_TailsHand   equ 24
+Sub_Island      equ 27
 
 * ***************************************************************************
 * TitleScreen
@@ -159,6 +161,7 @@ TitleScreen_Routines                             *Obj0E_Index:    offsetTable
         lbra  SmallStar                          *                offsetTableEntry.w Obj0E_SmallStar      ;  $C
                                                  *                offsetTableEntry.w Obj0E_SkyPiece       ;  $E
         lbra  TailsHand                          *                offsetTableEntry.w Obj0E_TailsHand      ; $10
+        lbra  Island
                                                  *; ===========================================================================
                                                  *; loc_12E38:
 Init                                             *Obj0E_Init:
@@ -206,15 +209,16 @@ Sonic_Routines                                   *off_12E76:      offsetTable
                                                  *; spawn more stars
 Sonic_Init                                       *Obj0E_Sonic_Init:
 
-		ldd   #Pal_TitleScreen *@IgnoreUndefined
+        ldd   #Pal_TitleScreen *@IgnoreUndefined
 		std   Cur_palette
         clr   Refresh_palette                    * will call refresh palette after next VBL
 
-        * Activate IRQ for Sound
-        lda   $6019                           
-        ora   #$20
-        sta   $6019                                   ; STATUS register
-        andcc #:$10                                   ; tell 6809 to activate irq    
+        ldd   #IrqPsg
+        std   irq_routine
+        lda   #132                               ; screen line to sync
+        ldx   #irq_one_frame                     ; on every frame
+        jsr   IrqSync
+        jsr   IrqOn
 
         lda   routine_secondary,u
         adda  #$03
@@ -363,7 +367,7 @@ Sonic_PaletteFadeAfterWait                       *+
         lda   #ObjID_PaletteHandler
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
         clr   subtype,x                          *        move.b  #0,subtype(a1)
-        ldd   #Black_palette *@IgnoreUndefined
+        ldd   #Black_palette
         std   ext_variables,x
         ldd   #Pal_TitleScreen *@IgnoreUndefined
         std   ext_variables+2,x
@@ -443,7 +447,7 @@ Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldd   #Img_sonic_5
+        ldd   #Img_sonic_4
         std   image_set,u                        *        move.b  #$12,mapping_frame(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
         lda   #ObjID_TitleScreen
@@ -486,6 +490,22 @@ Sonic_FadeInBackground                           *loc_12F9A:
         std   w_TitleScr_xy_data_index,u         *        clr.w   objoff_2C(a0)
         ldd   #$FF
         std   b_TitleScr_final_state,u            *        st      objoff_2F(a0)
+        
+        lda   $E7E5
+        sta   Irq_Raster_Page
+        ldd   #Pal_TitleScreenRaster
+        std   Irq_Raster_Start
+        ldd   #Pal_TitleScreenRaster_end
+        std   Irq_Raster_End        
+        ldd   #IrqPsgRaster
+        std   irq_routine
+        
+        ldx   #Obj_Island
+        lda   #ObjID_TitleScreen
+        sta   id,x
+        lda   #Sub_Island
+        sta   subtype,x
+        
         *ldd   #White_palette                     *        lea     (Normal_palette_line3).w,a1
         *std   cur_palette                        *        move.w  #$EEE,d0
                                                  *
@@ -991,6 +1011,50 @@ SmallStar_MoveContinue
                                                  *; ===========================================================================
 
 * ---------------------------------------------------------------------------
+* Island
+* ---------------------------------------------------------------------------
+
+Island
+
+        lda   routine_secondary,u
+        sta   *+4,pcr
+        bra   Island_Routines
+
+Island_Routines
+        lbra  Island_Init
+        lbra  Island_Move
+        lbra  Island_Display
+
+Island_Init
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+        ldd   #Img_island
+        std   image_set,u
+        lda   #7
+        sta   priority,u
+        ldd   #$97BB
+        std   xy_pixel,u
+
+        ldd   #$30
+        std   w_TitleScr_time_frame_countdown,u
+        jmp   DisplaySprite
+
+Island_Move
+        ldd   w_TitleScr_time_frame_countdown,u
+        subd  #1
+        std   w_TitleScr_time_frame_countdown,u
+        bpl   Island_MoveContinue
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+
+Island_MoveContinue
+        dec   x_pixel,u
+Island_Display              
+        jmp   DisplaySprite
+
+* ---------------------------------------------------------------------------
 * Subroutines
 * ---------------------------------------------------------------------------
 
@@ -1010,7 +1074,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   b_TitleScr_final_state,u           *        st.b    objoff_2F(a0)
         lda   #24
         sta   routine_secondary,u                *        move.b  #$10,routine_secondary(a0)
-        ldd   #Img_sonic_5
+        ldd   #Img_sonic_4
         std   image_set,u                        *        move.b  #$12,mapping_frame(a0)
         ldd   #$7427
         std   xy_pixel,u                         *        move.w  #$108,x_pixel(a0)
@@ -1114,6 +1178,59 @@ TitleScreen_SetFinalState_end                    *+
                                                  *; End of function TitleScreen_InitSprite
                                                  *
                                                  *; ===========================================================================
+
+Pal_TitleScreenRaster
+        fdb   $0e00 * 132-147
+        fdb   $0c00	* 181-131
+        fdb   $0c00	* 181-131
+        fdb   $0e00 * 132-147
+        fdb   $0c00	* 181-131
+        fdb   $0e00 * 132-147
+        fdb   $0e00 * 132-147
+        fdb   $0e00 * 132-147
+        fdb   $0e00 * 132-147
+        fdb   $0e00 * 132-147
+        fdb   $0e00 * 132-147
+        fdb   $0b10	* 148-154
+        fdb   $0e00 * 132-147
+        fdb   $0b10	* 148-154
+        fdb   $0b10	* 148-154
+        fdb   $0e00 * 132-147
+        fdb   $0b10	* 148-154
+        fdb   $0b10	* 148-154
+        fdb   $0b10	* 148-154
+        fdb   $0b10	* 148-154
+        fdb   $0b10	* 148-154
+        fdb   $0c10	* 155-157
+        fdb   $0b10	* 148-154
+        fdb   $0c10	* 155-157
+        fdb   $0a21	* 158-161
+        fdb   $0c10	* 155-157
+        fdb   $0a21	* 158-161
+        fdb   $0a21	* 158-161
+        fdb   $0b41	* 162-164
+		fdb   $0a21	* 158-161
+        fdb   $0b41	* 162-164
+        fdb   $0a52	* 165-167
+		fdb   $0b41	* 162-164
+        fdb   $0a52	* 165-167
+        fdb   $0b74	* 168-171
+		fdb   $0a52	* 165-167
+        fdb   $0b74	* 168-171
+		fdb   $0b74	* 168-171
+        fdb   $0b97	* 172-174
+		fdb   $0b74	* 168-171
+        fdb   $0b97	* 172-174
+        fdb   $0bbb	* 175-180
+		fdb   $0b97	* 172-174
+        fdb   $0bbb	* 175-180
+		fdb   $0bbb	* 175-180
+		fdb   $0bbb	* 175-180
+		fdb   $0bbb	* 175-180
+		fdb   $0bbb	* 175-180
+		fdb   $0bbb	* 175-180
+        fdb   $0c00	* 181-131
+Pal_TitleScreenRaster_end        
 
 * ---------------------------------------------------------------------------
 * Animation script is generated - for reference only

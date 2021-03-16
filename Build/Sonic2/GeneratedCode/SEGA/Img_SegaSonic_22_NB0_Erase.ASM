@@ -63,16 +63,16 @@ ERASE_CODE_Img_SegaSonic_22_1
 
 	PULS A,X,Y
 	STA -79,U
-	STX -81,U
-	STY 39,U
+	STX 39,U
+	STY -1,U
 
 	PULS D,X
-	STD -1,U
-	STX -119,U
+	STD -119,U
+	STX -81,U
 
 	PULS A,B,X,Y
-	STA 120,U
-	STB 80,U
+	STA 80,U
+	STB 120,U
 	STX -121,U
 	STY -41,U
 

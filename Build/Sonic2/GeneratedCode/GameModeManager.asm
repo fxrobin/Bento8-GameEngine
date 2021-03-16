@@ -337,11 +337,11 @@ ObjID_SonicAndTailsIn equ 1
 ObjID_SEGA equ 2
 ObjID_PaletteHandler equ 3
 ObjID_TitleScreen equ 4
-Glb_Sprite_Screen_Pos_Part1 equ $6142
-Glb_Sprite_Screen_Pos_Part2 equ $6144
-Object_RAM equ $6630
-screen_border_color equ $7182
-Vint_runcount equ $71A8
+Glb_Sprite_Screen_Pos_Part1 equ $6122
+Glb_Sprite_Screen_Pos_Part2 equ $6124
+Object_RAM equ $6610
+screen_border_color equ $7162
+Vint_runcount equ $7188
 c1_button_up_mask equ $0001
 c1_button_down_mask equ $0002
 c1_button_left_mask equ $0004
@@ -352,110 +352,122 @@ c2_button_left_mask equ $0040
 c2_button_right_mask equ $0080
 c1_button_A_mask equ $0040
 c2_button_A_mask equ $0080
-Joypads_Held equ $71AC
-Dpad_Held equ $71AC
-Fire_Held equ $71AD
-Joypads_Press equ $71AE
-Dpad_Press equ $71AE
-Fire_Press equ $71AF
-MarkObjGone equ $7219
-DisplaySprite_x equ $721B
-DisplaySprite equ $7221
-AnimateSprite equ $729A
-DeleteObject_x equ $735F
-DeleteObject equ $7365
-ClearObj equ $7427
-ClearCartMem equ $7CD7
-Refresh_palette equ $7D11
-Cur_palette equ $7D12
-Dyn_palette equ $7D14
-Black_palette equ $7D34
-White_palette equ $7D54
-UpdatePalette equ $7D74
-PlayPCM equ $7D9C
-PSGInit equ $7DF3
-PSGPlayNoRepeat equ $7E05
-PSGStop equ $7E33
-PSGResume equ $7E5C
-PSGCancelLoop equ $7EA7
-PSGGetStatus equ $7EAB
-PSGSetMusicVolumeAttenuation equ $7EAF
-PSGSilenceChannels equ $7F0E
-PSGRestoreVolumes equ $7F23
-PSGSFXPlayLoop equ $7F97
-PSGSFXStop equ $7FE3
-PSGSFXCancelLoop equ $8059
-PSGSFXGetStatus equ $805D
-PSGFrame equ $8061
-_sendVolume2PSG equ $811B
-PSGSFXFrame equ $816E
-_SFXsetLoopPoint equ $81CB
-Img_SonicAndTailsIn equ $8217
-Img_SegaLogo_2 equ $8227
-Img_SegaLogo_1 equ $8237
-Img_SegaTrails_1 equ $8247
-Img_SegaSonic_12 equ $8260
-Img_SegaSonic_23 equ $8281
-Img_SegaSonic_13 equ $82A2
-Img_SegaSonic_32 equ $82C3
-Img_SegaSonic_21 equ $82E4
-Img_SegaSonic_43 equ $8305
-Img_SegaSonic_11 equ $8326
-Img_SegaSonic_33 equ $8347
-Img_SegaSonic_22 equ $8368
-Img_SegaSonic_41 equ $8389
-Img_SegaSonic_31 equ $83AA
-Img_SegaSonic_42 equ $83CB
-Img_SegaTrails_6 equ $83EC
-Img_SegaTrails_5 equ $83FC
-Img_SegaTrails_4 equ $840C
-Img_SegaTrails_3 equ $841C
-Img_SegaTrails_2 equ $842C
-Img_star_4 equ $8445
-Img_star_3 equ $8459
-Img_sonicHand equ $846D
-Img_star_2 equ $8484
-Img_star_1 equ $849F
-Img_emblemBack08 equ $84BA
-Img_emblemBack07 equ $84CA
-Img_emblemBack09 equ $84DA
-Img_emblemBack04 equ $84EA
-Img_emblemBack03 equ $84FA
-Img_emblemBack06 equ $850A
-Img_emblemBack05 equ $851A
-Img_tails_5 equ $852A
-Img_tails_4 equ $8541
-Img_tails_3 equ $8555
-Img_tails_2 equ $8569
-Img_tails_1 equ $857D
-Img_tailsHand equ $8591
-Img_sonic_1 equ $85A8
-Img_sonic_2 equ $85BC
-Img_emblemBack02 equ $85D0
-Img_emblemBack01 equ $85E0
-Img_sonic_5 equ $85F0
-Img_sonic_3 equ $8607
-Img_sonic_4 equ $861B
-Img_emblemFront07 equ $862F
-Img_emblemFront08 equ $863F
-Img_emblemFront05 equ $864F
-Img_emblemFront06 equ $865F
-Img_emblemFront03 equ $866F
-Img_emblemFront04 equ $867F
-Img_emblemFront01 equ $868F
-Img_emblemFront02 equ $869F
-Ani_SegaSonic_3 equ $86B0
-Ani_SegaSonic_2 equ $86BA
-Ani_SegaSonic_1 equ $86C4
-Ani_smallStar equ $86CE
-Ani_largeStar equ $86D4
-Ani_tails equ $86E0
-Ani_sonic equ $86EC
-Glb_Sprite_Screen_Pos_Part1 equ $6142
-Glb_Sprite_Screen_Pos_Part2 equ $6144
-Object_RAM equ $6630
-screen_border_color equ $7182
-Vint_runcount equ $71A8
+Joypads_Held equ $718C
+Dpad_Held equ $718C
+Fire_Held equ $718D
+Joypads_Press equ $718E
+Dpad_Press equ $718E
+Fire_Press equ $718F
+MarkObjGone equ $71F9
+DisplaySprite_x equ $71FB
+DisplaySprite equ $7201
+AnimateSprite equ $727A
+DeleteObject_x equ $733F
+DeleteObject equ $7345
+ClearObj equ $7407
+ClearCartMem equ $7CB7
+Refresh_palette equ $7CF1
+Cur_palette equ $7CF2
+Dyn_palette equ $7CF4
+Black_palette equ $7D14
+White_palette equ $7D34
+UpdatePalette equ $7D54
+PlayPCM equ $7D7C
+PSGInit equ $7DD3
+PSGPlayNoRepeat equ $7DE5
+PSGStop equ $7E13
+PSGResume equ $7E3C
+PSGCancelLoop equ $7E87
+PSGGetStatus equ $7E8B
+PSGSetMusicVolumeAttenuation equ $7E8F
+PSGSilenceChannels equ $7EEE
+PSGRestoreVolumes equ $7F03
+PSGSFXPlayLoop equ $7F77
+PSGSFXStop equ $7FC3
+PSGSFXCancelLoop equ $8039
+PSGSFXGetStatus equ $803D
+PSGFrame equ $8041
+_sendVolume2PSG equ $80FB
+PSGSFXFrame equ $814E
+_SFXsetLoopPoint equ $81AB
+irq_routine equ $6027
+irq_timer_ctrl equ $E7C5
+irq_timer equ $E7C6
+irq_one_frame equ $4DFF
+Irq_Raster_Page equ $81F7
+Irq_Raster_Start equ $81F9
+Irq_Raster_End equ $81FB
+IrqOn equ $81FD
+IrqOff equ $8208
+IrqSync equ $8213
+IrqPsg equ $8232
+IrqPsgRaster equ $8241
+Img_SonicAndTailsIn equ $8278
+Img_SegaLogo_2 equ $8288
+Img_SegaLogo_1 equ $8298
+Img_SegaTrails_1 equ $82A8
+Img_SegaSonic_12 equ $82C1
+Img_SegaSonic_23 equ $82E2
+Img_SegaSonic_13 equ $8303
+Img_SegaSonic_32 equ $8324
+Img_SegaSonic_21 equ $8345
+Img_SegaSonic_43 equ $8366
+Img_SegaSonic_11 equ $8387
+Img_SegaSonic_33 equ $83A8
+Img_SegaSonic_22 equ $83C9
+Img_SegaSonic_41 equ $83EA
+Img_SegaSonic_31 equ $840B
+Img_SegaSonic_42 equ $842C
+Img_SegaTrails_6 equ $844D
+Img_SegaTrails_5 equ $845D
+Img_SegaTrails_4 equ $846D
+Img_SegaTrails_3 equ $847D
+Img_SegaTrails_2 equ $848D
+Img_star_4 equ $84A6
+Img_star_3 equ $84BA
+Img_sonicHand equ $84CE
+Img_star_2 equ $84E5
+Img_star_1 equ $8500
+Img_emblemBack08 equ $851B
+Img_emblemBack07 equ $852B
+Img_emblemBack09 equ $853B
+Img_emblemBack04 equ $854B
+Img_emblemBack03 equ $855B
+Img_emblemBack06 equ $856B
+Img_emblemBack05 equ $857B
+Img_tails_5 equ $858B
+Img_tails_4 equ $85A2
+Img_tails_3 equ $85B6
+Img_tails_2 equ $85CA
+Img_tails_1 equ $85DE
+Img_tailsHand equ $85F2
+Img_island equ $8609
+Img_sonic_1 equ $861D
+Img_sonic_2 equ $8631
+Img_emblemBack02 equ $8645
+Img_emblemBack01 equ $8655
+Img_sonic_3 equ $8665
+Img_sonic_4 equ $8679
+Img_emblemFront07 equ $8690
+Img_emblemFront08 equ $86A0
+Img_emblemFront05 equ $86B0
+Img_emblemFront06 equ $86C0
+Img_emblemFront03 equ $86D0
+Img_emblemFront04 equ $86E0
+Img_emblemFront01 equ $86F0
+Img_emblemFront02 equ $8700
+Ani_SegaSonic_3 equ $8711
+Ani_SegaSonic_2 equ $871B
+Ani_SegaSonic_1 equ $8725
+Ani_smallStar equ $872F
+Ani_largeStar equ $8735
+Ani_tails equ $8741
+Ani_sonic equ $874D
+Glb_Sprite_Screen_Pos_Part1 equ $6122
+Glb_Sprite_Screen_Pos_Part2 equ $6124
+Object_RAM equ $6610
+screen_border_color equ $7162
+Vint_runcount equ $7188
 c1_button_up_mask equ $0001
 c1_button_down_mask equ $0002
 c1_button_left_mask equ $0004
@@ -466,112 +478,124 @@ c2_button_left_mask equ $0040
 c2_button_right_mask equ $0080
 c1_button_A_mask equ $0040
 c2_button_A_mask equ $0080
-Joypads_Held equ $71AC
-Dpad_Held equ $71AC
-Fire_Held equ $71AD
-Joypads_Press equ $71AE
-Dpad_Press equ $71AE
-Fire_Press equ $71AF
-MarkObjGone equ $7219
-DisplaySprite_x equ $721B
-DisplaySprite equ $7221
-AnimateSprite equ $729A
-DeleteObject_x equ $735F
-DeleteObject equ $7365
-ClearObj equ $7427
-ClearCartMem equ $7CD7
-Refresh_palette equ $7D11
-Cur_palette equ $7D12
-Dyn_palette equ $7D14
-Black_palette equ $7D34
-White_palette equ $7D54
-UpdatePalette equ $7D74
-PlayPCM equ $7D9C
-PSGInit equ $7DF3
-PSGPlayNoRepeat equ $7E05
-PSGStop equ $7E33
-PSGResume equ $7E5C
-PSGCancelLoop equ $7EA7
-PSGGetStatus equ $7EAB
-PSGSetMusicVolumeAttenuation equ $7EAF
-PSGSilenceChannels equ $7F0E
-PSGRestoreVolumes equ $7F23
-PSGSFXPlayLoop equ $7F97
-PSGSFXStop equ $7FE3
-PSGSFXCancelLoop equ $8059
-PSGSFXGetStatus equ $805D
-PSGFrame equ $8061
-_sendVolume2PSG equ $811B
-PSGSFXFrame equ $816E
-_SFXsetLoopPoint equ $81CB
-Img_SonicAndTailsIn equ $8217
-Img_SegaLogo_2 equ $8227
-Img_SegaLogo_1 equ $8237
-Img_SegaTrails_1 equ $8247
-Img_SegaSonic_12 equ $8260
-Img_SegaSonic_23 equ $8281
-Img_SegaSonic_13 equ $82A2
-Img_SegaSonic_32 equ $82C3
-Img_SegaSonic_21 equ $82E4
-Img_SegaSonic_43 equ $8305
-Img_SegaSonic_11 equ $8326
-Img_SegaSonic_33 equ $8347
-Img_SegaSonic_22 equ $8368
-Img_SegaSonic_41 equ $8389
-Img_SegaSonic_31 equ $83AA
-Img_SegaSonic_42 equ $83CB
-Img_SegaTrails_6 equ $83EC
-Img_SegaTrails_5 equ $83FC
-Img_SegaTrails_4 equ $840C
-Img_SegaTrails_3 equ $841C
-Img_SegaTrails_2 equ $842C
-Img_star_4 equ $8445
-Img_star_3 equ $8459
-Img_sonicHand equ $846D
-Img_star_2 equ $8484
-Img_star_1 equ $849F
-Img_emblemBack08 equ $84BA
-Img_emblemBack07 equ $84CA
-Img_emblemBack09 equ $84DA
-Img_emblemBack04 equ $84EA
-Img_emblemBack03 equ $84FA
-Img_emblemBack06 equ $850A
-Img_emblemBack05 equ $851A
-Img_tails_5 equ $852A
-Img_tails_4 equ $8541
-Img_tails_3 equ $8555
-Img_tails_2 equ $8569
-Img_tails_1 equ $857D
-Img_tailsHand equ $8591
-Img_sonic_1 equ $85A8
-Img_sonic_2 equ $85BC
-Img_emblemBack02 equ $85D0
-Img_emblemBack01 equ $85E0
-Img_sonic_5 equ $85F0
-Img_sonic_3 equ $8607
-Img_sonic_4 equ $861B
-Img_emblemFront07 equ $862F
-Img_emblemFront08 equ $863F
-Img_emblemFront05 equ $864F
-Img_emblemFront06 equ $865F
-Img_emblemFront03 equ $866F
-Img_emblemFront04 equ $867F
-Img_emblemFront01 equ $868F
-Img_emblemFront02 equ $869F
-Ani_SegaSonic_3 equ $86B0
-Ani_SegaSonic_2 equ $86BA
-Ani_SegaSonic_1 equ $86C4
-Ani_smallStar equ $86CE
-Ani_largeStar equ $86D4
-Ani_tails equ $86E0
-Ani_sonic equ $86EC
-Pcm_SEGA equ $89F5
-Psg_TitleScreen equ $8A00
-Pal_SEGA equ $8A3A
-Pal_TitleScreen equ $8A5A
-Pal_SEGAMid equ $8A7A
-Pal_SonicAndTailsIn equ $8A9A
-Pal_SEGAEnd equ $8ABA
+Joypads_Held equ $718C
+Dpad_Held equ $718C
+Fire_Held equ $718D
+Joypads_Press equ $718E
+Dpad_Press equ $718E
+Fire_Press equ $718F
+MarkObjGone equ $71F9
+DisplaySprite_x equ $71FB
+DisplaySprite equ $7201
+AnimateSprite equ $727A
+DeleteObject_x equ $733F
+DeleteObject equ $7345
+ClearObj equ $7407
+ClearCartMem equ $7CB7
+Refresh_palette equ $7CF1
+Cur_palette equ $7CF2
+Dyn_palette equ $7CF4
+Black_palette equ $7D14
+White_palette equ $7D34
+UpdatePalette equ $7D54
+PlayPCM equ $7D7C
+PSGInit equ $7DD3
+PSGPlayNoRepeat equ $7DE5
+PSGStop equ $7E13
+PSGResume equ $7E3C
+PSGCancelLoop equ $7E87
+PSGGetStatus equ $7E8B
+PSGSetMusicVolumeAttenuation equ $7E8F
+PSGSilenceChannels equ $7EEE
+PSGRestoreVolumes equ $7F03
+PSGSFXPlayLoop equ $7F77
+PSGSFXStop equ $7FC3
+PSGSFXCancelLoop equ $8039
+PSGSFXGetStatus equ $803D
+PSGFrame equ $8041
+_sendVolume2PSG equ $80FB
+PSGSFXFrame equ $814E
+_SFXsetLoopPoint equ $81AB
+irq_routine equ $6027
+irq_timer_ctrl equ $E7C5
+irq_timer equ $E7C6
+irq_one_frame equ $4DFF
+Irq_Raster_Page equ $81F7
+Irq_Raster_Start equ $81F9
+Irq_Raster_End equ $81FB
+IrqOn equ $81FD
+IrqOff equ $8208
+IrqSync equ $8213
+IrqPsg equ $8232
+IrqPsgRaster equ $8241
+Img_SonicAndTailsIn equ $8278
+Img_SegaLogo_2 equ $8288
+Img_SegaLogo_1 equ $8298
+Img_SegaTrails_1 equ $82A8
+Img_SegaSonic_12 equ $82C1
+Img_SegaSonic_23 equ $82E2
+Img_SegaSonic_13 equ $8303
+Img_SegaSonic_32 equ $8324
+Img_SegaSonic_21 equ $8345
+Img_SegaSonic_43 equ $8366
+Img_SegaSonic_11 equ $8387
+Img_SegaSonic_33 equ $83A8
+Img_SegaSonic_22 equ $83C9
+Img_SegaSonic_41 equ $83EA
+Img_SegaSonic_31 equ $840B
+Img_SegaSonic_42 equ $842C
+Img_SegaTrails_6 equ $844D
+Img_SegaTrails_5 equ $845D
+Img_SegaTrails_4 equ $846D
+Img_SegaTrails_3 equ $847D
+Img_SegaTrails_2 equ $848D
+Img_star_4 equ $84A6
+Img_star_3 equ $84BA
+Img_sonicHand equ $84CE
+Img_star_2 equ $84E5
+Img_star_1 equ $8500
+Img_emblemBack08 equ $851B
+Img_emblemBack07 equ $852B
+Img_emblemBack09 equ $853B
+Img_emblemBack04 equ $854B
+Img_emblemBack03 equ $855B
+Img_emblemBack06 equ $856B
+Img_emblemBack05 equ $857B
+Img_tails_5 equ $858B
+Img_tails_4 equ $85A2
+Img_tails_3 equ $85B6
+Img_tails_2 equ $85CA
+Img_tails_1 equ $85DE
+Img_tailsHand equ $85F2
+Img_island equ $8609
+Img_sonic_1 equ $861D
+Img_sonic_2 equ $8631
+Img_emblemBack02 equ $8645
+Img_emblemBack01 equ $8655
+Img_sonic_3 equ $8665
+Img_sonic_4 equ $8679
+Img_emblemFront07 equ $8690
+Img_emblemFront08 equ $86A0
+Img_emblemFront05 equ $86B0
+Img_emblemFront06 equ $86C0
+Img_emblemFront03 equ $86D0
+Img_emblemFront04 equ $86E0
+Img_emblemFront01 equ $86F0
+Img_emblemFront02 equ $8700
+Ani_SegaSonic_3 equ $8711
+Ani_SegaSonic_2 equ $871B
+Ani_SegaSonic_1 equ $8725
+Ani_smallStar equ $872F
+Ani_largeStar equ $8735
+Ani_tails equ $8741
+Ani_sonic equ $874D
+Pcm_SEGA equ $8A56
+Psg_TitleScreen equ $8A61
+Pal_SEGA equ $8A9B
+Pal_TitleScreen equ $8ABB
+Pal_SEGAMid equ $8ADB
+Pal_SonicAndTailsIn equ $8AFB
+Pal_SEGAEnd equ $8B1B
 
 (include)GMLOADER
 
@@ -648,128 +672,128 @@ Pal_SEGAEnd equ $8ABA
 gm_TITLESCR
         fdb   current_game_mode_data+876
 gmboot * @globals
-        fcb   $07,$06,$00,$2C,$0A,$DE,$C0 * Img_SonicAndTailsIn ND0 Draw
-        fcb   $0D,$00,$00,$D2,$05,$DF,$FA * SonicAndTailsIn Object code
-        fcb   $0B,$08,$01,$B9,$0D,$DB,$3B * Img_SegaLogo_2 ND0 Draw
-        fcb   $03,$05,$02,$65,$09,$DD,$CA * Img_SegaLogo_1 ND0 Draw
-        fcb   $08,$00,$02,$EA,$05,$DD,$B9 * Img_SegaTrails_1 XD0 Draw
-        fcb   $08,$01,$02,$83,$05,$DF,$30 * Img_SegaTrails_1 ND0 Draw
-        fcb   $09,$03,$02,$E5,$09,$D1,$3D * Img_SegaSonic_12 XB0 Draw
-        fcb   $0C,$01,$02,$F5,$06,$DF,$F9 * Img_SegaSonic_12 XB0 Erase
-        fcb   $0D,$04,$02,$68,$08,$DF,$AC * Img_SegaSonic_12 NB0 Draw
-        fcb   $01,$01,$03,$94,$05,$DC,$42 * Img_SegaSonic_12 NB0 Erase
-        fcb   $02,$01,$03,$BA,$05,$D6,$61 * Img_SegaSonic_23 XB0 Draw
-        fcb   $03,$01,$03,$44,$05,$D4,$12 * Img_SegaSonic_23 XB0 Erase
-        fcb   $04,$01,$03,$7A,$05,$D9,$94 * Img_SegaSonic_23 NB0 Draw
-        fcb   $05,$01,$03,$0A,$05,$D7,$47 * Img_SegaSonic_23 NB0 Erase
-        fcb   $06,$01,$03,$8A,$06,$DA,$87 * Img_SegaSonic_13 XB0 Draw
-        fcb   $07,$01,$03,$2D,$05,$D2,$1C * Img_SegaSonic_13 XB0 Erase
-        fcb   $08,$01,$03,$CA,$06,$DD,$51 * Img_SegaSonic_13 NB0 Draw
-        fcb   $09,$01,$03,$7F,$05,$D3,$2C * Img_SegaSonic_13 NB0 Erase
-        fcb   $0A,$04,$03,$2E,$09,$C1,$1C * Img_SegaSonic_32 XB0 Draw
-        fcb   $0E,$01,$03,$77,$06,$D4,$CF * Img_SegaSonic_32 XB0 Erase
-        fcb   $0F,$04,$03,$77,$09,$C9,$78 * Img_SegaSonic_32 NB0 Draw
-        fcb   $03,$01,$04,$D3,$06,$D7,$BB * Img_SegaSonic_32 NB0 Erase
-        fcb   $04,$03,$04,$28,$07,$DF,$DD * Img_SegaSonic_21 XB0 Draw
-        fcb   $07,$01,$04,$03,$05,$CF,$3F * Img_SegaSonic_21 XB0 Erase
-        fcb   $08,$02,$04,$3A,$06,$D1,$DD * Img_SegaSonic_21 NB0 Draw
-        fcb   $0A,$01,$04,$19,$05,$D1,$0D * Img_SegaSonic_21 NB0 Erase
-        fcb   $0B,$01,$04,$35,$06,$CD,$3A * Img_SegaSonic_43 XB0 Draw
-        fcb   $0C,$00,$04,$BD,$05,$CA,$3B * Img_SegaSonic_43 XB0 Erase
-        fcb   $0C,$01,$04,$E3,$05,$CD,$70 * Img_SegaSonic_43 NB0 Draw
-        fcb   $0D,$01,$04,$71,$05,$CB,$23 * Img_SegaSonic_43 NB0 Erase
-        fcb   $0E,$02,$04,$CB,$08,$D3,$09 * Img_SegaSonic_11 XB0 Draw
-        fcb   $10,$01,$04,$CF,$05,$C7,$59 * Img_SegaSonic_11 XB0 Erase
-        fcb   $01,$03,$05,$08,$08,$D7,$DD * Img_SegaSonic_11 NB0 Draw
-        fcb   $04,$00,$05,$FA,$05,$C9,$53 * Img_SegaSonic_11 NB0 Erase
-        fcb   $04,$02,$05,$34,$05,$C2,$3A * Img_SegaSonic_33 XB0 Draw
-        fcb   $06,$00,$05,$C3,$05,$C0,$04 * Img_SegaSonic_33 XB0 Erase
-        fcb   $06,$02,$05,$14,$05,$C5,$5F * Img_SegaSonic_33 NB0 Draw
-        fcb   $08,$00,$05,$A9,$05,$C3,$29 * Img_SegaSonic_33 NB0 Erase
-        fcb   $08,$03,$05,$FA,$09,$B0,$95 * Img_SegaSonic_22 XB0 Draw
-        fcb   $0B,$02,$05,$09,$06,$C8,$2E * Img_SegaSonic_22 XB0 Erase
-        fcb   $0D,$03,$05,$9E,$09,$B8,$BC * Img_SegaSonic_22 NB0 Draw
-        fcb   $10,$01,$05,$C9,$06,$CA,$ED * Img_SegaSonic_22 NB0 Erase
-        fcb   $01,$03,$06,$13,$07,$D6,$C3 * Img_SegaSonic_41 XB0 Draw
-        fcb   $04,$00,$06,$EA,$05,$BD,$56 * Img_SegaSonic_41 XB0 Erase
-        fcb   $04,$03,$06,$17,$07,$DB,$3E * Img_SegaSonic_41 NB0 Draw
-        fcb   $07,$00,$06,$F7,$05,$BF,$15 * Img_SegaSonic_41 NB0 Erase
-        fcb   $07,$03,$06,$2A,$08,$C9,$60 * Img_SegaSonic_31 XB0 Draw
-        fcb   $0A,$01,$06,$0E,$05,$B9,$AA * Img_SegaSonic_31 XB0 Erase
-        fcb   $0B,$02,$06,$17,$08,$CE,$35 * Img_SegaSonic_31 NB0 Draw
-        fcb   $0D,$00,$06,$E8,$05,$BB,$97 * Img_SegaSonic_31 NB0 Erase
-        fcb   $0D,$04,$06,$7D,$0A,$CF,$E3 * Img_SegaSonic_42 XB0 Draw
-        fcb   $01,$01,$07,$9D,$06,$C2,$A5 * Img_SegaSonic_42 XB0 Erase
-        fcb   $02,$04,$07,$57,$09,$A8,$56 * Img_SegaSonic_42 NB0 Draw
-        fcb   $06,$01,$07,$8A,$06,$C5,$72 * Img_SegaSonic_42 NB0 Erase
-        fcb   $07,$00,$07,$C3,$05,$B7,$BD * Img_SegaTrails_6 XD0 Draw
-        fcb   $07,$00,$07,$FC,$05,$B6,$47 * Img_SegaTrails_5 XD0 Draw
-        fcb   $07,$01,$07,$35,$05,$B4,$D1 * Img_SegaTrails_4 ND0 Draw
-        fcb   $08,$00,$07,$6E,$05,$B3,$5B * Img_SegaTrails_3 ND0 Draw
-        fcb   $08,$00,$07,$EB,$05,$B0,$13 * Img_SegaTrails_2 XD0 Draw
-        fcb   $08,$01,$07,$7A,$05,$B1,$E5 * Img_SegaTrails_2 ND0 Draw
-        fcb   $09,$32,$07,$EF,$0E,$DF,$F6 * Pcm_SEGA0 Sound
-        fcb   $0B,$1C,$0A,$94,$0D,$C1,$7E * Pcm_SEGA1 Sound
-        fcb   $07,$02,$0C,$36,$06,$BF,$DA * SEGA Object code
-        fcb   $07,$01,$0D,$20,$05,$AE,$39 * PaletteHandler Object code
-        fcb   $06,$01,$0E,$31,$05,$AD,$4B * Img_star_4 NB0 Draw
-        fcb   $07,$00,$0E,$A7,$05,$AB,$98 * Img_star_4 NB0 Erase
-        fcb   $07,$01,$0E,$57,$05,$AB,$03 * Img_star_3 NB0 Draw
-        fcb   $08,$00,$0E,$AC,$05,$AA,$01 * Img_star_3 NB0 Erase
-        fcb   $08,$02,$0E,$C1,$06,$BC,$F6 * Img_sonicHand ND0 Draw
-        fcb   $0A,$03,$0E,$78,$08,$C4,$8D * Img_sonicHand NB0 Draw
-        fcb   $0D,$01,$0E,$8A,$05,$A9,$A3 * Img_sonicHand NB0 Erase
-        fcb   $0E,$00,$0E,$F0,$05,$A7,$32 * Img_star_2 NB1 Draw
-        fcb   $0E,$01,$0E,$32,$05,$A6,$C3 * Img_star_2 NB1 Erase
-        fcb   $0F,$00,$0E,$99,$05,$A7,$D1 * Img_star_2 NB0 Draw
-        fcb   $0F,$00,$0E,$DB,$05,$A7,$60 * Img_star_2 NB0 Erase
-        fcb   $0F,$01,$0E,$28,$05,$A6,$1E * Img_star_1 NB1 Draw
-        fcb   $10,$00,$0E,$64,$05,$A5,$CD * Img_star_1 NB1 Erase
-        fcb   $10,$00,$0E,$B3,$05,$A6,$95 * Img_star_1 NB0 Draw
-        fcb   $10,$00,$0E,$EF,$05,$A6,$42 * Img_star_1 NB0 Erase
-        fcb   $10,$02,$0E,$D0,$07,$D2,$46 * Img_emblemBack08 ND0 Draw
-        fcb   $02,$02,$0F,$7E,$06,$B9,$4F * Img_emblemBack07 ND0 Draw
-        fcb   $04,$02,$0F,$3C,$06,$B5,$B7 * Img_emblemBack09 ND0 Draw
-        fcb   $06,$01,$0F,$5B,$05,$A5,$A9 * Img_emblemBack04 ND0 Draw
-        fcb   $07,$02,$0F,$27,$06,$B2,$4A * Img_emblemBack03 ND0 Draw
-        fcb   $09,$00,$0F,$74,$05,$A4,$0E * Img_emblemBack06 ND0 Draw
-        fcb   $09,$01,$0F,$FD,$06,$AE,$6C * Img_emblemBack05 ND0 Draw
-        fcb   $0A,$06,$0F,$B2,$0A,$B8,$99 * Img_tails_5 ND0 Draw
-        fcb   $10,$07,$0F,$AA,$0A,$C7,$7F * Img_tails_5 NB0 Draw
-        fcb   $07,$02,$10,$69,$07,$CD,$BA * Img_tails_5 NB0 Erase
-        fcb   $09,$06,$10,$DD,$0A,$AE,$3E * Img_tails_4 NB0 Draw
-        fcb   $0F,$02,$10,$91,$07,$C9,$43 * Img_tails_4 NB0 Erase
-        fcb   $01,$06,$11,$E7,$0B,$DE,$10 * Img_tails_3 NB0 Draw
-        fcb   $07,$02,$11,$9F,$07,$C5,$02 * Img_tails_3 NB0 Erase
-        fcb   $09,$06,$11,$63,$0B,$CF,$BB * Img_tails_2 NB0 Draw
-        fcb   $0F,$01,$11,$BE,$06,$AA,$B6 * Img_tails_2 NB0 Erase
-        fcb   $10,$05,$11,$7E,$0B,$C3,$57 * Img_tails_1 NB0 Draw
-        fcb   $05,$01,$12,$91,$06,$A7,$05 * Img_tails_1 NB0 Erase
-        fcb   $06,$01,$12,$5C,$05,$A1,$B1 * Img_tailsHand ND0 Draw
-        fcb   $07,$01,$12,$8A,$06,$A3,$99 * Img_tailsHand NB0 Draw
-        fcb   $08,$01,$12,$0B,$05,$A2,$53 * Img_tailsHand NB0 Erase
-        fcb   $09,$03,$12,$B1,$0B,$B7,$ED * Img_sonic_1 NB0 Draw
-        fcb   $0C,$01,$12,$AA,$07,$C0,$97 * Img_sonic_1 NB0 Erase
-        fcb   $0D,$05,$12,$F2,$0C,$DE,$10 * Img_sonic_2 NB0 Draw
-        fcb   $02,$02,$13,$24,$07,$BC,$68 * Img_sonic_2 NB0 Erase
-        fcb   $04,$01,$13,$FF,$07,$B7,$BB * Img_emblemBack02 ND0 Draw
-        fcb   $05,$02,$13,$C5,$07,$B4,$1D * Img_emblemBack01 ND0 Draw
-        fcb   $07,$04,$13,$CA,$0B,$A9,$52 * Img_sonic_5 ND0 Draw
-        fcb   $0B,$05,$13,$45,$0C,$CD,$86 * Img_sonic_5 NB0 Draw
-        fcb   $10,$01,$13,$49,$07,$B0,$B9 * Img_sonic_5 NB0 Erase
-        fcb   $01,$04,$14,$E5,$0C,$BE,$6F * Img_sonic_3 NB0 Draw
-        fcb   $05,$01,$14,$DF,$08,$BF,$38 * Img_sonic_3 NB0 Erase
-        fcb   $06,$05,$14,$44,$0C,$AE,$DF * Img_sonic_4 NB0 Draw
-        fcb   $0B,$01,$14,$43,$07,$AC,$72 * Img_sonic_4 NB0 Erase
-        fcb   $0C,$00,$14,$FB,$06,$A2,$05 * Img_emblemFront07 ND0 Draw
-        fcb   $0C,$03,$14,$3A,$08,$BA,$D4 * Img_emblemFront08 ND0 Draw
-        fcb   $0F,$02,$14,$6B,$08,$B6,$2B * Img_emblemFront05 ND0 Draw
-        fcb   $01,$02,$15,$93,$07,$A8,$3D * Img_emblemFront06 ND0 Draw
-        fcb   $03,$02,$15,$51,$07,$A4,$06 * Img_emblemFront03 ND0 Draw
-        fcb   $05,$01,$15,$DF,$08,$B1,$66 * Img_emblemFront04 ND0 Draw
-        fcb   $06,$01,$15,$62,$05,$A0,$AE * Img_emblemFront01 ND0 Draw
-        fcb   $07,$01,$15,$DF,$08,$AE,$51 * Img_emblemFront02 ND0 Draw
-        fcb   $08,$03,$15,$E6,$08,$AB,$5B * Psg_TitleScreen0 Sound
-        fcb   $0B,$04,$15,$1A,$08,$A5,$53 * TitleScreen Object code
-        fcb   $0F,$0E,$15,$28,$01,$8A,$DA * TITLESCR Main Engine code
+        fcb   $07,$06,$00,$2C,$0A,$DF,$DE * Img_SonicAndTailsIn ND0 Draw
+        fcb   $0D,$00,$00,$D2,$05,$DF,$FB * SonicAndTailsIn Object code
+        fcb   $0C,$08,$01,$04,$0C,$DD,$55 * Img_SegaLogo_2 ND0 Draw
+        fcb   $04,$04,$02,$B0,$0A,$D1,$01 * Img_SegaLogo_1 ND0 Draw
+        fcb   $08,$01,$02,$35,$05,$DD,$BA * Img_SegaTrails_1 XD0 Draw
+        fcb   $09,$00,$02,$CE,$05,$DF,$31 * Img_SegaTrails_1 ND0 Draw
+        fcb   $09,$04,$02,$2D,$08,$D8,$0A * Img_SegaSonic_12 XB0 Draw
+        fcb   $0D,$01,$02,$3D,$06,$DF,$F7 * Img_SegaSonic_12 XB0 Erase
+        fcb   $0E,$03,$02,$B7,$08,$DF,$D9 * Img_SegaSonic_12 NB0 Draw
+        fcb   $01,$01,$03,$E2,$05,$DC,$43 * Img_SegaSonic_12 NB0 Erase
+        fcb   $02,$02,$03,$08,$05,$D6,$60 * Img_SegaSonic_23 XB0 Draw
+        fcb   $04,$00,$03,$92,$05,$D4,$11 * Img_SegaSonic_23 XB0 Erase
+        fcb   $04,$01,$03,$C8,$05,$D9,$93 * Img_SegaSonic_23 NB0 Draw
+        fcb   $05,$01,$03,$58,$05,$D7,$46 * Img_SegaSonic_23 NB0 Erase
+        fcb   $06,$01,$03,$D8,$06,$DA,$85 * Img_SegaSonic_13 XB0 Draw
+        fcb   $07,$01,$03,$81,$05,$D2,$1B * Img_SegaSonic_13 XB0 Erase
+        fcb   $08,$02,$03,$22,$06,$DD,$4F * Img_SegaSonic_13 NB0 Draw
+        fcb   $0A,$00,$03,$DA,$05,$D3,$2B * Img_SegaSonic_13 NB0 Erase
+        fcb   $0A,$04,$03,$95,$09,$D6,$DB * Img_SegaSonic_32 XB0 Draw
+        fcb   $0E,$01,$03,$D9,$06,$D4,$CD * Img_SegaSonic_32 XB0 Erase
+        fcb   $0F,$04,$03,$D3,$09,$DF,$37 * Img_SegaSonic_32 NB0 Draw
+        fcb   $03,$02,$04,$30,$06,$D7,$B9 * Img_SegaSonic_32 NB0 Erase
+        fcb   $05,$02,$04,$8B,$07,$DF,$FF * Img_SegaSonic_21 XB0 Draw
+        fcb   $07,$01,$04,$6B,$05,$CF,$3E * Img_SegaSonic_21 XB0 Erase
+        fcb   $08,$02,$04,$8E,$06,$D1,$DA * Img_SegaSonic_21 NB0 Draw
+        fcb   $0A,$01,$04,$64,$05,$D1,$0C * Img_SegaSonic_21 NB0 Erase
+        fcb   $0B,$01,$04,$80,$06,$CD,$39 * Img_SegaSonic_43 XB0 Draw
+        fcb   $0C,$01,$04,$08,$05,$CA,$3A * Img_SegaSonic_43 XB0 Erase
+        fcb   $0D,$01,$04,$2E,$05,$CD,$6F * Img_SegaSonic_43 NB0 Draw
+        fcb   $0E,$00,$04,$BC,$05,$CB,$22 * Img_SegaSonic_43 NB0 Erase
+        fcb   $0E,$03,$04,$0A,$08,$CB,$71 * Img_SegaSonic_11 XB0 Draw
+        fcb   $01,$01,$05,$09,$05,$C7,$58 * Img_SegaSonic_11 XB0 Erase
+        fcb   $02,$02,$05,$4C,$08,$D0,$45 * Img_SegaSonic_11 NB0 Draw
+        fcb   $04,$01,$05,$46,$05,$C9,$52 * Img_SegaSonic_11 NB0 Erase
+        fcb   $05,$01,$05,$81,$05,$C2,$38 * Img_SegaSonic_33 XB0 Draw
+        fcb   $06,$01,$05,$11,$05,$C0,$02 * Img_SegaSonic_33 XB0 Erase
+        fcb   $07,$01,$05,$61,$05,$C5,$5D * Img_SegaSonic_33 NB0 Draw
+        fcb   $08,$00,$05,$F5,$05,$C3,$27 * Img_SegaSonic_33 NB0 Erase
+        fcb   $08,$04,$05,$48,$09,$CE,$7B * Img_SegaSonic_22 XB0 Draw
+        fcb   $0C,$01,$05,$55,$06,$C8,$2D * Img_SegaSonic_22 XB0 Erase
+        fcb   $0D,$03,$05,$E5,$08,$C6,$9D * Img_SegaSonic_22 NB0 Draw
+        fcb   $10,$02,$05,$0C,$06,$CA,$EC * Img_SegaSonic_22 NB0 Erase
+        fcb   $02,$02,$06,$5E,$07,$D6,$E1 * Img_SegaSonic_41 XB0 Draw
+        fcb   $04,$01,$06,$37,$05,$BD,$54 * Img_SegaSonic_41 XB0 Erase
+        fcb   $05,$02,$06,$66,$07,$DB,$5E * Img_SegaSonic_41 NB0 Draw
+        fcb   $07,$01,$06,$45,$05,$BF,$13 * Img_SegaSonic_41 NB0 Erase
+        fcb   $08,$02,$06,$79,$08,$B9,$A1 * Img_SegaSonic_31 XB0 Draw
+        fcb   $0A,$01,$06,$5B,$05,$B9,$A8 * Img_SegaSonic_31 XB0 Erase
+        fcb   $0B,$02,$06,$69,$08,$BE,$76 * Img_SegaSonic_31 NB0 Draw
+        fcb   $0D,$01,$06,$3C,$05,$BB,$95 * Img_SegaSonic_31 NB0 Erase
+        fcb   $0E,$03,$06,$D0,$09,$BD,$E6 * Img_SegaSonic_42 XB0 Draw
+        fcb   $01,$01,$07,$F3,$06,$C2,$A5 * Img_SegaSonic_42 XB0 Erase
+        fcb   $02,$04,$07,$AB,$09,$C6,$3C * Img_SegaSonic_42 NB0 Draw
+        fcb   $06,$01,$07,$E0,$06,$C5,$71 * Img_SegaSonic_42 NB0 Erase
+        fcb   $07,$01,$07,$19,$05,$B7,$BB * Img_SegaTrails_6 XD0 Draw
+        fcb   $08,$00,$07,$52,$05,$B6,$45 * Img_SegaTrails_5 XD0 Draw
+        fcb   $08,$00,$07,$8B,$05,$B4,$CF * Img_SegaTrails_4 ND0 Draw
+        fcb   $08,$00,$07,$C4,$05,$B3,$59 * Img_SegaTrails_3 ND0 Draw
+        fcb   $08,$01,$07,$41,$05,$B0,$11 * Img_SegaTrails_2 XD0 Draw
+        fcb   $09,$00,$07,$D0,$05,$B1,$E3 * Img_SegaTrails_2 ND0 Draw
+        fcb   $09,$33,$07,$45,$0E,$DF,$F6 * Pcm_SEGA0 Sound
+        fcb   $0C,$1B,$0A,$EA,$0D,$DF,$ED * Pcm_SEGA1 Sound
+        fcb   $07,$02,$0C,$8C,$06,$BF,$DA * SEGA Object code
+        fcb   $07,$01,$0D,$C1,$05,$AE,$37 * PaletteHandler Object code
+        fcb   $07,$01,$0E,$1D,$05,$AD,$49 * Img_star_4 NB0 Draw
+        fcb   $08,$00,$0E,$93,$05,$AB,$96 * Img_star_4 NB0 Erase
+        fcb   $08,$01,$0E,$43,$05,$AB,$01 * Img_star_3 NB0 Draw
+        fcb   $09,$00,$0E,$98,$05,$A9,$FF * Img_star_3 NB0 Erase
+        fcb   $09,$02,$0E,$AD,$06,$BC,$F6 * Img_sonicHand ND0 Draw
+        fcb   $0B,$03,$0E,$5E,$08,$B4,$CE * Img_sonicHand NB0 Draw
+        fcb   $0E,$01,$0E,$71,$05,$A9,$A1 * Img_sonicHand NB0 Erase
+        fcb   $0F,$00,$0E,$D7,$05,$A7,$32 * Img_star_2 NB1 Draw
+        fcb   $0F,$01,$0E,$19,$05,$A6,$C3 * Img_star_2 NB1 Erase
+        fcb   $10,$00,$0E,$80,$05,$A7,$D1 * Img_star_2 NB0 Draw
+        fcb   $10,$00,$0E,$C2,$05,$A7,$60 * Img_star_2 NB0 Erase
+        fcb   $10,$01,$0E,$0F,$05,$A6,$1E * Img_star_1 NB1 Draw
+        fcb   $01,$00,$0F,$4B,$05,$A5,$CD * Img_star_1 NB1 Erase
+        fcb   $01,$00,$0F,$9A,$05,$A6,$95 * Img_star_1 NB0 Draw
+        fcb   $01,$00,$0F,$D6,$05,$A6,$42 * Img_star_1 NB0 Erase
+        fcb   $01,$02,$0F,$B7,$07,$D2,$64 * Img_emblemBack08 ND0 Draw
+        fcb   $03,$02,$0F,$65,$06,$B9,$4F * Img_emblemBack07 ND0 Draw
+        fcb   $05,$02,$0F,$23,$06,$B5,$B7 * Img_emblemBack09 ND0 Draw
+        fcb   $07,$01,$0F,$42,$05,$A5,$A9 * Img_emblemBack04 ND0 Draw
+        fcb   $08,$02,$0F,$0E,$06,$B2,$4A * Img_emblemBack03 ND0 Draw
+        fcb   $0A,$00,$0F,$5B,$05,$A4,$0E * Img_emblemBack06 ND0 Draw
+        fcb   $0A,$01,$0F,$E4,$06,$AE,$6C * Img_emblemBack05 ND0 Draw
+        fcb   $0B,$06,$0F,$99,$09,$B5,$82 * Img_tails_5 ND0 Draw
+        fcb   $01,$07,$10,$94,$0A,$C4,$74 * Img_tails_5 NB0 Draw
+        fcb   $08,$02,$10,$53,$07,$CD,$D8 * Img_tails_5 NB0 Erase
+        fcb   $0A,$06,$10,$CD,$0B,$DC,$C7 * Img_tails_4 NB0 Draw
+        fcb   $10,$02,$10,$80,$07,$C9,$60 * Img_tails_4 NB0 Erase
+        fcb   $02,$06,$11,$D8,$0B,$CE,$89 * Img_tails_3 NB0 Draw
+        fcb   $08,$02,$11,$8D,$07,$C5,$1F * Img_tails_3 NB0 Erase
+        fcb   $0A,$06,$11,$58,$0A,$B5,$8E * Img_tails_2 NB0 Draw
+        fcb   $10,$01,$11,$B2,$06,$AA,$B6 * Img_tails_2 NB0 Erase
+        fcb   $01,$05,$12,$72,$0B,$C0,$33 * Img_tails_1 NB0 Draw
+        fcb   $06,$01,$12,$85,$06,$A7,$05 * Img_tails_1 NB0 Erase
+        fcb   $07,$01,$12,$50,$05,$A1,$B1 * Img_tailsHand ND0 Draw
+        fcb   $08,$01,$12,$7E,$06,$A3,$99 * Img_tailsHand NB0 Draw
+        fcb   $09,$00,$12,$00,$05,$A2,$53 * Img_tailsHand NB0 Erase
+        fcb   $0A,$09,$12,$E0,$0C,$C3,$98 * Img_island NB0 Draw
+        fcb   $03,$02,$13,$FB,$09,$AB,$27 * Img_island NB0 Erase
+        fcb   $05,$04,$13,$A1,$0B,$B4,$C9 * Img_sonic_1 NB0 Draw
+        fcb   $09,$01,$13,$9A,$07,$C0,$B4 * Img_sonic_1 NB0 Erase
+        fcb   $0A,$05,$13,$E2,$0C,$B0,$8A * Img_sonic_2 NB0 Draw
+        fcb   $0F,$02,$13,$14,$07,$BC,$85 * Img_sonic_2 NB0 Erase
+        fcb   $01,$01,$14,$EF,$07,$B7,$D8 * Img_emblemBack02 ND0 Draw
+        fcb   $02,$02,$14,$B5,$07,$B4,$3A * Img_emblemBack01 ND0 Draw
+        fcb   $04,$05,$14,$51,$0D,$BE,$6F * Img_sonic_3 NB0 Draw
+        fcb   $09,$01,$14,$4B,$07,$B0,$D6 * Img_sonic_3 NB0 Erase
+        fcb   $0A,$04,$14,$3C,$0A,$A9,$2B * Img_sonic_4 ND0 Draw
+        fcb   $0E,$04,$14,$A1,$0D,$AE,$DF * Img_sonic_4 NB0 Draw
+        fcb   $02,$01,$15,$A0,$07,$AC,$72 * Img_sonic_4 NB0 Erase
+        fcb   $03,$01,$15,$58,$06,$A2,$05 * Img_emblemFront07 ND0 Draw
+        fcb   $04,$02,$15,$97,$08,$AF,$79 * Img_emblemFront08 ND0 Draw
+        fcb   $06,$02,$15,$C8,$08,$AA,$D0 * Img_emblemFront05 ND0 Draw
+        fcb   $08,$02,$15,$F0,$07,$A8,$3D * Img_emblemFront06 ND0 Draw
+        fcb   $0A,$02,$15,$AE,$07,$A4,$06 * Img_emblemFront03 ND0 Draw
+        fcb   $0C,$02,$15,$3C,$08,$A6,$0B * Img_emblemFront04 ND0 Draw
+        fcb   $0E,$00,$15,$BF,$05,$A0,$AE * Img_emblemFront01 ND0 Draw
+        fcb   $0E,$02,$15,$3C,$08,$A2,$F6 * Img_emblemFront02 ND0 Draw
+        fcb   $10,$03,$15,$43,$09,$A6,$08 * Psg_TitleScreen0 Sound
+        fcb   $03,$03,$16,$DC,$0B,$A6,$2E * TitleScreen Object code
+        fcb   $06,$0F,$16,$35,$01,$8B,$3B * TITLESCR Main Engine code
         fcb   $FF
