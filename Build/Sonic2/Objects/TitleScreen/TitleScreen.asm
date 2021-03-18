@@ -103,9 +103,9 @@ Obj_EmblemBack07        equ TitleScr_This+(object_size*20)
 Obj_EmblemBack08        equ TitleScr_This+(object_size*21)
 Obj_EmblemBack09        equ TitleScr_This+(object_size*22)
 Obj_Island              equ TitleScr_This+(object_size*23)
-Obj_PaletteHandler      equ TitleScr_This+(object_size*24)
-Obj_PaletteHandler2     equ TitleScr_This+(object_size*25)
-Obj_PaletteHandler3     equ TitleScr_This+(object_size*26)
+Obj_PaletteFade         equ TitleScr_This+(object_size*24)
+Obj_RasterFade          equ TitleScr_This+(object_size*25)
+Obj_PaletteFade3        equ TitleScr_This+(object_size*26)
 TitleScr_Object_RAM_End equ TitleScr_This+(object_size*27)
 
 * ---------------------------------------------------------------------------
@@ -363,8 +363,8 @@ Sonic_PaletteFadeAfterWait                       *+
         ldy   #Img_emblemBack09
 		sty   image_set,x 	
         
-        ldx   #Obj_PaletteHandler3               *        lea     (TitleScreenPaletteChanger3).w,a1
-        lda   #ObjID_PaletteHandler
+        ldx   #Obj_PaletteFade3                  *        lea     (TitleScreenPaletteChanger3).w,a1
+        lda   #ObjID_PaletteFade
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
         clr   subtype,x                          *        move.b  #0,subtype(a1)
         ldd   #Black_palette
@@ -483,20 +483,44 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldd   w_TitleScr_time_frame_count,u
         cmpd  #$120                              *        cmpi.w  #$120,objoff_34(a0)
         blo   Sonic_FadeInBackground_NotYet      *        blo.s   +
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
+        bhi   Sonic_FadeInBackground_Continue
+                                                 *        addq.b  #2,routine_secondary(a0)
         ldd   #$0000
         std   w_TitleScr_xy_data_index,u         *        clr.w   objoff_2C(a0)
         ldd   #$FF
         std   b_TitleScr_final_state,u            *        st      objoff_2F(a0)
         
-        lda   $E7E5
-        sta   Irq_Raster_Page
-        ldd   #Pal_TitleScreenRaster
-        std   Irq_Raster_Start
-        ldd   #Pal_TitleScreenRaster_end
-        std   Irq_Raster_End        
+        ldx   #Obj_RasterFade
+        lda   #ObjID_RasterFade
+        sta   id,x
+        lda   #3
+        sta   subtype,x
+        lda   #PalID_TitleScreenRaster
+        sta   ext_variables+1,x                  * ptr to destination pal
+        ldd   #$0fff
+        std   ext_variables+4,x                  * src color
+        lda   #$10
+        sta   ext_variables+6,x                  * nb of frames
+        ldd   #$0132
+        sta   ext_variables+7,x                  * increment
+        sta   ext_variables+9,x                  * frame duration
+        stb   ext_variables+11,x                 * number of colors or lines        
+                                                 *        lea     (Normal_palette_line3).w,a1
+                                                 *        move.w  #$EEE,d0
+                                                 *
+                                                 *        moveq   #$F,d6
+                                                 *-       move.w  d0,(a1)+
+                                                 *        dbf     d6,-
+                                                 *
+                                                 *        lea     (TitleScreenPaletteChanger2).w,a1
+                                                 *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change handler) at $FFFFB240
+
+                                                 *        move.b  #2,subtype(a1)
+        * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
+Sonic_FadeInBackground_NotYet                    *+
+        jmp   DisplaySprite                      *        bra.w   DisplaySprite
+        
+Sonic_FadeInBackground_Continue        
         ldd   #IrqPsgRaster
         std   irq_routine
         
@@ -504,23 +528,12 @@ Sonic_FadeInBackground                           *loc_12F9A:
         lda   #ObjID_TitleScreen
         sta   id,x
         lda   #Sub_Island
-        sta   subtype,x
+        sta   subtype,x        
         
-        *ldd   #White_palette                     *        lea     (Normal_palette_line3).w,a1
-        *std   cur_palette                        *        move.w  #$EEE,d0
-                                                 *
-        * not implemented                        *        moveq   #$F,d6
-        * switch pointer to                      *-       move.w  d0,(a1)+
-        * fixed palette instead of copying data  *        dbf     d6,-
-                                                 *
-        *ldx   #Obj_PaletteHandler2               *        lea     (TitleScreenPaletteChanger2).w,a1
-        *lda   #ObjID_TtlScrPalChanger
-        *sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change handler) at $FFFFB240
-        *lda   #2
-        *sta   subtype,x                          *        move.b  #2,subtype(a1)
-        * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
-Sonic_FadeInBackground_NotYet                    *+
-        jmp   DisplaySprite                      *        bra.w   DisplaySprite
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u        
+        rts        
                                                  *; ===========================================================================
                                                  *
 Sonic_CreateSmallStar                            *loc_12FD6:
@@ -1033,10 +1046,10 @@ Island_Init
         std   image_set,u
         lda   #7
         sta   priority,u
-        ldd   #$97BB
+        ldd   #$80BB
         std   xy_pixel,u
 
-        ldd   #$30
+        ldd   #$2
         std   w_TitleScr_time_frame_countdown,u
         jmp   DisplaySprite
 
@@ -1048,9 +1061,10 @@ Island_Move
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-
+        rts
 Island_MoveContinue
         dec   x_pixel,u
+        
 Island_Display              
         jmp   DisplaySprite
 
@@ -1131,7 +1145,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         *sta   subtype,x                         *        move.b  #6,subtype(a1)                          ; logo top
         * not implemented                        *        bsr.w   sub_12F08
         * not implemented                        *        move.b  #ObjID_TitleMenu,(TitleScreenMenu+id).w ; load Obj0F (title screen menu) at $FFFFB400
-        *ldx   #Obj_PaletteHandler               *        lea     (TitleScreenPaletteChanger).w,a1
+        *ldx   #Obj_PaletteFade               *        lea     (TitleScreenPaletteChanger).w,a1
         *jsr   DeleteObject2                     *        bsr.w   DeleteObject2
                                                  *        lea_    Pal_1342C,a1
                                                  *        lea     (Normal_palette_line4).w,a2
@@ -1153,7 +1167,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
                                                  *        moveq   #7,d6
                                                  *-       move.l  (a1)+,(a2)+
                                                  *        dbf     d6,-
-        *clr   Obj_PaletteHandler3+paletteHander_fadein_amount
+        *clr   Obj_PaletteFade3+paletteHander_fadein_amount
                                                  *        sf.b    (TitleScreenPaletteChanger+paletteHander_fadein_amount).w ; MJ: set fade counter to 00 (finish)
                                                  *
         tst   b_TitleScr_music_is_playing        *        tst.b   objoff_30(a0)
@@ -1178,59 +1192,6 @@ TitleScreen_SetFinalState_end                    *+
                                                  *; End of function TitleScreen_InitSprite
                                                  *
                                                  *; ===========================================================================
-
-Pal_TitleScreenRaster
-        fdb   $0e00 * 132-147
-        fdb   $0c00	* 181-131
-        fdb   $0c00	* 181-131
-        fdb   $0e00 * 132-147
-        fdb   $0c00	* 181-131
-        fdb   $0e00 * 132-147
-        fdb   $0e00 * 132-147
-        fdb   $0e00 * 132-147
-        fdb   $0e00 * 132-147
-        fdb   $0e00 * 132-147
-        fdb   $0e00 * 132-147
-        fdb   $0b10	* 148-154
-        fdb   $0e00 * 132-147
-        fdb   $0b10	* 148-154
-        fdb   $0b10	* 148-154
-        fdb   $0e00 * 132-147
-        fdb   $0b10	* 148-154
-        fdb   $0b10	* 148-154
-        fdb   $0b10	* 148-154
-        fdb   $0b10	* 148-154
-        fdb   $0b10	* 148-154
-        fdb   $0c10	* 155-157
-        fdb   $0b10	* 148-154
-        fdb   $0c10	* 155-157
-        fdb   $0a21	* 158-161
-        fdb   $0c10	* 155-157
-        fdb   $0a21	* 158-161
-        fdb   $0a21	* 158-161
-        fdb   $0b41	* 162-164
-		fdb   $0a21	* 158-161
-        fdb   $0b41	* 162-164
-        fdb   $0a52	* 165-167
-		fdb   $0b41	* 162-164
-        fdb   $0a52	* 165-167
-        fdb   $0b74	* 168-171
-		fdb   $0a52	* 165-167
-        fdb   $0b74	* 168-171
-		fdb   $0b74	* 168-171
-        fdb   $0b97	* 172-174
-		fdb   $0b74	* 168-171
-        fdb   $0b97	* 172-174
-        fdb   $0bbb	* 175-180
-		fdb   $0b97	* 172-174
-        fdb   $0bbb	* 175-180
-		fdb   $0bbb	* 175-180
-		fdb   $0bbb	* 175-180
-		fdb   $0bbb	* 175-180
-		fdb   $0bbb	* 175-180
-		fdb   $0bbb	* 175-180
-        fdb   $0c00	* 181-131
-Pal_TitleScreenRaster_end        
 
 * ---------------------------------------------------------------------------
 * Animation script is generated - for reference only

@@ -27,7 +27,7 @@ Obj_Trails4             equ SegaScr_This+(object_size*4)
 Obj_Sonic1              equ SegaScr_This+(object_size*5)
 Obj_Sonic2              equ SegaScr_This+(object_size*6)
 Obj_Sonic3              equ SegaScr_This+(object_size*7)
-Obj_PaletteHandler      equ SegaScr_This+(object_size*8)
+Obj_PaletteFade      equ SegaScr_This+(object_size*8)
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -278,8 +278,8 @@ SEGA_MidWipe
         std   image_set,u
 
         * Fade out Trails
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
+        ldx   #Obj_PaletteFade
+        lda   #ObjID_PaletteFade
         sta   id,x
         ldd   #Pal_SEGA *@IgnoreUndefined
         std   ext_variables,x
@@ -292,7 +292,7 @@ SEGA_MidWipe
         jmp   DisplaySprite
 
 SEGA_MidWipeWaitPal
-        ldx   #Obj_PaletteHandler
+        ldx   #Obj_PaletteFade
         tst   ,x
         beq   SEGA_MidWipeWaitPal_continue
         jmp   DisplaySprite
@@ -357,8 +357,8 @@ SEGA_EndWipe
         jsr   DeleteObject_x
 
         * Fade out Trails
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
+        ldx   #Obj_PaletteFade
+        lda   #ObjID_PaletteFade
         sta   id,x
         ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
@@ -372,7 +372,7 @@ SEGA_EndWipe
         jmp   DisplaySprite
 
 SEGA_EndWipeWaitPal
-        ldx   #Obj_PaletteHandler
+        ldx   #Obj_PaletteFade
         tst   ,x
         beq   SEGA_PlaySample
         jmp   DisplaySprite
@@ -396,8 +396,8 @@ SEGA_Wait
         rts
 
 SEGA_fadeOut
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
+        ldx   #Obj_PaletteFade
+        lda   #ObjID_PaletteFade
         sta   id,x
         ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
@@ -409,7 +409,7 @@ SEGA_fadeOut
         rts
 
 SEGA_end
-        ldx   #Obj_PaletteHandler
+        ldx   #Obj_PaletteFade
         tst   ,x
         beq   SEGA_return
         rts
@@ -419,6 +419,6 @@ SEGA_return
         ldd   #(ObjID_SonicAndTailsIn<+8)+$00         ; Replace this object with Title Screen Object subtype 3
         std   ,u
 
-        ldu   #Obj_PaletteHandler
+        ldu   #Obj_PaletteFade
         jsr   ClearObj
         rts

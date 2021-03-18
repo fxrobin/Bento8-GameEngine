@@ -116,7 +116,7 @@ Tbl_Sub_Object_Draw           rmb   nb_objects*2,0             ; entries of obje
         
 Object_RAM *@globals
 Reserved_Object_RAM
-Obj_MainCharacter             fdb   $0203
+Obj_MainCharacter             fdb   $0403
                               rmb   object_size-2,0
 Obj_Sidekick                  rmb   object_size,0
 Reserved_Object_RAM_End
@@ -171,5 +171,4 @@ Glb_MainCharacter_Is_Dead     rmb   $1,0
         INCLUD ANIMSCPT
         INCLUD OBJINDEX
         INCLUD SOUNDIDX * A rendre dynamique
-        INCLUD LOADACT
-                                                                 
+        INCLUD LOADACT                                                                 

@@ -8,16 +8,16 @@
 Irq_Raster_End fdb $0000        
 (info)
 IrqPsgRaster_render
-        mul
-        mul
-        mul
-        mul
-        tfr   a,b
-        lda   #$1E
+        nop                                           ; tempo
+        nop                                           ; tempo
+        mul                                           ; tempo
+        mul                                           ; tempo
+        tfr   a,b                                     ; tempo
+        lda   ,x+
         sta   <$E7DB
         ldd   ,x++
-        sta   <$E7DA                                    ; 3rd cycle of sta should be near col 62
-        stb   <$E7DA                                    ; 3rd cycle of stb should be near col 2
+        stb   <$E7DA 
+        sta   <$E7DA
         cmpx  Irq_Raster_End
         bne   IrqPsgRaster_render 
-(info)
+(info) 

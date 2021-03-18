@@ -92,16 +92,14 @@ IrqPsgRaster_2
                 
         mul                                           ; tempo                
 IrqPsgRaster_render
-        nop                                           ; tempo
-        nop                                           ; tempo
         mul                                           ; tempo
         mul                                           ; tempo
         tfr   a,b                                     ; tempo
-        lda   #$1E
+        lda   ,x+
         sta   <$DB
         ldd   ,x++
-        stb   <$DA                                    ; 3rd cycle of sta should be near col 62
-        sta   <$DA                                    ; 3rd cycle of stb should be near col 2
+        stb   <$DA 
+        sta   <$DA
         cmpx  Irq_Raster_End
         bne   IrqPsgRaster_render 
 

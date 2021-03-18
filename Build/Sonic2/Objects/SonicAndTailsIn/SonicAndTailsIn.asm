@@ -18,7 +18,7 @@
         INCLUD CONSTANT
         org   $A000
         
-Obj_PaletteHandler      equ Object_RAM+(object_size*1)        
+Obj_PaletteFade      equ Object_RAM+(object_size*1)        
         
 SonicAndTailsIn
         lda   routine,u
@@ -59,8 +59,8 @@ SATI_fadeIn
         ldx   #$0000
         jsr   ClearCartMem        
 
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
+        ldx   #Obj_PaletteFade
+        lda   #ObjID_PaletteFade
         sta   id,x                 
         ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
@@ -83,8 +83,8 @@ SATI_fadeOut
         rts
 
 SATI_fadeOut_continue        
-        ldx   #Obj_PaletteHandler
-        lda   #ObjID_PaletteHandler
+        ldx   #Obj_PaletteFade
+        lda   #ObjID_PaletteFade
         sta   id,x                 
         ldd   Cur_palette *@IgnoreUndefined
         std   ext_variables,x
@@ -97,7 +97,7 @@ SATI_fadeOut_continue
         rts                
                 
 SATI_Wait
-        ldx   #Obj_PaletteHandler
+        ldx   #Obj_PaletteFade
         tst   ,x
         beq   SATI_clearScreen_end
         rts
@@ -108,9 +108,9 @@ SATI_clearScreen_end
         
         lda   $E7DD                    * set border color
         anda  #$F0
-        adda  #$0F
+        adda  #$01                     ; color 1
         sta   $E7DD
-        anda  #$0F
+        anda  #$01                     ; color 1
         adda  #$80
         sta   screen_border_color+1    * maj WaitVBL
                      
@@ -125,7 +125,7 @@ SATI_End
         jsr   DeleteObject                    
         ldd   #(ObjID_TitleScreen<+8)+$03             ; Replace this object with Title Screen Object subtype 3
         std   ,u
-        ldu   #Obj_PaletteHandler
+        ldu   #Obj_PaletteFade
         jsr   ClearObj        
         rts  
                         
