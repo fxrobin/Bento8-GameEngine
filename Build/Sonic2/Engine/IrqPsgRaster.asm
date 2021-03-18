@@ -91,15 +91,20 @@ IrqPsgRaster_2
         bne   IrqPsgRaster_2                          ; while spot is in a visible screen col
                 
         mul                                           ; tempo                
+        mul                                           ; tempo
+        nop                
 IrqPsgRaster_render
-        mul                                           ; tempo
-        mul                                           ; tempo
         tfr   a,b                                     ; tempo
-        lda   ,x+
+        tfr   a,b                                     ; tempo
+        tfr   a,b                                     ; tempo        
+        ldd   1,x
+        std   *+8
+        lda   ,x        
         sta   <$DB
-        ldd   ,x++
+        ldd   #$0000
         stb   <$DA 
         sta   <$DA
+        leax  3,x
         cmpx  Irq_Raster_End
         bne   IrqPsgRaster_render 
 

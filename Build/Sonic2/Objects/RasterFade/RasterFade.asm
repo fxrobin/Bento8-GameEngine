@@ -22,16 +22,17 @@ Sub_RasterMain         equ 6
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
-raster_pal_src   equ ext_variables                  * ptr to source pal
-raster_pal_dst   equ ext_variables+1                * ptr to destination pal
-* +2 and +3 free
-raster_color     equ ext_variables+4                * src or dst color
-raster_cycles    equ ext_variables+6                * nb of frames
-raster_inc       equ ext_variables+7                * increment value
-raster_inc_      equ ext_variables+8                * increment value
-raster_frames    equ ext_variables+9                * fame duration
-raster_cur_frame equ ext_variables+10               * fame counter
-raster_nb_colors equ ext_variables+11               * number of colors or lines
+raster_pal_src        equ ext_variables                  * ptr to source pal
+raster_pal_dst        equ ext_variables+1                * ptr to destination pal
+raster_nb_fade_colors equ ext_variables+2                * number of colors to fade (from start)
+* ext_variables+3 free
+raster_color          equ ext_variables+4                * src or dst color
+raster_cycles         equ ext_variables+6                * nb of frames
+raster_inc            equ ext_variables+7                * increment value
+raster_inc_           equ ext_variables+8                * increment value
+raster_frames         equ ext_variables+9                * fame duration
+raster_cur_frame      equ ext_variables+10               * fame counter
+raster_nb_colors      equ ext_variables+11               * number of colors or lines
 
 RasterFade
         lda   routine,u
@@ -65,13 +66,21 @@ RasterFade_InInit
         leax  pal_RasterCurrent,pcr                   ; calcul des adresses de debut et de fin
         stx   Irq_Raster_Start                        ; pour les donnees de palette
         stx   RFA_InitColor_endloop1+1,pcr
+        
+        leax  pal_RasterCurrent,pcr
         lda   #$03                                    ; affectation aux variables globales de
         ldb   raster_nb_colors,u                      ; la routine Irq Raster
         mul
         leax  d,x
-        stx   Irq_Raster_End
+        stx   Irq_Raster_End        
+        stx   RFA_end+2,pcr
+        stx   RFA_InitColor_endloop3+1,pcr
+        
+        lda   #$03
+        ldb   raster_nb_fade_colors,u
+        mul
+        leax  d,x        
         stx   RFA_InitColor_endloop2+1,pcr
-        stx   RFA_end+2,pcr        
         
         lda   raster_inc,u                            ; precalcul de l'increment
         asla                                          ; 1 devient 11, A devient AA ...
@@ -80,7 +89,7 @@ RasterFade_InInit
         asla
         adda  raster_inc,u
         sta   raster_inc_,u
-        
+                
         ldd   raster_color,u                          ; positionne la couleur de depart sur un tableau raster
 RFA_InitColor_loop1
         leax  -3,x
@@ -100,7 +109,16 @@ RFA_InitColor_loop2
         leax  3,x
 RFA_InitColor_endloop2        
         cmpx  #$0000
-        bne   RFA_InitColor_loop2  
+        bne   RFA_InitColor_loop2
+        
+RFA_InitColor_loop3                                   
+        lda   ,y+                                     ; copie des index et couleurs non traite par le fade
+        sta   ,x+
+        ldd   ,y++
+        std   ,x++        
+RFA_InitColor_endloop3        
+        cmpx  #$0000          
+        bne   RFA_InitColor_loop3
         rts                                                                                                                
                                                  
 RasterFade_Main
@@ -175,48 +193,34 @@ pal_RasterCurrent rmb 600,0
 
 Pal_Index    fdb Pal_TitleScreenRaster-Pal_Index           
 Pal_TitleScreenRaster
-        fcb   $1e
-        fdb   $0e00 * 132-147
-        fcb   $1e        
-        fdb   $0c00	* 181-131
-        fcb   $1e        
-        fdb   $0c00	* 181-131
-        fcb   $1e        
-        fdb   $0e00 * 132-147
-        fcb   $1e
-        fdb   $0c00	* 181-131
-        fcb   $1e
-        fdb   $0e00 * 132-147
-        fcb   $1e
-        fdb   $0e00 * 132-147
-        fcb   $1e
-        fdb   $0e00 * 132-147
-        fcb   $1e
-        fdb   $0e00 * 132-147
-        fcb   $1e
-        fdb   $0e00 * 132-147
-        fcb   $1e
-        fdb   $0e00 * 132-147
+        fcb   $06
+        fdb   $0020	* 148-154 island 3
+        fcb   $08
+        fdb   $0040	* 148-154 island 4
+        fcb   $10
+        fdb   $0071	* 148-154 island 8
+        fcb   $12
+        fdb   $00a4	* 148-154 island 9		
         fcb   $1e
         fdb   $0b10	* 148-154
         fcb   $1e
-        fdb   $0e00 * 132-147
+        fdb   $0c00
+        fcb   $1e
+        fdb   $0b10	* 148-154 
         fcb   $1e
         fdb   $0b10	* 148-154
         fcb   $1e
-        fdb   $0b10	* 148-154
-        fcb   $1e
-        fdb   $0e00 * 132-147
+        fdb   $0c00
         fcb   $1e
         fdb   $0b10	* 148-154
-        fcb   $1e
-        fdb   $0b10	* 148-154
-        fcb   $1e
-        fdb   $0b10	* 148-154
-        fcb   $1e
-        fdb   $0b10	* 148-154
-        fcb   $1e
-        fdb   $0b10	* 148-154
+        fcb   $0e
+        fdb   $0026	* 148-154 island 7
+        fcb   $0c
+        fdb   $014a	* 148-154 island 6
+        fcb   $0a
+        fdb   $0123	* 148-154 island 5
+        fcb   $18
+        fdb   $026a	* 148-154 island 12
         fcb   $1e
         fdb   $0c10	* 155-157
         fcb   $1e
@@ -263,16 +267,74 @@ Pal_TitleScreenRaster
 		fdb   $0b97	* 172-174
         fcb   $1e
         fdb   $0bbb	* 175-180
-        fcb   $1e
-		fdb   $0bbb	* 175-180
-        fcb   $1e
-		fdb   $0bbb	* 175-180
-        fcb   $1e
-		fdb   $0bbb	* 175-180
-        fcb   $1e
-		fdb   $0bbb	* 175-180
-        fcb   $1e
-		fdb   $0bbb	* 175-180
+        fcb   $04
+		fdb   $0e00	* 175-180 island 2
+        fcb   $16
+		fdb   $0c10	* 175-180 island 11
+        fcb   $1a
+		fdb   $0b41	* 175-180 island 13
+        fcb   $1c
+		fdb   $0b74	* 175-180 island 14
+        fcb   $10
+		fdb   $0a42	* 175-180 island 10
         fcb   $1e
         fdb   $0c00	* 181-131
+		
+        fcb   $04
+		fdb   $0e00	* 175-180 island 2
+        fcb   $16
+		fdb   $0c10	* 175-180 island 11
+        fcb   $1a
+		fdb   $0b41	* 175-180 island 13
+        fcb   $1c
+		fdb   $0b74	* 175-180 island 14
+        fcb   $10
+		fdb   $0a42	* 175-180 island 10
+        fcb   $04
+		fdb   $0e00	* 175-180 island 2
+        fcb   $16
+		fdb   $0c10	* 175-180 island 11
+        fcb   $1a
+		fdb   $0b41	* 175-180 island 13
+        fcb   $1c
+		fdb   $0b74	* 175-180 island 14
+        fcb   $10
+		fdb   $0a42	* 175-180 island 10
+        fcb   $04
+		fdb   $0e00	* 175-180 island 2
+        fcb   $16
+		fdb   $0c10	* 175-180 island 11
+        fcb   $1a
+		fdb   $0b41	* 175-180 island 13
+        fcb   $1c
+		fdb   $0b74	* 175-180 island 14
+        fcb   $10
+		fdb   $0a42	* 175-180 island 10		
+		
+        fcb   $04
+        fdb   $0008	* title screen 2
+        fcb   $06
+        fdb   $0002	* title screen 3
+        fcb   $08
+        fdb   $035d	* title screen 4
+        fcb   $0a
+        fdb   $0016	* title screen 5
+        fcb   $0c
+        fdb   $004f	* title screen 6
+        fcb   $0e
+        fdb   $0027	* title screen 7
+        fcb   $10
+        fdb   $00ff	* title screen 8
+        fcb   $12
+        fdb   $00f3	* title screen 9
+        fcb   $14
+        fdb   $0ff8	* title screen 10
+        fcb   $16
+        fdb   $0e64	* title screen 11
+        fcb   $18
+        fdb   $0522	* title screen 12
+        fcb   $1a
+        fdb   $0e00	* title screen 13
+        fcb   $1c
+        fdb   $0001	* title screen 14        
 Pal_TitleScreenRaster_end                

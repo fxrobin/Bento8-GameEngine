@@ -215,7 +215,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
 
         ldd   #IrqPsg
         std   irq_routine
-        lda   #132                               ; screen line to sync
+        lda   #139                               ; screen line to sync
         ldx   #irq_one_frame                     ; on every frame
         jsr   IrqSync
         jsr   IrqOn
@@ -447,7 +447,7 @@ Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
-        ldd   #Img_sonic_4
+        ldd   #Img_sonic_5
         std   image_set,u                        *        move.b  #$12,mapping_frame(a0)
         ldx   #Obj_SonicHand                     *        lea     (IntroSonicHand).w,a1
         lda   #ObjID_TitleScreen
@@ -499,9 +499,10 @@ Sonic_FadeInBackground                           *loc_12F9A:
         sta   ext_variables+1,x                  * ptr to destination pal
         ldd   #$0fff
         std   ext_variables+4,x                  * src color
-        lda   #$10
+        ldd   #$103a                             * 58 lines to fade
         sta   ext_variables+6,x                  * nb of frames
-        ldd   #$0132
+        stb   ext_variables+2,x                    
+        ldd   #$0147                             * 71 total lines
         sta   ext_variables+7,x                  * increment
         sta   ext_variables+9,x                  * frame duration
         stb   ext_variables+11,x                 * number of colors or lines        
@@ -1046,7 +1047,7 @@ Island_Init
         std   image_set,u
         lda   #7
         sta   priority,u
-        ldd   #$80BB
+        ldd   #$80C0
         std   xy_pixel,u
 
         ldd   #$2
@@ -1088,7 +1089,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         std   b_TitleScr_final_state,u           *        st.b    objoff_2F(a0)
         lda   #24
         sta   routine_secondary,u                *        move.b  #$10,routine_secondary(a0)
-        ldd   #Img_sonic_4
+        ldd   #Img_sonic_5
         std   image_set,u                        *        move.b  #$12,mapping_frame(a0)
         ldd   #$7427
         std   xy_pixel,u                         *        move.w  #$108,x_pixel(a0)
