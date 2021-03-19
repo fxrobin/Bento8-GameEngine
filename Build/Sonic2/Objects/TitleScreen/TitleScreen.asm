@@ -502,7 +502,7 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldd   #$103a                             * 58 lines to fade
         sta   ext_variables+6,x                  * nb of frames
         stb   ext_variables+2,x                    
-        ldd   #$0147                             * 71 total lines
+        ldd   #$0148                             * 72 total lines
         sta   ext_variables+7,x                  * increment
         sta   ext_variables+9,x                  * frame duration
         stb   ext_variables+11,x                 * number of colors or lines        
@@ -1037,7 +1037,6 @@ Island
 Island_Routines
         lbra  Island_Init
         lbra  Island_Move
-        lbra  Island_Display
 
 Island_Init
         lda   routine_secondary,u
@@ -1047,26 +1046,12 @@ Island_Init
         std   image_set,u
         lda   #7
         sta   priority,u
-        ldd   #$80C0
+        ldd   #$90C0
         std   xy_pixel,u
-
-        ldd   #$2
-        std   w_TitleScr_time_frame_countdown,u
         jmp   DisplaySprite
 
 Island_Move
-        ldd   w_TitleScr_time_frame_countdown,u
-        subd  #1
-        std   w_TitleScr_time_frame_countdown,u
-        bpl   Island_MoveContinue
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
-        rts
-Island_MoveContinue
         dec   x_pixel,u
-        
-Island_Display              
         jmp   DisplaySprite
 
 * ---------------------------------------------------------------------------

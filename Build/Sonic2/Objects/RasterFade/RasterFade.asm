@@ -67,7 +67,6 @@ RasterFade_InInit
         stx   Irq_Raster_Start                        ; pour les donnees de palette
         stx   RFA_InitColor_endloop1+1,pcr
         
-        leax  pal_RasterCurrent,pcr
         lda   #$03                                    ; affectation aux variables globales de
         ldb   raster_nb_colors,u                      ; la routine Irq Raster
         mul
@@ -76,6 +75,7 @@ RasterFade_InInit
         stx   RFA_end+2,pcr
         stx   RFA_InitColor_endloop3+1,pcr
         
+        leax  pal_RasterCurrent,pcr        
         lda   #$03
         ldb   raster_nb_fade_colors,u
         mul
@@ -193,14 +193,14 @@ pal_RasterCurrent rmb 600,0
 
 Pal_Index    fdb Pal_TitleScreenRaster-Pal_Index           
 Pal_TitleScreenRaster
-        fcb   $06
-        fdb   $0020	* 148-154 island 3
         fcb   $08
-        fdb   $0040	* 148-154 island 4
-        fcb   $10
-        fdb   $0071	* 148-154 island 8
+        fdb   $0020	* 148-154 island 4
+        fcb   $0a
+        fdb   $0040	* 148-154 island 5
         fcb   $12
-        fdb   $00a4	* 148-154 island 9		
+        fdb   $0071	* 148-154 island 9
+        fcb   $14
+        fdb   $00a4	* 148-154 island 10		
         fcb   $1e
         fdb   $0b10	* 148-154
         fcb   $1e
@@ -217,10 +217,10 @@ Pal_TitleScreenRaster
         fdb   $0026	* 148-154 island 7
         fcb   $0c
         fdb   $014a	* 148-154 island 6
-        fcb   $0a
-        fdb   $0123	* 148-154 island 5
-        fcb   $18
-        fdb   $026a	* 148-154 island 12
+        fcb   $10
+        fdb   $0fff	* 148-154 island 8
+        fcb   $1e
+        fdb   $0b10	* 148-154
         fcb   $1e
         fdb   $0c10	* 155-157
         fcb   $1e
@@ -243,10 +243,10 @@ Pal_TitleScreenRaster
         fdb   $0b41	* 162-164
         fcb   $1e
         fdb   $0a52	* 165-167
-        fcb   $1e
-		fdb   $0b41	* 162-164
-        fcb   $1e
-        fdb   $0a52	* 165-167
+        fcb   $1c
+        fdb   $0123	* 165-167 island 14
+        fcb   $06
+        fdb   $026a	* 165-167 island 3
         fcb   $1e
         fdb   $0b74	* 168-171
         fcb   $1e
@@ -267,50 +267,52 @@ Pal_TitleScreenRaster
 		fdb   $0b97	* 172-174
         fcb   $1e
         fdb   $0bbb	* 175-180
+        fcb   $18
+		fdb   $0e00	* 175-180 island 12
         fcb   $04
-		fdb   $0e00	* 175-180 island 2
-        fcb   $16
-		fdb   $0c10	* 175-180 island 11
+		fdb   $0c10	* 175-180 island 2
+        fcb   $00
+		fdb   $0b41	* 175-180 island 0
         fcb   $1a
-		fdb   $0b41	* 175-180 island 13
-        fcb   $1c
-		fdb   $0b74	* 175-180 island 14
-        fcb   $10
-		fdb   $0a42	* 175-180 island 10
+		fdb   $0b74	* 175-180 island 13
+        fcb   $16
+		fdb   $0a42	* 175-180 island 11
         fcb   $1e
         fdb   $0c00	* 181-131
 		
+        fcb   $18
+		fdb   $0e00	* 175-180 island 12
         fcb   $04
-		fdb   $0e00	* 175-180 island 2
-        fcb   $16
-		fdb   $0c10	* 175-180 island 11
+		fdb   $0c10	* 175-180 island 2
+        fcb   $00
+		fdb   $0b41	* 175-180 island 0
         fcb   $1a
-		fdb   $0b41	* 175-180 island 13
-        fcb   $1c
-		fdb   $0b74	* 175-180 island 14
-        fcb   $10
-		fdb   $0a42	* 175-180 island 10
+		fdb   $0b74	* 175-180 island 13
+        fcb   $16
+		fdb   $0a42	* 175-180 island 11
+        fcb   $18
+		fdb   $0e00	* 175-180 island 12
         fcb   $04
-		fdb   $0e00	* 175-180 island 2
-        fcb   $16
-		fdb   $0c10	* 175-180 island 11
+		fdb   $0c10	* 175-180 island 2
+        fcb   $00
+		fdb   $0b41	* 175-180 island 0
         fcb   $1a
-		fdb   $0b41	* 175-180 island 13
-        fcb   $1c
-		fdb   $0b74	* 175-180 island 14
-        fcb   $10
-		fdb   $0a42	* 175-180 island 10
+		fdb   $0b74	* 175-180 island 13
+        fcb   $16
+		fdb   $0a42	* 175-180 island 11
+        fcb   $18
+		fdb   $0e00	* 175-180 island 12
         fcb   $04
-		fdb   $0e00	* 175-180 island 2
-        fcb   $16
-		fdb   $0c10	* 175-180 island 11
+		fdb   $0c10	* 175-180 island 2
+        fcb   $00
+		fdb   $0b41	* 175-180 island 0
         fcb   $1a
-		fdb   $0b41	* 175-180 island 13
-        fcb   $1c
-		fdb   $0b74	* 175-180 island 14
-        fcb   $10
-		fdb   $0a42	* 175-180 island 10		
-		
+		fdb   $0b74	* 175-180 island 13
+        fcb   $16
+		fdb   $0a42	* 175-180 island 11	
+
+        fcb   $00
+        fdb   $0fff	* title screen 0		
         fcb   $04
         fdb   $0008	* title screen 2
         fcb   $06
@@ -324,7 +326,7 @@ Pal_TitleScreenRaster
         fcb   $0e
         fdb   $0027	* title screen 7
         fcb   $10
-        fdb   $00ff	* title screen 8
+        fdb   $00ff	* title screen 8        
         fcb   $12
         fdb   $00f3	* title screen 9
         fcb   $14
