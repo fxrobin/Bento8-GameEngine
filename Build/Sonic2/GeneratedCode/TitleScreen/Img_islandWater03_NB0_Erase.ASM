@@ -1,0 +1,73 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_islandWater03
+	STS ERASE_SSAV_Img_islandWater03+1,PCR
+
+	LEAS ,U
+ERASE_CODE_Img_islandWater03_1
+	PULS D,X,U
+	PSHU D,X
+
+	PULS D
+	STD 6,U
+
+	PULS A,B,X,Y
+	STA 8,U
+	STB 4,U
+	STX -4,U
+	STY 17,U
+
+	PULS D,X,Y
+	STD 15,U
+	STX 13,U
+	STY 11,U
+
+	PULS D,X,Y
+	STD -2,U
+	STX -6,U
+	STY -8,U
+
+	PULS D,X
+	STD -10,U
+	STX -14,U
+
+	PULS A,U
+	STA 16,U
+
+	PULS D,X,Y
+	STD -2,U
+	STX -4,U
+	STY ,U
+
+	PULS D,X,Y
+	STD -8,U
+	STX 14,U
+	STY 12,U
+
+	PULS D,X,Y
+	STD 10,U
+	STX 8,U
+	STY 6,U
+
+	PULS D,X,Y
+	STD 4,U
+	STX 2,U
+	STY -6,U
+
+	PULS D,X,Y
+	STD -10,U
+	STX -12,U
+	STY -14,U
+
+	PULS D
+	STD -16,U
+
+	LEAU ,S
+ERASE_SSAV_Img_islandWater03
+	LDS #$0000
+	RTS
+
+(info)
+
+DataSize equ $0041

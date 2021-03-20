@@ -103,10 +103,25 @@ Obj_EmblemBack07        equ TitleScr_This+(object_size*20)
 Obj_EmblemBack08        equ TitleScr_This+(object_size*21)
 Obj_EmblemBack09        equ TitleScr_This+(object_size*22)
 Obj_Island              equ TitleScr_This+(object_size*23)
-Obj_PaletteFade         equ TitleScr_This+(object_size*24)
-Obj_RasterFade          equ TitleScr_This+(object_size*25)
-Obj_PaletteFade3        equ TitleScr_This+(object_size*26)
-TitleScr_Object_RAM_End equ TitleScr_This+(object_size*27)
+Obj_IslandWater01       equ TitleScr_This+(object_size*24)
+Obj_IslandWater02       equ TitleScr_This+(object_size*25)
+Obj_IslandWater03       equ TitleScr_This+(object_size*26)
+Obj_IslandWater04       equ TitleScr_This+(object_size*27)
+Obj_IslandWater05       equ TitleScr_This+(object_size*28)
+Obj_IslandWater06       equ TitleScr_This+(object_size*29)
+Obj_IslandWater07       equ TitleScr_This+(object_size*30)
+Obj_IslandWater08       equ TitleScr_This+(object_size*31)
+Obj_IslandWater09       equ TitleScr_This+(object_size*32)
+Obj_IslandWater10       equ TitleScr_This+(object_size*33)
+Obj_IslandWater11       equ TitleScr_This+(object_size*34)
+Obj_IslandWater12       equ TitleScr_This+(object_size*35)
+Obj_IslandWater13       equ TitleScr_This+(object_size*36)
+Obj_IslandWater14       equ TitleScr_This+(object_size*37)
+Obj_IslandWater15       equ TitleScr_This+(object_size*38)
+Obj_IslandMask          equ TitleScr_This+(object_size*39)
+Obj_PaletteFade         equ TitleScr_This+(object_size*40)
+Obj_RasterFade          equ TitleScr_This+(object_size*41)
+TitleScr_Object_RAM_End equ TitleScr_This+(object_size*42)
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -117,9 +132,10 @@ w_TitleScr_time_frame_count     equ ext_variables
 w_TitleScr_time_frame_countdown equ ext_variables+2
 w_TitleScr_move_frame_count     equ ext_variables+2
 w_TitleScr_xy_data_index        equ ext_variables+4
-w_TitleScr_color_data_index     equ ext_variables+4
 b_TitleScr_final_state          equ ext_variables+6
 b_TitleScr_music_is_playing     equ ext_variables+7
+b_TitleScr_ripple_index         equ ext_variables
+b_TitleScr_water_index          equ ext_variables+2
 
 * ---------------------------------------------------------------------------
 * Subtypes
@@ -134,6 +150,8 @@ Sub_SonicHand   equ 18
 Sub_SmallStar   equ 21
 Sub_TailsHand   equ 24
 Sub_Island      equ 27
+Sub_IslandWater equ 30
+Sub_IslandMask  equ 33
 
 * ***************************************************************************
 * TitleScreen
@@ -162,6 +180,8 @@ TitleScreen_Routines                             *Obj0E_Index:    offsetTable
                                                  *                offsetTableEntry.w Obj0E_SkyPiece       ;  $E
         lbra  TailsHand                          *                offsetTableEntry.w Obj0E_TailsHand      ; $10
         lbra  Island
+        lbra  IslandWater        
+        lbra  IslandMask
                                                  *; ===========================================================================
                                                  *; loc_12E38:
 Init                                             *Obj0E_Init:
@@ -204,7 +224,7 @@ Sonic_Routines                                   *off_12E76:      offsetTable
         lbra  Sonic_CreateTails                  *                offsetTableEntry.w loc_12F7C    ;  $C
         lbra  Sonic_FadeInBackground             *                offsetTableEntry.w loc_12F9A    ;  $E
         lbra  Sonic_CreateSmallStar              *                offsetTableEntry.w loc_12FD6    ; $10
-        lbra  CyclingPal                         *                offsetTableEntry.w loc_13014    ; $12
+        lbra  Sonic_Display                      *                offsetTableEntry.w loc_13014    ; $12
                                                  *; ===========================================================================
                                                  *; spawn more stars
 Sonic_Init                                       *Obj0E_Sonic_Init:
@@ -363,7 +383,7 @@ Sonic_PaletteFadeAfterWait                       *+
         ldy   #Img_emblemBack09
 		sty   image_set,x 	
         
-        ldx   #Obj_PaletteFade3                  *        lea     (TitleScreenPaletteChanger3).w,a1
+        ldx   #Obj_PaletteFade                   *        lea     (TitleScreenPaletteChanger3).w,a1
         lda   #ObjID_PaletteFade
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
         clr   subtype,x                          *        move.b  #0,subtype(a1)
@@ -561,37 +581,35 @@ Sonic_CreateSmallStar_AfterWait                  *+
         sta   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         * not implemented                        *        lea     (IntroSmallStar1).w,a1
         * not implemented                        *        bsr.w   DeleteObject2 ; delete object at $FFFFB180
+Sonic_Display        
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *
-CyclingPal                                       *loc_13014:
-       *lda   Vint_runcount+1                    *        move.b  (Vint_runcount+3).w,d0
-       *anda  #7 * every 8 frames                *        andi.b  #7,d0
-       *bne   CyclingPal_NotYet                  *        bne.s   ++
-       *ldx   w_TitleScr_color_data_index,u      *        move.w  objoff_2C(a0),d0
-       *leax  2,x                                *        addq.w  #2,d0
-       *cmpx  #CyclingPal_TitleScreen_end-CyclingPal_TitleScreen
+        * cycling pal is in RasterFade           *loc_13014:
+                                                 *        move.b  (Vint_runcount+3).w,d0
+                                                 *        andi.b  #7,d0
+                                                 *        bne.s   ++
+                                                 *        move.w  objoff_2C(a0),d0
+                                                 *        addq.w  #2,d0
                                                  *        cmpi.w  #CyclingPal_TitleStar_End-CyclingPal_TitleStar,d0
-       *blo   CyclingPal_Continue                *        blo.s   +
-       *ldx   #0                                 *        moveq   #0,d0
-CyclingPal_Continue                              *+
-       *stx   w_TitleScr_color_data_index,u      *        move.w  d0,objoff_2C(a0)
-       *leax  <CyclingPal_TitleScreen-2,pcr      *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
-       *ldd   ,x
-       *std   Normal_palette+$E
-CyclingPal_NotYet                                *+
-        jmp   DisplaySprite                      *        bra.w   DisplaySprite
+                                                 *        blo.s   +
+                                                 *        moveq   #0,d0
+                                                 *+
+                                                 *        move.w  d0,objoff_2C(a0)
+                                                 *        move.w  CyclingPal_TitleStar(pc,d0.w),(Normal_palette_line3+$A).w
+                                                 *+
+                                                 *        bra.w   DisplaySprite
                                                  *; ===========================================================================
                                                  *; word_1303A:
-CyclingPal_TitleScreen                           *CyclingPal_TitleStar:
+                                                 *CyclingPal_TitleStar:
                                                  *        binclude "art/palettes/Title Star Cycle.bin"
-        *fdb   $0F11                             * ;$0E64
-        *fdb   $0E31                             * ;$0E86
-        *fdb   $0F11                             * ;$0E64
-        *fdb   $0E63                             * ;$0EA8
-        *fdb   $0F11                             * ;$0E64
-        *fdb   $0E96                             * ;$0ECA
-CyclingPal_TitleScreen_end                       *CyclingPal_TitleStar_End
+                                                 * ;$0E64
+                                                 * ;$0E86
+                                                 * ;$0E64
+                                                 * ;$0EA8
+                                                 * ;$0E64
+                                                 * ;$0ECA
+                                                 *CyclingPal_TitleStar_End
                                                  *
 Sonic_xy_data                                    *word_13046:
         fcb   $74,$5F                            *        dc.w  $108, $D0
@@ -1029,7 +1047,6 @@ SmallStar_MoveContinue
 * ---------------------------------------------------------------------------
 
 Island
-
         lda   routine_secondary,u
         sta   *+4,pcr
         bra   Island_Routines
@@ -1037,6 +1054,7 @@ Island
 Island_Routines
         lbra  Island_Init
         lbra  Island_Move
+        lbra  Island_Move_Display
 
 Island_Init
         lda   routine_secondary,u
@@ -1046,13 +1064,269 @@ Island_Init
         std   image_set,u
         lda   #7
         sta   priority,u
-        ldd   #$90C0
+        ldd   #$A3C0
         std   xy_pixel,u
+        lda   render_flags,u
+        ora   #render_xloop_mask
+        sta   render_flags,u
+        
+        ldx   #Obj_IslandMask
+        ldd   #(ObjID_TitleScreen<8)+Sub_IslandMask
+        std   id,x                                    ; id and subtype
+                
+        ldx   #Obj_IslandWater01
+        ldy   #(ObjID_TitleScreen<8)+Sub_IslandWater
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater01
+        std   image_set,x
+        lda   #0
+        sta   b_TitleScr_water_index,x
+
+        ldx   #Obj_IslandWater02
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater02
+        std   image_set,x        
+        lda   #1
+        sta   b_TitleScr_water_index,x
+                
+        ldx   #Obj_IslandWater03
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater03
+        std   image_set,x
+        lda   #2
+        sta   b_TitleScr_water_index,x                
+        
+        ldx   #Obj_IslandWater04
+        sty   id,x                                    ; id and subtype                
+        ldd   #Img_islandWater04
+        std   image_set,x
+        lda   #3
+        sta   b_TitleScr_water_index,x
+                
+        ldx   #Obj_IslandWater05
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater05
+        std   image_set,x
+        lda   #4
+        sta   b_TitleScr_water_index,x                
+        
+        ldx   #Obj_IslandWater06
+        sty   id,x                                    ; id and subtype        
+        ldd   #Img_islandWater06
+        std   image_set,x
+        lda   #5
+        sta   b_TitleScr_water_index,x                
+        
+        ldx   #Obj_IslandWater07
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater07
+        std   image_set,x        
+        lda   #6
+        sta   b_TitleScr_water_index,x
+                
+        ldx   #Obj_IslandWater08
+        sty   id,x                                    ; id and subtype                
+        ldd   #Img_islandWater08
+        std   image_set,x        
+        lda   #7
+        sta   b_TitleScr_water_index,x
+                        
+        ldx   #Obj_IslandWater09
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater09
+        std   image_set,x        
+        lda   #8
+        sta   b_TitleScr_water_index,x
+                        
+        ldx   #Obj_IslandWater10
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater10
+        std   image_set,x        
+        lda   #9
+        sta   b_TitleScr_water_index,x
+                        
+        ldx   #Obj_IslandWater11
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater11
+        std   image_set,x        
+        lda   #10
+        sta   b_TitleScr_water_index,x
+                        
+        
+        ldx   #Obj_IslandWater12
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater12
+        std   image_set,x        
+        lda   #11
+        sta   b_TitleScr_water_index,x
+                        
+        ldx   #Obj_IslandWater13
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater13
+        std   image_set,x        
+        lda   #12
+        sta   b_TitleScr_water_index,x
+                        
+        ldx   #Obj_IslandWater14
+        sty   id,x                                    ; id and subtype
+        ldd   #Img_islandWater14
+        std   image_set,x        
+        lda   #13
+        sta   b_TitleScr_water_index,x
+        
+        ldx   #Obj_IslandWater15
+        sty   id,x                                    ; id and subtype                                                        
+        ldd   #Img_islandWater15
+        std   image_set,x        
+        lda   #14
+        sta   b_TitleScr_water_index,x
+                        
         jmp   DisplaySprite
 
 Island_Move
-        dec   x_pixel,u
+        lda   x_pixel,u
+        deca
+        cmpa  #screen_left+80
+        bhs   Island_Move_InScreen
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
         jmp   DisplaySprite
+Island_Move_InScreen
+        sta   x_pixel,u
+Island_Move_Display        
+        jmp   DisplaySprite
+        
+* ---------------------------------------------------------------------------
+* Island Water
+* ---------------------------------------------------------------------------        
+        
+IslandWater
+        lda   routine_secondary,u
+        sta   *+4,pcr
+        bra   IslandWater_Routines
+
+IslandWater_Routines
+        lbra  IslandWater_Init
+        lbra  IslandWater_Ripple
+
+IslandWater_Init
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+        lda   #7
+        sta   priority,u
+        lda   render_flags,u
+        ora   #render_xloop_mask
+        sta   render_flags,u
+        ldx   #Obj_Island
+        lda   y_pixel,x        
+        sta   y_pixel,u
+
+IslandWater_Ripple
+        ldx   #Obj_Island
+        
+        ldb   b_TitleScr_ripple_index,u
+        lda   Vint_runcount+1
+        anda  #1
+        bne   IslandWater_continue1
+                
+        incb
+        cmpb  #65
+        bls   IslandWater_continue1
+        ldb   #0
+IslandWater_continue1                
+        stb   b_TitleScr_ripple_index,u
+        addb  b_TitleScr_water_index,u
+        cmpb  #65
+        bls   IslandWater_continue2
+        subb  #66
+IslandWater_continue2
+        leay  SwScrl_RippleData,pcr
+        lda   x_pixel,x
+        adda  b,y
+        sta   x_pixel,u        
+        jmp   DisplaySprite
+
+SwScrl_RippleData
+        fcb   1,2,1,2,1,2,2,1
+        fcb   2,2,1,2,1,2,0,0 ; 16
+        fcb   2,0,2,2,1,2,2,2
+        fcb   1,2,0,0,1,0,1,2 ; 32
+        fcb   1,2,1,2,1,2,2,1
+        fcb   2,2,1,2,1,2,0,0 ; 48
+        fcb   2,0,2,2,2,1,2,2
+        fcb   1,2,0,0,1,0,1,2 ; 64
+        fcb   1,2	          ; 66	
+
+      * fcb   0,1,0,1,0,1,1,0
+      * fcb   1,1,0,1,0,1,0,0 ; 16
+      * fcb   1,0,1,1,1,1,1,1
+      * fcb   0,1,0,0,0,0,0,1 ; 32
+      * fcb   0,1,0,1,0,1,1,0
+      * fcb   1,1,0,1,0,1,0,0 ; 48
+      * fcb   1,0,1,1,1,1,1,1
+      * fcb   0,1,0,0,0,0,0,1 ; 64
+      * fcb   0,1	          ; 66	
+
+      * fcb   1,2,1,3,1,2,2,1
+      * fcb   2,3,1,2,1,2,0,0 ; 16
+      * fcb   2,0,3,2,2,3,2,2
+      * fcb   1,3,0,0,1,0,1,3 ; 32
+      * fcb   1,2,1,3,1,2,2,1
+      * fcb   2,3,1,2,1,2,0,0 ; 48
+      * fcb   2,0,3,2,2,3,2,2
+      * fcb   1,3,0,0,1,0,1,3 ; 64
+      * fcb   1,2	          ; 66	
+
+* ---------------------------------------------------------------------------
+* Island Mask
+* ---------------------------------------------------------------------------        
+        
+IslandMask
+        lda   routine_secondary,u
+        sta   *+4,pcr
+        bra   IslandMask_Routines
+
+IslandMask_Routines
+        lbra  IslandMask_Init
+        lbra  Island_Mask1
+        lbra  Island_Mask2
+
+IslandMask_Init
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+        ldd   #Img_islandMask_1
+        std   image_set,u
+        lda   #6
+        sta   priority,u
+        ldd   #$BBC0
+        std   xy_pixel,u
+        lda   render_flags,u
+        ora   #render_xloop_mask!render_overlay_mask
+        sta   render_flags,u
+        jmp   DisplaySprite
+
+Island_Mask1
+        ldx   #Obj_Island
+        lda   x_pixel,x
+        cmpa  #screen_left+80+36
+        bhi   Island_Mask_continue
+        ldd   #Img_islandMask_2
+        std   image_set,u        
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+Island_Mask_continue        
+        jmp   DisplaySprite
+        
+Island_Mask2
+        ldx   #Obj_Island
+        lda   x_pixel,x
+        cmpa  #screen_left+80+12
+        bhi   Island_Mask_continue
+        jmp   DeleteObject
 
 * ---------------------------------------------------------------------------
 * Subroutines

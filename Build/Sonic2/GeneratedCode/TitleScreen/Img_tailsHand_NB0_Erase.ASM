@@ -1,0 +1,91 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_tailsHand
+	STS ERASE_SSAV_Img_tailsHand+1,PCR
+
+	LEAS ,U
+ERASE_CODE_Img_tailsHand_1
+	PULS A,B,U
+	STA 20,U
+	STB 60,U
+
+	PULS A,B
+	STA -60,U
+	STB -20,U
+
+	PULS D,X,U
+	STD ,U
+	STX -120,U
+
+	PULS A,X,Y
+	STA 120,U
+	STX -40,U
+	STY -80,U
+
+	PULS D,X
+	STD 80,U
+	STX 40,U
+
+	PULS D,X,U
+	STD 120,U
+	STX 80,U
+
+	PULS D,X,Y
+	STD ,U
+	STX 40,U
+	STY -80,U
+
+	PULS A,X
+	STA -120,U
+	STX -40,U
+
+	PULS D,U
+	STD -1,U
+
+	PULS D
+	STD -41,U
+
+	PULS A,B,X
+	STA -80,U
+	STB 79,U
+	STX 39,U
+
+	PULS A,B,U
+	STA 40,U
+	STB -40,U
+
+	PULS A,B
+	STA -120,U
+	STB ,U
+
+	PULS A,B
+	STA 120,U
+	STB -80,U
+
+	PULS A
+	STA 80,U
+
+	PULS A,U
+	STA 120,U
+
+	PULS A,B
+	STA -40,U
+	STB 40,U
+
+	PULS A,B
+	STA -120,U
+	STB 80,U
+
+	PULS A,B
+	STA -80,U
+	STB ,U
+
+	LEAU ,S
+ERASE_SSAV_Img_tailsHand
+	LDS #$0000
+	RTS
+
+(info)
+
+DataSize equ $0040

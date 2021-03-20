@@ -1,0 +1,227 @@
+(main)IMGD.ASM
+	ORG $A000
+	SETDP $FF
+DRAW_Img_SegaTrails_4
+	STD DYN_POS+1,PCR
+	LDU ,Y
+	LEAU 1356,U
+
+	LDD #$ffff
+	LDX #$ffff
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+DYN_POS
+
+	LDU #$0000
+	LEAU 1356,U
+
+	LDD #$ffff
+	LDX #$ffff
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	LEAU -76,U
+
+	PSHU D,X
+	RTS
+
+(info)
+

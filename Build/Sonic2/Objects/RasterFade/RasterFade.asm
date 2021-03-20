@@ -25,7 +25,7 @@ Sub_RasterMain         equ 6
 raster_pal_src        equ ext_variables                  * ptr to source pal
 raster_pal_dst        equ ext_variables+1                * ptr to destination pal
 raster_nb_fade_colors equ ext_variables+2                * number of colors to fade (from start)
-* ext_variables+3 free
+raster_cycle_idx      equ ext_variables+3                * current index in cycling pal
 raster_color          equ ext_variables+4                * src or dst color
 raster_cycles         equ ext_variables+6                * nb of frames
 raster_inc            equ ext_variables+7                * increment value
@@ -33,6 +33,7 @@ raster_inc_           equ ext_variables+8                * increment value
 raster_frames         equ ext_variables+9                * fame duration
 raster_cur_frame      equ ext_variables+10               * fame counter
 raster_nb_colors      equ ext_variables+11               * number of colors or lines
+raster_cycle_frame    equ ext_variables+12               * current frame in cycling pal
 
 RasterFade
         lda   routine,u
@@ -43,6 +44,7 @@ RasterFade_Routines
         lbra  RasterFade_SubtypeInit
         lbra  RasterFade_InInit
         lbra  RasterFade_Main
+        lbra  RasterCycle_Main
 
 RasterFade_SubtypeInit
         lda   subtype,u
@@ -56,6 +58,8 @@ RasterFade_InInit
         
         lda   #Sub_RasterMain
         sta   routine,u 
+        
+        clr   raster_cycle_idx,u
         
         lda   raster_frames,u
         sta   raster_cur_frame,u
@@ -124,7 +128,8 @@ RFA_InitColor_endloop3
 RasterFade_Main
         dec   raster_cur_frame,u
         beq   RFA_Continue   
-        rts  
+        bra   RasterCycle_Main
+          
 RFA_Continue
         lda   raster_frames,u
         sta   raster_cur_frame,u
@@ -137,7 +142,10 @@ RFA_Continue
         leay  pal_RasterCurrent+1,pcr
         dec   raster_cycles,u          * decremente le compteur du nombre de frame
         bne   RFA_Loop                 * on reboucle si nombre de frame n'est pas realise
-        jmp   ClearObj                 * auto-destruction de l'objet
+        lda   routine,u
+        adda  #$03
+        sta   routine,u 
+        bra   RasterCycle_Main
         
 RFA_Loop
         lda   1,y	                   * chargement de la composante verte et rouge
@@ -181,7 +189,31 @@ RFA_SetPalNext
 RFA_end        
         cmpy  #$0000
         blo   RFA_Loop                 * on reboucle si fin de liste pas atteinte
-        rts     
+        rts
+        
+RasterCycle_Main     
+        lda   raster_cycle_frame,u
+        inca
+        sta   raster_cycle_frame,u
+        anda  #7
+        bne   RasterCycle_Main_end
+
+        lda   raster_cycle_idx,u
+        inca
+        cmpa  #6
+        bne   RasterCycle_Main_continue
+        lda   #0
+RasterCycle_Main_continue
+        sta   raster_cycle_idx,u
+        asla
+        
+        leax  Pal_TitleScreenCycle,pcr
+        ldx   a,x
+        leay  pal_RasterCurrent+124,pcr        
+        stx   ,y
+        
+RasterCycle_Main_end
+        rts        
         
 * ---------------------------------------------------------------------------
 * Local data
@@ -190,6 +222,15 @@ RFA_end
 pal_mask     fcb $0F                   * masque pour l'aternance du traitemet vert/rouge
 pal_buffer   fdb $00                   * buffer de comparaison
 pal_RasterCurrent rmb 600,0
+
+Pal_TitleScreenCycle
+		fdb   $0e00
+		fdb   $0c10
+		fdb   $0e00		
+		fdb   $0b41
+		fdb   $0e00				
+		fdb   $0b74 
+Pal_TitleScreenCycle_end	
 
 Pal_Index    fdb Pal_TitleScreenRaster-Pal_Index           
 Pal_TitleScreenRaster
@@ -277,39 +318,39 @@ Pal_TitleScreenRaster
 		fdb   $0b74	* 175-180 island 13
         fcb   $16
 		fdb   $0a42	* 175-180 island 11
+		
         fcb   $1e
         fdb   $0c00	* 181-131
-		
-        fcb   $18
-		fdb   $0e00	* 175-180 island 12
-        fcb   $04
-		fdb   $0c10	* 175-180 island 2
-        fcb   $00
-		fdb   $0b41	* 175-180 island 0
-        fcb   $1a
-		fdb   $0b74	* 175-180 island 13
-        fcb   $16
-		fdb   $0a42	* 175-180 island 11
-        fcb   $18
-		fdb   $0e00	* 175-180 island 12
-        fcb   $04
-		fdb   $0c10	* 175-180 island 2
-        fcb   $00
-		fdb   $0b41	* 175-180 island 0
-        fcb   $1a
-		fdb   $0b74	* 175-180 island 13
-        fcb   $16
-		fdb   $0a42	* 175-180 island 11
-        fcb   $18
-		fdb   $0e00	* 175-180 island 12
-        fcb   $04
-		fdb   $0c10	* 175-180 island 2
-        fcb   $00
-		fdb   $0b41	* 175-180 island 0
-        fcb   $1a
-		fdb   $0b74	* 175-180 island 13
-        fcb   $16
-		fdb   $0a42	* 175-180 island 11	
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131
+        fcb   $1e
+        fdb   $0c00	* 181-131	
 
         fcb   $00
         fdb   $0fff	* title screen 0		

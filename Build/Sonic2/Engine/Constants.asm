@@ -77,9 +77,9 @@ pcm_meta_size   equ 5
 * ===========================================================================
 
 nb_reserved_objects           equ 2
-nb_dynamic_objects            equ 27
+nb_dynamic_objects            equ 37
 nb_level_objects              equ 3
-nb_objects                    equ 32 * max 64 total
+nb_objects                    equ 42 * max 64 total
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets

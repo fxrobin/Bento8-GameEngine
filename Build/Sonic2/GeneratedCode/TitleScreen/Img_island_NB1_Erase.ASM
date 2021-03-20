@@ -1,0 +1,566 @@
+(main)IMGE.ASM
+	ORG $A000
+	SETDP $FF
+ERASE_Img_island
+	STS ERASE_SSAV_Img_island+1,PCR
+
+	LEAS ,U
+ERASE_CODE_Img_island_1
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D
+	STD 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X
+	STD 15,U
+	STX 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D
+	STD 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A
+	STA 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X
+	STA 8,U
+	STX 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X
+	STD 6,U
+	STX 19,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X
+	STA 19,U
+	STX 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X
+	STA 6,U
+	STX 21,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D
+	STD 22,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D,X
+	STD 22,U
+	STX 20,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS A,X,Y
+	STA 9,U
+	STX 28,U
+	STY 7,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,B,X,Y
+	STA 8,U
+	STB 12,U
+	STX 32,U
+	STY 6,U
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS A,X,Y
+	STA 11,U
+	STX 37,U
+	STY 31,U
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS D,X
+	STD 39,U
+	STX 32,U
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS D,X,Y
+	STD -78,U
+	STX -40,U
+	STY -80,U
+
+	PULS D,X
+	STD -119,U
+	STX -38,U
+
+	PULS D,U
+	STD 40,U
+
+	PULS D,X
+	STD ,U
+	STX -40,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A
+	STA 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X
+	STA 6,U
+	STX 15,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A
+	STA 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS A
+	STA 4,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D
+	STD 13,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,B
+	STA 6,U
+	STB 18,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,Y
+	STA 19,U
+	STX 21,U
+	STY 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A
+	STA 6,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS D
+	STD 4,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D
+	STD 21,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A
+	STA 3,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D
+	STD 5,U
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS A,B,X
+	STA 9,U
+	STB 5,U
+	STX 7,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X,Y
+	STA 28,U
+	STX 6,U
+	STY 26,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS D,X
+	STD 38,U
+	STX 32,U
+
+	PULS A,B,X
+	STA 6,U
+	STB 8,U
+	STX 12,U
+
+	PULS D,X,Y,U
+	PSHU D,X,Y
+
+	PULS A,B
+	STA 38,U
+	STB 8,U
+
+	PULS A,B,X
+	STA 33,U
+	STB 6,U
+	STX 12,U
+
+	PULS A,X,Y,U
+	PSHU A,X,Y
+
+	PULS A,B
+	STA 33,U
+	STB 5,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS D,X,U
+	PSHU D,X
+
+	PULS D
+	STD 39,U
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,X,U
+	PSHU A,X
+
+	PULS A,B,X,U
+	PSHU B,X
+	STA -38,U
+
+	PULS D,X
+	STD -40,U
+	STX -80,U
+
+	PULS A,B
+	STA -119,U
+	STB -78,U
+
+	PULS A,B,U
+	STA -20,U
+	STB 20,U
+
+	LEAU ,S
+ERASE_SSAV_Img_island
+	LDS #$0000
+	RTS
+
+(info)
+
+DataSize equ $0457

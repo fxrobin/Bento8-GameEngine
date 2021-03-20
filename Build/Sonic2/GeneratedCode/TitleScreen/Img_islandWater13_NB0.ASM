@@ -1,0 +1,29 @@
+(main)IMGD.ASM
+	ORG $A000
+	SETDP $FF
+BCKDRAW_Img_islandWater13
+	STS SSAV_Img_islandWater13+1,PCR
+
+	STD DYN_POS+1,PCR
+	LEAS ,U
+	LDU ,Y
+	LEAU 1155,U
+
+	LDA -1,U
+	LDB 1,U
+	PSHS U,B,A
+	ANDB #$F0
+	ORB #$02
+	STB 1,U
+	LDA #$22
+	STA -1,U
+DYN_POS
+
+	LDU #$0000
+	LEAU ,S
+SSAV_Img_islandWater13
+	LDS #$0000
+	RTS
+
+(info)
+

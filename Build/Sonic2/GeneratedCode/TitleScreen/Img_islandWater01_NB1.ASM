@@ -1,0 +1,120 @@
+(main)IMGD.ASM
+	ORG $A000
+	SETDP $FF
+BCKDRAW_Img_islandWater01
+	STS SSAV_Img_islandWater01+1,PCR
+
+	STD DYN_POS+1,PCR
+	LEAS ,U
+	LDU ,Y
+	LEAU 665,U
+
+	LDD -2,U
+	PSHS D
+	ANDA #$F0
+	ORA #$00
+	LDB #$00
+	STD -2,U
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$002d
+	LDX #$2d00
+	LDY #$0000
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$00c2
+	LDX #$d208
+	LDY #$0dd2
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$d282
+	LDX #$bddb
+	LDY #$002d
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$2d00
+	LDX #$0000
+	LDY #$2d2d
+	PSHU D,X,Y
+	LEAU 6,U
+
+	LDX 6,U
+	PSHS X
+	LDA #$00
+	STD 6,U
+	LDA 8,U
+	PSHS A
+	ANDA #$0F
+	ORA #$00
+	STA 8,U
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$0000
+	LDX #$0000
+	LDY #$0000
+	PSHU D,X,Y
+DYN_POS
+
+	LDU #$0000
+	LEAU 663,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$0202
+	LDX #$0202
+	LDY #$0202
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$0202
+	LDX #$0d2d
+	LDY #$d888
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$8288
+	LDX #$2882
+	LDY #$2dd2
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$0202
+	LDX #$0202
+	LDY #$0202
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU D,X,Y
+	PSHS U,Y,X,D
+	LDD #$0202
+	LDX #$0202
+	LDY #$0202
+	PSHU D,X,Y
+	LEAU 6,U
+
+	PULU X,Y
+	PSHS U,Y,X
+	LDX #$0202
+	PSHU D,X
+	LEAU ,S
+SSAV_Img_islandWater01
+	LDS #$0000
+	RTS
+
+(info)
+

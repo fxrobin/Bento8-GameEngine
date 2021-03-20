@@ -1,0 +1,102 @@
+(main)IMGD.ASM
+	ORG $A000
+	SETDP $FF
+BCKDRAW_Img_islandWater06
+	STS SSAV_Img_islandWater06+1,PCR
+
+	STD DYN_POS+1,PCR
+	LEAS ,U
+	LDU ,Y
+	LEAU 872,U
+
+	LDD 3,U
+	PSHS D
+	ANDA #$F0
+	ORA #$0d
+	LDB #$d8
+	STD 3,U
+	PULU A,X
+	PSHS U,X,A
+	LDA #$cc
+	LDX #$b2cd
+	PSHU A,X
+	LEAU 5,U
+
+	PULU A,X
+	PSHS U,X,A
+	LDA #$82
+	LDX #$cd22
+	PSHU A,X
+DYN_POS
+
+	LDU #$0000
+	LEAU 880,U
+
+	LDD -3,U
+	PSHS D
+	ANDA #$0F
+	ANDB #$0F
+	ADDD #$20d0
+	STD -3,U
+	LDA -7,U
+	LDB -15,U
+	PSHS B,A
+	ANDB #$0F
+	ORB #$20
+	STB -15,U
+	LDA -11,U
+	PSHS A
+	ANDA #$0F
+	ORA #$20
+	STA -11,U
+	LDA ,U
+	PSHS A
+	ANDA #$F0
+	ORA #$0c
+	STA ,U
+	LDA 4,U
+	PSHS A
+	ANDA #$0F
+	ORA #$20
+	STA 4,U
+	LDA 6,U
+	PSHS A
+	ANDA #$0F
+	ORA #$20
+	STA 6,U
+	LDA 10,U
+	PSHS A
+	ANDA #$0F
+	ORA #$20
+	STA 10,U
+	LDA 12,U
+	PSHS A
+	ANDA #$0F
+	ORA #$20
+	STA 12,U
+	LDA 14,U
+	PSHS A
+	ANDA #$0F
+	ORA #$20
+	STA 14,U
+	LDD -9,U
+	PSHS D
+	ANDA #$0F
+	ORA #$20
+	LDB #$cc
+	STD -9,U
+	LDD -5,U
+	PSHS U,D
+	ANDA #$0F
+	ORA #$d0
+	LDB #$c2
+	STD -5,U
+	LDA #$dd
+	STA -7,U
+	LEAU ,S
+SSAV_Img_islandWater06
+	LDS #$0000
+	RTS
+
+(info)
+
