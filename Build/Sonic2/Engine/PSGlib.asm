@@ -151,7 +151,7 @@ PSGInit *@globals
 PSGPlayNoRepeat *@globals
         lda   #0                                      ; We don't want the song to loop
         bra   PSGPlay1
-PSGPlay
+PSGPlay *@globals
         lda   #1                                      ; the song can loop when finished
 PSGPlay1
         sta   PSGLoopFlag
@@ -410,7 +410,7 @@ _restoreSFX2_end
 PSGSFXPlayLoop *@globals
         lda   #1                                      ; SFX _IS_ a looping one
         bra   PSGSFXPlay1
-PSGSFXPlay
+PSGSFXPlay *@globals
         lda   #0                                      ; SFX is _NOT_ a looping one
 PSGSFXPlay1
         sta   PSGSFXLoopFlag
@@ -693,7 +693,8 @@ _musicLoop
 _substring
         subb  #PSGSubString-4                         ; len is value - $08 + 4
         stb   PSGMusicSubstringLen                    ; save len
-        ldd   ,x++                                    ; load substring address (offset)
+        ldb   ,x+                                     ; load substring address (offset) little-endian
+        lda   ,x+                                     ; load substring address (offset) little-endian
         stx   PSGMusicSubstringRetAddr                ; save return address
         ldx   PSGMusicStart
         leax  d,x                                     ; make substring current
@@ -702,7 +703,7 @@ _substring
 _high_part_Tone
         stb   PSGChan2HighTone                        ; save channel 2 tone HIGH data
         lda   PSGChannel2SFX                          ; channel 2 free?
-        beq   _send2PSG
+        lbeq   _send2PSG
         lbra   _intLoop
 
 
@@ -794,7 +795,8 @@ _sfxLoop
 _SFXsubstring
         subb  #PSGSubString-4                         ; len is value - $08 + 4
         stb   PSGSFXSubstringLen                      ; save len
-        ldd   ,x++                                    ; load substring address (offset)
+        ldb   ,x+                                     ; load substring address (offset) little-endian
+        lda   ,x+                                     ; load substring address (offset) little-endian
         stx   PSGSFXSubstringRetAddr                  ; save return address
         ldx   PSGSFXStart
         leax  d,x                                     ; make substring current
@@ -811,7 +813,7 @@ PSGLoopFlag                rmb 1,0 ; the tune should loop or not (flag)
 PSGMusicLastLatch          rmb 1,0 ; the last PSG music latch
 
   * decompression vars
-PSGMusicSubstringLen       rmb 1,0 ; lenght of the substring we are playing
+PSGMusicSubstringLen       rmb 1,0 ; length of the substring we are playing
 PSGMusicSubstringRetAddr   rmb 2,0 ; return to this address when substring is over
 
   * command buffers
@@ -845,6 +847,6 @@ PSGSFXSkipFrames           rmb 1,0 ; the frames we need to skip
 PSGSFXLoopFlag             rmb 1,0 ; the SFX should loop or not (flag)
 
   * decompression vars for SFX
-PSGSFXSubstringLen         rmb 1,0 ; lenght of the substring we are playing
+PSGSFXSubstringLen         rmb 1,0 ; length of the substring we are playing
 PSGSFXSubstringRetAddr     rmb 2,0 ; return to this address when substring is over
 

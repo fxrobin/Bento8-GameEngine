@@ -121,7 +121,8 @@ Obj_IslandWater15       equ TitleScr_This+(object_size*38)
 Obj_IslandMask          equ TitleScr_This+(object_size*39)
 Obj_PaletteFade         equ TitleScr_This+(object_size*40)
 Obj_RasterFade          equ TitleScr_This+(object_size*41)
-TitleScr_Object_RAM_End equ TitleScr_This+(object_size*42)
+Obj_PressStart          equ TitleScr_This+(object_size*42)
+TitleScr_Object_RAM_End equ TitleScr_This+(object_size*43)
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -152,6 +153,7 @@ Sub_TailsHand   equ 24
 Sub_Island      equ 27
 Sub_IslandWater equ 30
 Sub_IslandMask  equ 33
+Sub_PressStart  equ 36
 
 * ***************************************************************************
 * TitleScreen
@@ -182,6 +184,7 @@ TitleScreen_Routines                             *Obj0E_Index:    offsetTable
         lbra  Island
         lbra  IslandWater        
         lbra  IslandMask
+        lbra  PressStart
                                                  *; ===========================================================================
                                                  *; loc_12E38:
 Init                                             *Obj0E_Init:
@@ -561,7 +564,7 @@ Sonic_CreateSmallStar                            *loc_12FD6:
         * not implemented                        *        btst    #6,(Graphics_Flags).w ; is Megadrive PAL?
         * not implemented                        *        beq.s   + ; if not, branch
         ldd   w_TitleScr_time_frame_count,u
-        cmpd  #$190                              *        cmpi.w  #$190,objoff_34(a0)
+        cmpd  #$130                              *        cmpi.w  #$190,objoff_34(a0)
         beq   Sonic_CreateSmallStar_AfterWait    *        beq.s   ++
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
@@ -1023,7 +1026,7 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
                                                  *        move.w  #$80,y_pixel(a0)
         ldd   #Ani_smallStar
         std   anim,u                             *        move.b  #3,anim(a0)
-        ldd   #$71
+        ldd   #$80
         std   w_TitleScr_time_frame_countdown,u  *        move.w  #$8C,objoff_2A(a0)
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
                                                  *; ===========================================================================
@@ -1191,6 +1194,11 @@ Island_Move
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
+        
+        ldx   #Obj_PressStart
+        ldd   #(ObjID_TitleScreen<8)+Sub_PressStart
+        std   id,x                                    ; id and subtype
+                
         jmp   DisplaySprite
 Island_Move_InScreen
         sta   x_pixel,u
@@ -1259,16 +1267,7 @@ SwScrl_RippleData
         fcb   1,2,0,0,1,0,1,2 ; 64
         fcb   1,2	          ; 66	
 
-      * fcb   0,1,0,1,0,1,1,0
-      * fcb   1,1,0,1,0,1,0,0 ; 16
-      * fcb   1,0,1,1,1,1,1,1
-      * fcb   0,1,0,0,0,0,0,1 ; 32
-      * fcb   0,1,0,1,0,1,1,0
-      * fcb   1,1,0,1,0,1,0,0 ; 48
-      * fcb   1,0,1,1,1,1,1,1
-      * fcb   0,1,0,0,0,0,0,1 ; 64
-      * fcb   0,1	          ; 66	
-
+      * original offsets
       * fcb   1,2,1,3,1,2,2,1
       * fcb   2,3,1,2,1,2,0,0 ; 16
       * fcb   2,0,3,2,2,3,2,2
@@ -1290,14 +1289,13 @@ IslandMask
 
 IslandMask_Routines
         lbra  IslandMask_Init
-        lbra  Island_Mask1
-        lbra  Island_Mask2
+        lbra  IslandMask1
 
 IslandMask_Init
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-        ldd   #Img_islandMask_1
+        ldd   #Img_islandMask
         std   image_set,u
         lda   #6
         sta   priority,u
@@ -1308,25 +1306,70 @@ IslandMask_Init
         sta   render_flags,u
         jmp   DisplaySprite
 
-Island_Mask1
+IslandMask1
         ldx   #Obj_Island
         lda   x_pixel,x
-        cmpa  #screen_left+80+36
-        bhi   Island_Mask_continue
-        ldd   #Img_islandMask_2
-        std   image_set,u        
+        cmpa  #screen_left+80+12 
+        bhi   IslandMask_continue
+        jmp   DeleteObject
+IslandMask_continue        
+        jmp   DisplaySprite
+        
+* ---------------------------------------------------------------------------
+* Press Start
+* ---------------------------------------------------------------------------        
+        
+PressStart
+        lda   routine_secondary,u
+        sta   *+4,pcr
+        bra   PressStart_Routines
+
+PressStart_Routines
+        lbra  PressStart_Init
+        lbra  PressStart_display
+        lbra  PressStart_hide        
+
+PressStart_Init
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-Island_Mask_continue        
-        jmp   DisplaySprite
+        ldd   #Img_pressStart
+        std   image_set,u
+        lda   #1
+        sta   priority,u
+        ldd   #$80D8
+        std   xy_pixel,u
+        lda   #$07
+        sta   w_TitleScr_time_frame_count,u
         
-Island_Mask2
-        ldx   #Obj_Island
-        lda   x_pixel,x
-        cmpa  #screen_left+80+12
-        bhi   Island_Mask_continue
-        jmp   DeleteObject
+        ldx   #Psg_MarbleZone *@IgnoreUndefined
+        jmp   PSGPlay
+        
+        jmp   DisplaySprite
+
+PressStart_display
+        lda   w_TitleScr_time_frame_count,u
+        deca
+        bne   PressStart_display1
+        lda   routine_secondary,u
+        adda  #$03
+        sta   routine_secondary,u
+        lda   #$07        
+PressStart_display1        
+        sta   w_TitleScr_time_frame_count,u
+        jmp   DisplaySprite 
+        
+PressStart_hide
+        lda   w_TitleScr_time_frame_count,u
+        deca
+        bne   PressStart_hide1
+        lda   routine_secondary,u
+        suba  #$03
+        sta   routine_secondary,u
+        lda   #$07        
+PressStart_hide1        
+        sta   w_TitleScr_time_frame_count,u
+        rts      
 
 * ---------------------------------------------------------------------------
 * Subroutines

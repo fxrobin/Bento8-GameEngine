@@ -195,7 +195,7 @@ RasterCycle_Main
         lda   raster_cycle_frame,u
         inca
         sta   raster_cycle_frame,u
-        anda  #7
+        anda  #3
         bne   RasterCycle_Main_end
 
         lda   raster_cycle_idx,u

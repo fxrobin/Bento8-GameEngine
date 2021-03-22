@@ -83,9 +83,6 @@ public class SimpleAssemblyGenerator{
 		logger.debug("YSize: "+getY_size());	
 		logger.debug("Center: "+spriteSheet.getCenter());
 		
-		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
-		
 		destDir += "/"+spriteName;
 		asmDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
 		File file = new File (asmDrawFileName);
@@ -100,6 +97,9 @@ public class SimpleAssemblyGenerator{
 		// on passe la génération du code de sprite compilé
 		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 
+			logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
+			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
+			
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(REARWARD);
 			Solution solution = cs.getSolutions().get(0);

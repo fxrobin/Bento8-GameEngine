@@ -78,8 +78,6 @@ public class AssemblyGenerator{
 		logger.debug("XSize: "+getX_size());
 		logger.debug("YSize: "+getY_size());		
 		logger.debug("Center: "+spriteSheet.getCenter());
-		logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-		logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 		
 		destDir += "/"+spriteName;
 		asmBckDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
@@ -101,6 +99,9 @@ public class AssemblyGenerator{
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
 		// on passe la génération du code de sprite compilé
 		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile) && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
+			
+			logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
+			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));			
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(FORWARD);
