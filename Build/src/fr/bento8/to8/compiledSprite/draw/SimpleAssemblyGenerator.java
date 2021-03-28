@@ -14,15 +14,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 
 import fr.bento8.to8.InstructionSet.Register;
 import fr.bento8.to8.build.Game;
 import fr.bento8.to8.image.SpriteSheet;
-import fr.bento8.to8.util.C6809Util;
+import fr.bento8.to8.util.LWASMUtil;
 
 public class SimpleAssemblyGenerator{
 
@@ -55,18 +53,6 @@ public class SimpleAssemblyGenerator{
 	private String asmDrawFileName, lstDrawFileName, binDrawFileName;
 	private Path asmDFile, lstDFile, binDFile;
 
-	public static void main(String[] args) throws Exception {
-		Game.c6809 = "./c6809.exe";
-		Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.DEBUG);
-		SimpleAssemblyGenerator asm = new SimpleAssemblyGenerator(new SpriteSheet("test", "./Sonic2/Objects/TitleScreen/Title_008.png", 1, "N"), "./tmp/cs_draw_out", 0);
-		asm.compileCode("A000");
-		System.out.println("XOffset: "+asm.getX_offset());;
-		System.out.println("X1Offset: "+asm.getX1_offset());
-		System.out.println("Y1Offset: "+asm.getY1_offset());
-		System.out.println("XSize: "+asm.getX_size());
-		System.out.println("YSize: "+asm.getY_size());
-	}
-	
 	public SimpleAssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteCenterEven = (spriteSheet.center % 2) == 0;
 		spriteName = spriteSheet.getName();
@@ -84,16 +70,16 @@ public class SimpleAssemblyGenerator{
 		logger.debug("Center: "+spriteSheet.getCenter());
 		
 		destDir += "/"+spriteName;
-		asmDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
+		asmDrawFileName = destDir+"_"+spriteSheet.variant+".asm";
 		File file = new File (asmDrawFileName);
 		file.getParentFile().mkdirs();		
 		asmDFile = Paths.get(asmDrawFileName);
 		lstDrawFileName = destDir+"_"+spriteSheet.variant+".lst";
 		lstDFile = Paths.get(lstDrawFileName);
-		binDrawFileName = destDir+"_"+spriteSheet.variant+".BIN";
+		binDrawFileName = destDir+"_"+spriteSheet.variant+".bin";
 		binDFile = Paths.get(binDrawFileName);
 
-		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
+		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .bin et .asm
 		// on passe la génération du code de sprite compilé
 		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 
@@ -145,7 +131,7 @@ public class SimpleAssemblyGenerator{
 			// Utilisation du .BIN existant
 			sizeDCache = Files.readAllBytes(Paths.get(binDrawFileName)).length-10;
 			// Utilisation du .lst existant
-			cycleDCache = C6809Util.countCycles(lstDrawFileName);
+			cycleDCache = LWASMUtil.countCycles(lstDrawFileName);
 		}
 	}
 
@@ -161,10 +147,10 @@ public class SimpleAssemblyGenerator{
 		try
 		{
 			Pattern pt = Pattern.compile("[ \t]*ORG[ \t]*\\$[a-fA-F0-9]{4}");
-			Process pr;
+			Process p;
+			ProcessBuilder pb;
 			BufferedReader br;
 			String line;
-			File f;
 			
 			// Process Draw Code
 			// ****************************************************************			
@@ -172,7 +158,7 @@ public class SimpleAssemblyGenerator{
 				Files.deleteIfExists(asmDFile);
 				Files.createFile(asmDFile);
 
-				Files.write(asmDFile, getCodeFrameDrawStart("IMGD.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameDrawStart(org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, getCodeFrameDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
@@ -191,32 +177,29 @@ public class SimpleAssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pr = new ProcessBuilder(Game.c6809, "-bl", asmDrawFileName, binDrawFileName).start();
-			br = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+			pb = new ProcessBuilder(Game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--decb");			
+			pb.redirectErrorStream(true);
+			p = pb.start();					
+			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 			while((line=br.readLine())!=null){
 				logger.debug(line);
 			}
-			pr.waitFor();
+			p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binDrawFileName));	
 
-			// Rename .lst File
-			f = new File("codes.lst"); 
-			Files.deleteIfExists(lstDFile);
-			f.renameTo(new File(lstDrawFileName));
-
 			// Compte le nombre de cycles du .lst
-			int compilerDCycles = C6809Util.countCycles(lstDrawFileName);
+			int compilerDCycles = LWASMUtil.countCycles(lstDrawFileName);
 			int compilerDSize = content.length - 10;			
 			int computedDCycles = getDCycles();
 			int computedDSize = getDSize();
-			logger.debug(lstDrawFileName + " c6809.exe DRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
-			logger.debug(lstDrawFileName + " c6809.exe DRAW size: " + compilerDSize + " computed size: " + computedDSize);
+			logger.debug(lstDrawFileName + " lwasm.exe DRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
+			logger.debug(lstDrawFileName + " lwasm.exe DRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
 			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-				logger.fatal(lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+				logger.fatal(lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
@@ -247,33 +230,27 @@ public class SimpleAssemblyGenerator{
 		return strBuilder.toString();
 	}
 
-	public List<String> getCodeFrameDrawStart(String fileName, String org) {
+	public List<String> getCodeFrameDrawStart(String org) {
 		List<String> asm = new ArrayList<String>();
-		asm.add("(main)" + fileName + "");
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
+		asm.add("\tOPT C,CT");		
 		asm.add("DRAW_" + spriteName + "");
-		//asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
 		asm.add("\tSTD DYN_POS+1,PCR");		
-		//asm.add("\tLEAS ,U");		
 		asm.add("\tLDU ,Y");
 		return asm;
 	}
 
 	public int getCodeFrameDrawStartCycles() {
 		int cycles = 0;
-		//cycles += Register.costIndexedST[Register.S]+Register.costIndexedOffsetPCR;
 		cycles += Register.costIndexedST[Register.D]+Register.costIndexedOffsetPCR;
-		//cycles += Register.costIndexedLEA;
 		cycles += Register.costIndexedLD[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameDrawStartSize() {
 		int size = 0;
-		//size += Register.sizeIndexedST[Register.S]+Register.sizeIndexedOffsetPCR;
-		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;		
-		//size += Register.sizeIndexedLEA;
+		size += Register.sizeIndexedST[Register.D]+Register.sizeIndexedOffsetPCR;
 		size += Register.sizeIndexedLD[Register.U];
 		return size;
 	}
@@ -299,23 +276,18 @@ public class SimpleAssemblyGenerator{
 
 	public List<String> getCodeFrameDrawEnd() {
 		List<String> asm = new ArrayList<String>();
-		//asm.add("SSAV_" + spriteName + "");
-		//asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
-		asm.add("(info)\n");
 		return asm;
 	}
 
 	public int getCodeFrameDrawEndCycles() {
 		int cycles = 0;
-		//cycles += Register.costImmediateLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
 	}
 
 	public int getCodeFrameDrawEndSize() {
 		int size = 0;
-		//size += Register.sizeImmediateLD[Register.S];
 		size += 1; // RTS
 		return size;
 	}

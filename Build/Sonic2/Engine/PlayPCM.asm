@@ -9,7 +9,7 @@
 * reset REG : [d] [x] [y]
 * ---------------------------------------------------------------------------
 
-PlayPCM *@globals
+PlayPCM 
 
         lda   $E7E5
         sta   PlayPCM_RestorePage+1

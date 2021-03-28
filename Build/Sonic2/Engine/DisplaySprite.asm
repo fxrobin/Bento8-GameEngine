@@ -17,17 +17,17 @@
 * input REG : [x] object pointer (OST)
 * ---------------------------------------------------------------------------
 									   
-DisplaySprite_x *@globals
+DisplaySprite_x 
         pshs  d,x,u
         tfr   x,u
         bra   DSP_Start
         
-DisplaySprite *@globals
+DisplaySprite 
         pshs  d,x,u
         
 DSP_Start
         lda   render_flags,u
-        anda  #:render_hide_mask            ; unset hide flag
+        anda  #^render_hide_mask            ; unset hide flag
         sta   render_flags,u
 
         lda   Glb_Cur_Wrk_Screen_Id         ; read current screen buffer for write operations

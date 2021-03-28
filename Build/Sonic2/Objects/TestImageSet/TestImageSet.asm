@@ -10,11 +10,8 @@
 ; - call to internal object routine: use branch ((l)b__), do not use jump
 ; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ; ---------------------------------------------------------------------------
-
-(main)TITLESCR
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000
+        
+        INCLUDE "./Engine/Constants.asm"
 
 TestImageSet
         lda   routine,u
@@ -93,7 +90,7 @@ Run
         ldd   #Img_SonicRun
         std   image_set,u
         lda   render_flags,u
-        anda  #:render_overlay_mask
+        anda  #^render_overlay_mask
         sta   render_flags,u           
         lda   routine_secondary,u
         adda  #$03
@@ -123,7 +120,7 @@ Walk
         *ldd   #Img_SonicWalk
         std   image_set,u
         lda   render_flags,u
-        anda  #:render_overlay_mask
+        anda  #^render_overlay_mask
         sta   render_flags,u           
         clr   routine_secondary,u
         rts           

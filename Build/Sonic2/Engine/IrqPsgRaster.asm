@@ -21,29 +21,29 @@
 * reset REG : [d]
 * ---------------------------------------------------------------------------
        
-irq_routine       equ $6027 *@globals
-irq_timer_ctrl    equ $E7C5 *@globals
-irq_timer         equ $E7C6 *@globals
-irq_one_frame     equ 312*64-1 *@globals              ; one frame timer (lines*cycles_per_lines-1), timer launch at -1
-Irq_Raster_Page   fdb $00 *@globals
-Irq_Raster_Start  fdb $0000 *@globals
-Irq_Raster_End    fdb $0000 *@globals
+irq_routine       equ $6027 
+irq_timer_ctrl    equ $E7C5 
+irq_timer         equ $E7C6 
+irq_one_frame     equ 312*64-1               ; one frame timer (lines*cycles_per_lines-1), timer launch at -1
+Irq_Raster_Page   fdb $00 
+Irq_Raster_Start  fdb $0000 
+Irq_Raster_End    fdb $0000 
        
-IrqOn *@globals        
+IrqOn         
         lda   $6019                           
         ora   #$20
         sta   $6019                                   ; STATUS register
         andcc #$EF                                    ; tell 6809 to activate irq
         rts
         
-IrqOff *@globals
+IrqOff 
         lda   $6019                           
         anda  #$DF
         sta   $6019                                   ; STATUS register
         orcc  #$10                                    ; tell 6809 to activate irq
         rts
 
-IrqSync *@globals
+IrqSync 
         ldb   #$42
         stb   irq_timer_ctrl
         
@@ -65,17 +65,17 @@ IrqSync_3
         stx   irq_timer                               ; spot is at the end of desired line
         rts                  
        
-IrqPsg *@globals
+IrqPsg 
         lda   <$E5
         sta   IrqPsg_end+1                            ; backup data page
         jsr   PSGFrame
-       *jsr   PSGSFXFrame
+        jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
         sta   <$E5                                    ; restore data page
         jmp   $E830                                   ; return to caller                               
        
-IrqPsgRaster *@globals
+IrqPsgRaster 
         lda   <$E5
         sta   IrqPsgRaster_end+1                      ; backup data page
         
@@ -109,7 +109,7 @@ IrqPsgRaster_render
         bne   IrqPsgRaster_render 
 
        jsr   PSGFrame
-       *jsr   PSGSFXFrame
+       jsr   PSGSFXFrame
 IrqPsgRaster_end        
         lda   #$00
         sta   <$E5                                    ; restore data page

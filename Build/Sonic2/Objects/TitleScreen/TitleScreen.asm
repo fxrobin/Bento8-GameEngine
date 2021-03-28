@@ -68,11 +68,9 @@
 ; This is used to mask Sonic and Tails behind the emblem.
 ; Another sprite is used to mask the upper part of the emblem (non linear shape.
 ; ---------------------------------------------------------------------------
-
-(main)TITLESCR
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000
+        
+        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./Engine/Macros.asm"
 
 * ---------------------------------------------------------------------------
 * Object Status Table index
@@ -264,9 +262,10 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
                                                  *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
 
                                                  *        move.b  #6,subtype(a1)                          ; logo top
-
-        * sound unused                           *        moveq   #SndID_Sparkle,d0
-        rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        *ldb   #SFX_CHANNEL2
+        *ldx   #Psg_Sparkle *@IgnoreUndefined     *        moveq   #SndID_Sparkle,d0
+        *jmp   PSGSFXPlay                         *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        rts
                                                  *; ===========================================================================
                                                  *
 Sonic_PaletteFade                                *loc_12EC2:
@@ -480,7 +479,7 @@ Sonic_CreateHand                                 *Obj0E_Sonic_LastFrame:
         
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask|render_motionless_mask
         sta   render_flags,u
                 
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -680,7 +679,7 @@ Tails_CreateHand                                 *loc_130A2:
         
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask|render_motionless_mask
         sta   render_flags,u
         
                                                  *
@@ -720,7 +719,7 @@ EmblemFront_Init                                 *Obj0E_LogoTop_Init:
         * trademark logo for PAL                 *        tst.b   (Graphics_Flags).w
         * game version                           *        bmi.s   +
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask|render_motionless_mask
         sta   render_flags,u
         * initialized in object creation         *        move.b  #$A,mapping_frame(a0)
                                                  *+
@@ -742,7 +741,7 @@ EmblemFront_DisplaySprite
         * Overlay sprite will never change priority, this code is faster than calling DisplaySprite
         * We just need to call DisplaySprite two times (one for each buffer)
         lda   render_flags,u
-        anda  #:render_hide_mask
+        anda  #^render_hide_mask
         sta   render_flags,u
         rts        
                                                  *; ===========================================================================
@@ -763,7 +762,7 @@ EmblemBack_Routines
 
 EmblemBack_Init
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask|render_motionless_mask
         sta   render_flags,u
         ldb   #$06
         stb   priority,u
@@ -875,8 +874,11 @@ LargeStar_MoveContinue
         std   xy_pixel,u                         *        move.w  d0,y_pixel(a0)
                                                  *        swap    d0
                                                  *        move.w  d0,x_pixel(a0)
-        * sound unused                           *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
-        rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        *ldb   #SFX_CHANNEL2
+        *ldx   #Psg_Sparkle *@IgnoreUndefined     *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
+        *jmp   PSGSFXPlay                         *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        rts        
+        
                                                  *; ===========================================================================
                                                  *; unknown
 LargeStar_xy_data                                *word_131DC:
@@ -926,7 +928,7 @@ SonicHand_Init                                   *Obj0E_SonicHand_Init:
 SonicHand_DisplaySprite                          *BranchTo13_DisplaySprite
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask|render_motionless_mask
         sta   render_flags,u
         
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -979,7 +981,7 @@ TailsHand_Init                                   *Obj0E_TailsHand_Init:
 TailsHand_DisplaySprite                          *BranchTo14_DisplaySprite
         * Change sprite to overlay
         lda   render_flags,u
-        ora   #render_overlay_mask!render_motionless_mask
+        ora   #render_overlay_mask|render_motionless_mask
         sta   render_flags,u
         
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
@@ -1074,11 +1076,11 @@ Island_Init
         sta   render_flags,u
         
         ldx   #Obj_IslandMask
-        ldd   #(ObjID_TitleScreen<8)+Sub_IslandMask
+        _ldd  ObjID_TitleScreen,Sub_IslandMask
         std   id,x                                    ; id and subtype
                 
         ldx   #Obj_IslandWater01
-        ldy   #(ObjID_TitleScreen<8)+Sub_IslandWater
+        _ldy  ObjID_TitleScreen,Sub_IslandWater
         sty   id,x                                    ; id and subtype
         ldd   #Img_islandWater01
         std   image_set,x
@@ -1196,7 +1198,7 @@ Island_Move
         sta   routine_secondary,u
         
         ldx   #Obj_PressStart
-        ldd   #(ObjID_TitleScreen<8)+Sub_PressStart
+        _ldd  ObjID_TitleScreen,Sub_PressStart
         std   id,x                                    ; id and subtype
                 
         jmp   DisplaySprite
@@ -1302,7 +1304,7 @@ IslandMask_Init
         ldd   #$BBC0
         std   xy_pixel,u
         lda   render_flags,u
-        ora   #render_xloop_mask!render_overlay_mask
+        ora   #render_xloop_mask|render_overlay_mask
         sta   render_flags,u
         jmp   DisplaySprite
 
@@ -1383,7 +1385,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
         bne  TitleScreen_SetFinalState_rts       *        bne.w   +       ; rts
         lda   Fire_Press                         *        move.b  (Ctrl_1_Press).w,d0
                                                  *        or.b    (Ctrl_2_Press).w,d0
-        anda  #c1_button_A_mask!c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
+        anda  #c1_button_A_mask|c2_button_A_mask *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_1_Press).w
                                                  *        andi.b  #button_up_mask|button_down_mask|button_left_mask|button_right_mask|button_B_mask|button_C_mask|button_A_mask,(Ctrl_2_Press).w
                                                  *        andi.b  #button_start_mask,d0
         beq  TitleScreen_SetFinalState_rts       *        beq.w   +       ; rts

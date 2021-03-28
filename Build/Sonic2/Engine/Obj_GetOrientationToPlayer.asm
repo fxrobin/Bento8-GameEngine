@@ -9,13 +9,13 @@
 ;             Gotp_Player_H_Distance (closest character's h distance to obj)
 ;             Gotp_Player_V_Distance (closest character's v distance to obj)
 
-Glb_Closest_Player            rmb   $2,0  ; ptr objet de MainCharacter ou Sidekick
-Glb_Player_Is_Left            rmb   $1,0  ; 0: player left from object, 2: right
-Glb_Player_Is_Above           rmb   $1,0  ; 0: player above object, 2: below
-Glb_Player_H_Distance         rmb   $2,0  ; closest character's h distance to obj
-Glb_Player_V_Distance         rmb   $2,0  ; closest character's v distance to obj 
-Glb_Abs_H_Distance_Mainc      rmb   $2,0  ; absolute horizontal distance to main character
-Glb_H_Distance_Sidek          rmb   $2,0  ; horizontal distance to sidekick
+Glb_Closest_Player            fill  0,$2  ; ptr objet de MainCharacter ou Sidekick
+Glb_Player_Is_Left            fill  0,$1  ; 0: player left from object, 2: right
+Glb_Player_Is_Above           fill  0,$1  ; 0: player above object, 2: below
+Glb_Player_H_Distance         fill  0,$2  ; closest character's h distance to obj
+Glb_Player_V_Distance         fill  0,$2  ; closest character's v distance to obj 
+Glb_Abs_H_Distance_Mainc      fill  0,$2  ; absolute horizontal distance to main character
+Glb_H_Distance_Sidek          fill  0,$2  ; horizontal distance to sidekick
 
 Gotp_Closest_Player          fdb   $0000     * ptr objet de MainCharacter ou Sidekick
 Gotp_Player_Is_Left          fcb   $00       * 0: player left from object, 2: right

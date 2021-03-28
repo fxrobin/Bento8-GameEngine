@@ -7,7 +7,7 @@
 * clear REG : [d,y]
 * ---------------------------------------------------------------------------
 
-ClearObj *@globals
+ClearObj 
         pshs  d,x,y,u
         sts   CLO_1+2
         leas  object_size,u        

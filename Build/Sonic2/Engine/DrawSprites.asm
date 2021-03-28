@@ -134,7 +134,7 @@ DRS_dyn3B0
         bra   DRS_UpdateRenderFlagB0
         
 DRS_NoOverlayB0
-        anda   #:rsv_prev_render_overlay_mask
+        anda   #^rsv_prev_render_overlay_mask
 
 DRS_UpdateRenderFlagB0        
         sta   rsv_prev_render_flags_0,x     ; set the onscreen flag and save overlay flag
@@ -251,7 +251,7 @@ DRS_dyn3B1
         bra   DRS_UpdateRenderFlagB1
         
 DRS_NoOverlayB1
-        anda   #:rsv_prev_render_overlay_mask
+        anda   #^rsv_prev_render_overlay_mask
 
 DRS_UpdateRenderFlagB1
         sta   rsv_prev_render_flags_1,x     ; set the onscreen flag and save overlay flag

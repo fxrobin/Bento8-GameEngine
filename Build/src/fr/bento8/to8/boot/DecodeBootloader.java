@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * @author Benoît Rousseau
+ * @author Benoï¿½t Rousseau
  * @version 1.0
  *
  */
@@ -32,8 +32,6 @@ public class DecodeBootloader {
 					System.out.println(line);
 				}
 
-				// c6809.exe bugfix: retour du processus vaut 0 même en cas d'erreur
-				// de compilation, on lit le lst pour compter les erreurs
 				p.waitFor();
 			}
 			else {

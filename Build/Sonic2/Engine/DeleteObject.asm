@@ -19,12 +19,12 @@
                                        *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                        *
                                        *; freeObject:
-DeleteObject_x *@globals               *DeleteObject:
+DeleteObject_x                *DeleteObject:
         pshs  d,x,u                    *    movea.l a0,a1
         leau  ,x                       *; sub_164E8:
         bra   DOB_Start
         
-DeleteObject *@globals                 *DeleteObject2:
+DeleteObject                  *DeleteObject2:
         pshs  d,x,u
         
 DOB_Start

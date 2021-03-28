@@ -41,7 +41,7 @@ public class BinUtil
 		header[3] = (byte) (address >> 8); 
 		header[4] = (byte) (address & 0x00FF);		
 		
-		Files.deleteIfExists(Paths.get(BuildDisk.binTmpFile));
+		Files.deleteIfExists(Paths.get(fileName));
 		Files.write(Paths.get(fileName), header,StandardOpenOption.CREATE);
 		Files.write(Paths.get(fileName), data,StandardOpenOption.APPEND);
 	    Files.write(Paths.get(fileName), trailer,StandardOpenOption.APPEND);	

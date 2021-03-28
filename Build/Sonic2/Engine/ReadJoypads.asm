@@ -1,28 +1,28 @@
 * ---------------------------------------------------------------------------
 * Controller Buttons
 *
-c1_button_up_mask            equ   $01 *@globals
-c1_button_down_mask          equ   $02 *@globals
-c1_button_left_mask          equ   $04 *@globals
-c1_button_right_mask         equ   $08 *@globals
-c2_button_up_mask            equ   $10 *@globals
-c2_button_down_mask          equ   $20 *@globals
-c2_button_left_mask          equ   $40 *@globals
-c2_button_right_mask         equ   $80 *@globals
-c1_button_A_mask             equ   $40 *@globals
-c2_button_A_mask             equ   $80 *@globals
+c1_button_up_mask            equ   $01 
+c1_button_down_mask          equ   $02 
+c1_button_left_mask          equ   $04 
+c1_button_right_mask         equ   $08 
+c2_button_up_mask            equ   $10 
+c2_button_down_mask          equ   $20 
+c2_button_left_mask          equ   $40 
+c2_button_right_mask         equ   $80 
+c1_button_A_mask             equ   $40 
+c2_button_A_mask             equ   $80 
 
 Joypads_Read
 Dpad_Read                    fcb   $00
 Fire_Read                    fcb   $00
    
 Joypads
-Joypads_Held                           *@globals
-Dpad_Held                    fcb   $00 *@globals
-Fire_Held                    fcb   $00 *@globals
-Joypads_Press                          *@globals
-Dpad_Press                   fcb   $00 *@globals
-Fire_Press                   fcb   $00 *@globals
+Joypads_Held                           
+Dpad_Held                    fcb   $00 
+Fire_Held                    fcb   $00 
+Joypads_Press                          
+Dpad_Press                   fcb   $00 
+Fire_Press                   fcb   $00 
 
 ********************************************************************************
 * Get joystick parameters

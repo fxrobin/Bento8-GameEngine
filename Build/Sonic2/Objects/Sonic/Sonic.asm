@@ -11,11 +11,9 @@
 ; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ;
 ; ---------------------------------------------------------------------------
+        
+        INCLUDE "./Engine/Constants.asm"
 
-(main)SONIC
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000
                                                       ; ===========================================================================
                                                       ; ----------------------------------------------------------------------------
                                                       ; Object 01 - Sonic

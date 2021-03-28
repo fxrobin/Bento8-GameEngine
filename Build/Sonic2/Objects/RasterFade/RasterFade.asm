@@ -5,10 +5,7 @@
 ;
 ; ---------------------------------------------------------------------------
 								       
-(main)MAIN
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000     
+        INCLUDE "./Engine/Constants.asm"
 
 * ---------------------------------------------------------------------------
 * Subtypes
@@ -221,7 +218,7 @@ RasterCycle_Main_end
         
 pal_mask     fcb $0F                   * masque pour l'aternance du traitemet vert/rouge
 pal_buffer   fdb $00                   * buffer de comparaison
-pal_RasterCurrent rmb 600,0
+pal_RasterCurrent fill 0,600
 
 Pal_TitleScreenCycle
 		fdb   $0e00

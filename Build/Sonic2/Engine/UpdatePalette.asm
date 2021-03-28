@@ -8,11 +8,11 @@
 * reset REG : [d] [x] [y]
 * ---------------------------------------------------------------------------
 
-Refresh_palette fcb   $FF            *@globals
-Cur_palette     fdb   Dyn_palette    *@globals
-Dyn_palette     rmb   $20,0          *@globals
-Black_palette   rmb   $20,0          *@globals
-White_palette   fdb   $ff0f          *@globals
+Refresh_palette fcb   $FF            
+Cur_palette     fdb   Dyn_palette    
+Dyn_palette     fill  0,$20          
+Black_palette   fill  0,$20          
+White_palette   fdb   $ff0f          
                 fdb   $ff0f
                 fdb   $ff0f
                 fdb   $ff0f
@@ -29,7 +29,7 @@ White_palette   fdb   $ff0f          *@globals
                 fdb   $ff0f
                 fdb   $ff0f
 
-UpdatePalette *@globals
+UpdatePalette 
         tst   Refresh_palette
         bne   UPP_return
         

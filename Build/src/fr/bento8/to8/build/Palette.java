@@ -1,6 +1,6 @@
 package fr.bento8.to8.build;
 
-public class Palette extends AsmInclude{
+public class Palette {
 
 	public String parentName;
 	public String name;	

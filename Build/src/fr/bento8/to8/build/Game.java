@@ -2,31 +2,27 @@ package fr.bento8.to8.build;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.disk.FdUtil;
-import fr.bento8.to8.image.Sprite;
-import fr.bento8.to8.image.SubSpriteBin;
 
-public class Game extends AsmInclude{
+public class Game {
+	
+	public String name;
 	
 	// Engine Loader
 	public String engineAsmBoot;
-	public String engineAsmGameModeManager;
-	public String engineAsmGameModeLoader;
+	public String engineAsmRAMLoaderManager;
+	public String engineAsmRAMLoader;
 	
 	// Game Mode
 	public String gameModeBoot;
 	public HashMap<String, GameMode> gameModes = new HashMap<String, GameMode>();
 
 	// Build
-	public static String c6809;
+	public static String lwasm;
 	public static String exobin;
 	public boolean debug;
 	public boolean logToConsole;	
@@ -63,30 +59,20 @@ public class Game extends AsmInclude{
 				throw new Exception("engine.asm.boot not found in "+file);
 			}
 
-			engineAsmGameModeManager = prop.getProperty("engine.asm.gameModeManager");
-			if (engineAsmGameModeManager == null) {
-				throw new Exception("engine.asm.gameModeManager not found in "+file);
+			engineAsmRAMLoaderManager = prop.getProperty("engine.asm.RAMLoaderManager");
+			if (engineAsmRAMLoaderManager == null) {
+				throw new Exception("engine.asm.RAMLoaderManager not found in "+file);
 			}
 			
-			engineAsmGameModeLoader = prop.getProperty("engine.asm.gameModeLoader");
-			if (engineAsmGameModeLoader == null) {
-				throw new Exception("engine.asm.gameModeLoader not found in "+file);
+			engineAsmRAMLoader = prop.getProperty("engine.asm.RAMLoader");
+			if (engineAsmRAMLoader == null) {
+				throw new Exception("engine.asm.RAMLoader not found in "+file);
 			}
 			
-			generatedCodeDirName = prop.getProperty("builder.generatedCode");
+			generatedCodeDirName = prop.getProperty("builder.generatedCode") + "/";
 			if (generatedCodeDirName == null) {
 				throw new Exception("builder.generatedCode not found in "+file);
 			}
-			BuildDisk.binTmpFile = generatedCodeDirName + "/" + BuildDisk.binTmpFile;
-
-			HashMap<String, String[]> engineAsmIncludesTmp = PropertyList.get(prop, "engine.asm.includ");
-			for (Map.Entry<String, String[]> curInclude : engineAsmIncludesTmp.entrySet()) {
-				asmIncludes.put(curInclude.getKey(), curInclude.getValue()[0]);
-			}			
-			HashMap<String, String[]> engineLoaderAsmGenIncludes = PropertyList.get(prop, "engine.asm.gen.includ");
-			for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
-				asmIncludes.put(include.getKey(), Game.generatedCodeDirName+"/"+include.getValue()[0]);
-			}			
 
 			// Game Definition
 			// ********************************************************************		
@@ -110,9 +96,9 @@ public class Game extends AsmInclude{
 			// Build parameters
 			// ********************************************************************				
 
-			c6809 = prop.getProperty("builder.c6809");
-			if (c6809 == null) {
-				throw new Exception("builder.c6809 not found in "+file);
+			lwasm = prop.getProperty("builder.lwasm");
+			if (lwasm == null) {
+				throw new Exception("builder.lwasm not found in "+file);
 			}
 
 			exobin = prop.getProperty("builder.exobin");

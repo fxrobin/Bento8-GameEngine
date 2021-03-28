@@ -44,16 +44,17 @@
 ; Sur $E7DA il faut donc utiliser l'instruction ST pour ecrire
 ;*******************************************************************************   
 								       
-(main)MAIN
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000     
+        INCLUDE "./Engine/Constants.asm"
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 pal_src      equ ext_variables         * ptr to source pal
 pal_dst      equ ext_variables+2       * ptr to destination pal
+pal_mask     equ ext_variables+4       * masque pour l'aternance du traitemet vert/rouge
+pal_cycles   equ ext_variables+5
+pal_buffer   equ ext_variables+6       * buffer de comparaison
+pal_idx      equ ext_variables+8       * index de la couleur courante dans le traitement 
 
 PaletteFade
         lda   routine,u
@@ -68,8 +69,9 @@ PaletteFade_Init
         lda   routine,u
         adda  #$03
         sta   routine,u 
-        lda   #$10    
-        sta   pal_cycles,pcr
+        ldd   #$100F    
+        sta   pal_cycles,u
+        stb   pal_mask,u
         
         ldy   pal_src,u
         cmpy  #Dyn_palette             * Source pal is already current pal, no copy
@@ -112,33 +114,33 @@ PaletteFade_Main
         ldx   pal_dst,u
         ldy   #Dyn_palette
         lda   #$10
-        sta   pal_idx,pcr   
-        dec   pal_cycles,pcr           * decremente le compteur du nombre de frame
+        sta   pal_idx,u   
+        dec   pal_cycles,u             * decremente le compteur du nombre de frame
         bne   PFA_Loop                 * on reboucle si nombre de frame n'est pas realise
         jmp   ClearObj                 * auto-destruction de l'objet
         
 PFA_Loop
         lda   ,y	                   * chargement de la composante verte et rouge
-        anda  pal_mask,pcr             * on efface la valeur vert ou rouge par masque
+        anda  pal_mask,u               * on efface la valeur vert ou rouge par masque
         ldb   ,x                       * composante verte et rouge couleur cible
-        andb  pal_mask,pcr             * on efface la valeur vert ou rouge par masque
-        stb   pal_buffer,pcr           * on stocke la valeur cible pour comparaison
+        andb  pal_mask,u               * on efface la valeur vert ou rouge par masque
+        stb   pal_buffer,u             * on stocke la valeur cible pour comparaison
         ldb   #$11                     * preparation de la valeur d'increment de couleur
-        andb  pal_mask,pcr             * on efface la valeur non utile par masque
-        stb   pal_buffer+1,pcr         * on stocke la valeur pour ADD ou SUB ulterieur
-        cmpa  pal_buffer,pcr           * comparaison de la composante courante et cible
+        andb  pal_mask,u               * on efface la valeur non utile par masque
+        stb   pal_buffer+1,u           * on stocke la valeur pour ADD ou SUB ulterieur
+        cmpa  pal_buffer,u             * comparaison de la composante courante et cible
         beq   PFA_VRSuivante           * si composante est egale a la cible on passe
         bhi   PFA_VRDec                * si la composante est superieure on branche
         lda   ,y                       * on recharge la valeur avec vert et rouge
-        adda  pal_buffer+1,pcr         * on incremente la composante verte ou rouge
+        adda  pal_buffer+1,u           * on incremente la composante verte ou rouge
         bra   PFA_VRSave               * on branche pour sauvegarder
 PFA_VRDec
         lda   ,y                       * on recharge la valeur avec vert et rouge
-        suba  pal_buffer+1,pcr         * on decremente la composante verte ou rouge
+        suba  pal_buffer+1,u           * on decremente la composante verte ou rouge
 PFA_VRSave                             
         sta   ,y                       * sauvegarde de la nouvelle valeur vert ou rouge
 PFA_VRSuivante                         
-        com   pal_mask,pcr             * inversion du masque pour traiter l'autre semioctet
+        com   pal_mask,u               * inversion du masque pour traiter l'autre semioctet
         bmi   PFA_Loop                 * si on traite $F0 on branche sinon on continue
 	    
 PFA_SetPalBleu
@@ -156,18 +158,9 @@ PFA_SetPalSaveBleu
 PFA_SetPalNext                             
         leay  2,y                      * on avance le pointeur vers la nouvelle couleur source
         leax  2,x                      * on avance le pointeur vers la nouvelle couleur dest
-        dec   pal_idx,pcr
+        dec   pal_idx,u 
         bne   PFA_Loop                 * on reboucle si fin de liste pas atteinte
         ldd   #Dyn_palette
         std   Cur_palette
         clr   Refresh_palette          * will call refresh palette after next VBL
-        rts        
-
-* ---------------------------------------------------------------------------
-* Local data
-* ---------------------------------------------------------------------------
-        
-pal_mask     fcb $0F                   * masque pour l'aternance du traitemet vert/rouge
-pal_cycles   fcb $00
-pal_buffer   fdb $00                   * buffer de comparaison
-pal_idx      fcb $00                   * index de la couleur courante dans le traitement        
+        rts               

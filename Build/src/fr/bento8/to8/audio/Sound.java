@@ -1,9 +1,5 @@
 package fr.bento8.to8.audio;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -11,9 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.bento8.to8.build.BuildDisk;
+import fr.bento8.to8.build.Game;
 import fr.bento8.to8.disk.BinUtil;
 import fr.bento8.to8.disk.DataIndex;
 import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.util.FileUtil;
 
 public class Sound{
 
@@ -30,7 +28,10 @@ public class Sound{
 		byte[] buffer = new byte[pageSize];
 		byte[] exomizedBin;
 		int i = 0, j = 0;
-
+		
+		String tmpDestFile = Game.generatedCodeDirName + "/" + FileUtil.removeExtension(Paths.get(fileName).getFileName().toString()) + ".tmp";
+		String exoDestFile =  Game.generatedCodeDirName + "/" + FileUtil.removeExtension(Paths.get(fileName).getFileName().toString()) + ".EXO";
+		
 		byte[] data = Files.readAllBytes(Paths.get(fileName));
 		
 		while (j < data.length) {
@@ -43,17 +44,20 @@ public class Sound{
 				writebuffer[k] = buffer[k];
 			}
 
-			Files.deleteIfExists(Paths.get(BuildDisk.binTmpFile));
-			Files.write(Paths.get(BuildDisk.binTmpFile), writebuffer, StandardOpenOption.CREATE);
-			BinUtil.RawToLinear(BuildDisk.binTmpFile, 0xA000);
+			Files.deleteIfExists(Paths.get(tmpDestFile));
+			Files.write(Paths.get(tmpDestFile), writebuffer, StandardOpenOption.CREATE);
+			BinUtil.RawToLinear(tmpDestFile, 0xA000);
 			
-			exomizedBin = BuildDisk.exomize(BuildDisk.binTmpFile);
+			exomizedBin = BuildDisk.exomize(tmpDestFile);
 			SoundBin nsb = new SoundBin();
 			nsb.fileIndex = new DataIndex();
 			nsb.bin = exomizedBin;
 			nsb.uncompressedSize = dataSize;
 			sb.add(nsb);
 		}
+		
+		Files.deleteIfExists(Paths.get(tmpDestFile));		
+		Files.deleteIfExists(Paths.get(exoDestFile));
 	}	
 		
 	public void setAllFileIndex(FdUtil fd) {

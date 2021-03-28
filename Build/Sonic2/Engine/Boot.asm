@@ -10,8 +10,7 @@
 * Appel du Game Mode Engine
 *
 ********************************************************************************
-(main)BOOT
-        INCLUD GLOBALS
+        
         org   $6200
 
 PalInit

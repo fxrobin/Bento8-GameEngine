@@ -5,23 +5,28 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.audio.Sound;
+import fr.bento8.to8.image.AnimationBin;
+import fr.bento8.to8.image.ImageSetBin;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SubSpriteBin;
 
-public class Object extends AsmInclude{
+public class Object {
 
 	public int id;
+	public String name;
 	public String parentName;
 	public String fileName;	
 	public ObjectBin code;
 	public String codeFileName;
+	public boolean toRAM = false;
 	
 	public HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 	public List<SubSpriteBin> subSpritesBin = new ArrayList<SubSpriteBin>();
+	public AnimationBin animation;
+	public ImageSetBin imageSet;
 	public List<Sound> sounds = new ArrayList<Sound>();
 	
 	public HashMap<String, String[]> spritesProperties;
@@ -32,6 +37,9 @@ public class Object extends AsmInclude{
 		this.name = name;
 		this.parentName = parentName;
 		this.fileName = propertiesFileName;
+		this.animation = new AnimationBin(name);
+		this.imageSet = new ImageSetBin(name);	
+		
 		Properties prop = new Properties();
 		try {
 			InputStream input = new FileInputStream(propertiesFileName);
@@ -39,14 +47,16 @@ public class Object extends AsmInclude{
 		} catch (Exception e) {
 			throw new Exception("Impossible de charger le fichier de configuration: " + propertiesFileName, e);
 		}
-		codeFileName = prop.getProperty("code");
-		if (codeFileName == null) {
-			throw new Exception("code not found in " + propertiesFileName);
+		
+		String[] codeFileNameTmp = prop.getProperty("code").split(";");
+		codeFileName = codeFileNameTmp[0];
+		if (codeFileNameTmp.length > 1 && codeFileNameTmp[1].equalsIgnoreCase("RAM"))
+		{
+			toRAM = true;
 		}
 		
-		HashMap<String, String[]> engineLoaderAsmGenIncludes = PropertyList.get(prop, "engine.asm.gen.includ");
-		for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
-			asmIncludes.put(include.getKey(), Game.generatedCodeDirName+"/"+parentName+"/"+name+"/"+include.getValue()[0]);
+		if (codeFileName == null) {
+			throw new Exception("code not found in " + propertiesFileName);
 		}
 
 		spritesProperties = PropertyList.get(prop, "sprite");

@@ -127,15 +127,15 @@ PSGSubString        equ $08
 PSGLoop             equ $01
 PSGEnd              equ $00
 
-SFX_CHANNEL2        equ $01
-SFX_CHANNEL3        equ $02
-SFX_CHANNELS2AND3   equ SFX_CHANNEL2!SFX_CHANNEL3
+SFX_CHANNEL2        equ $01 
+SFX_CHANNEL3        equ $02 
+SFX_CHANNELS2AND3   equ SFX_CHANNEL2|SFX_CHANNEL3 
 
 * ************************************************************************************
 * initializes the PSG 'engine'
 * destroys A
 
-PSGInit *@globals
+PSGInit 
         lda   #PSG_STOPPED                            ; ld a,PSG_STOPPED
         sta   PSGMusicStatus                          ; set music status to PSG_STOPPED
         sta   PSGSFXStatus                            ; set SFX status to PSG_STOPPED
@@ -148,10 +148,10 @@ PSGInit *@globals
 * receives in X the address of the PSG to start playing
 * destroys A
 
-PSGPlayNoRepeat *@globals
+PSGPlayNoRepeat 
         lda   #0                                      ; We don't want the song to loop
         bra   PSGPlay1
-PSGPlay *@globals
+PSGPlay 
         lda   #1                                      ; the song can loop when finished
 PSGPlay1
         sta   PSGLoopFlag
@@ -166,7 +166,7 @@ PSGPlay1
         lda   #0
         sta   PSGMusicSkipFrames                      ; reset the skip frames
         sta   PSGMusicSubstringLen                    ; reset the substring len (for compression)
-        lda   #PSGLatch!PSGChannel0!PSGVolumeData!$0F ; latch channel 0, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel0|PSGVolumeData|$0F ; latch channel 0, volume=0xF (silent)
         sta   PSGMusicLastLatch                       ; reset last latch to chn 0 volume 0
         lda   #PSG_PLAYING
         sta   PSGMusicStatus                          ; set status to PSG_PLAYING
@@ -176,21 +176,21 @@ PSGPlay1
 * stops the music (leaving the SFX on, if it's playing)
 * destroys A
 
-PSGStop *@globals
+PSGStop 
         lda   PSGMusicStatus                          ; if it's already stopped, leave
         beq   PSGStop_end
-        lda   #PSGLatch!PSGChannel0!PSGVolumeData!$0F ; latch channel 0, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel0|PSGVolumeData|$0F ; latch channel 0, volume=0xF (silent)
         sta   PSGDataPort
-        lda   #PSGLatch!PSGChannel1!PSGVolumeData!$0F ; latch channel 1, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel1|PSGVolumeData|$0F ; latch channel 1, volume=0xF (silent)
         sta   PSGDataPort
         lda   PSGChannel2SFX
         bne   PSGStop2
-        lda   #PSGLatch!PSGChannel2!PSGVolumeData!$0F ; latch channel 2, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel2|PSGVolumeData|$0F ; latch channel 2, volume=0xF (silent)
         sta   PSGDataPort
 PSGStop2
         lda   PSGChannel3SFX
         bne   PSGStop3
-        lda   #PSGLatch!PSGChannel3!PSGVolumeData!$0F ; latch channel 3, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel3|PSGVolumeData|$0F ; latch channel 3, volume=0xF (silent)
         sta   PSGDataPort
 PSGStop3
         lda   #PSG_STOPPED                            ; ld a,PSG_STOPPED
@@ -203,33 +203,33 @@ PSGStop_end
 * resume a previously stopped music
 * destroys A
 
-PSGResume *@globals
+PSGResume 
         lda   PSGMusicStatus                          ; if it's already playing, leave
         bne   PSGResume_end
         lda   PSGChan0Volume                          ; restore channel 0 volume
-        ora   #PSGLatch!PSGChannel0!PSGVolumeData
+        ora   #PSGLatch|PSGChannel0|PSGVolumeData
         sta   PSGDataPort
         lda   PSGChan1Volume                          ; restore channel 1 volume
-        ora   #PSGLatch!PSGChannel1!PSGVolumeData
+        ora   #PSGLatch|PSGChannel1|PSGVolumeData
         sta   PSGDataPort
         lda   PSGChannel2SFX
         bne   PSGResume1
         lda   PSGChan2LowTone                         ; restore channel 2 frequency
-        ora   #PSGLatch!PSGChannel2
+        ora   #PSGLatch|PSGChannel2
         sta   PSGDataPort
         lda   PSGChan2HighTone
         sta   PSGDataPort
         lda   PSGChan2Volume                          ; restore channel 2 volume
-        ora   #PSGLatch!PSGChannel2!PSGVolumeData
+        ora   #PSGLatch|PSGChannel2|PSGVolumeData
         sta   PSGDataPort
 PSGResume1
         lda   PSGChannel3SFX
         bne   PSGResume2
         lda   PSGChan3LowTone                         ; restore channel 3 frequency
-        ora   #PSGLatch!PSGChannel3
+        ora   #PSGLatch|PSGChannel3
         sta   PSGDataPort
         lda   PSGChan3Volume                          ; restore channel 3 volume
-        ora   #PSGLatch!PSGChannel2!PSGVolumeData
+        ora   #PSGLatch|PSGChannel2|PSGVolumeData
         sta   PSGDataPort
 PSGResume2
         lda   #PSG_PLAYING
@@ -241,14 +241,14 @@ PSGResume_end
 * sets the currently looping music to no more loops after the current
 * destroys A
 
-PSGCancelLoop *@globals
+PSGCancelLoop 
           clr   PSGLoopFlag
           rts
 
 * ************************************************************************************
 * gets the current status of music into register A
 
-PSGGetStatus *@globals
+PSGGetStatus 
         lda   PSGMusicStatus
         rts
 
@@ -256,7 +256,7 @@ PSGGetStatus *@globals
 * receives in A the volume attenuation for the music (0-15)
 * destroys A
 
-PSGSetMusicVolumeAttenuation *@globals
+PSGSetMusicVolumeAttenuation 
         sta   PSGMusicVolumeAttenuation
         lda   PSGMusicStatus                          ; if tune is not playing, leave
         beq   PSGSetMusicVolumeAttenuation_end
@@ -268,7 +268,7 @@ PSGSetMusicVolumeAttenuation *@globals
         bcs   PSGSetMusicVolumeAttenuation1           ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGSetMusicVolumeAttenuation1
-        ora   #PSGLatch!PSGChannel0!PSGVolumeData
+        ora   #PSGLatch|PSGChannel0|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
         
         lda   PSGChan1Volume
@@ -278,7 +278,7 @@ PSGSetMusicVolumeAttenuation1
         bcs   PSGSetMusicVolumeAttenuation2           ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGSetMusicVolumeAttenuation2
-        ora   #PSGLatch!PSGChannel1!PSGVolumeData
+        ora   #PSGLatch|PSGChannel1|PSGVolumeData
         sta   PSGDataPort                             ; output the byte        
   
 
@@ -292,7 +292,7 @@ PSGSetMusicVolumeAttenuation2
         bcs   PSGSetMusicVolumeAttenuation3           ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGSetMusicVolumeAttenuation3
-        ora   #PSGLatch!PSGChannel2!PSGVolumeData
+        ora   #PSGLatch|PSGChannel2|PSGVolumeData
         sta   PSGDataPort 
 
 _restore_channel3
@@ -306,7 +306,7 @@ _restore_channel3
         bcs   PSGSetMusicVolumeAttenuation4           ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGSetMusicVolumeAttenuation4
-        ora   #PSGLatch!PSGChannel3!PSGVolumeData
+        ora   #PSGLatch|PSGChannel3|PSGVolumeData
         sta   PSGDataPort 
         
 PSGSetMusicVolumeAttenuation_end
@@ -316,14 +316,14 @@ PSGSetMusicVolumeAttenuation_end
 * sets all PSG channels to volume ZERO (useful if you need to pause music)
 * destroys A
 
-PSGSilenceChannels *@globals
-        lda   #PSGLatch!PSGChannel0!PSGVolumeData!$0F ; latch channel 0, volume=0xF (silent)
+PSGSilenceChannels 
+        lda   #PSGLatch|PSGChannel0|PSGVolumeData|$0F ; latch channel 0, volume=0xF (silent)
         sta   PSGDataPort
-        lda   #PSGLatch!PSGChannel1!PSGVolumeData!$0F ; latch channel 1, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel1|PSGVolumeData|$0F ; latch channel 1, volume=0xF (silent)
         sta   PSGDataPort
-        lda   #PSGLatch!PSGChannel2!PSGVolumeData!$0F ; latch channel 2, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel2|PSGVolumeData|$0F ; latch channel 2, volume=0xF (silent)
         sta   PSGDataPort
-        lda   #PSGLatch!PSGChannel3!PSGVolumeData!$0F ; latch channel 3, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel3|PSGVolumeData|$0F ; latch channel 3, volume=0xF (silent)
         sta   PSGDataPort
         rts
 
@@ -331,7 +331,7 @@ PSGSilenceChannels *@globals
 * resets all PSG channels to previous volume
 * destroys A
 
-PSGRestoreVolumes *@globals
+PSGRestoreVolumes 
         lda   PSGMusicStatus                          ; check if tune is playing
         beq   _chkchn2                                ; if not, skip chn0 and chn1
 
@@ -342,7 +342,7 @@ PSGRestoreVolumes *@globals
         bcs   PSGRestoreVolumes1                      ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGRestoreVolumes1
-        ora   #PSGLatch!PSGChannel0!PSGVolumeData
+        ora   #PSGLatch|PSGChannel0|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
 
         lda   PSGChan1Volume
@@ -352,7 +352,7 @@ PSGRestoreVolumes1
         bcs   PSGRestoreVolumes2                      ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGRestoreVolumes2
-        ora   #PSGLatch!PSGChannel1!PSGVolumeData
+        ora   #PSGLatch|PSGChannel1|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
   
 _chkchn2
@@ -374,7 +374,7 @@ _restoreSFX2
         lda   PSGSFXChan2Volume
         anda  $0F
 PSGRestoreVolumes3
-        ora   #PSGLatch!PSGChannel2!PSGVolumeData
+        ora   #PSGLatch|PSGChannel2|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
 
 _chkchn3
@@ -396,7 +396,7 @@ _restoreSFX3
         lda   PSGSFXChan3Volume
         anda  #$0F
 PSGRestoreVolumes4
-        ora   #PSGLatch!PSGChannel3!PSGVolumeData
+        ora   #PSGLatch|PSGChannel3|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
 _restoreSFX2_end
         rts
@@ -407,10 +407,10 @@ _restoreSFX2_end
 * receives in B the mask that indicates which channel(s) the SFX will use
 * destroys A
 
-PSGSFXPlayLoop *@globals
+PSGSFXPlayLoop 
         lda   #1                                      ; SFX _IS_ a looping one
         bra   PSGSFXPlay1
-PSGSFXPlay *@globals
+PSGSFXPlay 
         lda   #0                                      ; SFX is _NOT_ a looping one
 PSGSFXPlay1
         sta   PSGSFXLoopFlag
@@ -442,7 +442,7 @@ PSGSFXPlay3
         bne   PSGSFXPlayLoop_end                      ; if channel 3 doesn't use the frequency of channel 2 we're done
         lda   #PSG_PLAYING
         sta   PSGChannel3SFX                          ; otherwise mark channel 3 as occupied by the SFX
-        lda   #PSGLatch!PSGChannel3!PSGVolumeData!$0F ; and silence channel 3
+        lda   #PSGLatch|PSGChannel3|PSGVolumeData|$0F ; and silence channel 3
         sta   PSGDataPort
 PSGSFXPlayLoop_end        
         rts
@@ -452,17 +452,17 @@ PSGSFXPlayLoop_end
 * stops the SFX (leaving the music on, if it's playing)
 * destroys A
 
-PSGSFXStop *@globals
+PSGSFXStop 
         lda   PSGSFXStatus                            ; check status
         beq   PSGSFXStop_end                          ; no SFX playing, leave
         lda   PSGChannel2SFX                          ; channel 2 playing?
         beq   PSGSFXStop1
-        lda   #PSGLatch!PSGChannel2!PSGVolumeData!$0F ; latch channel 2, volume=0xF (silent)
+        lda   #PSGLatch|PSGChannel2|PSGVolumeData|$0F ; latch channel 2, volume=0xF (silent)
         sta   PSGDataPort
 PSGSFXStop1
         lda   PSGChannel3SFX                          ; channel 3 playing?
         beq   PSGSFXStop2
-        lda   #PSGLatch!PSGChannel3!PSGVolumeData!$0F ; latch channel 3, volume=0xf (silent)
+        lda   #PSGLatch|PSGChannel3|PSGVolumeData|$0F ; latch channel 3, volume=0xf (silent)
         sta   PSGDataPort
 PSGSFXStop2
         lda   PSGMusicStatus                          ; check if a tune is playing
@@ -483,14 +483,14 @@ PSGSFXStop2
         bcs   PSGSFXStop3                             ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGSFXStop3
-        ora   #PSGLatch!PSGChannel2!PSGVolumeData
+        ora   #PSGLatch|PSGChannel2|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
 _skip_chn2
         lda   PSGChannel3SFX                          ; channel 3 playing?
         beq   _skip_chn3
         lda   PSGChan3LowTone
         anda  $07                                     ; use only low 3 bits of byte
-        ora   #PSGLatch!PSGChannel3                   ; latch channel 3, low part of tone (no high part)
+        ora   #PSGLatch|PSGChannel3                   ; latch channel 3, low part of tone (no high part)
         sta   PSGDataPort
         lda   PSGChan3Volume                          ; restore music' channel 3 volume
         anda  #$0F                                    ; use only low 4 bits of byte
@@ -499,7 +499,7 @@ _skip_chn2
         bcs   PSGSFXStop4                             ; if it's <=15 then ok
         lda   #$0F                                    ; else, reset to 15
 PSGSFXStop4
-        ora   #PSGLatch!PSGChannel3!PSGVolumeData
+        ora   #PSGLatch|PSGChannel3|PSGVolumeData
         sta   PSGDataPort                             ; output the byte
 
 _skip_chn3
@@ -515,7 +515,7 @@ PSGSFXStop_end
 * sets the currently looping SFX to no more loops after the current
 * destroys A
 
-PSGSFXCancelLoop *@globals
+PSGSFXCancelLoop 
         clr   PSGSFXLoopFlag
         rts
 
@@ -523,7 +523,7 @@ PSGSFXCancelLoop *@globals
 * ************************************************************************************
 * gets the current SFX status into register A
 
-PSGSFXGetStatus *@globals
+PSGSFXGetStatus 
         lda   PSGSFXStatus
         rts
 
@@ -532,7 +532,7 @@ PSGSFXGetStatus *@globals
 * processes a music frame
 * destroys A,B,X
         
-PSGFrame *@globals
+PSGFrame 
 
         lda   PSGMusicPage
         sta   $E7E5
@@ -577,7 +577,7 @@ _continue
         lda   PSGSFXStatus                            ; test if an SFX is playing
         beq   _send2PSG                               ; if no SFX is playing jump
         sta   PSGChannel3SFX                          ; otherwise mark channel 3 as occupied
-        lda   #PSGLatch!PSGChannel3!PSGVolumeData!$0F ; and silence channel 3
+        lda   #PSGLatch|PSGChannel3|PSGVolumeData|$0F ; and silence channel 3
         sta   PSGDataPort
         bra   _intLoop
 
@@ -655,7 +655,7 @@ _otherCommands
 
         rts  
 
-_sendVolume2PSG *@globals
+_sendVolume2PSG 
         stb   _sendVolume2PSG1+1                      ; save the PSG command byte
         andb  #$0F                                    ; keep lower nibble
         addb  PSGMusicVolumeAttenuation               ; add volume attenuation
@@ -711,7 +711,7 @@ _high_part_Tone
 * processes a SFX frame
 * destroys A,B,X
 
-PSGSFXFrame *@globals
+PSGSFXFrame 
 
         lda   PSGSFXPage
         sta   $E7E5
@@ -781,7 +781,7 @@ _SFXotherCommands
 
         rts
 
-_SFXsetLoopPoint *@globals
+_SFXsetLoopPoint 
         stx   PSGSFXLoopPoint
         bra   _intSFXLoop
   
@@ -803,50 +803,50 @@ _SFXsubstring
         bra   _intSFXLoop
 
   * fundamental vars
-PSGMusicStatus             rmb 1,0 ; are we playing a background music?
-PSGMusicPage               rmb 1,0 ; Memory Page of Music Data
-PSGMusicStart              rmb 2,0 ; the pointer to the beginning of music
-PSGMusicPointer            rmb 2,0 ; the pointer to the current
-PSGMusicLoopPoint          rmb 2,0 ; the pointer to the loop begin
-PSGMusicSkipFrames         rmb 1,0 ; the frames we need to skip
-PSGLoopFlag                rmb 1,0 ; the tune should loop or not (flag)
-PSGMusicLastLatch          rmb 1,0 ; the last PSG music latch
+PSGMusicStatus             fcb   $00 ; are we playing a background music?
+PSGMusicPage               fcb   $00 ; Memory Page of Music Data
+PSGMusicStart              fdb   $0000 ; the pointer to the beginning of music
+PSGMusicPointer            fdb   $0000 ; the pointer to the current
+PSGMusicLoopPoint          fdb   $0000 ; the pointer to the loop begin
+PSGMusicSkipFrames         fcb   $00 ; the frames we need to skip
+PSGLoopFlag                fcb   $00 ; the tune should loop or not (flag)
+PSGMusicLastLatch          fcb   $00 ; the last PSG music latch
 
   * decompression vars
-PSGMusicSubstringLen       rmb 1,0 ; length of the substring we are playing
-PSGMusicSubstringRetAddr   rmb 2,0 ; return to this address when substring is over
+PSGMusicSubstringLen       fcb   $00 ; length of the substring we are playing
+PSGMusicSubstringRetAddr   fdb   $0000 ; return to this address when substring is over
 
   * command buffers
-PSGChan0Volume             rmb 1,0 ; the volume for channel 0
-PSGChan1Volume             rmb 1,0 ; the volume for channel 1
-PSGChan2Volume             rmb 1,0 ; the volume for channel 2
-PSGChan3Volume             rmb 1,0 ; the volume for channel 3
-PSGChan2LowTone            rmb 1,0 ; the low tone bits for channels 2
-PSGChan3LowTone            rmb 1,0 ; the low tone bits for channels 3
-PSGChan2HighTone           rmb 1,0 ; the high tone bits for channel 2
+PSGChan0Volume             fcb   $00 ; the volume for channel 0
+PSGChan1Volume             fcb   $00 ; the volume for channel 1
+PSGChan2Volume             fcb   $00 ; the volume for channel 2
+PSGChan3Volume             fcb   $00 ; the volume for channel 3
+PSGChan2LowTone            fcb   $00 ; the low tone bits for channels 2
+PSGChan3LowTone            fcb   $00 ; the low tone bits for channels 3
+PSGChan2HighTone           fcb   $00 ; the high tone bits for channel 2
 
-PSGMusicVolumeAttenuation  rmb 1,0 ; the volume attenuation applied to the tune (0-15)
+PSGMusicVolumeAttenuation  fcb   $00 ; the volume attenuation applied to the tune (0-15)
 
   * ******* SFX *************
 
   * flags for channels 2-3 access
-PSGChannel2SFX             rmb 1,0 ; !0 means channel 2 is allocated to SFX
-PSGChannel3SFX             rmb 1,0 ; !0 means channel 3 is allocated to SFX
+PSGChannel2SFX             fcb   $00 ; !0 means channel 2 is allocated to SFX
+PSGChannel3SFX             fcb   $00 ; !0 means channel 3 is allocated to SFX
 
   * command buffers for SFX
-PSGSFXChan2Volume          rmb 1,0 ; the volume for channel 2
-PSGSFXChan3Volume          rmb 1,0 ; the volume for channel 3
+PSGSFXChan2Volume          fcb   $00 ; the volume for channel 2
+PSGSFXChan3Volume          fcb   $00 ; the volume for channel 3
 
   * fundamental vars for SFX
-PSGSFXStatus               rmb 1,0 ; are we playing a SFX?
-PSGSFXPage                 rmb 1,0 ; Memory Page of SFX Data
-PSGSFXStart                rmb 2,0 ; the pointer to the beginning of SFX
-PSGSFXPointer              rmb 2,0 ; the pointer to the current address
-PSGSFXLoopPoint            rmb 2,0 ; the pointer to the loop begin
-PSGSFXSkipFrames           rmb 1,0 ; the frames we need to skip
-PSGSFXLoopFlag             rmb 1,0 ; the SFX should loop or not (flag)
+PSGSFXStatus               fcb   $00 ; are we playing a SFX?
+PSGSFXPage                 fcb   $00 ; Memory Page of SFX Data
+PSGSFXStart                fdb   $0000 ; the pointer to the beginning of SFX
+PSGSFXPointer              fdb   $0000 ; the pointer to the current address
+PSGSFXLoopPoint            fdb   $0000 ; the pointer to the loop begin
+PSGSFXSkipFrames           fcb   $00 ; the frames we need to skip
+PSGSFXLoopFlag             fcb   $00 ; the SFX should loop or not (flag)
 
   * decompression vars for SFX
-PSGSFXSubstringLen         rmb 1,0 ; length of the substring we are playing
-PSGSFXSubstringRetAddr     rmb 2,0 ; return to this address when substring is over
+PSGSFXSubstringLen         fcb   $00 ; length of the substring we are playing
+PSGSFXSubstringRetAddr     fdb   $0000 ; return to this address when substring is over
 

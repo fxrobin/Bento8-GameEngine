@@ -18,10 +18,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import fr.bento8.to8.InstructionSet.Register;
-import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.build.Game;
 import fr.bento8.to8.image.SpriteSheet;
-import fr.bento8.to8.util.C6809Util;
+import fr.bento8.to8.util.LWASMUtil;
 
 public class AssemblyGenerator{
 
@@ -80,20 +79,20 @@ public class AssemblyGenerator{
 		logger.debug("Center: "+spriteSheet.getCenter());
 		
 		destDir += "/"+spriteName;
-		asmBckDrawFileName = destDir+"_"+spriteSheet.variant+".ASM";
+		asmBckDrawFileName = destDir+"_"+spriteSheet.variant+".asm";
 		File file = new File (asmBckDrawFileName);
 		file.getParentFile().mkdirs();		
 		asmDFile = Paths.get(asmBckDrawFileName);
 		lstBckDrawFileName = destDir+"_"+spriteSheet.variant+".lst";
 		lstDFile = Paths.get(lstBckDrawFileName);
-		binBckDrawFileName = destDir+"_"+spriteSheet.variant+".BIN";
+		binBckDrawFileName = destDir+"_"+spriteSheet.variant+".bin";
 		binDFile = Paths.get(binBckDrawFileName);
 		
-		asmEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.ASM";
+		asmEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.asm";
 		asmEFile = Paths.get(asmEraseFileName);
 		lstEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.lst";
 		lstEFile = Paths.get(lstEraseFileName);
-		binEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.BIN";
+		binEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.bin";
 		binEFile = Paths.get(binEraseFileName);
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
@@ -101,7 +100,8 @@ public class AssemblyGenerator{
 		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile) && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
 			
 			logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));			
+			if (logger.isDebugEnabled())
+				logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));			
 
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(FORWARD);
@@ -125,7 +125,8 @@ public class AssemblyGenerator{
 
 			logger.debug("Taille de la zone data 1: "+sizeSpriteEData1);
 			logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
-			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
+			if (logger.isDebugEnabled())			
+				logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
 			cs.buildCode(FORWARD);
@@ -171,12 +172,12 @@ public class AssemblyGenerator{
 			// Utilisation du .BIN existant
 			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length-10;
 			// Utilisation du .lst existant
-			cycleDCache = C6809Util.countCycles(lstBckDrawFileName);
+			cycleDCache = LWASMUtil.countCycles(lstBckDrawFileName);
 			
 			// Utilisation du .BIN existant
 			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length-10;
 			// Utilisation du .lst existant
-			cycleECache = C6809Util.countCycles(lstEraseFileName);		
+			cycleECache = LWASMUtil.countCycles(lstEraseFileName);		
 			
 			// Lecture de la taille des données de la routine erase
 			Path path = Paths.get(lstEraseFileName);
@@ -211,10 +212,10 @@ public class AssemblyGenerator{
 		try
 		{
 			Pattern pt = Pattern.compile("[ \t]*ORG[ \t]*\\$[a-fA-F0-9]{4}");
-			Process pr;
+			Process p;
+			ProcessBuilder pb;
 			BufferedReader br;
 			String line;
-			File f;
 			
 			// Process BckDraw Code
 			// ****************************************************************			
@@ -222,7 +223,7 @@ public class AssemblyGenerator{
 				Files.deleteIfExists(asmDFile);
 				Files.createFile(asmDFile);
 
-				Files.write(asmDFile, getCodeFrameBckDrawStart("IMGD.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmDFile, getCodeFrameBckDrawStart(org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, spriteCode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, getCodeFrameBckDrawMid(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmDFile, spriteCode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
@@ -241,32 +242,29 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pr = new ProcessBuilder(Game.c6809, "-bl", asmBckDrawFileName, binBckDrawFileName).start();
-			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+			pb = new ProcessBuilder(Game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--decb");
+			pb.redirectErrorStream(true);
+			p = pb.start();			
+			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 			while((line=br.readLine())!=null){
 				logger.debug(line);
 			}
-			pr.waitFor();
+			p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binBckDrawFileName));	
 
-			// Rename .lst File
-			f = new File("codes.lst"); 
-			Files.deleteIfExists(lstDFile);
-			f.renameTo(new File(lstBckDrawFileName));
-
 			// Compte le nombre de cycles du .lst
-			int compilerDCycles = C6809Util.countCycles(lstBckDrawFileName);
+			int compilerDCycles = LWASMUtil.countCycles(lstBckDrawFileName);
 			int compilerDSize = content.length - 10;			
 			int computedDCycles = getDCycles();
 			int computedDSize = getDSize();
-			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
-			logger.debug(lstBckDrawFileName + " c6809.exe BCKDRAW size: " + compilerDSize + " computed size: " + computedDSize);
+			logger.debug(lstBckDrawFileName + " lwasm.exe BCKDRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
+			logger.debug(lstBckDrawFileName + " lwasm.exe BCKDRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
 			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-				logger.fatal(lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+				logger.fatal(lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
@@ -282,7 +280,7 @@ public class AssemblyGenerator{
 				List<String> dataSize = new ArrayList<String>();
 				dataSize.add(String.format("DataSize equ $%1$04X", getEraseDataSize() & 0xFFFF));
 				
-				Files.write(asmEFile, getCodeFrameEraseStart("IMGE.ASM", org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(asmEFile, getCodeFrameEraseStart(org), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, spriteECode2, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, spriteECode1, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 				Files.write(asmEFile, getCodeFrameEraseEnd(), Charset.forName("UTF-8"), StandardOpenOption.APPEND);
@@ -301,32 +299,29 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binEFile);
 
 			// Generate binary code from assembly code
-			pr = new ProcessBuilder(Game.c6809, "-bl", asmEraseFileName, binEraseFileName).start();
-			br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+			pb = new ProcessBuilder(Game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", "--pragma=undefextern,autobranchlength", "--decb");			
+			pb.redirectErrorStream(true);
+			p = pb.start();					
+			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			
 			while((line=br.readLine())!=null){
 				logger.debug(line);
 			}
-			pr.waitFor();
+			p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binEraseFileName));	
 
-			// Rename .lst File
-			f = new File("codes.lst"); 
-			Files.deleteIfExists(lstEFile);
-			f.renameTo(new File(lstEraseFileName));
-
 			// Compte le nombre de cycles du .lst
-			int compilerECycles = C6809Util.countCycles(lstEraseFileName);
+			int compilerECycles = LWASMUtil.countCycles(lstEraseFileName);
 			int compilerESize = content.length - 10;
 			int computedECycles = getECycles();
 			int computedESize = getESize();
-			logger.debug(lstEraseFileName + " c6809.exe ERASE cycles: " + compilerECycles + " computed cycles: " + computedECycles);
-			logger.debug(lstEraseFileName + " c6809.exe ERASE size: " + compilerESize + " computed size: " + computedESize);
+			logger.debug(lstEraseFileName + " lwasm.exe ERASE cycles: " + compilerECycles + " computed cycles: " + computedECycles);
+			logger.debug(lstEraseFileName + " lwasm.exe ERASE size: " + compilerESize + " computed size: " + computedESize);
 
 			if (computedECycles != compilerECycles || compilerESize != computedESize) {
-				logger.fatal(lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par c6809 et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+				logger.fatal(lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
@@ -358,11 +353,11 @@ public class AssemblyGenerator{
 		return strBuilder.toString();
 	}
 
-	public List<String> getCodeFrameBckDrawStart(String fileName, String org) {
+	public List<String> getCodeFrameBckDrawStart(String org) {
 		List<String> asm = new ArrayList<String>();
-		asm.add("(main)" + fileName + "");
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
+		asm.add("\tOPT C,CT");
 		asm.add("BCKDRAW_" + spriteName + "");
 		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n");
 		asm.add("\tSTD DYN_POS+1,PCR");
@@ -415,7 +410,6 @@ public class AssemblyGenerator{
 		asm.add("SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
-		asm.add("(info)\n");
 		return asm;
 	}
 
@@ -435,11 +429,11 @@ public class AssemblyGenerator{
 		return size;
 	}
 
-	public List<String> getCodeFrameEraseStart(String fileName, String org) {
+	public List<String> getCodeFrameEraseStart(String org) {
 		List<String> asm = new ArrayList<String>();
-		asm.add("(main)" + fileName + "");
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
+		asm.add("\tOPT C,CT");		
 		asm.add("ERASE_" + spriteName + "");
 		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+1,PCR\n");
 		asm.add("\tLEAS ,U");
@@ -467,7 +461,6 @@ public class AssemblyGenerator{
 		asm.add("ERASE_SSAV_" + spriteName + "");
 		asm.add("\tLDS #$0000");
 		asm.add("\tRTS\n");
-		asm.add("(info)\n");
 		return asm;
 	}
 

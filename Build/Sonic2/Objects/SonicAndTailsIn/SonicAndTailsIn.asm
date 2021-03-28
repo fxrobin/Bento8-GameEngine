@@ -13,10 +13,9 @@
 ; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ;
 ; ---------------------------------------------------------------------------
-(main)SATI
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000
+        
+        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./Engine/Macros.asm"        
         
 Obj_PaletteFade      equ Object_RAM+(object_size*1)        
         
@@ -123,7 +122,7 @@ SATI_End
         ldx   #$FFFF
         jsr   ClearCartMem  
         jsr   DeleteObject                    
-        ldd   #(ObjID_TitleScreen<+8)+$03             ; Replace this object with Title Screen Object subtype 3
+        _ldd  ObjID_TitleScreen,$03                   ; Replace this object with Title Screen Object subtype 3
         std   ,u
         ldu   #Obj_PaletteFade
         jsr   ClearObj        

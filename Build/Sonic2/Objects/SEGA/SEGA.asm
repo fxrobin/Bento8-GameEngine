@@ -13,10 +13,9 @@
 ; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ;
 ; ---------------------------------------------------------------------------
-(main)SEGA
-        INCLUD GLOBALS
-        INCLUD CONSTANT
-        org   $A000
+
+        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./Engine/Macros.asm"
 
 SegaScr_This            equ Object_RAM
 Obj_SEGA                equ SegaScr_This
@@ -27,7 +26,7 @@ Obj_Trails4             equ SegaScr_This+(object_size*4)
 Obj_Sonic1              equ SegaScr_This+(object_size*5)
 Obj_Sonic2              equ SegaScr_This+(object_size*6)
 Obj_Sonic3              equ SegaScr_This+(object_size*7)
-Obj_PaletteFade      equ SegaScr_This+(object_size*8)
+Obj_PaletteFade         equ SegaScr_This+(object_size*8)
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
@@ -102,7 +101,7 @@ SEGA_Init
 
         * Init all sub objects
         stu   SEGA_Init_01+1,pcr
-        ldd   #(ObjID_SEGA<+8)+Sub_Trails
+        _ldd  ObjID_SEGA,Sub_Trails
         ldy   #$F080
 
         ldx   #Obj_Trails1
@@ -129,7 +128,7 @@ SEGA_Init
         ldu   #Img_SegaTrails_6
         stu   image_set,x
 
-        ldd   #(ObjID_SEGA<+8)+Sub_Sonic
+        _ldd  ObjID_SEGA,Sub_Sonic
         ldy   #$F87B
 
         ldx   #Obj_Sonic1
@@ -156,7 +155,7 @@ SEGA_Init_01
         * Disable backround save on Trails and set x mirror
         ldx   #Obj_Trails1
         lda   render_flags,x
-        ora   #render_overlay_mask!render_xmirror_mask
+        ora   #render_overlay_mask|render_xmirror_mask
         sta   render_flags,x
         ldb   #3
         stb   priority,x
@@ -234,7 +233,7 @@ SEGA_MidWipe
         * Unset x mirror on Trails
         ldx   #Obj_Trails1
         lda   render_flags,x
-        anda   #:render_xmirror_mask
+        anda   #^render_xmirror_mask
         sta   render_flags,x
         ldb   y_pixel,x
         decb
@@ -259,7 +258,7 @@ SEGA_MidWipe
         * Unset x mirror on Sonic
         ldx   #Obj_Sonic1
         lda   status,x
-        anda   #:status_x_orientation
+        anda   #^status_x_orientation
         sta   status,x
         ldb   x_pixel,x
         subb  #$10
@@ -416,7 +415,7 @@ SEGA_end
 
 SEGA_return
         jsr   DeleteObject  
-        ldd   #(ObjID_SonicAndTailsIn<+8)+$00         ; Replace this object with Title Screen Object subtype 3
+        _ldd  ObjID_SonicAndTailsIn,$00         ; Replace this object with Title Screen Object subtype 3
         std   ,u
 
         ldu   #Obj_PaletteFade

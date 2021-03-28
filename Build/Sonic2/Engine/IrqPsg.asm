@@ -14,25 +14,25 @@
 * ---------------------------------------------------------------------------
 
 irq_routine       equ $6027 
-irq_timer_ctrl    equ $E7C5 *@globals
+irq_timer_ctrl    equ $E7C5 
 irq_timer         equ $E7C6
-irq_one_frame     equ 312*64-1 *@globals              ; one frame timer (lines*cycles_per_lines-1), timer launch at -1
+irq_one_frame     equ 312*64-1               ; one frame timer (lines*cycles_per_lines-1), timer launch at -1
        
-IrqOn *@globals        
+IrqOn         
         lda   $6019                           
         ora   #$20
         sta   $6019                                   ; STATUS register
         andcc #$EF                                    ; tell 6809 to activate irq
         rts
         
-IrqOff *@globals
+IrqOff 
         lda   $6019                           
         anda  #$DF
         sta   $6019                                   ; STATUS register
         orcc  #$10                                    ; tell 6809 to activate irq
         rts
         
-IrqPsg *@globals
+IrqPsg 
         lda   <$E5
         sta   IrqPsg_end+1                            ; backup data page
         jsr   PSGFrame

@@ -2,14 +2,16 @@ package fr.bento8.to8.build;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.disk.DataIndex;
 
-public class GameMode extends AsmInclude{
+public class GameMode {
 
+	public String name;
 	public String fileName;
 	public int dataSize;
 	public DataIndex fileIndex = new DataIndex();
@@ -20,11 +22,15 @@ public class GameMode extends AsmInclude{
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
 	public HashMap<String, Act> acts = new HashMap<String, Act>(); 
 	public String actBoot;
+	public AsmSourceCode glb;
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		
 		this.name = gameModeName;
 		this.fileName = fileName;
+		
+		glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, name));
+		
 		Properties prop = new Properties();
 		try {
 			InputStream input = new FileInputStream(fileName);
@@ -41,15 +47,6 @@ public class GameMode extends AsmInclude{
 			throw new Exception("engine.asm.mainEngine not found in " + fileName);
 		}
 
-		HashMap<String, String[]> engineAsmIncludesTmp = PropertyList.get(prop, "engine.asm.includ");
-		for (Map.Entry<String, String[]> curInclude : engineAsmIncludesTmp.entrySet()) {
-			asmIncludes.put(curInclude.getKey(), curInclude.getValue()[0]);
-		}
-		HashMap<String, String[]> engineLoaderAsmGenIncludes = PropertyList.get(prop, "engine.asm.gen.includ");
-		for (Map.Entry<String, String[]> include : engineLoaderAsmGenIncludes.entrySet()) {
-			asmIncludes.put(include.getKey(), Game.generatedCodeDirName+"/"+name+"/"+include.getValue()[0]);
-		}		
-		
 		// Objects
 		// ********************************************************************
 		

@@ -56,7 +56,7 @@ Anim_Next                                   *Anim_Next:
         stb   Anim_dyn+1
                                             *    andi.b  #3,d1                 ; with the orientation used by the object engine
         lda   render_flags,u                *    andi.b  #$FC,render_flags(a0)
-        anda  #:(render_xmirror_mask+render_ymirror_mask)
+        anda  #^(render_xmirror_mask+render_ymirror_mask)
 Anim_dyn        
         ora   #$00                          ; (dynamic)
                                             *    or.b    d1,render_flags(a0)

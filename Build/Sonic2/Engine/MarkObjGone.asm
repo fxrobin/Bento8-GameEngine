@@ -16,7 +16,7 @@
                                        *; ===========================================================================
                                        *; input: a0 = the object
                                        *; loc_163D2:
-MarkObjGone *@globals                  *MarkObjGone:
+MarkObjGone                   *MarkObjGone:
                                        *    tst.w   (Two_player_mode).w ; is it two player mode?
                                        *    beq.s   +           ; if not, branch
         bra   DisplaySprite            *    bra.w   DisplaySprite

@@ -134,7 +134,7 @@ ESP_UnsetCheckRefreshB0
         ldb   render_flags,u
         andb  #render_motionless_mask
         bne   ESP_CheckEraseB0
-        anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag
+        anda  #^rsv_render_checkrefresh_mask ; unset checkrefresh flag
         sta   rsv_render_flags,u        
         
 ESP_CheckEraseB0
@@ -164,7 +164,7 @@ ESP_FreeEraseBufferB0
         
 ESP_UnsetOnScreenFlagB0
         lda   rsv_prev_render_flags_0,u
-        anda  #:rsv_prev_render_onscreen_mask,u ; sprite is no longer on screen
+        anda  #^rsv_prev_render_onscreen_mask ; sprite is no longer on screen
         sta   rsv_prev_render_flags_0,u
 
 ESP_NextObjectB0
@@ -188,7 +188,7 @@ ESP_UnsetCheckRefreshB1
         ldb   render_flags,u
         andb  #render_motionless_mask
         bne   ESP_CheckEraseB1
-        anda  #:rsv_render_checkrefresh_mask ; unset checkrefresh flag (CheckSpriteRefresh)
+        anda  #^rsv_render_checkrefresh_mask ; unset checkrefresh flag (CheckSpriteRefresh)
         sta   rsv_render_flags,u        
         
 ESP_CheckEraseB1
@@ -218,7 +218,7 @@ ESP_FreeEraseBufferB1
         
 ESP_UnsetOnScreenFlagB1
         lda   rsv_prev_render_flags_1,u
-        anda  #:rsv_prev_render_onscreen_mask,u ; sprite is no longer on screen
+        anda  #^rsv_prev_render_onscreen_mask ; sprite is no longer on screen
         sta   rsv_prev_render_flags_1,u
         
 ESP_NextObjectB1

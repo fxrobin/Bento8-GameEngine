@@ -137,7 +137,7 @@ CSR_ProcessEachPriorityLevel
         
 CSR_CheckDelHide
         lda   render_flags,u
-        anda  #render_hide_mask!render_todelete_mask
+        anda  #render_hide_mask|render_todelete_mask
         bne   CSR_DoNotDisplaySprite      
 
 CSR_CheckRefresh        
@@ -151,7 +151,7 @@ CSR_UpdSpriteImageBasedOnMirror
         sta   rsv_render_flags,u            ; set checkrefresh flag to true
         
         lda   render_flags,u                ; set image to display based on x and y mirror flags
-        anda  #render_xmirror_mask!render_ymirror_mask
+        anda  #render_xmirror_mask|render_ymirror_mask
         ldy   image_set,u
         ldb   image_center_offset,y
         stb   rsv_image_center_offset,u        
@@ -191,7 +191,7 @@ CSR_CheckPlayFieldCoord
         *cmpb  #screen_bottom
         *bhi   CSR_SetOutOfRange             ; branch if (y_pixel + image.y_size > screen height)
         *lda   rsv_render_flags,u
-        *anda  #:rsv_render_outofrange_mask  ; unset out of range flag
+        *anda  #^rsv_render_outofrange_mask  ; unset out of range flag
         *sta   rsv_render_flags,u
         *bra   CSR_CheckErase
         
@@ -201,7 +201,7 @@ CSR_DoNotDisplaySprite
         bne   CSR_NextObject                ; next object if this one is a new priority record (no need to erase) 
         
         lda   rsv_render_flags,u
-        anda  #:rsv_render_erasesprite_mask&:rsv_render_displaysprite_mask ; set erase and display flag to false
+        anda  #^rsv_render_erasesprite_mask&^rsv_render_displaysprite_mask ; set erase and display flag to false
         sta   rsv_render_flags,u
                 
         ldb   buf_prev_render_flags,x
@@ -302,7 +302,7 @@ CSR_DontCheckXFrontier
 
 CSR_DontCheckXFrontier_end        
         lda   rsv_render_flags,u
-        anda  #:rsv_render_outofrange_mask  ; unset out of range flag
+        anda  #^rsv_render_outofrange_mask  ; unset out of range flag
         sta   rsv_render_flags,u
         bra   CSR_CheckErase
                 
@@ -429,7 +429,7 @@ CSR_SubDrawCheckCollision
 
 CSR_SetEraseFalse
         lda   rsv_render_flags,u 
-        anda  #:rsv_render_erasesprite_mask
+        anda  #^rsv_render_erasesprite_mask
         sta   rsv_render_flags,u        
                
 CSR_CheckDraw
@@ -479,12 +479,12 @@ CSR_SetHide
 
 CSR_SetEraseDrawFalse 
         lda   rsv_render_flags,u 
-        anda  #:rsv_render_erasesprite_mask
+        anda  #^rsv_render_erasesprite_mask
         sta   rsv_render_flags,u 
 
 CSR_SetDrawFalse 
         lda   rsv_render_flags,u
-        anda  #:rsv_render_displaysprite_mask
+        anda  #^rsv_render_displaysprite_mask
         sta   rsv_render_flags,u
         
         ldu   buf_priority_next_obj,x

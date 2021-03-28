@@ -45,7 +45,7 @@ WaitVBL_01
 SwapVideoPage
         ldb   am_SwapVideoPage+1 * charge la valeur du ldb suivant am_SwapVideoPage
         andb  #$40               * alterne bit6=0 et bit6=1 (suivant la valeur B $00 ou $FF)
-screen_border_color *@globals       
+screen_border_color        
         orb   #$80               * bit7=1, bit3 a bit0=couleur de cadre (ici 0)
         stb   $E7DD              * changement page (2 ou 3) affichee a l'ecran
         com   am_SwapVideoPage+1 * alterne $00 et $FF sur le ldb suivant am_SwapVideoPage
@@ -64,4 +64,4 @@ am_SwapVideoPage
         std   Vint_runcount        
         rts
         
-Vint_runcount rmb   $2,0 *@globals
+Vint_runcount fill  0,$2 
