@@ -93,12 +93,12 @@ public class BuildDisk
 			glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, ""));
 			
 			compileRAMLoader();
-			setObjectsIdAsGlobals();
+			generateObjectIDs();
 			
 			// generate assets and get size of compilated sprites and sounds
 			// get size of objects code
 			processSounds();			
-			compileSprites();
+			generateSprites();
 			computeObjectCodeSize();
 			
 			// compute RAM destination for all assets and objects code
@@ -168,7 +168,7 @@ public class BuildDisk
 		Files.write(binFile, InvBINBytes);
 	}
 	
-	private static void setObjectsIdAsGlobals() throws Exception {
+	private static void generateObjectIDs() throws Exception {
 		logger.info("Set Objects Id as Globals ...");
 				
 		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes (numérotation commune)
@@ -213,7 +213,7 @@ public class BuildDisk
 		}
 	}
 	
-	private static void compileSprites() throws Exception {
+	private static void generateSprites() throws Exception {
 		logger.info("Compile Sprites ...");
 
 		// GAME MODE DATA - Génération des sprites compilés pour chaque objet
@@ -428,15 +428,27 @@ public class BuildDisk
 				}
 			}
 		}
+
+		// TODO : Gestion d'un game mode "commun" valable uniquement pour la disquette (plusieurs communs mais un seul dispo a un moment T)
+		// en fonction du game mode chargé, si le commun necessaire est deja chargé : pas de rechargement
+		// les games modes qui utilisent un commun commencent à la fin de la page du commun pour ne pas perdre d'espace.
+		// les communs sont chargés après le RAMLoaderManager en page 4
+		// Problème : la taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
+		// première passe de sac a dos pour determiner le nombre de demi pages necessaires +1 pour chaque Game Mode
+		// pour chaque resultat : x 7 (taille structure de demi page)
+		// et additioner le tout
+		// Refaire le sac a dos avec comme point de départ la fin en page 4 du RAMLoaderManager
 		
 		// TODO: Créer un nouvel objet Page
-		// Parcourir les items, les recompiler à leur org de destination
-		// concaterner les binaires et les splitter en deux parties
-		// exomizer les deux parties et les enregistrer dans l'objet page
 		
 		// TODO : Executer deux fois cette méthode
 		// Une premiere fois pour le fd/sd en traitant tous les objets (instancier une liste de Page)
 		// Une seconde fois pour la T.2, on ne traite que les objets flagués RAM (instancier une seconde liste de Page), seuls les codes objets peuvent être flagués RAM
+		// Pour chaque execution:
+		// Parcourir les items, les recompiler à leur org de destination
+		// Générer les fichiers d'equates correspondants
+		// concaterner les binaires et les splitter en deux parties
+		// exomizer les deux parties et les enregistrer dans l'objet page		
 		
 		// TODO : Executer une troisieme fois cette méthode sur les objets non flagués RAM
 		// instancier une troisieme liste de Page

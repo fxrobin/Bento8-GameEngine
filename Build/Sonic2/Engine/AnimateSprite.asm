@@ -8,13 +8,6 @@
 *
 * ---------------------------------------------------------------------------
 
-resetAnim              equ $FF
-goBackNFrames          equ $FE ; followed by one byte (nb frames)
-goToAnimation          equ $FD ; followed by one word (animation)
-nextRoutine            equ $FC
-resetAnimAndSubRoutine equ $FB
-nextSubRoutine         equ $FA
-
                                             *; ---------------------------------------------------------------------------
                                             *; Subroutine to animate a sprite using an animation script
                                             *; ---------------------------------------------------------------------------
