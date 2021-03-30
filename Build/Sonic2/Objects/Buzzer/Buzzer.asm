@@ -5,7 +5,32 @@
 ; ---------
 ;
 ; ---------------------------------------------------------------------------
+
+Buzzer
+        lda   routine,u
+        sta   *+4,pcr
+        bra   Buzzer_Routines
+
+Buzzer_Routines
+        lbra  Buzzer_Init
+        lbra  Buzzer_Display
+
+Buzzer_Init
+        ldx   #$0000
+        jsr   ClearCartMem    
         
+        ldd   #Img_buzzer_000
+        std   image_set,u
+        ldb   #$01
+        stb   priority,u
+        ldd   #$A07F
+        std   xy_pixel,u
+        lda   routine,u
+        adda  #$03
+        sta   routine,u   
+        
+Buzzer_Display
+        jmp   DisplaySprite
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------
                                                       *; Object 4B - Buzzer (Buzz bomber) from EHZ
@@ -18,8 +43,8 @@
                                                       *Obj4B_shot_timer    = objoff_34 ; word
                                                       *
                                                       *; Sprite_2D068: ; Obj_Buzzer:
-Buzzer                                                *Obj4B:
-        rts                                           *    moveq   #0,d0
+                                                      *Obj4B:
+                                                      *    moveq   #0,d0
                                                       *    move.b  routine(a0),d0
                                                       *    move.w  Obj4B_Index(pc,d0.w),d1
                                                       *    jmp Obj4B_Index(pc,d1.w)

@@ -5,7 +5,31 @@
 ; ---------
 ;
 ; ---------------------------------------------------------------------------
+Masher
+        lda   routine,u
+        sta   *+4,pcr
+        bra   Masher_Routines
 
+Masher_Routines
+        lbra  Masher_Init
+        lbra  Masher_Display
+
+Masher_Init
+        ldx   #$0000
+        jsr   ClearCartMem    
+        
+        ldd   #Img_masher_000
+        std   image_set,u
+        ldb   #$01
+        stb   priority,u
+        ldd   #$A09F
+        std   xy_pixel,u
+        lda   routine,u
+        adda  #$03
+        sta   routine,u   
+        
+Masher_Display
+        jmp   DisplaySprite
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------
                                                       *; Object 5C - Masher (jumping piranha fish badnik) from EHZ
@@ -14,8 +38,8 @@
                                                       *Obj5C_initial_y_pos = objoff_30 ; word
                                                       *
                                                       *; Sprite_2D394:
-Masher                                                *Obj5C:
-        rts                                           *    moveq   #0,d0
+                                                      *Obj5C:
+                                                      *    moveq   #0,d0
                                                       *    move.b  routine(a0),d0
                                                       *    move.w  Obj5C_Index(pc,d0.w),d1
                                                       *    jsr Obj5C_Index(pc,d1.w)

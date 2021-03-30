@@ -2,7 +2,6 @@ package fr.bento8.to8.build;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -18,11 +17,14 @@ public class GameMode {
 	public ObjectBin code; // Main Engine
 	
 	public String engineAsmMainEngine;
+	public HashMap<String, GameModeCommon> gameModeCommon;
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
 	public HashMap<String, Act> acts = new HashMap<String, Act>(); 
 	public String actBoot;
 	public AsmSourceCode glb;
+	public GameModeCommon common;
+	public int nbHalfPage = 0;	
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		
@@ -47,6 +49,19 @@ public class GameMode {
 			throw new Exception("engine.asm.mainEngine not found in " + fileName);
 		}
 
+		// Game Mode Common
+		// ********************************************************************
+
+		HashMap<String, String[]> gameModeCommonProperties = PropertyList.get(prop, "gameModeCommon");
+		if (gameModeCommonProperties != null) {
+			 gameModeCommon = new HashMap<String, GameModeCommon>();
+			// Chargement des fichiers de configuration des Game Modes
+			for (Map.Entry<String,String[]> curGameModeCommon : gameModeCommonProperties.entrySet()) {
+				BuildDisk.logger.debug("\tLoad Game Mode Common"+curGameModeCommon.getKey()+": "+curGameModeCommon.getValue()[0]);
+				gameModeCommon.put(curGameModeCommon.getKey(), new GameModeCommon(curGameModeCommon.getKey(), curGameModeCommon.getValue()[0]));
+			}
+		}
+		
 		// Objects
 		// ********************************************************************
 		

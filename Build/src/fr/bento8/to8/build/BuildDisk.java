@@ -421,41 +421,143 @@ public class BuildDisk
 						}
 					}
 				}
-				logger.debug("*** Non allocated space on page "+page+" : " + (0xE000 - address) + " octets");
+				logger.debug("*** Non allocated space on page "+page+" : " + (0x4000 - address) + " octets");
 				page++;
 				if (page > game.nbMaxPagesRAM) {
 					logger.fatal("No more space Left on RAM !");
 				}
 			}
 		}
-
-		// TODO : Gestion d'un game mode "commun" valable uniquement pour la disquette (plusieurs communs mais un seul dispo a un moment T)
-		// en fonction du game mode chargé, si le commun necessaire est deja chargé : pas de rechargement
-		// les games modes qui utilisent un commun commencent à la fin de la page du commun pour ne pas perdre d'espace.
-		// les communs sont chargés après le RAMLoaderManager en page 4
-		// Problème : la taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
-		// première passe de sac a dos pour determiner le nombre de demi pages necessaires +1 pour chaque Game Mode
-		// pour chaque resultat : x 7 (taille structure de demi page)
-		// et additioner le tout
-		// Refaire le sac a dos avec comme point de départ la fin en page 4 du RAMLoaderManager
-		
-		// TODO: Créer un nouvel objet Page
-		
-		// TODO : Executer deux fois cette méthode
-		// Une premiere fois pour le fd/sd en traitant tous les objets (instancier une liste de Page)
-		// Une seconde fois pour la T.2, on ne traite que les objets flagués RAM (instancier une seconde liste de Page), seuls les codes objets peuvent être flagués RAM
-		// Pour chaque execution:
-		// Parcourir les items, les recompiler à leur org de destination
-		// Générer les fichiers d'equates correspondants
-		// concaterner les binaires et les splitter en deux parties
-		// exomizer les deux parties et les enregistrer dans l'objet page		
-		
-		// TODO : Executer une troisieme fois cette méthode sur les objets non flagués RAM
-		// instancier une troisieme liste de Page
-		// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM (en mode exomize)
-		
-		// Le check taille disquette ou T.2 est fait plus tard lors de l'écriture sur média cible
 	}
+	
+	// TODO : Gestion d'un game mode "commun" valable uniquement pour la disquette (plusieurs communs mais un seul dispo a un moment T)
+	// en fonction du game mode chargé, si le commun necessaire est deja chargé : pas de rechargement
+	// les games modes qui utilisent un commun commencent à la fin de la page du commun pour ne pas perdre d'espace.
+	// les communs sont chargés après le RAMLoaderManager en page 4
+	// Problème : la taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
+	// première passe de sac a dos pour determiner le nombre de demi pages necessaires +1 pour chaque Game Mode
+	// pour chaque resultat : x 7 (taille structure de demi page)
+	// et additioner le tout
+	// Refaire le sac a dos avec comme point de départ la fin en page 4 du RAMLoaderManager
+	
+	// TODO: Créer un nouvel objet Page
+	
+	// TODO : Executer deux fois cette méthode
+	// Une premiere fois pour le fd/sd en traitant tous les objets (instancier une liste de Page)
+	// Une seconde fois pour la T.2, on ne traite que les objets flagués RAM (instancier une seconde liste de Page), seuls les codes objets peuvent être flagués RAM
+	// Pour chaque execution:
+	// Parcourir les items, les recompiler à leur org de destination
+	// Générer les fichiers d'equates correspondants
+	// concaterner les binaires et les splitter en deux parties
+	// exomizer les deux parties et les enregistrer dans l'objet page		
+	
+	// TODO : Executer une troisieme fois cette méthode sur les objets non flagués RAM
+	// instancier une troisieme liste de Page
+	// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM (en mode exomize)
+	
+	// Le check taille disquette ou T.2 est fait plus tard lors de l'écriture sur média cible	
+	
+	private static void computeGMFileIndexSize() {
+		logger.info("Compute Game Modes File Index Size ...");
+
+		// GAME MODE DATA - Répartition des données en RAM
+		// -----------------------------------------------
+
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			logger.debug("Game Mode : " + gameMode.getValue().name);
+			
+			// Compte le nombre d'objets a traiter
+			int nbGameModeItems = 0;
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+				nbGameModeItems += object.getValue().subSpritesBin.size(); // Sprites
+				
+				if (object.getValue().subSpritesBin.size() > 0)
+					nbGameModeItems++;                                     // ImageSet Index
+				
+				if (!object.getValue().animationsProperties.isEmpty())
+					nbGameModeItems++;                                     // Animation Index
+				
+				for (Sound sound : object.getValue().sounds) {
+						nbGameModeItems += sound.sb.size();                // Sounds
+				}
+				
+				nbGameModeItems++;                                         // Object Code				
+			}
+			
+			// Initialise un item pour chaque élément a écrire en RAM
+			Item[] items = new Item[nbGameModeItems];
+			int itemIdx = 0;
+
+			// Initialisation des items
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+				
+				for (SubSpriteBin subSpriteBin : object.getValue().subSpritesBin) {
+					items[itemIdx++] = new Item(subSpriteBin, 1);                // Sprites
+				}
+
+				if (object.getValue().subSpritesBin.size() > 0)
+					items[itemIdx++] = new Item(object.getValue().imageSet, 1);  // ImageSet Index
+				
+				if (!object.getValue().animationsProperties.isEmpty())
+					items[itemIdx++] = new Item(object.getValue().animation, 1); // Animation Index				
+				
+				for (Sound sound : object.getValue().sounds) {
+					for (SoundBin soundBin : sound.sb) {
+						items[itemIdx++] = new Item(soundBin, 1);                // Sounds
+					}
+				}
+				
+				items[itemIdx++] = new Item(object.getValue().code, 1);          // Object Code
+			}
+
+			int page = 4; // Première page disponible pour les données de Game Mode
+
+			while (items.length > 0) {
+
+				int address = 0x0000; // Position dans la page
+
+				// les données sont réparties en pages en fonction de leur taille par un
+				// algorithme "sac à dos"
+				Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
+
+				Solution solution = knapsack.solve();
+				logger.debug("*** Find solution for page : " + page);
+
+				// Parcours de la solution
+				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
+					Item currentItem = iter.next();
+					
+					//currentItem.bin.fileIndex.page = page;
+					//currentItem.bin.fileIndex.address = address;
+					address += currentItem.bin.uncompressedSize;
+					//currentItem.bin.fileIndex.endAddress = address;					
+
+					// construit la liste des éléments restants à organiser
+					for (int i = 0; i < items.length; i++) {
+						if (items[i].bin == currentItem.bin) {
+							Item[] newItems = new Item[items.length - 1];
+							for (int l = 0; l < i; l++) {
+								newItems[l] = items[l];
+							}
+							for (int j = i; j < items.length - 1; j++) {
+								newItems[j] = items[j + 1];
+							}
+							items = newItems;
+							break;
+						}
+					}
+				}
+				logger.debug("*** Non allocated space on page "+page+" : " + (0x4000 - address) + " octets");
+				page++;
+				if (page > game.nbMaxPagesRAM) {
+					logger.fatal("No more space Left on RAM !");
+				}
+			}
+			
+			gameMode.getValue().name = ;
+			// Enregistrer le nb de pages commun puis gamemode
+		}
+	}	
 	
 	private static void compileObjects() throws Exception {
 		logger.info("Compile Objects ...");

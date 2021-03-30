@@ -13,7 +13,6 @@
 ; ---------------------------------------------------------------------------
         
         INCLUDE "./Engine/Constants.asm"
-
                                                       ; ===========================================================================
                                                       ; ----------------------------------------------------------------------------
                                                       ; Object 01 - Sonic
@@ -80,7 +79,7 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                         subi.w  #$20,x_pos(a0)
                                                         addi_.w #4,y_pos(a0)
         ldd   #$0000
-        std   Sonic_Pos_Record_Index                    move.w  #0,(Sonic_Pos_Record_Index).w
+        std   Glb_Sonic_Pos_Record_Index                move.w  #0,(Sonic_Pos_Record_Index).w
                                                       
                                                         move.w  #$3F,d2
                                                       - bsr.w   Sonic_RecordPos
@@ -90,12 +89,32 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                       
                                                         addi.w  #$20,x_pos(a0)
                                                         subi_.w #4,y_pos(a0)
+
+
+
+
+        ldx   #$0000          * TMP
+        jsr   ClearCartMem    * TMP   
+        
+        ldd   #Img_sonic_001  * TMP
+        std   image_set,u     * TMP
+        ldb   #$01            * TMP
+        stb   priority,u      * TMP
+        ldd   #$807F          * TMP
+        std   xy_pixel,u      * TMP
+        
+
+
+
+
+
                                                       
                                                       ; ---------------------------------------------------------------------------
                                                       ; Normal state for Sonic
                                                       ; ---------------------------------------------------------------------------
                                                       ; loc_1A030: Obj_01_Sub_2:
 Sonic_Control                                           Obj01_Control:
+        jmp   DisplaySprite * TMP
                                                         tst.w   (Debug_mode_flag).w ; is debug cheat enabled?
                                                         beq.s   +           ; if not, branch
                                                         btst    #button_B,(Ctrl_1_Press).w  ; is button B pressed?
