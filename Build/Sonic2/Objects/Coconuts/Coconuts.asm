@@ -15,8 +15,8 @@
                                                       *Obj9D_climb_table_index = objoff_2C ; word
                                                       *Obj9D_attack_timer  = objoff_2E ; byte  ; time player needs to spend close to object before it attacks
                                                       *; Sprite_37BFA:
-                                                      *Obj9D:
-                                                      *    moveq   #0,d0
+Coconuts                                              *Obj9D:
+        rts                                           *    moveq   #0,d0
                                                       *    move.b  routine(a0),d0
                                                       *    move.w  Obj9D_Index(pc,d0.w),d1
                                                       *    jmp Obj9D_Index(pc,d1.w)

@@ -95,7 +95,7 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                       ; Normal state for Sonic
                                                       ; ---------------------------------------------------------------------------
                                                       ; loc_1A030: Obj_01_Sub_2:
-                                                      Obj01_Control:
+Sonic_Control                                           Obj01_Control:
                                                         tst.w   (Debug_mode_flag).w ; is debug cheat enabled?
                                                         beq.s   +           ; if not, branch
                                                         btst    #button_B,(Ctrl_1_Press).w  ; is button B pressed?
@@ -1926,7 +1926,7 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                       ; Sonic when he gets hurt
                                                       ; ---------------------------------------------------------------------------
                                                       ; loc_1B120: Obj_01_Sub_4:
-                                                      Obj01_Hurt:
+Sonic_Hurt                                              Obj01_Hurt:
                                                         tst.w   (Debug_mode_flag).w
                                                         beq.s   Obj01_Hurt_Normal
                                                         btst    #button_B,(Ctrl_1_Press).w
@@ -1996,7 +1996,7 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                       ; ---------------------------------------------------------------------------
                                                       
                                                       ; loc_1B1E6: Obj_01_Sub_6:
-                                                      Obj01_Dead:
+Sonic_Dead                                              Obj01_Dead:
                                                         tst.w   (Debug_mode_flag).w
                                                         beq.s   +
                                                         btst    #button_B,(Ctrl_1_Press).w
@@ -2087,7 +2087,7 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                       ; Sonic when he's offscreen and waiting for the level to restart
                                                       ; ---------------------------------------------------------------------------
                                                       ; loc_1B31C: Obj_01_Sub_8:
-                                                      Obj01_Gone:
+Sonic_Gone                                              Obj01_Gone:
                                                         tst.w   restart_countdown(a0)
                                                         beq.s   +
                                                         subq.w  #1,restart_countdown(a0)
@@ -2100,7 +2100,7 @@ Sonic_Init_Continued                                    Obj01_Init_Continued:
                                                       ; Sonic when he's waiting for the camera to scroll back to where he respawned
                                                       ; ---------------------------------------------------------------------------
                                                       ; loc_1B330: Obj_01_Sub_A:
-                                                      Obj01_Respawning:
+Sonic_Respawning                                        Obj01_Respawning:
                                                         tst.w   (Camera_X_pos_diff).w
                                                         bne.s   +
                                                         tst.w   (Camera_Y_pos_diff).w

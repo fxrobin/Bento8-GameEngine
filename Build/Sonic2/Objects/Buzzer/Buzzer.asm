@@ -18,8 +18,8 @@
                                                       *Obj4B_shot_timer    = objoff_34 ; word
                                                       *
                                                       *; Sprite_2D068: ; Obj_Buzzer:
-                                                      *Obj4B:
-                                                      *    moveq   #0,d0
+Buzzer                                                *Obj4B:
+        rts                                           *    moveq   #0,d0
                                                       *    move.b  routine(a0),d0
                                                       *    move.w  Obj4B_Index(pc,d0.w),d1
                                                       *    jmp Obj4B_Index(pc,d1.w)
