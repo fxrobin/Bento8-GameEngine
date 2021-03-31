@@ -5,10 +5,11 @@
 #    - par un code de comportement
 #    - par un ensemble d'images converties en code (optionnel)
 #    - par un ensemble d'animations (optionnel)
+#    - par un ensemble de donnees audio (optionnel)
 #
 # code:
 #    param1: code source du comportement de l'objet
-#    param2 optionnel: binary will be loaded and executed in RAM (RAM)
+#    param2 option: binary will be loaded and executed in RAM (RAM)
 #
 # sprite:
 #    param1: image PNG de type couleurs indexées 8Bits, Index de palette : Transparence=0, couleurs=1-16
@@ -29,7 +30,7 @@
 #            XYD0 : xy flip, draw compilated sprite, no x offset 
 #            XYB1 : xy flip, background backup / draw / erase compilated sprite, 1px x offset 
 #            XYD1 : xy flip, draw compilated sprite, 1px x offset 
-#    param3 optionnel: binary will be loaded and executed in RAM (RAM)
+#    param3 option: binary will be loaded and executed in RAM (RAM)
 #
 # animation:
 #    param1: durée en frame de chaque image de l'animation (0=1 frame, 1=2 frames, ...)
@@ -37,5 +38,10 @@
 #    ...
 #    param3: Action de fin (_resetAnim, _goBackNFrames, _goToAnimation, _nextRoutine, _resetAnimAndSubRoutine, _nextSubRoutine)
 #    param4: Optionnel: nombre de frames (si param3=_goBackNFrames) ou identifiant d'animation (si param3=_goToAnimation)
+
+
+# sound:
+#    param1: fichier binaire .pcm ou .psg 
+#    param2 option: binary will be loaded and executed in RAM (RAM)
 #
 # ******************************************************************************

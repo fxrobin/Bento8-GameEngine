@@ -6,6 +6,7 @@ public class SubSpriteBin extends ItemBin{
 
 	public SubSprite parent;
 	public String name = "";
+	public boolean inRAM = false;	
 
 	public SubSpriteBin(SubSprite p) {
 		parent = p;

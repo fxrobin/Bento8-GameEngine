@@ -9,6 +9,7 @@ public class Sprite {
 
 	public String name = "";
 	public String spriteFile;
+	public boolean inRAM = false;	
 	
 	public HashMap<String, SubSprite> subSprites = new HashMap<String, SubSprite>(); 
 

@@ -6,6 +6,7 @@ import fr.bento8.to8.util.knapsack.ItemBin;
 public class SoundBin extends ItemBin{
 
 	public String name = "";
+	public boolean inRAM = false;
 	
 	public SoundBin() {	
 	}

@@ -20,12 +20,14 @@ public class Object {
 	public String fileName;	
 	public ObjectBin code;
 	public String codeFileName;
-	public boolean toRAM = false;
+	public boolean codeInRAM = false;
 	
 	public HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 	public List<SubSpriteBin> subSpritesBin = new ArrayList<SubSpriteBin>();
 	public AnimationBin animation;
+	public boolean animationInRAM = false;	
 	public ImageSetBin imageSet;
+	public boolean imageSetInRAM = false;	
 	public List<Sound> sounds = new ArrayList<Sound>();
 	
 	public HashMap<String, String[]> spritesProperties;
@@ -46,20 +48,22 @@ public class Object {
 		} catch (Exception e) {
 			throw new Exception("Impossible de charger le fichier de configuration: " + propertiesFileName, e);
 		}
-		
+
 		String[] codeFileNameTmp = prop.getProperty("code").split(";");
-		codeFileName = codeFileNameTmp[0];
-		if (codeFileNameTmp.length > 1 && codeFileNameTmp[1].equalsIgnoreCase("RAM"))
-		{
-			toRAM = true;
-		}
-		
-		if (codeFileName == null) {
+		if (codeFileNameTmp.length == 0)
 			throw new Exception("code not found in " + propertiesFileName);
-		}
+		codeFileName = codeFileNameTmp[0];
+		if (codeFileNameTmp.length > 1 && codeFileNameTmp[1].equalsIgnoreCase(BuildDisk.RAM))
+			codeInRAM = true;
 
 		spritesProperties = PropertyList.get(prop, "sprite");
 		animationsProperties = PropertyList.get(prop, "animation");
 		soundsProperties = PropertyList.get(prop, "sound");
+		
+		if (prop.getProperty("spriteIndex") != null && prop.getProperty("spriteIndex").equalsIgnoreCase(BuildDisk.RAM))
+			imageSetInRAM = true;
+		
+		if (prop.getProperty("animationIndex") != null && prop.getProperty("animationIndex").equalsIgnoreCase(BuildDisk.RAM))
+			animationInRAM = true;
 	}	
 }

@@ -23,7 +23,7 @@ public class Sound{
 		this.name = name;
 	}
 	
-	public void setAllBinaries(String fileName) throws Exception {
+	public void setAllBinaries(String fileName, boolean inRAM) throws Exception {
 		int pageSize = 0x4000 - BinUtil.linearHeaderTrailerSize;
 		byte[] buffer = new byte[pageSize];
 		byte[] exomizedBin;
@@ -53,6 +53,7 @@ public class Sound{
 			nsb.fileIndex = new DataIndex();
 			nsb.bin = exomizedBin;
 			nsb.uncompressedSize = dataSize;
+			nsb.inRAM = inRAM;		
 			sb.add(nsb);
 		}
 		

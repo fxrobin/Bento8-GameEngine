@@ -22,7 +22,7 @@ public class GameMode {
 	public String actBoot;
 	public AsmSourceCode glb;
 	public GameModeCommon common;
-	public int nbHalfPage = 0;	
+	public int nbPages = 0;	
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		
