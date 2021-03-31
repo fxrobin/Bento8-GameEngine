@@ -6,19 +6,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import fr.bento8.to8.disk.DataIndex;
-
 public class GameMode {
 
 	public String name;
 	public String fileName;
 	public int dataSize;
-	public DataIndex fileIndex = new DataIndex();
 	public ObjectBin code; // Main Engine
 	
 	public String engineAsmMainEngine;
-	public HashMap<String, GameModeCommon> gameModeCommon;
+	public GameModeCommon gameModeCommon;
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
+	public HashMap<Object, Integer> objectsId = new HashMap<Object, Integer>();
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
 	public HashMap<String, Act> acts = new HashMap<String, Act>(); 
 	public String actBoot;
@@ -53,12 +51,21 @@ public class GameMode {
 		// ********************************************************************
 
 		HashMap<String, String[]> gameModeCommonProperties = PropertyList.get(prop, "gameModeCommon");
-		if (gameModeCommonProperties != null) {
-			 gameModeCommon = new HashMap<String, GameModeCommon>();
-			// Chargement des fichiers de configuration des Game Modes
+		
+		if (gameModeCommonProperties != null && gameModeCommonProperties.size() >= 1) {
+			
+			if (gameModeCommonProperties.size()>1)
+				throw new Exception("Only one GameModeCommon supported for each Game Mode.");
+			
+			// Chargement du fichier de configuration du Game Mode Common
 			for (Map.Entry<String,String[]> curGameModeCommon : gameModeCommonProperties.entrySet()) {
 				BuildDisk.logger.debug("\tLoad Game Mode Common"+curGameModeCommon.getKey()+": "+curGameModeCommon.getValue()[0]);
-				gameModeCommon.put(curGameModeCommon.getKey(), new GameModeCommon(curGameModeCommon.getKey(), curGameModeCommon.getValue()[0]));
+				if (!BuildDisk.allGameModeCommons.containsKey(curGameModeCommon.getKey())) {
+					gameModeCommon = new GameModeCommon(curGameModeCommon.getKey(), curGameModeCommon.getValue()[0]);
+					BuildDisk.allGameModeCommons.put(curGameModeCommon.getKey(), gameModeCommon);
+				} else {
+					gameModeCommon = BuildDisk.allGameModeCommons.get(curGameModeCommon.getKey());
+				}
 			}
 		}
 		
@@ -66,9 +73,9 @@ public class GameMode {
 		// ********************************************************************
 		
 		HashMap<String, String[]> objectProperties = PropertyList.get(prop, "object");
-		if (objectProperties == null) {
+		
+		if (objectProperties == null)
 			throw new Exception("object not found in " + fileName);
-		}
 		
 		// Chargement des fichiers de configuration des Objets
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
@@ -80,9 +87,8 @@ public class GameMode {
 		// ********************************************************************
 		
 		HashMap<String, String[]> paletteProperties = PropertyList.get(prop, "palette");
-		if (paletteProperties == null) {
+		if (paletteProperties == null)
 			throw new Exception("palette not found in " + fileName);
-		}
 		
 		// Chargement des fichiers de configuration des Palettes
 		for (Map.Entry<String,String[]> curPalette : paletteProperties.entrySet()) {

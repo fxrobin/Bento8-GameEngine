@@ -6,14 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import fr.bento8.to8.disk.DataIndex;
-
 public class GameModeCommon {
 
 	public String name;
 	public String fileName;
-	public int dataSize;
-	public DataIndex fileIndex = new DataIndex();
 		
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public AsmSourceCode glb;

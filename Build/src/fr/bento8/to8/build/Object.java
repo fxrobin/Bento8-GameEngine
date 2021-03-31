@@ -15,7 +15,6 @@ import fr.bento8.to8.image.SubSpriteBin;
 
 public class Object {
 
-	public int id;
 	public String name;
 	public String parentName;
 	public String fileName;	

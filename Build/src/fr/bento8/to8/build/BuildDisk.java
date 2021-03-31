@@ -49,11 +49,17 @@ public class BuildDisk
 	static final Logger logger = LogManager.getLogger("log");
 
 	private static Game game;
-	private static HashMap<String, Object> allObjects = new HashMap<String, Object>();
+	public static HashMap<String, GameModeCommon> allGameModeCommons = new HashMap<String, GameModeCommon>();
 	private static int gm_totalSize = 0; // Taille totale du binaire : Game Mode Manager + Game Mode Loader + Game Mode Data
 
 	private static FdUtil fd = new FdUtil();
 	public static AsmSourceCode glb;
+	
+	public static String FLOPPY_DISK = "FLoppy Disk";
+	public static String MEGAROM_T2 = "MEGAROM T.2";
+	
+	public static boolean abortFloppyDisk = false;
+	public static boolean abortT2 = false;
 	
 	/**
 	 * Génère une image de disquette dans les formats .fd et .sd pour 
@@ -102,7 +108,17 @@ public class BuildDisk
 			computeObjectCodeSize();
 			
 			// compute RAM destination for all assets and objects code
-			computeObjectsRamAddress();
+			if (computeGMFileIndexSize(FLOPPY_DISK) == -1)
+				abortFloppyDisk = true;
+			
+			if (computeGMFileIndexSize(MEGAROM_T2) == -1)
+				abortT2 = true;
+			
+			if (abortFloppyDisk && abortT2)
+				logger.fatal("Not enough RAM !");
+			
+			computeObjectsRamAddress(FLOPPY_DISK);
+			computeObjectsRamAddress(MEGAROM_T2);
 			
 			// compile all asm code
 			compileMainEngines();
@@ -171,20 +187,41 @@ public class BuildDisk
 	private static void generateObjectIDs() throws Exception {
 		logger.info("Set Objects Id as Globals ...");
 				
-		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes (numérotation commune)
+		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes
+		// - identifiants des objets communs, ils sont identiques pour un même Game Mode Common
+		// - identifiants des objets de Game Mode (Un id d'un même objet peut être différent selon le game Mode)
+		// L'id objet est utilisé comme index pour accéder à l'adresse du code de l'objet au runtime
 		// ----------------------------------------------------------------------------------------------------		
 		int objIndex;
 		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
 			objIndex = 1;
+			logger.debug("\tGameMode: "+gameMode.getKey());
+			
+			// Game Mode Common
+			for (Entry<String, Object> object : gameMode.getValue().gameModeCommon.objects.entrySet()) {
+				
+				// Sauvegarde de l'id objet pour ce Game Mode
+				gameMode.getValue().objectsId.put(object.getValue(), objIndex);
+				
+				// Génération de la constante ASM
+				gameMode.getValue().glb.addConstant("ObjID_"+object.getKey(), Integer.toString(objIndex));
+				
+				logger.debug("\t\tObjID_"+object.getKey()+" (Common) "+Integer.toString(objIndex));
+				objIndex++;
+			}			
+			
+			// Objets du Game Mode
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				if (!allObjects.containsKey(object.getKey())) { 
-					allObjects.put(object.getKey(), object.getValue());
-					gameMode.getValue().glb.addConstant("ObjID_"+object.getKey(), Integer.toString(objIndex));
-					object.getValue().id = objIndex;
-					logger.debug("\t\tObjID_"+object.getKey()+" "+Integer.toString(objIndex));
-					objIndex++;
-				}
+				
+				// Sauvegarde de l'id objet pour ce Game Mode
+				gameMode.getValue().objectsId.put(object.getValue(), objIndex);
+				
+				// Génération de la constante ASM
+				gameMode.getValue().glb.addConstant("ObjID_"+object.getKey(), Integer.toString(objIndex));
+				
+				logger.debug("\t\tObjID_"+object.getKey()+" "+Integer.toString(objIndex));
+				objIndex++;
 			}
 			gameMode.getValue().glb.flush();
 		}
@@ -332,8 +369,140 @@ public class BuildDisk
 		}
 	}
 	
-	private static void computeObjectsRamAddress() {
-		logger.info("Compute Objects RAM Address ...");
+	// TODO : Gestion d'un game mode "commun" valable uniquement pour la disquette (plusieurs communs mais un seul dispo a un moment T)
+	// en fonction du game mode chargé, si le commun necessaire est deja chargé : pas de rechargement
+	// les games modes qui utilisent un commun commencent à la fin de la page du commun pour ne pas perdre d'espace.
+	// les communs sont chargés après le RAMLoaderManager en page 4
+	// Problème : la taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
+	// première passe de sac a dos pour determiner le nombre de demi pages necessaires +1 pour chaque Game Mode
+	// pour chaque resultat : x 7 (taille structure de demi page)
+	// et additioner le tout
+	// Refaire le sac a dos avec comme point de départ la fin en page 4 du RAMLoaderManager
+	
+	// TODO: Créer un nouvel objet Page
+	
+	// TODO : Executer deux fois cette méthode
+	// Une premiere fois pour le fd/sd en traitant tous les objets (instancier une liste de Page)
+	// Une seconde fois pour la T.2, on ne traite que les objets flagués RAM (instancier une seconde liste de Page), seuls les codes objets peuvent être flagués RAM
+	// Pour chaque execution:
+	// Parcourir les items, les recompiler à leur org de destination
+	// Générer les fichiers d'equates correspondants
+	// concaterner les binaires et les splitter en deux parties
+	// exomizer les deux parties et les enregistrer dans l'objet page		
+	
+	// TODO : Executer une troisieme fois cette méthode sur les objets non flagués RAM
+	// instancier une troisieme liste de Page
+	// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM (en mode exomize)
+	
+	// Le check taille disquette ou T.2 est fait plus tard lors de l'écriture sur média cible	
+	
+	private static int computeGMFileIndexSize(String mode) {
+		logger.info("Compute Game Modes File Index Size for " + mode + " ...");
+
+		// GAME MODE DATA - Répartition des données en RAM
+		// -----------------------------------------------
+		
+		// mode FLOPPY : Toutes les données sont chargées en RAM
+		// mode T.2 : Seul le code ASM des objets qui ont toRAM = true sont chargés en RAM
+		// TODO: permettre de charger en RAM les images pour gagner de la place sur la T.2 (les données sont alors compressées) 
+
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			logger.debug("Game Mode : " + gameMode.getValue().name);
+			
+			// Compte le nombre d'objets a traiter
+			int nbGameModeItems = 0;
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+				nbGameModeItems += object.getValue().subSpritesBin.size(); // Sprites
+				
+				if (object.getValue().subSpritesBin.size() > 0)
+					nbGameModeItems++;                                     // ImageSet Index
+				
+				if (!object.getValue().animationsProperties.isEmpty())
+					nbGameModeItems++;                                     // Animation Index
+				
+				for (Sound sound : object.getValue().sounds) {
+						nbGameModeItems += sound.sb.size();                // Sounds
+				}
+				
+				nbGameModeItems++;                                         // Object Code				
+			}
+			
+			// Initialise un item pour chaque élément a écrire en RAM
+			Item[] items = new Item[nbGameModeItems];
+			int itemIdx = 0;
+
+			// Initialisation des items
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+				
+				for (SubSpriteBin subSpriteBin : object.getValue().subSpritesBin) {
+					items[itemIdx++] = new Item(subSpriteBin, 1);                // Sprites
+				}
+
+				if (object.getValue().subSpritesBin.size() > 0)
+					items[itemIdx++] = new Item(object.getValue().imageSet, 1);  // ImageSet Index
+				
+				if (!object.getValue().animationsProperties.isEmpty())
+					items[itemIdx++] = new Item(object.getValue().animation, 1); // Animation Index				
+				
+				for (Sound sound : object.getValue().sounds) {
+					for (SoundBin soundBin : sound.sb) {
+						items[itemIdx++] = new Item(soundBin, 1);                // Sounds
+					}
+				}
+				
+				items[itemIdx++] = new Item(object.getValue().code, 1);          // Object Code
+			}
+
+			int page = 4; // Première page disponible pour les données de Game Mode
+
+			while (items.length > 0) {
+
+				if (page > game.nbMaxPagesRAM) {
+					return -1;
+				}
+				
+				int address = 0x0000; // Position dans la page
+
+				// les données sont réparties en pages en fonction de leur taille par un
+				// algorithme "sac à dos"
+				Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
+
+				Solution solution = knapsack.solve();
+				logger.debug("*** Find solution for page : " + page);
+
+				// Parcours de la solution
+				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
+
+					Item currentItem = iter.next();
+					address += currentItem.bin.uncompressedSize;
+
+					// construit la liste des éléments restants à organiser
+					for (int i = 0; i < items.length; i++) {
+						if (items[i].bin == currentItem.bin) {
+							Item[] newItems = new Item[items.length - 1];
+							for (int l = 0; l < i; l++) {
+								newItems[l] = items[l];
+							}
+							for (int j = i; j < items.length - 1; j++) {
+								newItems[j] = items[j + 1];
+							}
+							items = newItems;
+							break;
+						}
+					}
+				}
+				logger.debug("*** Non allocated space on page "+page+" : " + (0x4000 - address) + " octets");
+				page++;
+			}
+			
+			gameMode.getValue().name = ;
+			// Enregistrer le nb de pages commun puis gamemode
+		}
+		return 0;
+	}	
+	
+	private static void computeObjectsRamAddress(String mode) {
+		logger.info("Compute Objects RAM Address for " + mode + " ...");
 
 		// GAME MODE DATA - Répartition des données en RAM
 		// -----------------------------------------------
@@ -428,135 +597,6 @@ public class BuildDisk
 				}
 			}
 		}
-	}
-	
-	// TODO : Gestion d'un game mode "commun" valable uniquement pour la disquette (plusieurs communs mais un seul dispo a un moment T)
-	// en fonction du game mode chargé, si le commun necessaire est deja chargé : pas de rechargement
-	// les games modes qui utilisent un commun commencent à la fin de la page du commun pour ne pas perdre d'espace.
-	// les communs sont chargés après le RAMLoaderManager en page 4
-	// Problème : la taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
-	// première passe de sac a dos pour determiner le nombre de demi pages necessaires +1 pour chaque Game Mode
-	// pour chaque resultat : x 7 (taille structure de demi page)
-	// et additioner le tout
-	// Refaire le sac a dos avec comme point de départ la fin en page 4 du RAMLoaderManager
-	
-	// TODO: Créer un nouvel objet Page
-	
-	// TODO : Executer deux fois cette méthode
-	// Une premiere fois pour le fd/sd en traitant tous les objets (instancier une liste de Page)
-	// Une seconde fois pour la T.2, on ne traite que les objets flagués RAM (instancier une seconde liste de Page), seuls les codes objets peuvent être flagués RAM
-	// Pour chaque execution:
-	// Parcourir les items, les recompiler à leur org de destination
-	// Générer les fichiers d'equates correspondants
-	// concaterner les binaires et les splitter en deux parties
-	// exomizer les deux parties et les enregistrer dans l'objet page		
-	
-	// TODO : Executer une troisieme fois cette méthode sur les objets non flagués RAM
-	// instancier une troisieme liste de Page
-	// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM (en mode exomize)
-	
-	// Le check taille disquette ou T.2 est fait plus tard lors de l'écriture sur média cible	
-	
-	private static void computeGMFileIndexSize() {
-		logger.info("Compute Game Modes File Index Size ...");
-
-		// GAME MODE DATA - Répartition des données en RAM
-		// -----------------------------------------------
-
-		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			logger.debug("Game Mode : " + gameMode.getValue().name);
-			
-			// Compte le nombre d'objets a traiter
-			int nbGameModeItems = 0;
-			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				nbGameModeItems += object.getValue().subSpritesBin.size(); // Sprites
-				
-				if (object.getValue().subSpritesBin.size() > 0)
-					nbGameModeItems++;                                     // ImageSet Index
-				
-				if (!object.getValue().animationsProperties.isEmpty())
-					nbGameModeItems++;                                     // Animation Index
-				
-				for (Sound sound : object.getValue().sounds) {
-						nbGameModeItems += sound.sb.size();                // Sounds
-				}
-				
-				nbGameModeItems++;                                         // Object Code				
-			}
-			
-			// Initialise un item pour chaque élément a écrire en RAM
-			Item[] items = new Item[nbGameModeItems];
-			int itemIdx = 0;
-
-			// Initialisation des items
-			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				
-				for (SubSpriteBin subSpriteBin : object.getValue().subSpritesBin) {
-					items[itemIdx++] = new Item(subSpriteBin, 1);                // Sprites
-				}
-
-				if (object.getValue().subSpritesBin.size() > 0)
-					items[itemIdx++] = new Item(object.getValue().imageSet, 1);  // ImageSet Index
-				
-				if (!object.getValue().animationsProperties.isEmpty())
-					items[itemIdx++] = new Item(object.getValue().animation, 1); // Animation Index				
-				
-				for (Sound sound : object.getValue().sounds) {
-					for (SoundBin soundBin : sound.sb) {
-						items[itemIdx++] = new Item(soundBin, 1);                // Sounds
-					}
-				}
-				
-				items[itemIdx++] = new Item(object.getValue().code, 1);          // Object Code
-			}
-
-			int page = 4; // Première page disponible pour les données de Game Mode
-
-			while (items.length > 0) {
-
-				int address = 0x0000; // Position dans la page
-
-				// les données sont réparties en pages en fonction de leur taille par un
-				// algorithme "sac à dos"
-				Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
-
-				Solution solution = knapsack.solve();
-				logger.debug("*** Find solution for page : " + page);
-
-				// Parcours de la solution
-				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
-					Item currentItem = iter.next();
-					
-					//currentItem.bin.fileIndex.page = page;
-					//currentItem.bin.fileIndex.address = address;
-					address += currentItem.bin.uncompressedSize;
-					//currentItem.bin.fileIndex.endAddress = address;					
-
-					// construit la liste des éléments restants à organiser
-					for (int i = 0; i < items.length; i++) {
-						if (items[i].bin == currentItem.bin) {
-							Item[] newItems = new Item[items.length - 1];
-							for (int l = 0; l < i; l++) {
-								newItems[l] = items[l];
-							}
-							for (int j = i; j < items.length - 1; j++) {
-								newItems[j] = items[j + 1];
-							}
-							items = newItems;
-							break;
-						}
-					}
-				}
-				logger.debug("*** Non allocated space on page "+page+" : " + (0x4000 - address) + " octets");
-				page++;
-				if (page > game.nbMaxPagesRAM) {
-					logger.fatal("No more space Left on RAM !");
-				}
-			}
-			
-			gameMode.getValue().name = ;
-			// Enregistrer le nb de pages commun puis gamemode
-		}
 	}	
 	
 	private static void compileObjects() throws Exception {
@@ -594,8 +634,8 @@ public class BuildDisk
 			String[][] objIndexPage = new String[gameMode.getValue().objects.entrySet().size()+1][];
 			String[][] objIndex = new String[gameMode.getValue().objects.entrySet().size()+1][];			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				objIndexPage[allObjects.get(object.getValue().name).id] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.page)};
-				objIndex[allObjects.get(object.getValue().name).id] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8), String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF)};
+				objIndexPage[gameMode.getValue().objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.page)};
+				objIndex[gameMode.getValue().objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8), String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF)};
 			}
 			
 			asmBuilder.addLabel("Obj_Index_Page");			
