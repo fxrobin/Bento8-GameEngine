@@ -16,7 +16,6 @@ import fr.bento8.to8.image.SubSpriteBin;
 public class Object {
 
 	public String name;
-	public String parentName;
 	public String fileName;	
 	public ObjectBin code;
 	public String codeFileName;
@@ -34,9 +33,8 @@ public class Object {
 	public HashMap<String, String[]> animationsProperties;	
 	public HashMap<String, String[]> soundsProperties;
 	
-	public Object(String parentName, String name, String propertiesFileName) throws Exception {
+	public Object(String name, String propertiesFileName) throws Exception {
 		this.name = name;
-		this.parentName = parentName;
 		this.fileName = propertiesFileName;
 		this.animation = new AnimationBin(name);
 		this.imageSet = new ImageSetBin(name);	

@@ -3,6 +3,7 @@ package fr.bento8.to8.build;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class GameMode {
 	public ObjectBin code; // Main Engine
 	
 	public String engineAsmMainEngine;
-	public GameModeCommon gameModeCommon;
+	public List<GameModeCommon> gameModeCommon;
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public HashMap<Object, Integer> objectsId = new HashMap<Object, Integer>();
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
@@ -22,7 +23,8 @@ public class GameMode {
 	public String actBoot;
 	public AsmSourceCode glb;
 	public GameModeCommon common;
-	public int nbPages = 0;	
+	public int nbPagesFD = 0;	
+	public int nbPagesT2 = 0;
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		
@@ -54,17 +56,25 @@ public class GameMode {
 		
 		if (gameModeCommonProperties != null && gameModeCommonProperties.size() >= 1) {
 			
-			if (gameModeCommonProperties.size()>1)
-				throw new Exception("Only one GameModeCommon supported for each Game Mode.");
-			
-			// Chargement du fichier de configuration du Game Mode Common
+			// Chargement des fichiers de configuration du Game Mode Common
 			for (Map.Entry<String,String[]> curGameModeCommon : gameModeCommonProperties.entrySet()) {
-				BuildDisk.logger.debug("\tLoad Game Mode Common"+curGameModeCommon.getKey()+": "+curGameModeCommon.getValue()[0]);
-				if (!BuildDisk.allGameModeCommons.containsKey(curGameModeCommon.getKey())) {
-					gameModeCommon = new GameModeCommon(curGameModeCommon.getKey(), curGameModeCommon.getValue()[0]);
-					BuildDisk.allGameModeCommons.put(curGameModeCommon.getKey(), gameModeCommon);
+				
+				BuildDisk.logger.debug("\tLoad Game Mode Common "+curGameModeCommon.getKey()+": "+curGameModeCommon.getValue()[0]);
+				
+				Integer i;
+				try {
+					i = Integer.parseInt(curGameModeCommon.getKey());
+				} catch (NumberFormatException nfe)
+			    {
+					BuildDisk.logger.fatal("In "+gameModeName+" GameMode definition, gameModeCommon."+curGameModeCommon.getKey()+" shoud be of type gameModeCommon.<n> where <n> is a number.\n" + nfe.getMessage());
+				}
+				
+				if (!BuildDisk.allGameModeCommons.containsKey(curGameModeCommon.getValue()[0])) {
+					GameModeCommon newCommon = new GameModeCommon(curGameModeCommon.getValue()[0]);
+					gameModeCommon.add(i, newCommon);
+					BuildDisk.allGameModeCommons.put(curGameModeCommon.getValue()[0], newCommon);
 				} else {
-					gameModeCommon = BuildDisk.allGameModeCommons.get(curGameModeCommon.getKey());
+					gameModeCommon.add(i,BuildDisk.allGameModeCommons.get(curGameModeCommon.getKey()));
 				}
 			}
 		}

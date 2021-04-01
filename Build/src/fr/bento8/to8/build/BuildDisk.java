@@ -37,6 +37,7 @@ import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
 import fr.bento8.to8.image.SubSpriteBin;
+import fr.bento8.to8.ram.RamLocation;
 import fr.bento8.to8.util.ByteUtil;
 import fr.bento8.to8.util.FileUtil;
 import fr.bento8.to8.util.LWASMUtil;
@@ -190,17 +191,21 @@ public class BuildDisk
 			logger.debug("\tGameMode: "+gameMode.getKey());
 			
 			// Game Mode Common
-			for (Entry<String, Object> object : gameMode.getValue().gameModeCommon.objects.entrySet()) {
-				
-				// Sauvegarde de l'id objet pour ce Game Mode
-				gameMode.getValue().objectsId.put(object.getValue(), objIndex);
-				
-				// Génération de la constante ASM
-				gameMode.getValue().glb.addConstant("ObjID_"+object.getKey(), Integer.toString(objIndex));
-				
-				logger.debug("\t\tObjID_"+object.getKey()+" (Common) "+Integer.toString(objIndex));
-				objIndex++;
-			}			
+			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+				if (common != null) {
+					for (Entry<String, Object> object : common.objects.entrySet()) {
+
+						// Sauvegarde de l'id objet pour ce Game Mode
+						gameMode.getValue().objectsId.put(object.getValue(), objIndex);
+
+						// Génération de la constante ASM
+						gameMode.getValue().glb.addConstant("ObjID_" + object.getKey(), Integer.toString(objIndex));
+
+						logger.debug("\t\tObjID_" + object.getKey() + " (Common) " + Integer.toString(objIndex));
+						objIndex++;
+					}
+				}
+			}
 			
 			// Objets du Game Mode
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
@@ -368,22 +373,83 @@ public class BuildDisk
 	}
 	
 	private static void computeRamAddress() {
-		Item[] items;
+		
+		logger.debug("computeRamAddress ...");
 		
 		// La taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
 		// première passe de sac a dos pour determiner le nombre de pages necessaires pour chaque Game Mode
+
+		RamLocation rloc = new RamLocation(game.nbMaxPagesRAM);
+		Item[] items;
+		int fileIndexSize_FD = 0;
+		int fileIndexSize_T2 = 0;
+		int initStartPage = 4;
+		int startPage;
 		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			
+			logger.debug("\tGame Mode : " + gameMode.getValue().name);
+			
+			rloc.lastPage = initStartPage;
+			rloc.address = 0x0000;
+			
+			// Au runtime on a le game mode courant (celui chargé en RAM) et le prochain game Mode
+			// Au moment du chargement une comparaison est effectuée entre chaque ligne de l'index fichier
+			// si ligne identique : pas de chargement de la ligne (a faire jusqu'a la fin de l'index)
+			// Necessite de trier les lignes d'index fichier pour pouvoir faire une comparaison sans tout parcourir
+
+			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+				if (common != null) {
+					if (!abortFloppyDisk) {
+						items = getRAMItems(common.objects, FLOPPY_DISK);
+						
+						startPage = rloc.lastPage;
+						rloc = computeItemsRamAddress(items, rloc);
+						fileIndexSize_FD += (rloc.page - startPage + 1);
+						
+						if (rloc.isOutOfMemory())
+							abortFloppyDisk = true;
+					}
+				}
+			}
+			
 			if (!abortFloppyDisk) {
-				items = getRAMItems(gameMode.getValue(), FLOPPY_DISK);
-				gameMode.getValue().nbPages = computeItemsRamAddress(items);
-				if (gameMode.getValue().nbPages > game.nbMaxPagesRAM)
+				items = getRAMItems(gameMode.getValue().objects, FLOPPY_DISK);
+				
+				startPage = rloc.lastPage;				
+				rloc = computeItemsRamAddress(items, rloc);
+				fileIndexSize_FD += (rloc.page - startPage + 1);
+				
+				if (rloc.isOutOfMemory())
 					abortFloppyDisk = true;
 			}
+			
+			rloc.lastPage = initStartPage;
+			rloc.address = 0x0000;			
+			
+			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+				if (common != null) {
+					if (!abortT2) {
+						items = getRAMItems(common.objects, MEGAROM_T2);
+						
+						startPage = rloc.lastPage;						
+						rloc = computeItemsRamAddress(items, rloc);
+						fileIndexSize_FD += (rloc.page - startPage + 1);
+												
+						if (rloc.isOutOfMemory())
+							abortFloppyDisk = true;
+					}
+				}
+			}			
+			
 			if (!abortT2) {
-				items = getRAMItems(gameMode.getValue(), MEGAROM_T2);
-				gameMode.getValue().nbPages = computeItemsRamAddress(items);
-				if (gameMode.getValue().nbPages > game.nbMaxPagesRAM)
+				items = getRAMItems(gameMode.getValue().objects, MEGAROM_T2);
+				
+				startPage = rloc.lastPage;				
+				rloc = computeItemsRamAddress(items, rloc);
+				fileIndexSize_FD += (rloc.page - startPage + 1);
+								
+				if (rloc.isOutOfMemory())
 					abortT2 = true;
 			}
 		}
@@ -392,6 +458,10 @@ public class BuildDisk
 			logger.fatal("Not enough RAM !");
 		
 		// calcul de la taille des index fichier de RAMLoader/RAMLoaderManager
+		// nb total de pages utiles * 2 (demi-pages) * 7 (taille du bloc de données)
+		fileIndexSize_FD *= 14;
+		fileIndexSize_T2 *= 14;  
+
 		// calcul de la position de départ de la RAM libre (page + adresse)
 		
 		// TODO: Créer un nouvel objet Page
@@ -421,7 +491,7 @@ public class BuildDisk
 		// Le check taille disquette ou T.2 est fait plus tard lors de l'écriture sur média cible	
 	}
 	
-	private static Item[] getRAMItems(GameMode gameMode, String mode) {
+	private static Item[] getRAMItems(HashMap<String, Object> objects, String mode) {
 		logger.info("Compute Game Modes File Index Size for " + mode + " ...");
 
 		// GAME MODE DATA - Répartition des données en RAM
@@ -439,11 +509,9 @@ public class BuildDisk
 		// Au runtime, si le commun nécessaire au nouveau Game Mode est déjà présent, on
 		// ne le recharge pas.
 
-		logger.debug("Game Mode : " + gameMode.name);
-
 		// Compte le nombre d'objets a traiter
 		int nbGameModeItems = 0;
-		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
+		for (Entry<String, Object> object : objects.entrySet()) {
 
 			// Sprites
 			for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
@@ -476,7 +544,7 @@ public class BuildDisk
 		int itemIdx = 0;
 
 		// Initialisation des items
-		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
+		for (Entry<String, Object> object : objects.entrySet()) {
 
 			// Sprites
 			for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
@@ -507,48 +575,50 @@ public class BuildDisk
 		return items;
 	}
 
-		private static int computeItemsRamAddress(Item[] items) {
-			int page = 4; // Première page disponible pour les données de Game Mode
+	private static RamLocation computeItemsRamAddress(Item[] items, RamLocation rloc) {
+		boolean firstLoop = true;
+		
+		while (items.length > 0) {
 
-			while (items.length > 0) {
+			if (!firstLoop) {
+				rloc.page++;
+				rloc.address = 0x0000; // La page est montée dans l'espace cartouche
+			}
+			
+			// les données sont réparties en pages en fonction de leur taille par un
+			// algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
 
-				int address = 0x0000; // Position dans la page
+			Solution solution = knapsack.solve();
+			logger.debug("*** Find solution for page : " + rloc.page);
 
-				// les données sont réparties en pages en fonction de leur taille par un
-				// algorithme "sac à dos"
-				Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
+			// Parcours de la solution
+			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
 
-				Solution solution = knapsack.solve();
-				logger.debug("*** Find solution for page : " + page);
+				Item currentItem = iter.next();
+				rloc.address += currentItem.bin.uncompressedSize;
 
-				// Parcours de la solution
-				for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
-
-					Item currentItem = iter.next();
-					address += currentItem.bin.uncompressedSize;
-
-					// construit la liste des éléments restants à organiser
-					for (int i = 0; i < items.length; i++) {
-						if (items[i].bin == currentItem.bin) {
-							Item[] newItems = new Item[items.length - 1];
-							for (int l = 0; l < i; l++) {
-								newItems[l] = items[l];
-							}
-							for (int j = i; j < items.length - 1; j++) {
-								newItems[j] = items[j + 1];
-							}
-							items = newItems;
-							break;
+				// construit la liste des éléments restants à organiser
+				for (int i = 0; i < items.length; i++) {
+					if (items[i].bin == currentItem.bin) {
+						Item[] newItems = new Item[items.length - 1];
+						for (int l = 0; l < i; l++) {
+							newItems[l] = items[l];
 						}
+						for (int j = i; j < items.length - 1; j++) {
+							newItems[j] = items[j + 1];
+						}
+						items = newItems;
+						break;
 					}
 				}
-				logger.debug("*** Non allocated space on page "+page+" : " + (0x4000 - address) + " octets");
-				page++;
 			}
+			logger.debug("*** Non allocated space on page " + rloc.page + " : " + (0x4000 - rloc.address) + " octets");
+		}
+				
+		return rloc;
+	}
 
-		return page-1;
-	}	
-	
 	private static void compileObjects() throws Exception {
 		logger.info("Compile Objects ...");
 

@@ -1,4 +1,4 @@
-package fr.bento8.to8.disk;
+fr.bento8.to8.diskpackage fr.bento8.to8.disk;
 
 /**
  * @author Benoît Rousseau
