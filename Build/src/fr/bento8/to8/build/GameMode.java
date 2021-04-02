@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import fr.bento8.to8.ram.RamImage;
+import fr.bento8.to8.util.knapsack.Item;
+
 public class GameMode {
 
 	public String name;
@@ -23,8 +26,11 @@ public class GameMode {
 	public String actBoot;
 	public AsmSourceCode glb;
 	public GameModeCommon common;
-	public int nbPagesFD = 0;	
-	public int nbPagesT2 = 0;
+	
+	// Ram
+	public Item[] items;
+	public RamImage ramFD;	
+	public RamImage ramT2;	
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		

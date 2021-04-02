@@ -8,10 +8,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.util.FileUtil;
+import fr.bento8.to8.util.knapsack.Item;
 
 public class GameModeCommon {
 
+	public String name = "SHARED_ASSETS";
 	public String fileName;
+	public Item[] items;
 		
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public AsmSourceCode glb;
@@ -21,7 +24,7 @@ public class GameModeCommon {
 		this.fileName = fileName;
 		String baseName = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
 		
-		glb = new AsmSourceCode(BuildDisk.createFile(baseName+".glb", "SHARED_ASSETS"));
+		glb = new AsmSourceCode(BuildDisk.createFile(baseName+".glb", name));
 		
 		Properties prop = new Properties();
 		try {

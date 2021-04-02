@@ -37,6 +37,7 @@ import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
 import fr.bento8.to8.image.SubSpriteBin;
+import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.ram.RamLocation;
 import fr.bento8.to8.util.ByteUtil;
 import fr.bento8.to8.util.FileUtil;
@@ -102,25 +103,24 @@ public class BuildDisk
 			
 			compileRAMLoader();
 			generateObjectIDs();
+			compileMainEngines();			
 			
 			// generate assets and get size of compilated sprites and sounds
-			// get size of objects code
 			processSounds();			
 			generateSprites();
+			
+			// get size of objects code			
+			compileObjects();			
 			computeObjectCodeSize();
 			
 			// compute RAM destination
 			computeRamAddress();
 			
-			// compile all asm code
-			compileMainEngines();
-			compileObjects();
-			
 			// write to disk image 
 			writeObjects();
 			
 			// compute disk index data and compile Game Mode Manager & Boot 
-			compileAndWriteGameModeManager();
+			//compileAndWriteRAMLoaderManager();
 			compileAndWriteBoot();
 			
 			// output disk image
@@ -356,14 +356,14 @@ public class BuildDisk
 
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				ObjectBin objectCode = new ObjectBin();
+				ObjectBin objectCode = new ObjectBin(object.getValue());
 				String objectCodeTmpFile = duplicateFilePrependSection(object.getValue().codeFileName, gameMode.getKey()+"/"+object.getKey(), "object");
 
 				objectCode.uncompressedSize = getBINSize(objectCodeTmpFile);
 				logger.info(objectCodeTmpFile + ": " + objectCode.uncompressedSize + " octets");
 			
-				if (objectCode.uncompressedSize > 0x4000) {
-					throw new Exception("file "+objectCodeTmpFile+" is too large:"+objectCode.uncompressedSize+" bytes (max:"+0x4000+")");
+				if (objectCode.uncompressedSize > RamImage.PAGE_SIZE) {
+					throw new Exception("file "+objectCodeTmpFile+" is too large:"+objectCode.uncompressedSize+" bytes (max:"+RamImage.PAGE_SIZE+")");
 				}
 
 				object.getValue().code = objectCode;
@@ -372,84 +372,86 @@ public class BuildDisk
 		}
 	}
 	
-	private static void computeRamAddress() {
+	private static void computeRamAddress() throws Exception {
 		
 		logger.debug("computeRamAddress ...");
 		
 		// La taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
 		// première passe de sac a dos pour determiner le nombre de pages necessaires pour chaque Game Mode
-
-		RamLocation rloc = new RamLocation(game.nbMaxPagesRAM);
-		Item[] items;
-		int fileIndexSize_FD = 0;
-		int fileIndexSize_T2 = 0;
-		int initStartPage = 4;
+		int initStartPage = 4;		
 		int startPage;
 		
+		int fileIndexSize_FD = 0;
+		int fileIndexSize_T2 = 0;		
+		
+		// Au runtime on a le game mode courant (celui chargé en RAM) et le prochain game Mode
+		// Au moment du chargement une comparaison est effectuée entre chaque ligne de l'index fichier
+		// si ligne identique : pas de chargement de la ligne (a faire jusqu'a la fin de l'index)
+		// Necessite de trier les lignes d'index fichier pour pouvoir faire une comparaison sans tout parcourir
+		// et de positionner les communs en début d'index
+		
+		logger.debug("\tcompute file index ... ");
+		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			
-			logger.debug("\tGame Mode : " + gameMode.getValue().name);
-			
-			rloc.lastPage = initStartPage;
-			rloc.address = 0x0000;
-			
-			// Au runtime on a le game mode courant (celui chargé en RAM) et le prochain game Mode
-			// Au moment du chargement une comparaison est effectuée entre chaque ligne de l'index fichier
-			// si ligne identique : pas de chargement de la ligne (a faire jusqu'a la fin de l'index)
-			// Necessite de trier les lignes d'index fichier pour pouvoir faire une comparaison sans tout parcourir
+			logger.debug("\t\tGame Mode : " + gameMode.getValue().name);
 
+			gameMode.getValue().ramFD = new RamImage(game.nbMaxPagesRAM);			
+			gameMode.getValue().ramFD.page = initStartPage;
+
+			// Calcul de la taille d'index fichier pour les Communs du game Mode (Disquette)
 			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 				if (common != null) {
 					if (!abortFloppyDisk) {
-						items = getRAMItems(common.objects, FLOPPY_DISK);
+						common.items = getRAMItems(common.objects, FLOPPY_DISK);
+						startPage = gameMode.getValue().ramFD.page;
+						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramFD, false);
+						fileIndexSize_FD += (gameMode.getValue().ramFD.page - startPage + 1);
 						
-						startPage = rloc.lastPage;
-						rloc = computeItemsRamAddress(items, rloc);
-						fileIndexSize_FD += (rloc.page - startPage + 1);
-						
-						if (rloc.isOutOfMemory())
+						if (gameMode.getValue().ramFD.isOutOfMemory())
 							abortFloppyDisk = true;
 					}
 				}
 			}
 			
+			// Calcul de la taille d'index fichier pour le Game Mode (Disquette)
 			if (!abortFloppyDisk) {
-				items = getRAMItems(gameMode.getValue().objects, FLOPPY_DISK);
+				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, FLOPPY_DISK);
 				
-				startPage = rloc.lastPage;				
-				rloc = computeItemsRamAddress(items, rloc);
-				fileIndexSize_FD += (rloc.page - startPage + 1);
+				startPage = gameMode.getValue().ramFD.page;				
+				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramFD, false);
+				fileIndexSize_FD += (gameMode.getValue().ramFD.page - startPage + 1);
 				
-				if (rloc.isOutOfMemory())
+				if (gameMode.getValue().ramFD.isOutOfMemory())
 					abortFloppyDisk = true;
 			}
 			
-			rloc.lastPage = initStartPage;
-			rloc.address = 0x0000;			
+			gameMode.getValue().ramT2.page = initStartPage;
 			
+			// Calcul de la taille d'index fichier pour les Communs du game Mode (T.2)
 			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 				if (common != null) {
 					if (!abortT2) {
-						items = getRAMItems(common.objects, MEGAROM_T2);
+						common.items = getRAMItems(common.objects, MEGAROM_T2);
 						
-						startPage = rloc.lastPage;						
-						rloc = computeItemsRamAddress(items, rloc);
-						fileIndexSize_FD += (rloc.page - startPage + 1);
+						startPage = gameMode.getValue().ramT2.page;						
+						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramT2, false);
+						fileIndexSize_FD += (gameMode.getValue().ramT2.page - startPage + 1);
 												
-						if (rloc.isOutOfMemory())
+						if (gameMode.getValue().ramT2.isOutOfMemory())
 							abortFloppyDisk = true;
 					}
 				}
 			}			
 			
+			// Calcul de la taille d'index fichier pour le Game Mode (T.2)
 			if (!abortT2) {
-				items = getRAMItems(gameMode.getValue().objects, MEGAROM_T2);
+				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, MEGAROM_T2);
 				
-				startPage = rloc.lastPage;				
-				rloc = computeItemsRamAddress(items, rloc);
-				fileIndexSize_FD += (rloc.page - startPage + 1);
+				startPage = gameMode.getValue().ramT2.page;				
+				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramT2, false);
+				fileIndexSize_FD += (gameMode.getValue().ramT2.page - startPage + 1);
 								
-				if (rloc.isOutOfMemory())
+				if (gameMode.getValue().ramT2.isOutOfMemory())
 					abortT2 = true;
 			}
 		}
@@ -461,34 +463,56 @@ public class BuildDisk
 		// nb total de pages utiles * 2 (demi-pages) * 7 (taille du bloc de données)
 		fileIndexSize_FD *= 14;
 		fileIndexSize_T2 *= 14;  
+		
+		// Positionnement des adresses de départ du code en RAM
+		int initStartAddressFD = compileAndWriteRAMLoaderManager(FLOPPY_DISK); // TODO: Code a modifier pour nouvel index fichier
+		int initStartAddressT2 = compileAndWriteRAMLoaderManager(MEGAROM_T2); // TODO: Code a modifier pour nouvel index fichier
+		
+		logger.debug("\tcompute ram position ... ");
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			
+			logger.debug("\t\tGame Mode : " + gameMode.getValue().name);
 
-		// calcul de la position de départ de la RAM libre (page + adresse)
+			if (!abortFloppyDisk) {
+				gameMode.getValue().ramFD.page = initStartPage;
+				gameMode.getValue().ramFD.endAddress[gameMode.getValue().ramFD.page] = initStartAddressFD;
+
+				for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+					if (common != null) {
+						startPage = gameMode.getValue().ramFD.page;
+						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramFD, true);
+						fileIndexSize_FD += (gameMode.getValue().ramFD.page - startPage + 1);
+					}
+				}
+
+				startPage = gameMode.getValue().ramFD.page;
+				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramFD, true);
+				fileIndexSize_FD += (gameMode.getValue().ramFD.page - startPage + 1);
+			}
+			
+			if (!abortT2) {
+				gameMode.getValue().ramT2.page = initStartPage;
+				gameMode.getValue().ramT2.endAddress[gameMode.getValue().ramT2.page] = initStartAddressT2;
+
+				for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+					if (common != null) {
+						startPage = gameMode.getValue().ramT2.page;
+						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramT2, true);
+						fileIndexSize_FD += (gameMode.getValue().ramT2.page - startPage + 1);
+					}
+				}
+
+				startPage = gameMode.getValue().ramT2.page;
+				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramT2, true);
+				fileIndexSize_FD += (gameMode.getValue().ramT2.page - startPage + 1);
+			}
+		}
 		
-		// TODO: Créer un nouvel objet Page
+		// split et exomize des pages
 		
-		// TODO : Executer deux fois cette méthode
-		// Une premiere fois pour le fd/sd en traitant tous les objets (instancier une liste de Page)
-		// Une seconde fois pour la T.2, on ne traite que les objets flagués RAM (instancier une seconde liste de Page), seuls les codes objets peuvent être flagués RAM
-		// Pour chaque execution:
-		// Parcourir les items, les recompiler à leur org de destination
-		
-		// Parcours de la solution
-//		for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
-//			Item currentItem = iter.next();
-//			currentItem.bin.fileIndex.page = page;
-//			currentItem.bin.fileIndex.address = address;
-//			address += currentItem.bin.uncompressedSize;
-//			currentItem.bin.fileIndex.endAddress = address;		
-		
-		// Générer les fichiers d'equates correspondants
-		// concaterner les binaires et les splitter en deux parties
-		// exomizer les deux parties et les enregistrer dans l'objet page		
-		
-		// TODO : Executer une troisieme fois cette méthode sur les objets non flagués RAM
-		// instancier une troisieme liste de Page
-		// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM (en mode exomize)
-		
-		// Le check taille disquette ou T.2 est fait plus tard lors de l'écriture sur média cible	
+		// TODO : générer les pages pour les objets non flagués RAM pour T.2
+		// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM
+		// Le check taille disquette est fait plus tard lors de l'écriture sur média cible	
 	}
 	
 	private static Item[] getRAMItems(HashMap<String, Object> objects, String mode) {
@@ -568,35 +592,44 @@ public class BuildDisk
 						items[itemIdx++] = new Item(soundBIN, 1);
 
 			// Object Code
-			if (mode.contentEquals(MEGAROM_T2) && object.getValue().codeInRAM)
-				items[itemIdx++] = new Item(object.getValue().code, 1);
+			if (mode.contentEquals(MEGAROM_T2) && object.getValue().codeInRAM) {
+				Item obj = new Item(object.getValue().code, 1);
+				obj.absolute = true;
+				items[itemIdx++] = obj;	
+			}
 		}
 
 		return items;
 	}
 
-	private static RamLocation computeItemsRamAddress(Item[] items, RamLocation rloc) {
+	private static void computeItemsRamAddress(String GMName, Item[] items, RamImage rImg, boolean writeIndex) throws Exception {
 		boolean firstLoop = true;
 		
 		while (items.length > 0) {
 
 			if (!firstLoop) {
-				rloc.page++;
-				rloc.address = 0x0000; // La page est montée dans l'espace cartouche
+				rImg.page++;
+				rImg.startAddress[rImg.page] = 0x0000; // La page est montée dans l'espace cartouche
 			}
 			
 			// les données sont réparties en pages en fonction de leur taille par un
 			// algorithme "sac à dos"
-			Knapsack knapsack = new Knapsack(items, 0x4000); // Sac à dos de poids max 16Ko
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-rImg.startAddress[rImg.page]); // Sac à dos de poids max 16Ko
 
 			Solution solution = knapsack.solve();
-			logger.debug("*** Find solution for page : " + rloc.page);
+			logger.debug("*** Find solution for page : " + rImg.page);
 
 			// Parcours de la solution
 			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
 
 				Item currentItem = iter.next();
-				rloc.address += currentItem.bin.uncompressedSize;
+
+				if (writeIndex) {
+					// Recompiler l'item à leur org de destination
+					if (currentItem.absolute)
+						currentItem.bin.bin = compileObject(GMName, ((ObjectBin)currentItem.bin).parent, rImg.endAddress[rImg.page]);
+					rImg.setDataAtCurPos(currentItem.bin.bin);
+				}
 
 				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
@@ -613,12 +646,30 @@ public class BuildDisk
 					}
 				}
 			}
-			logger.debug("*** Non allocated space on page " + rloc.page + " : " + (0x4000 - rloc.address) + " octets");
+			logger.debug("*** Non allocated space on page " + rImg.page + " : " + (RamImage.PAGE_SIZE - rImg.endAddress[rImg.page]) + " octets");
 		}
-				
-		return rloc;
 	}
 
+	private static byte[] compileObject(String GMName, Object object, int org) throws Exception {
+		logger.info("Compile Object: "+object.name+" at "+String.format("$04X", org));
+
+		// Compilation du code Objet
+		String objectCodeTmpFile = duplicateFile(object.codeFileName,
+				GMName + "/" + object);
+
+		compileRAW(objectCodeTmpFile);
+		byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
+		object.code.uncompressedSize = bin.length;
+
+		if (object.code.uncompressedSize > RamImage.PAGE_SIZE) {
+			throw new Exception("file " + objectCodeTmpFile + " is too large:" + object.code.uncompressedSize
+					+ " bytes (max:" + RamImage.PAGE_SIZE + ")");
+		}
+
+		object.code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
+		return object.code.bin;
+	}	
+	
 	private static void compileObjects() throws Exception {
 		logger.info("Compile Objects ...");
 
@@ -632,8 +683,8 @@ public class BuildDisk
 				byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 				object.getValue().code.uncompressedSize = bin.length-10;
 				
-				if (object.getValue().code.uncompressedSize > 0x4000) {
-					throw new Exception("file "+objectCodeTmpFile+" is too large:"+object.getValue().code.uncompressedSize+" bytes (max:"+0x4000+")");
+				if (object.getValue().code.uncompressedSize > RamImage.PAGE_SIZE) {
+					throw new Exception("file "+objectCodeTmpFile+" is too large:"+object.getValue().code.uncompressedSize+" bytes (max:"+RamImage.PAGE_SIZE+")");
 				}
 				
 				object.getValue().code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
@@ -758,8 +809,8 @@ public class BuildDisk
 			compileLIN(mainEngineTmpFile);
 			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
 
-			if (binBytes.length - 10 > 0x4000) {
-				throw new Exception("file " + gameMode.getValue().engineAsmMainEngine + " is too large:" + (binBytes.length - 10) + " bytes (max:"+0x4000+")");
+			if (binBytes.length - 10 > RamImage.PAGE_SIZE) {
+				throw new Exception("file " + gameMode.getValue().engineAsmMainEngine + " is too large:" + (binBytes.length - 10) + " bytes (max:"+RamImage.PAGE_SIZE+")");
 			}
 			
 			gameMode.getValue().code = new ObjectBin();
@@ -806,8 +857,8 @@ public class BuildDisk
 		}
 	}
 	
-	private static void compileAndWriteGameModeManager() throws Exception {
-		logger.info("Compile and Write Game Mode Manager ...");
+	private static int compileAndWriteRAMLoaderManager(String mode) throws Exception {
+		logger.info("Compile and Write RAM Loader Manager for " + mode + " ...");
 
 		// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
 		// ---------------------------------------------------------------------------------------
@@ -878,23 +929,24 @@ public class BuildDisk
 
 		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManager);
 		compileRAW(gameModeManagerTmpFile);
-		game.engineAsmGameModeManagerBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
+		game.engineRAMLoaderManagerBytes = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 
-		if (game.engineAsmGameModeManagerBytes.length > 0x4000) {
-			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManager+" est trop volumineux:"+game.engineAsmGameModeManagerBytes.length+" octets (max:"+0x4000+")");
+		if (game.engineRAMLoaderManagerBytes.length > RamImage.PAGE_SIZE) {
+			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManager+" est trop volumineux:"+game.engineRAMLoaderManagerBytes.length+" octets (max:"+RamImage.PAGE_SIZE+")");
 		}
 		
 		// Ecriture sur disquette
-		fd.setIndex(0, 0, 2);		
-		fd.write(game.engineAsmGameModeManagerBytes);		
-			
+		//fd.setIndex(0, 0, 2);		
+		//fd.write(game.engineRAMLoaderManagerBytes);		
+		
+		return game.engineRAMLoaderManagerBytes.length;
 	}
 	
 	private static void compileAndWriteBoot() throws IOException {
 		logger.info("Compile boot ...");
 		
 		String bootTmpFile = duplicateFile(game.engineAsmBoot);
-		glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", (0xA000 + game.engineAsmGameModeManagerBytes.length) >> 8)+"00"); // On tronque l'octet de poids faible
+		glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", (0xA000 + game.engineRAMLoaderManagerBytes.length) >> 8)+"00"); // On tronque l'octet de poids faible
 		glb.flush();
 		compileRAW(bootTmpFile);
 

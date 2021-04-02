@@ -36,7 +36,8 @@ public class Game {
 	public FdUtil fd = new FdUtil();
 	public AsmSourceCode glb;
 	
-	public byte[] engineAsmGameModeManagerBytes;	
+	public byte[] engineRAMLoaderManagerBytes;	
+	public byte[] engineAsmRAMLoaderBytes;	
 	public byte[] mainEXOBytes;
 	public byte[] bootLoaderBytes;
 	

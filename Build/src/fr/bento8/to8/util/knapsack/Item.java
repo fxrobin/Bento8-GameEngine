@@ -6,6 +6,7 @@ public class Item {
 	public ItemBin bin;
 	public int value;
 	public int weight;
+	public boolean absolute = false;	
 	
 	public Item(ItemBin bin, int value) {
 		this.name = bin.getFullName();

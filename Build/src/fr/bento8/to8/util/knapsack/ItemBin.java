@@ -9,4 +9,5 @@ public abstract class ItemBin {
 	public int uncompressedSize = 0;
 
 	abstract public String getFullName();
+	abstract public Object getObject();
 }
