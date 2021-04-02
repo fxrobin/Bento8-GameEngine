@@ -510,6 +510,7 @@ public class BuildDisk
 		
 		// split et exomize des pages
 		
+		
 		// TODO : générer les pages pour les objets non flagués RAM pour T.2
 		// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM
 		// Le check taille disquette est fait plus tard lors de l'écriture sur média cible	
