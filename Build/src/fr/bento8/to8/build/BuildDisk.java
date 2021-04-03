@@ -103,18 +103,19 @@ public class BuildDisk
 			
 			compileRAMLoader();
 			generateObjectIDs();
-			compileMainEngines();			
 			
 			// generate assets and get size of compilated sprites and sounds
 			processSounds();			
 			generateSprites();
+			compileMainEngines();			
 			
 			// get size of objects code			
 			compileObjects();			
-			computeObjectCodeSize();
+			//computeObjectCodeSize();
 			
 			// compute RAM destination
 			computeRamAddress();
+			generateImgAniIndex();
 			
 			// write to disk image 
 			writeObjects();
@@ -680,9 +681,9 @@ public class BuildDisk
 				// Compilation du code Objet
 				String objectCodeTmpFile = duplicateFile(object.getValue().codeFileName, gameMode.getKey()+"/"+object.getKey());
 
-				compileLIN(objectCodeTmpFile);
+				compileRAW(objectCodeTmpFile);
 				byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
-				object.getValue().code.uncompressedSize = bin.length-10;
+				object.getValue().code.uncompressedSize = bin.length;
 				
 				if (object.getValue().code.uncompressedSize > RamImage.PAGE_SIZE) {
 					throw new Exception("file "+objectCodeTmpFile+" is too large:"+object.getValue().code.uncompressedSize+" bytes (max:"+RamImage.PAGE_SIZE+")");
@@ -735,6 +736,14 @@ public class BuildDisk
 				asmBuilder.add(PaletteTO8.getPaletteData(palette.getValue().fileName));
 			}
 			
+			// MAIN ENGINE - Génération des index Audio
+			// --------------------------------------------------------------------------------------
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+				for (Sound sound : object.getValue().sounds) {
+					writeSndIndex(asmBuilder, sound);
+				}			
+			}
+			
 			// MAIN ENGINE - Code d'initialisation de l'Acte
 			// --------------------------------------------------------------------------------------
 			asmBuilder.add("LoadAct");
@@ -782,27 +791,6 @@ public class BuildDisk
 			}
 			
 			asmBuilder.add("        rts");
-			
-			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-
-				// MAIN ENGINE - Génération des index Images
-				// --------------------------------------------------------------------------------------
-				AsmSourceCode asmImgIndex = new AsmSourceCode(createFile(object.getValue().imageSet.fileName, object.getValue().name));
-				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
-					writeImgIndex(asmImgIndex, sprite.getValue());
-				}
-
-				// MAIN ENGINE - Génération des index de scripts d'animation
-				// --------------------------------------------------------------------------------------
-				AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(object.getValue().animation.fileName, object.getValue().name));
-				writeAniIndex(asmAniIndex, object.getValue());
-			
-				// MAIN ENGINE - Génération des index Audio
-				// --------------------------------------------------------------------------------------
-				for (Sound sound : object.getValue().sounds) {
-					writeSndIndex(asmBuilder, sound);
-				}			
-			}
 			asmBuilder.flush();
 			
 			// MAIN ENGINE - Compilation des Main Engines
@@ -820,6 +808,28 @@ public class BuildDisk
 			gameMode.getValue().code.fileIndex.page = 1;
 			gameMode.getValue().code.fileIndex.address = 0x6100;			
 			gameMode.getValue().code.fileIndex.endAddress = 0x6100 + binBytes.length - 10;
+		}
+	}
+	
+	private static void generateImgAniIndex() throws Exception {
+		logger.info("Generate Image index and Animation script index ...");
+
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			logger.debug("Game Mode : " + gameMode.getKey());
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+
+				// MAIN ENGINE - Génération des index Images
+				// --------------------------------------------------------------------------------------
+				AsmSourceCode asmImgIndex = new AsmSourceCode(createFile(object.getValue().imageSet.fileName, object.getValue().name));
+				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
+					writeImgIndex(asmImgIndex, sprite.getValue());
+				}
+
+				// MAIN ENGINE - Génération des index de scripts d'animation
+				// --------------------------------------------------------------------------------------
+				AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(object.getValue().animation.fileName, object.getValue().name));
+				writeAniIndex(asmAniIndex, object.getValue());
+			}
 		}
 	}
 	
