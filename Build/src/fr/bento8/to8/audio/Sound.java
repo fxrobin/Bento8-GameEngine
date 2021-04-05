@@ -50,7 +50,7 @@ public class Sound{
 			
 			exomizedBin = BuildDisk.exomize(tmpDestFile);
 			SoundBin nsb = new SoundBin();
-			nsb.fileIndex = new DataIndex();
+			nsb.dataIndex = new DataIndex();
 			nsb.bin = exomizedBin;
 			nsb.uncompressedSize = dataSize;
 			nsb.inRAM = inRAM;		

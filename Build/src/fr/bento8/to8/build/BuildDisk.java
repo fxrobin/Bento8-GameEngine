@@ -104,6 +104,7 @@ public class BuildDisk
 			computeRamAddress(); // TODO ROM placement
 			generateImgAniIndex(); // TODO ROM data update 
 			compileMainEngines(); // OK
+			
 			writeObjects(); // TODO
 			compileAndWriteBoot(); // TODO
 			writeDiskImage(); // TODO
@@ -315,7 +316,7 @@ public class BuildDisk
 					curSubSprite.draw = new SubSpriteBin(curSubSprite);
 					curSubSprite.draw.setName(cur_variant);
 					curSubSprite.draw.bin = Files.readAllBytes(Paths.get(asm.getBckDrawBINFile()));
-					curSubSprite.draw.fileIndex = new DataIndex();
+					curSubSprite.draw.dataIndex = new DataIndex();
 					curSubSprite.draw.uncompressedSize = asm.getDSize();
 					curSubSprite.draw.inRAM = sprite.inRAM;
 					object.subSpritesBin.add(curSubSprite.draw);
@@ -323,7 +324,7 @@ public class BuildDisk
 					curSubSprite.erase = new SubSpriteBin(curSubSprite);
 					curSubSprite.erase.setName(cur_variant+" E");
 					curSubSprite.erase.bin = Files.readAllBytes(Paths.get(asm.getEraseBINFile()));
-					curSubSprite.erase.fileIndex = new DataIndex();
+					curSubSprite.erase.dataIndex = new DataIndex();
 					curSubSprite.erase.uncompressedSize = asm.getESize();
 					curSubSprite.erase.inRAM = sprite.inRAM;							
 					object.subSpritesBin.add(curSubSprite.erase);
@@ -345,7 +346,7 @@ public class BuildDisk
 					curSubSprite.draw = new SubSpriteBin(curSubSprite);
 					curSubSprite.draw.setName(cur_variant);
 					curSubSprite.draw.bin = Files.readAllBytes(Paths.get(sasm.getDrawBINFile()));
-					curSubSprite.draw.fileIndex = new DataIndex();
+					curSubSprite.draw.dataIndex = new DataIndex();
 					curSubSprite.draw.uncompressedSize = sasm.getDSize();
 					curSubSprite.draw.inRAM = sprite.inRAM;							
 					object.subSpritesBin.add(curSubSprite.draw);
@@ -389,11 +390,11 @@ public class BuildDisk
 			
 			gameMode.getValue().code = new ObjectBin();
 			gameMode.getValue().code.bin = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
-			gameMode.getValue().code.fileIndex = new DataIndex();
-			gameMode.getValue().code.fileIndex.page = 1;
-			gameMode.getValue().code.fileIndex.address = 0x6100;
-			gameMode.getValue().ramFD.setData(gameMode.getValue().code.fileIndex.page, gameMode.getValue().code.fileIndex.address, gameMode.getValue().code.bin);
-			gameMode.getValue().ramT2.setData(gameMode.getValue().code.fileIndex.page, gameMode.getValue().code.fileIndex.address, gameMode.getValue().code.bin);
+			gameMode.getValue().code.dataIndex = new DataIndex();
+			gameMode.getValue().code.dataIndex.page = 1;
+			gameMode.getValue().code.dataIndex.address = 0x6100;
+			gameMode.getValue().ramFD.setData(gameMode.getValue().code.dataIndex.page, gameMode.getValue().code.dataIndex.address, gameMode.getValue().code.bin);
+			gameMode.getValue().ramT2.setData(gameMode.getValue().code.dataIndex.page, gameMode.getValue().code.dataIndex.address, gameMode.getValue().code.bin);
 		}
 	}	
 	
@@ -771,11 +772,14 @@ public class BuildDisk
 				Item currentItem = iter.next();
 
 				if (writeIndex) {
-					currentItem.bin.fileIndex.address = rImg.endAddress[rImg.page];
+					currentItem.bin.dataIndex.page = rImg.page;					
+					currentItem.bin.dataIndex.address = rImg.endAddress[rImg.page];
+					
 					if (currentItem.absolute)
 						currentItem.bin.bin = compileObject(GMName, ((ObjectBin)currentItem.bin).parent, rImg.endAddress[rImg.page]);
+					
 					rImg.setDataAtCurPos(currentItem.bin.bin);
-					currentItem.bin.fileIndex.page = rImg.page;
+					currentItem.bin.dataIndex.endAddress = rImg.endAddress[rImg.page];
 				}
 
 				// construit la liste des éléments restants à organiser
@@ -810,12 +814,12 @@ public class BuildDisk
 				if (common != null) {
 					for (Entry<String, Object> object : common.objects.entrySet()) {
 						generateImgAniIndex(object.getValue());
-						gameMode.getValue().ramFD.setData(object.getValue().imageSet.fileIndex.page, object.getValue().imageSet.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
-						gameMode.getValue().ramFD.setData(object.getValue().animation.fileIndex.page, object.getValue().animation.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));
+						gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
+						gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));
 						if (object.getValue().imageSetInRAM)
-							gameMode.getValue().ramFD.setData(object.getValue().imageSet.fileIndex.page, object.getValue().imageSet.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
+							gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
 						if (object.getValue().animationInRAM)						
-							gameMode.getValue().ramFD.setData(object.getValue().animation.fileIndex.page, object.getValue().animation.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));						
+							gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));						
 						//T2 in ROM
 					}
 				}
@@ -823,12 +827,12 @@ public class BuildDisk
 			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 				generateImgAniIndex(object.getValue());
-				gameMode.getValue().ramFD.setData(object.getValue().imageSet.fileIndex.page, object.getValue().imageSet.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
-				gameMode.getValue().ramFD.setData(object.getValue().animation.fileIndex.page, object.getValue().animation.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));
+				gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
+				gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));
 				if (object.getValue().imageSetInRAM)
-					gameMode.getValue().ramFD.setData(object.getValue().imageSet.fileIndex.page, object.getValue().imageSet.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
+					gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
 				if (object.getValue().animationInRAM)						
-					gameMode.getValue().ramFD.setData(object.getValue().animation.fileIndex.page, object.getValue().animation.fileIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));						
+					gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));						
 				//T2 in ROM
 			}
 		}
@@ -886,67 +890,67 @@ public class BuildDisk
 
 		// GAME MODE DATA - Construction des données de chargement disquette pour chaque Game Mode
 		// ---------------------------------------------------------------------------------------
-		AsmSourceCode fileIndex = new AsmSourceCode(createFile(FileNames.FILE_INDEX));
-		fileIndex.addCommentLine("structure: sector, nb sector, drive (bit 7) track (bit 6-0), end offset, ram dest page, ram dest end addr. hb, ram dest end addr. lb");
+		AsmSourceCode dataIndex = new AsmSourceCode(createFile(FileNames.FILE_INDEX));
+		dataIndex.addCommentLine("structure: sector, nb sector, drive (bit 7) track (bit 6-0), end offset, ram dest page, ram dest end addr. hb, ram dest end addr. lb");
 		
 		// Parcours des objets du Game Mode
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
-			fileIndex.addLabel("gm_" + gameMode.getKey());
-			fileIndex.addFdb(new String[] { "current_game_mode_data+"+(gameMode.getValue().dataSize-2+6+1)}); // -2 index, +6 balise FF (lecture par groupe de 7 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
+			dataIndex.addLabel("gm_" + gameMode.getKey());
+			dataIndex.addFdb(new String[] { "current_game_mode_data+"+(gameMode.getValue().dataSize-2+6+1)}); // -2 index, +6 balise FF (lecture par groupe de 7 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
 			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
-				fileIndex.addLabel("gmboot");
+				dataIndex.addLabel("gmboot");
 			}
 			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
 					for (Entry<String, SubSprite> subSprite : sprite.getValue().subSprites.entrySet()) {
-						extractSubSpriteFileIndex(subSprite.getValue(), fileIndex, sprite.getKey()+" "+subSprite.getValue().name);
+						extractSubSpriteFileIndex(subSprite.getValue(), dataIndex, sprite.getKey()+" "+subSprite.getValue().name);
 					}
 				}
 				
 				for (Sound sound : object.getValue().sounds) {
 					for (SoundBin sb : sound.sb) {
-						fileIndex.addFcb(new String[] {
-						String.format("$%1$02X", sb.fileIndex.sector),
-						String.format("$%1$02X", sb.fileIndex.nbSector-1),
-						String.format("$%1$02X", (sb.fileIndex.drive << 7)+sb.fileIndex.track),				
-						String.format("$%1$02X", -sb.fileIndex.endOffset & 0xFF),
-						String.format("$%1$02X", sb.fileIndex.page),	
-						String.format("$%1$02X", sb.fileIndex.endAddress >> 8),			
-						String.format("$%1$02X", sb.fileIndex.endAddress & 0x00FF)});			
-						fileIndex.appendComment(sound.name + sound.sb.indexOf(sb) + " Sound");						
+						dataIndex.addFcb(new String[] {
+						String.format("$%1$02X", sb.dataIndex.sector),
+						String.format("$%1$02X", sb.dataIndex.nbSector-1),
+						String.format("$%1$02X", (sb.dataIndex.drive << 7)+sb.dataIndex.track),				
+						String.format("$%1$02X", -sb.dataIndex.endOffset & 0xFF),
+						String.format("$%1$02X", sb.dataIndex.page),	
+						String.format("$%1$02X", sb.dataIndex.endAddress >> 8),			
+						String.format("$%1$02X", sb.dataIndex.endAddress & 0x00FF)});			
+						dataIndex.appendComment(sound.name + sound.sb.indexOf(sb) + " Sound");						
 					}
 				}
 				
 				// Code de l'objet
-				fileIndex.addFcb(new String[] {
-				String.format("$%1$02X", object.getValue().code.fileIndex.sector),
-				String.format("$%1$02X", object.getValue().code.fileIndex.nbSector-1),
-				String.format("$%1$02X", (object.getValue().code.fileIndex.drive << 7)+object.getValue().code.fileIndex.track),				
-				String.format("$%1$02X", -object.getValue().code.fileIndex.endOffset & 0xFF),
-				String.format("$%1$02X", object.getValue().code.fileIndex.page),	
-				String.format("$%1$02X", object.getValue().code.fileIndex.endAddress >> 8),			
-				String.format("$%1$02X", object.getValue().code.fileIndex.endAddress & 0x00FF)});			
-				fileIndex.appendComment(object.getValue().name+ " Object code");
+				dataIndex.addFcb(new String[] {
+				String.format("$%1$02X", object.getValue().code.dataIndex.sector),
+				String.format("$%1$02X", object.getValue().code.dataIndex.nbSector-1),
+				String.format("$%1$02X", (object.getValue().code.dataIndex.drive << 7)+object.getValue().code.dataIndex.track),				
+				String.format("$%1$02X", -object.getValue().code.dataIndex.endOffset & 0xFF),
+				String.format("$%1$02X", object.getValue().code.dataIndex.page),	
+				String.format("$%1$02X", object.getValue().code.dataIndex.endAddress >> 8),			
+				String.format("$%1$02X", object.getValue().code.dataIndex.endAddress & 0x00FF)});			
+				dataIndex.appendComment(object.getValue().name+ " Object code");
 			}
 			
 			// Code main engine
-			fileIndex.addFcb(new String[] {
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.sector),
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.nbSector-1),
-			String.format("$%1$02X", (gameMode.getValue().code.fileIndex.drive << 7)+gameMode.getValue().code.fileIndex.track),			
-			String.format("$%1$02X", -gameMode.getValue().code.fileIndex.endOffset & 0xFF),
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.page),	
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.endAddress >> 8),			
-			String.format("$%1$02X", gameMode.getValue().code.fileIndex.endAddress & 0x00FF)});			
-			fileIndex.appendComment(gameMode.getValue().name+ " Main Engine code");			
+			dataIndex.addFcb(new String[] {
+			String.format("$%1$02X", gameMode.getValue().code.dataIndex.sector),
+			String.format("$%1$02X", gameMode.getValue().code.dataIndex.nbSector-1),
+			String.format("$%1$02X", (gameMode.getValue().code.dataIndex.drive << 7)+gameMode.getValue().code.dataIndex.track),			
+			String.format("$%1$02X", -gameMode.getValue().code.dataIndex.endOffset & 0xFF),
+			String.format("$%1$02X", gameMode.getValue().code.dataIndex.page),	
+			String.format("$%1$02X", gameMode.getValue().code.dataIndex.endAddress >> 8),			
+			String.format("$%1$02X", gameMode.getValue().code.dataIndex.endAddress & 0x00FF)});			
+			dataIndex.appendComment(gameMode.getValue().name+ " Main Engine code");			
 		}
 		
-		fileIndex.addFcb(new String[] { "$FF" });		
-		fileIndex.flush();
+		dataIndex.addFcb(new String[] { "$FF" });		
+		dataIndex.flush();
 		
 		// GAME MODE DATA - Compilation du Game Mode Manager
 		// -------------------------------------------------		
@@ -999,15 +1003,15 @@ public class BuildDisk
 	}
 
 	private static void processFileIndex(SubSpriteBin ssBin, AsmSourceCode gmeData, String spriteTag) throws Exception {
-		if (ssBin != null && ssBin.fileIndex != null) {
+		if (ssBin != null && ssBin.dataIndex != null) {
 			String[] line = new String[7];			
-			line [0] = String.format("$%1$02X", ssBin.fileIndex.sector);
-			line [1] = String.format("$%1$02X", ssBin.fileIndex.nbSector-1);
-			line [2] = String.format("$%1$02X", (ssBin.fileIndex.drive << 7)+ssBin.fileIndex.track);			
-			line [3] = String.format("$%1$02X", -ssBin.fileIndex.endOffset & 0xFF);
-			line [4] = String.format("$%1$02X", ssBin.fileIndex.page);			
-			line [5] = String.format("$%1$02X", ssBin.fileIndex.endAddress >> 8);			
-			line [6] = String.format("$%1$02X", ssBin.fileIndex.endAddress & 0x00FF);			
+			line [0] = String.format("$%1$02X", ssBin.dataIndex.sector);
+			line [1] = String.format("$%1$02X", ssBin.dataIndex.nbSector-1);
+			line [2] = String.format("$%1$02X", (ssBin.dataIndex.drive << 7)+ssBin.dataIndex.track);			
+			line [3] = String.format("$%1$02X", -ssBin.dataIndex.endOffset & 0xFF);
+			line [4] = String.format("$%1$02X", ssBin.dataIndex.page);			
+			line [5] = String.format("$%1$02X", ssBin.dataIndex.endAddress >> 8);			
+			line [6] = String.format("$%1$02X", ssBin.dataIndex.endAddress & 0x00FF);			
 			gmeData.addFcb(line);		
 			gmeData.appendComment(spriteTag);
 		}
@@ -1344,14 +1348,14 @@ public class BuildDisk
 	}
 	
 	private static void getImgSubSpriteIndex(SubSprite s, List<String> line) {
-		line.add(String.format("$%1$02X", s.draw.fileIndex.page));
-		line.add(String.format("$%1$02X", s.draw.fileIndex.address >> 8));		
-		line.add(String.format("$%1$02X", s.draw.fileIndex.address & 0xFF));
+		line.add(String.format("$%1$02X", s.draw.dataIndex.page));
+		line.add(String.format("$%1$02X", s.draw.dataIndex.address >> 8));		
+		line.add(String.format("$%1$02X", s.draw.dataIndex.address & 0xFF));
 		
 		if (s.erase != null) {
-			line.add(String.format("$%1$02X", s.erase.fileIndex.page));
-			line.add(String.format("$%1$02X", s.erase.fileIndex.address >> 8));		
-			line.add(String.format("$%1$02X", s.erase.fileIndex.address & 0xFF));
+			line.add(String.format("$%1$02X", s.erase.dataIndex.page));
+			line.add(String.format("$%1$02X", s.erase.dataIndex.address >> 8));		
+			line.add(String.format("$%1$02X", s.erase.dataIndex.address & 0xFF));
 			line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
 		}
 	}
@@ -1366,9 +1370,9 @@ public class BuildDisk
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
-					if (object.getValue().code.fileIndex != null) {
-						objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.page) };
-						objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8), String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF) };
+					if (object.getValue().code.dataIndex != null) {
+						objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.page) };
+						objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.address >> 8), String.format("$%1$02X", object.getValue().code.dataIndex.address & 0x00FF) };
 					}
 				}
 			}
@@ -1376,9 +1380,9 @@ public class BuildDisk
 		
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
-			if (object.getValue().code.fileIndex != null) {
-				objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.page) };
-				objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.fileIndex.address >> 8), String.format("$%1$02X", object.getValue().code.fileIndex.address & 0x00FF) };
+			if (object.getValue().code.dataIndex != null) {
+				objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.page) };
+				objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.address >> 8), String.format("$%1$02X", object.getValue().code.dataIndex.address & 0x00FF) };
 			}
 		}		
 
@@ -1426,11 +1430,11 @@ public class BuildDisk
 		asmSndIndex.addLabel(sound.name + " ");
 		for (SoundBin sb : sound.sb) {
 			String[] line = new String[5];
-			line[0] = String.format("$%1$02X", sb.fileIndex.page);
-			line[1] = String.format("$%1$02X", sb.fileIndex.address >> 8);
-			line[2] = String.format("$%1$02X", sb.fileIndex.address & 0x00FF);
-			line[3] = String.format("$%1$02X", sb.fileIndex.endAddress >> 8);
-			line[4] = String.format("$%1$02X", sb.fileIndex.endAddress & 0x00FF);
+			line[0] = String.format("$%1$02X", sb.dataIndex.page);
+			line[1] = String.format("$%1$02X", sb.dataIndex.address >> 8);
+			line[2] = String.format("$%1$02X", sb.dataIndex.address & 0x00FF);
+			line[3] = String.format("$%1$02X", sb.dataIndex.endAddress >> 8);
+			line[4] = String.format("$%1$02X", sb.dataIndex.endAddress & 0x00FF);
 			asmSndIndex.addFcb(line);
 		}
 		asmSndIndex.addFcb(new String[] { "$00" });
@@ -1444,14 +1448,14 @@ public class BuildDisk
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().imageSet.fileIndex.page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().imageSet.dataIndex.page) });
 				}
 			}
 		}
 		
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
-			asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().animation.fileIndex.page) });
+			asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().animation.dataIndex.page) });
 		}
 	}	
 	
@@ -1463,14 +1467,14 @@ public class BuildDisk
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().animation.fileIndex.page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().animation.dataIndex.page) });
 				}
 			}
 		}
 		
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
-			asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().animation.fileIndex.page) });
+			asmBuilder.addFcb(new String[] { String.format("$%1$02X", object.getValue().animation.dataIndex.page) });
 		}
 	}	
 	
