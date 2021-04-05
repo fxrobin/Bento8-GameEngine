@@ -32,6 +32,10 @@ public class ImageSetBin extends ItemBin{
 	
 	public String getFullName() {
 		return "ImageSetBin "+this.name;
+	}
+
+	public Object getObject() {
+		return null;
 	}	
 	
 }

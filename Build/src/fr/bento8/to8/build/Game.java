@@ -29,12 +29,12 @@ public class Game {
 	public String outputDiskName;
 	public static String generatedCodeDirName;
 	public boolean memoryExtension;
-	public int nbMaxPagesRAM;	
+	public static int nbMaxPagesRAM;	
 	public static boolean useCache;
 	public static int maxTries;
 
 	public FdUtil fd = new FdUtil();
-	public AsmSourceCode glb;
+	public static AsmSourceCode glb;
 	
 	public byte[] engineRAMLoaderManagerBytes;	
 	public byte[] engineAsmRAMLoaderBytes;	
@@ -51,6 +51,8 @@ public class Game {
 			} catch (Exception e) {
 				throw new Exception("\tUnable to load: "+file, e); 
 			}
+			
+			glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, ""));
 
 			// Engine ASM source code
 			// ********************************************************************

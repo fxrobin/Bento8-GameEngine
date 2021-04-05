@@ -38,6 +38,7 @@ public class Object {
 		this.fileName = propertiesFileName;
 		this.animation = new AnimationBin(name);
 		this.imageSet = new ImageSetBin(name);	
+		this.code = new ObjectBin(this);
 		
 		Properties prop = new Properties();
 		try {

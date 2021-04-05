@@ -36,5 +36,9 @@ public class ObjectBin extends ItemBin{
 	public String getFullName() {
 		return "ObjectBin "+this.name;
 	}
+
+	public Object getObject() {
+		return parent;
+	}
 			
 }

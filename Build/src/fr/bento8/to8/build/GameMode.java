@@ -38,6 +38,8 @@ public class GameMode {
 		this.fileName = fileName;
 		
 		glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, name));
+		this.ramFD = new RamImage(Game.nbMaxPagesRAM);	
+		this.ramT2 = new RamImage(Game.nbMaxPagesRAM);
 		
 		Properties prop = new Properties();
 		try {

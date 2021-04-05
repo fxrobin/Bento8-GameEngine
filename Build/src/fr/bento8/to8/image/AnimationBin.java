@@ -32,6 +32,10 @@ public class AnimationBin extends ItemBin{
 	
 	public String getFullName() {
 		return "AnimationBin "+this.name;
+	}
+
+	public Object getObject() {
+		return null;
 	}	
 	
 }
