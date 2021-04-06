@@ -30,7 +30,7 @@ public class PatternCluster{
 		clusterPatternsToExistingNodes(isForward);
 		createNewNodesAndClusterRemainingPatterns(isForward);
 		setLEAOffsetRelativeToEachOthers();
-		displayDebug();
+		//displayDebug();
 	}
 
 	private boolean initAssignmentStep() {

@@ -8,6 +8,7 @@ public class FileNames{
 	public static String FILE_INDEX = "BuilderFileIndex.asm";
 	public static String IMAGE_SET = "_ImageSet.asm";
 	public static String ANIMATION = "_Animation.asm";
+	public static String SHARED_ASSETS = "SHARED_ASSETS";
 	
 	public FileNames() {
 	}	

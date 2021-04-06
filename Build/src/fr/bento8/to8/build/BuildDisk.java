@@ -138,7 +138,7 @@ public class BuildDisk
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static void compileRAMLoader() throws IOException {
-		logger.info("Compile Game Mode Loader ...");
+		logger.info("Compile RAM Loader ...");
 
 		String ramLoader = duplicateFile(game.engineAsmRAMLoader);
 		compileRAW(ramLoader);
@@ -200,9 +200,9 @@ public class BuildDisk
 		gameMode.objectsId.put(object, objIndex);
 		
 		// Génération de la constante ASM
-		gameMode.glb.addConstant("ObjID_"+object, Integer.toString(objIndex));
+		gameMode.glb.addConstant("ObjID_"+object.name, Integer.toString(objIndex));
 		
-		logger.debug("\t\tObjID_"+object+" "+Integer.toString(objIndex));
+		logger.debug("\t\tObjID_"+object.name+" "+Integer.toString(objIndex));
 		return ++objIndex; 
 	}
 	
@@ -250,7 +250,7 @@ public class BuildDisk
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static void generateSprites() throws Exception {
-		logger.info("Compile Sprites ...");
+		logger.info("Generate Sprites ...");
 
 		// GAME MODE DATA - Génération des sprites compilés pour chaque objet
 		// ------------------------------------------------------------------
@@ -291,7 +291,7 @@ public class BuildDisk
 
 			// Parcours des différents rendus demandés pour chaque image
 			for (String cur_variant : spriteVariants) {
-				logger.debug("\t"+gameMode+"/"+object+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " variant:" + cur_variant);
+				logger.debug("\t"+gameMode.name+"/"+object.name+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " variant:" + cur_variant);
 
 				// Sauvegarde du code généré pour la variante
 				curSubSprite = new SubSprite(sprite);
@@ -312,7 +312,6 @@ public class BuildDisk
 					curSubSprite.y_size = asm.getY_size();
 					curSubSprite.center_offset = ss.center_offset;
 
-					logger.debug("Exomize ...");
 					curSubSprite.draw = new SubSpriteBin(curSubSprite);
 					curSubSprite.draw.setName(cur_variant);
 					curSubSprite.draw.bin = Files.readAllBytes(Paths.get(asm.getBckDrawBINFile()));
@@ -342,7 +341,6 @@ public class BuildDisk
 					curSubSprite.y_size = sasm.getY_size();
 					curSubSprite.center_offset = ss.center_offset;							
 
-					logger.debug("Exomize ...");
 					curSubSprite.draw = new SubSpriteBin(curSubSprite);
 					curSubSprite.draw.setName(cur_variant);
 					curSubSprite.draw.bin = Files.readAllBytes(Paths.get(sasm.getDrawBINFile()));
@@ -490,12 +488,13 @@ public class BuildDisk
 
 		String prepend;
 		
-		prepend = " org $" + org + "\n";
+		prepend = "\torg   $" + org + "\n";
+		prepend = "\topt   c,ct\n";
 		
-		prepend += " INCLUDE \"" + Game.generatedCodeDirName + GMName + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + GMName + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
 		if (object.sprites.size() > 0) {
-			prepend += " INCLUDE \"" + Game.generatedCodeDirName + object.name + "/" + object.imageSet.fileName + "\"\n";
-			prepend += " INCLUDE \"" + Game.generatedCodeDirName + object.name + "/" + object.animation.fileName + "\"\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + object.name + "/" + object.imageSet.fileName + "\"\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + object.name + "/" + object.animation.fileName + "\"\n";
 		}
 		
 		// Compilation du code Objet
@@ -897,7 +896,7 @@ public class BuildDisk
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
 			dataIndex.addLabel("gm_" + gameMode.getKey());
-			dataIndex.addFdb(new String[] { "current_game_mode_data+"+(gameMode.getValue().dataSize-2+6+1)}); // -2 index, +6 balise FF (lecture par groupe de 7 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
+			dataIndex.addFdb(new String[] { "RL_RAM_index+"+(gameMode.getValue().dataSize-2+6+1)}); // -2 index, +6 balise FF (lecture par groupe de 7 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
 			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
@@ -1570,7 +1569,6 @@ public class BuildDisk
 			// Purge des fichiers temporaires
 			Files.deleteIfExists(Paths.get(destFileName));
 
-			logger.debug("**************** EXOMIZE "+binFile+" ****************");
 			ProcessBuilder pb = new ProcessBuilder(Game.exobin, Paths.get(binFile).toString());
 			pb.redirectErrorStream(true);
 			Process p = pb.start();
@@ -1578,7 +1576,7 @@ public class BuildDisk
 			String line;
 
 			while((line=br.readLine())!=null){
-				logger.debug(line);
+				logger.debug("\t\t\t" + line);
 			}
 
 			if (p.waitFor() != 0) {

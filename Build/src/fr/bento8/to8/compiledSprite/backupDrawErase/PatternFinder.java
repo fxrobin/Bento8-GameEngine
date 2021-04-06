@@ -25,10 +25,10 @@ public class PatternFinder {
 
 	public void buildCode (boolean isForward) throws Exception {
 		if (isForward) {
-			logger.debug("Recherche de motifs, lecture vers l'avant.");
+			//logger.debug("Recherche de motifs, lecture vers l'avant.");
 			this.solutions = buildCodeForward(0);
 		} else {
-			logger.debug("Recherche de motifs, lecture vers l'arri�re.");
+			//logger.debug("Recherche de motifs, lecture vers l'arrière.");
 			this.solutions = buildCodeRearward(this.image.length-2); // -1 (fin de tableau) + -1 (pixel par paire)
 		}
 	}

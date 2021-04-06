@@ -12,7 +12,7 @@ import fr.bento8.to8.util.knapsack.Item;
 
 public class GameModeCommon {
 
-	public String name = "SHARED_ASSETS";
+	public String name;
 	public String fileName;
 	public Item[] items;
 		
@@ -22,9 +22,9 @@ public class GameModeCommon {
 	public GameModeCommon(String fileName) throws Exception {
 		
 		this.fileName = fileName;
-		String baseName = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
+		String name = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
 		
-		glb = new AsmSourceCode(BuildDisk.createFile(baseName+".glb", name));
+		glb = new AsmSourceCode(BuildDisk.createFile(name+".glb", FileNames.SHARED_ASSETS));
 		
 		Properties prop = new Properties();
 		try {

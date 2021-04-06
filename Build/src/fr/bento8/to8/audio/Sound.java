@@ -29,8 +29,8 @@ public class Sound{
 		byte[] exomizedBin;
 		int i = 0, j = 0;
 		
-		String tmpDestFile = Game.generatedCodeDirName + "/" + FileUtil.removeExtension(Paths.get(fileName).getFileName().toString()) + ".tmp";
-		String exoDestFile =  Game.generatedCodeDirName + "/" + FileUtil.removeExtension(Paths.get(fileName).getFileName().toString()) + ".EXO";
+		String tmpDestFile = Game.generatedCodeDirName + FileUtil.removeExtension(Paths.get(fileName).getFileName().toString()) + ".tmp";
+		String exoDestFile =  Game.generatedCodeDirName + FileUtil.removeExtension(Paths.get(fileName).getFileName().toString()) + ".EXO";
 		
 		byte[] data = Files.readAllBytes(Paths.get(fileName));
 		

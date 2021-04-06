@@ -2,6 +2,7 @@ package fr.bento8.to8.build;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class GameMode {
 	public ObjectBin code; // Main Engine
 	
 	public String engineAsmMainEngine;
-	public List<GameModeCommon> gameModeCommon;
+	public List<GameModeCommon> gameModeCommon = new ArrayList<GameModeCommon>();
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public HashMap<Object, Integer> objectsId = new HashMap<Object, Integer>();
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
@@ -69,7 +70,7 @@ public class GameMode {
 				
 				BuildDisk.logger.debug("\tLoad Game Mode Common "+curGameModeCommon.getKey()+": "+curGameModeCommon.getValue()[0]);
 				
-				Integer i;
+				Integer i = 0;
 				try {
 					i = Integer.parseInt(curGameModeCommon.getKey());
 				} catch (NumberFormatException nfe)
@@ -98,7 +99,7 @@ public class GameMode {
 		// Chargement des fichiers de configuration des Objets
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
-			objects.put(curObject.getKey(), new Object(name, curObject.getKey(), curObject.getValue()[0]));
+			objects.put(curObject.getKey(), new Object(curObject.getKey(), curObject.getValue()[0]));
 		}	
 		
 		// Palettes

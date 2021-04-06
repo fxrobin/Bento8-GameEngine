@@ -30,5 +30,9 @@ public class SoundBin extends ItemBin{
 	
 	public String getFullName() {
 		return "ObjectBin "+this.name;
+	}
+
+	public Object getObject() {
+		return null;
 	}		
 }

@@ -20,12 +20,12 @@
         INCLUDE "./Engine/Constants.asm"
         
         org   $4000
-        
+        opt   c,ct
         setdp $40                      ; dp for exomizer
         INCLUDE "./Engine/Exomizer.asm"  
 
 RAMLoader 
-        ldu   #current_game_mode_data+7 ; on saute la balise de fin du GameMode
+        ldu   #RL_RAM_index+7          ; on saute la balise de fin du GameMode
         pshs  u
         
 RAMLoader_continue

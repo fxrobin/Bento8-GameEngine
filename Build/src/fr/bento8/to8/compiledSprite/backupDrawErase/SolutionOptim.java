@@ -124,11 +124,11 @@ public class SolutionOptim{
 		//log.printf("> Processed %d/%d\r", ++yourCounter, maxCounter)
 
 		// Initialisation de la meilleure solution
-		logger.debug("patterns: ");
+		//logger.debug("patterns: ");
 		for (List<Integer[]> pl : pattern) {
-			logger.debug(".");
+			//logger.debug(".");
 			for (Integer[] p : pl) {
-				logger.debug("("+(p[0] != null?p[0]:"null")+","+(p[1] != null?p[1]:"null")+")");
+				//logger.debug("("+(p[0] != null?p[0]:"null")+","+(p[1] != null?p[1]:"null")+")");
 				if (p[0] != null) {
 					s = processPatternBackgroundBackup(p[0], saveU, s);
 					bestSolution.add(s);
@@ -138,7 +138,7 @@ public class SolutionOptim{
 				}
 			}
 		}
-		logger.debug("groupes: "+Arrays.toString(ind));
+		//logger.debug("groupes: "+Arrays.toString(ind));
 
 		if (lastPattern != null) {
 			s = processPatternBackgroundBackup(lastPattern, saveU, s);
@@ -235,7 +235,7 @@ public class SolutionOptim{
 
 				if (score < bestScore) {
 					bestScore = score;
-					logger.debug("score: "+score);
+					//logger.debug("score: "+score);
 					bestSolution.clear();
 					bestSolution.addAll(testSolution);
 					regEBest.clear();
@@ -415,7 +415,7 @@ public class SolutionOptim{
 
 				if (score < bestScore) {
 					bestScore = score;
-					logger.debug("score: "+score);
+					//logger.debug("score: "+score);
 					bestSolution.clear();
 					bestSolution.addAll(testSolution);
 					regEBest.clear();
@@ -577,7 +577,7 @@ public class SolutionOptim{
 					nbPatterns += patterns.get(j).size();
 				}
 
-				logger.debug("Noeud: "+currentNode+" nb. patterns: "+nbPatterns+" nb. groupes: "+ind.length);
+				//logger.debug("Noeud: "+currentNode+" nb. patterns: "+nbPatterns+" nb. groupes: "+ind.length);
 
 				// Optimisation combinatoire
 				if (ind.length < 10) {
@@ -599,13 +599,13 @@ public class SolutionOptim{
 				}
 				restoreState(regSetBest, regValBest);
 
-				logger.debug("Cycles: "+asmCodeCycles);
+				//logger.debug("Cycles: "+asmCodeCycles);
 
 				asmECode.addAll(0, Pattern.getEraseCodeBuf(bestSolution, regEBest, offsetEBest));
 				asmECodeCycles += Pattern.getEraseCodeBufCycles(bestSolution, regEBest, offsetEBest);
 				asmECodeSize += Pattern.getEraseCodeBufSize(bestSolution, regEBest, offsetEBest);
 
-				logger.debug("CyclesE: "+asmECodeCycles);
+				//logger.debug("CyclesE: "+asmECodeCycles);
 			}
 
 			saveU = false;

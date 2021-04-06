@@ -18,6 +18,10 @@ public class SubSpriteBin extends ItemBin{
 	
 	public String getFullName() {
 		return "SpriteBin "+this.parent.parent.name + " " + this.parent.name + " " + this.name;
+	}
+
+	public Object getObject() {
+		return null;
 	}	
 	
 }

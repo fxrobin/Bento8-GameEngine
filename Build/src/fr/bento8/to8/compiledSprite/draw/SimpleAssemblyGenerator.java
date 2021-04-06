@@ -61,13 +61,13 @@ public class SimpleAssemblyGenerator{
 		x_size = spriteSheet.getSubImageXSize(imageNum);
 		y_size = spriteSheet.getSubImageYSize(imageNum);
 
-		logger.debug("Planche:"+spriteSheet.getName()+" image:"+imageNum);
-		logger.debug("XOffset: "+getX_offset());;
-		logger.debug("X1Offset: "+getX1_offset());
-		logger.debug("Y1Offset: "+getY1_offset());
-		logger.debug("XSize: "+getX_size());
-		logger.debug("YSize: "+getY_size());	
-		logger.debug("Center: "+spriteSheet.getCenter());
+		logger.debug("\t\t\tPlanche:"+spriteSheet.getName()+" image:"+imageNum);
+		logger.debug("\t\t\tXOffset: "+getX_offset());;
+		logger.debug("\t\t\tX1Offset: "+getX1_offset());
+		logger.debug("\t\t\tY1Offset: "+getY1_offset());
+		logger.debug("\t\t\tXSize: "+getX_size());
+		logger.debug("\t\t\tYSize: "+getY_size());	
+		logger.debug("\t\t\tCenter: "+spriteSheet.getCenter());
 		
 		destDir += "/"+spriteName;
 		asmDrawFileName = destDir+"_"+spriteSheet.variant+".asm";
@@ -83,8 +83,9 @@ public class SimpleAssemblyGenerator{
 		// on passe la génération du code de sprite compilé
 		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 
-			logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
-			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
+			//logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
+			//if (logger.isDebugEnabled())
+			//	logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 			
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(REARWARD);
@@ -100,8 +101,9 @@ public class SimpleAssemblyGenerator{
 			cyclesSpriteCode1 = regOpt.getAsmCodeCycles();
 			sizeSpriteCode1 = regOpt.getAsmCodeSize();
 
-			logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
-			logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
+			logger.debug("\t\t\tRAM 1 (val hex 0  à f par pixel, . Transparent):");
+			if (logger.isDebugEnabled())
+				logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
 			cs.buildCode(REARWARD);
@@ -183,7 +185,7 @@ public class SimpleAssemblyGenerator{
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 			while((line=br.readLine())!=null){
-				logger.debug(line);
+				logger.debug("\t\t\t" +line);
 			}
 			p.waitFor();
 
@@ -195,15 +197,15 @@ public class SimpleAssemblyGenerator{
 			int compilerDSize = content.length - 10;			
 			int computedDCycles = getDCycles();
 			int computedDSize = getDSize();
-			logger.debug(lstDrawFileName + " lwasm.exe DRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
-			logger.debug(lstDrawFileName + " lwasm.exe DRAW size: " + compilerDSize + " computed size: " + computedDSize);
+			logger.debug("\t\t\t" +lstDrawFileName + " lwasm.exe DRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
+			logger.debug("\t\t\t" +lstDrawFileName + " lwasm.exe DRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
 			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-				logger.fatal(lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+				logger.fatal("\t\t\t" +lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
-				logger.fatal(lstDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
+				logger.fatal("\t\t\t" +lstDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
 			}			
 		} 
 		catch (Exception e)
