@@ -19,8 +19,6 @@ public class RamImage
 	public RamImage (int lastPage) {
 		this.data = new byte[lastPage][PAGE_SIZE];
 		this.startAddress = new int[lastPage];
-		for (int i=0; i < lastPage; i++)
-			this.startAddress[i] = 0x4000;
 		this.endAddress = new int[lastPage];
 		this.lastPage = lastPage;
 		this.page = 0;		

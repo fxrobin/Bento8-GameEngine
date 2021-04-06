@@ -53,6 +53,16 @@ public class Game {
 			}
 			
 			glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, ""));
+			
+			if (prop.getProperty("builder.to8.memoryExtension") == null) {
+				throw new Exception("builder.to8.memoryExtension not found in "+file);
+			}
+			memoryExtension = (prop.getProperty("builder.to8.memoryExtension").contentEquals("Y")?true:false);
+			if (memoryExtension) {
+				nbMaxPagesRAM = 31;
+			} else {
+				nbMaxPagesRAM = 15;
+			}
 
 			// Engine ASM source code
 			// ********************************************************************
@@ -122,16 +132,6 @@ public class Game {
 			outputDiskName = prop.getProperty("builder.diskName");
 			if (outputDiskName == null) {
 				throw new Exception("builder.diskName not found in "+file);
-			}
-
-			if (prop.getProperty("builder.to8.memoryExtension") == null) {
-				throw new Exception("builder.to8.memoryExtension not found in "+file);
-			}
-			memoryExtension = (prop.getProperty("builder.to8.memoryExtension").contentEquals("Y")?true:false);
-			if (memoryExtension) {
-				nbMaxPagesRAM = 31;
-			} else {
-				nbMaxPagesRAM = 15;
 			}
 
 			if (prop.getProperty("builder.compilatedSprite.useCache") == null) {

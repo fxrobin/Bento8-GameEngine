@@ -68,9 +68,8 @@
 ; This is used to mask Sonic and Tails behind the emblem.
 ; Another sprite is used to mask the upper part of the emblem (non linear shape.
 ; ---------------------------------------------------------------------------
-        
-        INCLUDE "./Engine/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"
+
+        INCLUDE "./Engine/Macros.asm"   
 
 * ---------------------------------------------------------------------------
 * Object Status Table index

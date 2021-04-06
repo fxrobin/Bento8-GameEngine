@@ -22,7 +22,7 @@ public class GameModeCommon {
 	public GameModeCommon(String fileName) throws Exception {
 		
 		this.fileName = fileName;
-		String name = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
+		this.name = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
 		
 		glb = new AsmSourceCode(BuildDisk.createFile(name+".glb", FileNames.SHARED_ASSETS));
 		

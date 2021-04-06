@@ -10,8 +10,6 @@
 ; - call to internal object routine: use branch ((l)b__), do not use jump
 ; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ; ---------------------------------------------------------------------------
-        
-        INCLUDE "./Engine/Constants.asm"
 
 TestImageSet
         lda   routine,u

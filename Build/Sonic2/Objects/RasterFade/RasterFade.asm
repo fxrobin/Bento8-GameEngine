@@ -4,8 +4,8 @@
 ; input REG : [u] pointeur sur l'objet (SST)
 ;
 ; ---------------------------------------------------------------------------
-								       
-        INCLUDE "./Engine/Constants.asm"
+
+        INCLUDE "./Engine/Macros.asm"   
 
 * ---------------------------------------------------------------------------
 * Subtypes

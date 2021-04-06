@@ -43,8 +43,8 @@
 ; un seul appel sur $E7DA va lire $E7DA puis ecrire sur la seconde adresse $E7DA 
 ; Sur $E7DA il faut donc utiliser l'instruction ST pour ecrire
 ;*******************************************************************************   
-								       
-        INCLUDE "./Engine/Constants.asm"
+
+        INCLUDE "./Engine/Macros.asm"   
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets

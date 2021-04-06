@@ -14,8 +14,7 @@
 ;
 ; ---------------------------------------------------------------------------
         
-        INCLUDE "./Engine/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"        
+        INCLUDE "./Engine/Macros.asm"      
         
 Obj_PaletteFade      equ Object_RAM+(object_size*1)        
         

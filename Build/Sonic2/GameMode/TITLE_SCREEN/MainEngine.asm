@@ -6,6 +6,7 @@
 ********************************************************************************
 
         INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
         jsr   LoadAct
@@ -165,4 +166,4 @@ Glb_MainCharacter_Is_Dead     fcb   $01
 * ==============================================================================
 * Generated Code and Data
 * ==============================================================================
-        INCLUDE "./GeneratedCode/TITLESCR/BuilderMainGenCode.asm"                                                             
+        INCLUDE "./GeneratedCode/TITLE_SCREEN/BuilderMainGenCode.asm"                                                             
