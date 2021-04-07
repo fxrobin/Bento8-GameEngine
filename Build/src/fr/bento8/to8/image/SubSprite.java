@@ -1,7 +1,7 @@
 package fr.bento8.to8.image;
 
-import fr.bento8.to8.disk.FdUtil;
-import fr.bento8.to8.disk.DataIndex;
+import fr.bento8.to8.storage.DataIndex;
+import fr.bento8.to8.storage.FdUtil;
 
 public class SubSprite {
 

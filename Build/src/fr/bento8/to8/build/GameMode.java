@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.ram.RamImage;
+import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.util.knapsack.Item;
 
 public class GameMode {
@@ -32,13 +33,18 @@ public class GameMode {
 	public Item[] items;
 	public RamImage ramFD;	
 	public RamImage ramT2;	
+
+	// Storage Index
+	public List<DataIndex> fdIdx = new ArrayList<DataIndex>();
+	public List<DataIndex> t2Idx = new ArrayList<DataIndex>();	
+
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		
 		this.name = gameModeName;
 		this.fileName = fileName;
 		
-		glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, name));
+		glb = new AsmSourceCode(BuildDisk.createFile(FileNames.OBJECTID, name));
 		this.ramFD = new RamImage(Game.nbMaxPagesRAM);	
 		this.ramT2 = new RamImage(Game.nbMaxPagesRAM);
 		

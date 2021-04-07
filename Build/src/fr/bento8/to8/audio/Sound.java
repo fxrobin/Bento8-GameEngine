@@ -8,9 +8,9 @@ import java.util.List;
 
 import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.build.Game;
-import fr.bento8.to8.disk.BinUtil;
-import fr.bento8.to8.disk.DataIndex;
-import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.storage.BinUtil;
+import fr.bento8.to8.storage.DataIndex;
+import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.util.FileUtil;
 
 public class Sound{

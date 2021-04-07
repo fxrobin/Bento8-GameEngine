@@ -2,7 +2,8 @@ package fr.bento8.to8.build;
 
 public class FileNames{
 
-	public static String GLOBALS = "ObjectId.glb";
+	public static String GAME_GLOBALS = "Game.glb";
+	public static String OBJECTID = "ObjectId.glb";
 	public static String MAIN_GENCODE = "BuilderMainGenCode.asm";
 	public static String MAIN_GENCODEGLB = "MainEngine.glb";
 	public static String FILE_INDEX = "BuilderFileIndex.asm";

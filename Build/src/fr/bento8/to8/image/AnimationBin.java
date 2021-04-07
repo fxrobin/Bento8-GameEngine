@@ -1,7 +1,7 @@
 package fr.bento8.to8.image;
 
 import fr.bento8.to8.build.FileNames;
-import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.util.knapsack.ItemBin;
 
 public class AnimationBin extends ItemBin{

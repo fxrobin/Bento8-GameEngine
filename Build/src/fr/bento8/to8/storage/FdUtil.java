@@ -1,4 +1,4 @@
-package fr.bento8.to8.disk;
+package fr.bento8.to8.storage;
 
 import java.io.IOException;
 import java.nio.file.Files;

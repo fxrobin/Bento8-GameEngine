@@ -1,8 +1,8 @@
 package fr.bento8.to8.build;
 
-import fr.bento8.to8.disk.FdUtil;
 import fr.bento8.to8.util.knapsack.ItemBin;
 import fr.bento8.to8.build.Object;
+import fr.bento8.to8.storage.FdUtil;
 
 public class ObjectBin extends ItemBin{
 

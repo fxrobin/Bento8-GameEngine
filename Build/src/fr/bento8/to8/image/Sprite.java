@@ -3,7 +3,7 @@ package fr.bento8.to8.image;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.storage.FdUtil;
 
 public class Sprite {
 

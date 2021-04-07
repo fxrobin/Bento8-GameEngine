@@ -1,6 +1,6 @@
 package fr.bento8.to8.util.knapsack;
 
-import fr.bento8.to8.disk.DataIndex;
+import fr.bento8.to8.storage.DataIndex;
 
 public abstract class ItemBin {
 	

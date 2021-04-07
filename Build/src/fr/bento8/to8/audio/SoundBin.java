@@ -1,6 +1,6 @@
 package fr.bento8.to8.audio;
 
-import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.util.knapsack.ItemBin;
 
 public class SoundBin extends ItemBin{

@@ -2,11 +2,15 @@ package fr.bento8.to8.build;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import fr.bento8.to8.disk.FdUtil;
+import fr.bento8.to8.storage.DataIndex;
+import fr.bento8.to8.storage.FdUtil;
+import fr.bento8.to8.storage.T2Util;
 
 public class Game {
 	
@@ -33,7 +37,10 @@ public class Game {
 	public static boolean useCache;
 	public static int maxTries;
 
+	// Storage
 	public FdUtil fd = new FdUtil();
+	public T2Util t2 = new T2Util();	
+	
 	public static AsmSourceCode glb;
 	
 	public byte[] engineRAMLoaderManagerBytes;	
@@ -51,8 +58,6 @@ public class Game {
 			} catch (Exception e) {
 				throw new Exception("\tUnable to load: "+file, e); 
 			}
-			
-			glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GLOBALS, ""));
 			
 			if (prop.getProperty("builder.to8.memoryExtension") == null) {
 				throw new Exception("builder.to8.memoryExtension not found in "+file);
@@ -143,5 +148,7 @@ public class Game {
 				throw new Exception("builder.compilatedSprite.maxTries not found in "+file);
 			}
 			maxTries = Integer.parseInt(prop.getProperty("builder.compilatedSprite.maxTries"));
+			
+			glb = new AsmSourceCode(BuildDisk.createFile(FileNames.GAME_GLOBALS, ""));
 		}	
 }
