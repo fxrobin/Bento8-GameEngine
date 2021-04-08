@@ -19,7 +19,7 @@
 *
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./GeneratedCode/RAMLoader.glb"
         
         org $0000
 

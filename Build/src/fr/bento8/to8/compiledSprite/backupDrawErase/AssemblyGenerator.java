@@ -170,12 +170,12 @@ public class AssemblyGenerator{
 			sizeEFrameCode += getCodeFrameEraseEndSize();			
 		} else {
 			// Utilisation du .BIN existant
-			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length-10;
+			sizeDCache = Files.readAllBytes(Paths.get(binBckDrawFileName)).length;
 			// Utilisation du .lst existant
 			cycleDCache = LWASMUtil.countCycles(lstBckDrawFileName);
 			
 			// Utilisation du .BIN existant
-			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length-10;
+			sizeECache = Files.readAllBytes(Paths.get(binEraseFileName)).length;
 			// Utilisation du .lst existant
 			cycleECache = LWASMUtil.countCycles(lstEraseFileName);		
 			
@@ -242,7 +242,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(Game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--decb");
+			pb = new ProcessBuilder(Game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--raw");
 			pb.redirectErrorStream(true);
 			p = pb.start();			
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -257,7 +257,7 @@ public class AssemblyGenerator{
 
 			// Compte le nombre de cycles du .lst
 			int compilerDCycles = LWASMUtil.countCycles(lstBckDrawFileName);
-			int compilerDSize = content.length - 10;			
+			int compilerDSize = content.length;			
 			int computedDCycles = getDCycles();
 			int computedDSize = getDSize();
 			logger.debug("\t\t\t" +lstBckDrawFileName + " lwasm.exe BCKDRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
@@ -299,7 +299,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binEFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(Game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", "--pragma=undefextern,autobranchlength", "--decb");			
+			pb = new ProcessBuilder(Game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", "--pragma=undefextern,autobranchlength", "--raw");			
 			pb.redirectErrorStream(true);
 			p = pb.start();					
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -314,7 +314,7 @@ public class AssemblyGenerator{
 
 			// Compte le nombre de cycles du .lst
 			int compilerECycles = LWASMUtil.countCycles(lstEraseFileName);
-			int compilerESize = content.length - 10;
+			int compilerESize = content.length;
 			int computedECycles = getECycles();
 			int computedESize = getESize();
 			logger.debug("\t\t\t" +lstEraseFileName + " lwasm.exe ERASE cycles: " + compilerECycles + " computed cycles: " + computedECycles);

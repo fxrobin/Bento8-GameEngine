@@ -56,8 +56,11 @@ public class BuildDisk
 
 	private static FdUtil fd = new FdUtil();
 	
-	public static String FLOPPY_DISK = "FLoppy Disk";
-	public static String MEGAROM_T2 = "MEGAROM T.2";
+	public static int FLOPPY_DISK = 0;
+	public static int MEGAROM_T2 = 1;
+	public static String[] MODE_LABEL = new String[]{"FLOPPY_DISK", "MEGAROM_T2"};
+	public static boolean GAMEMODE = false;
+	public static boolean GAMEMODE_COMMON = true;
 	public static String RAM = "RAM";
 	
 	public static boolean abortFloppyDisk = false;
@@ -177,6 +180,8 @@ public class BuildDisk
 		// - identifiants des objets communs, ils sont identiques pour un même Game Mode Common
 		// - identifiants des objets de Game Mode (Un id d'un même objet peut être différent selon le game Mode)
 		// L'id objet est utilisé comme index pour accéder à l'adresse du code de l'objet au runtime
+		// Remarque: le code d'un objet n'est jamais commun, (seules les images et animations le sont)
+		// En effet un code objet fait référence au MainEngine qui est spécifique au GameMode
 		// ----------------------------------------------------------------------------------------------------		
 		int objIndex;
 		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
@@ -322,7 +327,6 @@ public class BuildDisk
 					curSubSprite.draw = new SubSpriteBin(curSubSprite);
 					curSubSprite.draw.setName(cur_variant);
 					curSubSprite.draw.bin = Files.readAllBytes(Paths.get(asm.getBckDrawBINFile()));
-					curSubSprite.draw.dataIndex = new DataIndex();
 					curSubSprite.draw.uncompressedSize = asm.getDSize();
 					curSubSprite.draw.inRAM = sprite.inRAM;
 					object.subSpritesBin.add(curSubSprite.draw);
@@ -330,7 +334,6 @@ public class BuildDisk
 					curSubSprite.erase = new SubSpriteBin(curSubSprite);
 					curSubSprite.erase.setName(cur_variant+" E");
 					curSubSprite.erase.bin = Files.readAllBytes(Paths.get(asm.getEraseBINFile()));
-					curSubSprite.erase.dataIndex = new DataIndex();
 					curSubSprite.erase.uncompressedSize = asm.getESize();
 					curSubSprite.erase.inRAM = sprite.inRAM;							
 					object.subSpritesBin.add(curSubSprite.erase);
@@ -351,7 +354,6 @@ public class BuildDisk
 					curSubSprite.draw = new SubSpriteBin(curSubSprite);
 					curSubSprite.draw.setName(cur_variant);
 					curSubSprite.draw.bin = Files.readAllBytes(Paths.get(sasm.getDrawBINFile()));
-					curSubSprite.draw.dataIndex = new DataIndex();
 					curSubSprite.draw.uncompressedSize = sasm.getDSize();
 					curSubSprite.draw.inRAM = sprite.inRAM;							
 					object.subSpritesBin.add(curSubSprite.draw);
@@ -363,9 +365,11 @@ public class BuildDisk
 			// Sauvegarde de tous les rendus demandés pour l'image en cours
 			object.sprites.put(sprite.name, sprite);
 			object.imageSet.uncompressedSize += writeImgIndex(asmImgIndex, sprite);
+			object.imageSet.bin = new byte[object.imageSet.uncompressedSize];
 		}
 		AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(object.animation.fileName, object.name));
 		object.animation.uncompressedSize += writeAniIndex(asmAniIndex, object);
+		object.animation.bin = new byte[object.animation.uncompressedSize];
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -395,7 +399,6 @@ public class BuildDisk
 			
 			gameMode.getValue().code = new ObjectBin();
 			gameMode.getValue().code.bin = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
-			gameMode.getValue().code.dataIndex = new DataIndex();
 			gameMode.getValue().code.dataIndex.page = 1;
 			gameMode.getValue().code.dataIndex.address = 0x6100;
 			gameMode.getValue().ramFD.setData(gameMode.getValue().code.dataIndex.page, 0x0100, gameMode.getValue().code.bin);
@@ -510,14 +513,13 @@ public class BuildDisk
 		String objectCodeTmpFile = duplicateFilePrepend(object.codeFileName, GMName + "/" + object.name, prepend);
 
 		compileRAW(objectCodeTmpFile);
-		byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
-		object.code.uncompressedSize = bin.length;
+		object.code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
+		object.code.uncompressedSize = object.code.bin.length;
 
 		if (object.code.uncompressedSize > RamImage.PAGE_SIZE) {
 			throw new Exception("file " + objectCodeTmpFile + " is too large:" + object.code.uncompressedSize + " bytes (max:" + RamImage.PAGE_SIZE + ")");
 		}
 
-		object.code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 		return object.code.bin;
 	}		
 
@@ -529,11 +531,11 @@ public class BuildDisk
 		
 		// La taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
 		// première passe de sac a dos pour determiner le nombre de pages necessaires pour chaque Game Mode
-		int initStartPage = 4;		
-		int startPage;
-		
-		int fileIndexSize_FD = 0;
-		int fileIndexSize_T2 = 0;		
+		int initStartPage = 4;
+		int INDEX_STRUCT_SIZE_FD = 7;
+		int INDEX_STRUCT_SIZE_T2 = 6;
+		int totalIndexSizeFD = 0;
+		int totalIndexSizeT2 = 0;		
 		
 		// Au runtime on a le game mode courant (celui chargé en RAM) et le prochain game Mode
 		// Au moment du chargement une comparaison est effectuée entre chaque ligne de l'index fichier
@@ -544,23 +546,16 @@ public class BuildDisk
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			logger.debug("\tGame Mode : " + gameMode.getValue().name);
 		
-			gameMode.getValue().ramFD.page = initStartPage;
+			gameMode.getValue().ramFD.curPage = initStartPage;
+			gameMode.getValue().indexSizeFD = 0;
 
 			// Calcul de la taille d'index fichier pour les Communs du game Mode (Disquette)
 			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 				if (common != null) {
 					if (!abortFloppyDisk) {
 						logger.debug("\t\tCommon : " + common.name);
-						common.items = getRAMItems(common.objects, FLOPPY_DISK);
-						startPage = gameMode.getValue().ramFD.page;
-						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramFD, false);
-						
-						// TODO
-						// compter les demi-pages avec adresse de départ et de fin
-						
-						
-						fileIndexSize_FD += (gameMode.getValue().ramFD.page - startPage + 1);
-						fileIndexSize_FD += 2; // index
+						common.items = getRAMItems(common.objects, FLOPPY_DISK, GAMEMODE_COMMON);
+						gameMode.getValue().indexSizeFD += computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramFD, false);
 						if (gameMode.getValue().ramFD.isOutOfMemory())
 							abortFloppyDisk = true;
 					}
@@ -569,37 +564,29 @@ public class BuildDisk
 			
 			// Calcul de la taille d'index fichier pour le Game Mode (Disquette)
 			if (!abortFloppyDisk) {
-				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, FLOPPY_DISK);
-				
-				startPage = gameMode.getValue().ramFD.page;				
-				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramFD, false);
-				
-				// TODO
-				// compter les demi-pages avec adresse de départ et de fin				
-				
-				fileIndexSize_FD += (gameMode.getValue().ramFD.page - startPage + 1);
-				fileIndexSize_FD += 2; // index
+				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, FLOPPY_DISK, GAMEMODE);
+				gameMode.getValue().items = addCommonObjectCodeToRAMItems(gameMode.getValue().items, gameMode.getValue(), FLOPPY_DISK);
+				gameMode.getValue().indexSizeFD += computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramFD, false);
 				if (gameMode.getValue().ramFD.isOutOfMemory())
 					abortFloppyDisk = true;
 			}
 			
-			gameMode.getValue().ramT2.page = initStartPage;
+			gameMode.getValue().indexSizeFD += 1; // index supplémentaire pour ajustement avec RAM Loader Manager
+			gameMode.getValue().indexSizeFD *= INDEX_STRUCT_SIZE_FD;
+			gameMode.getValue().indexSizeFD += 2; // index
+			totalIndexSizeFD += gameMode.getValue().indexSizeFD;			
+			logger.debug("\t\tindex size FD: "+gameMode.getValue().indexSizeFD);
+			
+			gameMode.getValue().ramT2.curPage = initStartPage;
+			gameMode.getValue().indexSizeT2 = 0;
 			
 			// Calcul de la taille d'index fichier pour les Communs du game Mode (T.2)
 			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 				if (common != null) {
 					if (!abortT2) {
 						logger.debug("\t\tCommon : " + common.name);
-						common.items = getRAMItems(common.objects, MEGAROM_T2);
-						
-						startPage = gameMode.getValue().ramT2.page;						
-						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramT2, false);
-						
-						// TODO
-						// compter les demi-pages avec adresse de départ et de fin						
-						
-						fileIndexSize_T2 += (gameMode.getValue().ramT2.page - startPage + 1);
-						fileIndexSize_T2 += 2; // index
+						common.items = getRAMItems(common.objects, MEGAROM_T2, GAMEMODE_COMMON);
+						gameMode.getValue().indexSizeT2 += computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramT2, false);
 						if (gameMode.getValue().ramT2.isOutOfMemory())
 							abortFloppyDisk = true;
 					}
@@ -608,20 +595,23 @@ public class BuildDisk
 			
 			// Calcul de la taille d'index fichier pour le Game Mode (T.2)
 			if (!abortT2) {
-				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, MEGAROM_T2);
-				
-				startPage = gameMode.getValue().ramT2.page;				
-				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramT2, false);
-				
-				// TODO
-				// compter les demi-pages avec adresse de départ et de fin				
-				
-				fileIndexSize_T2 += (gameMode.getValue().ramT2.page - startPage + 1);
-				fileIndexSize_T2 += 2; // index
+				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, MEGAROM_T2, GAMEMODE);
+				gameMode.getValue().items = addCommonObjectCodeToRAMItems(gameMode.getValue().items, gameMode.getValue(), MEGAROM_T2);
+				gameMode.getValue().indexSizeT2 += computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramT2, false); 
 				if (gameMode.getValue().ramT2.isOutOfMemory())
 					abortT2 = true;
 			}
+			
+			gameMode.getValue().indexSizeT2 += 1; // index supplémentaire pour ajustement avec RAM Loader Manager			
+			gameMode.getValue().indexSizeT2 *= INDEX_STRUCT_SIZE_T2;
+			gameMode.getValue().indexSizeT2 += 2; // index
+			totalIndexSizeT2 += gameMode.getValue().indexSizeT2;
+			logger.debug("\t\tindex size T2: "+gameMode.getValue().indexSizeT2);
 		}
+		
+		// Add one byte for end flag
+		totalIndexSizeFD += 1;
+		totalIndexSizeT2 += 1;
 
 		if (abortFloppyDisk && abortT2)
 			logger.fatal("Not enough RAM !");
@@ -630,8 +620,11 @@ public class BuildDisk
 		// calcul de la taille des index fichier de RAMLoader/RAMLoaderManager
 		int initStartAddressFD = getRAMLoaderManagerSize();
 		int initStartAddressT2 = initStartAddressFD;
-		initStartAddressFD += (fileIndexSize_FD * 7) + 1; // ajout du bloc de fin
-		initStartAddressT2 += (fileIndexSize_T2 * 6) + 1; // ajout du bloc de fin
+		initStartAddressFD += totalIndexSizeFD + 1; // ajout du bloc de fin
+		initStartAddressT2 += totalIndexSizeT2 + 1; // ajout du bloc de fin
+		
+		logger.debug("\t\tinitStartAddressFD: "+initStartAddressFD);
+		logger.debug("\t\tinitStartAddressT2: "+initStartAddressT2);
 		
 		logger.debug("compute ram position ... ");
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
@@ -639,34 +632,34 @@ public class BuildDisk
 			logger.debug("\tGame Mode : " + gameMode.getValue().name);
 
 			if (!abortFloppyDisk) {
-				gameMode.getValue().ramFD.page = initStartPage;
-				gameMode.getValue().ramFD.endAddress[gameMode.getValue().ramFD.page] = initStartAddressFD;
+				gameMode.getValue().ramFD.curPage = initStartPage;
+				gameMode.getValue().ramFD.curAddress = initStartAddressFD;
 
 				for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 					if (common != null) {
 						logger.debug("\t\tCommon : " + common.name);
-						startPage = gameMode.getValue().ramFD.page;
+						common.items = getRAMItems(common.objects, FLOPPY_DISK, GAMEMODE_COMMON);
 						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramFD, true);
 					}
 				}
-
-				startPage = gameMode.getValue().ramFD.page;
+				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, FLOPPY_DISK, GAMEMODE);
+				gameMode.getValue().items = addCommonObjectCodeToRAMItems(gameMode.getValue().items, gameMode.getValue(), FLOPPY_DISK);
 				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramFD, true);
 			}
 			
 			if (!abortT2) {
-				gameMode.getValue().ramT2.page = initStartPage;
-				gameMode.getValue().ramT2.endAddress[gameMode.getValue().ramT2.page] = initStartAddressT2;
+				gameMode.getValue().ramT2.curPage = initStartPage;
+				gameMode.getValue().ramT2.curAddress = initStartAddressT2;
 
 				for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 					if (common != null) {
 						logger.debug("\t\tCommon : " + common.name);
-						startPage = gameMode.getValue().ramT2.page;
+						common.items = getRAMItems(common.objects, MEGAROM_T2, GAMEMODE_COMMON);
 						computeItemsRamAddress(common.name, common.items, gameMode.getValue().ramT2, true);
 					}
 				}
-
-				startPage = gameMode.getValue().ramT2.page;
+				gameMode.getValue().items = getRAMItems(gameMode.getValue().objects, MEGAROM_T2, GAMEMODE);
+				gameMode.getValue().items = addCommonObjectCodeToRAMItems(gameMode.getValue().items, gameMode.getValue(), MEGAROM_T2);
 				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramT2, true);
 			}
 		}
@@ -681,8 +674,8 @@ public class BuildDisk
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private static Item[] getRAMItems(HashMap<String, Object> objects, String mode) {
-		logger.debug("\t\tCompute RAM Items for " + mode + " ...");
+	private static Item[] getRAMItems(HashMap<String, Object> objects, int mode, boolean isCommon) {
+		logger.debug("\t\tCompute " + (isCommon?"Common":"") + " RAM Items for " + MODE_LABEL[mode] + " ...");
 
 		// GAME MODE DATA - Répartition des données en RAM
 		// -----------------------------------------------
@@ -705,27 +698,27 @@ public class BuildDisk
 
 			// Sprites
 			for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
-				if (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && subSprite.inRAM))
+				if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && subSprite.inRAM))
 					nbGameModeItems += 1;
 
 			// ImageSet Index
 			if (object.getValue().subSpritesBin.size() > 0
-					&& (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && object.getValue().imageSetInRAM)))
+					&& (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().imageSetInRAM)))
 				nbGameModeItems++;
 
 			// Animation Index
 			if (!object.getValue().animationsProperties.isEmpty()
-					&& (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && object.getValue().animationInRAM)))
+					&& (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().animationInRAM)))
 				nbGameModeItems++;
 
 			// Sounds
 			for (Sound sound : object.getValue().sounds)
 				for (SoundBin soundBIN : sound.sb)
-					if (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && soundBIN.inRAM))
+					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && soundBIN.inRAM))
 						nbGameModeItems += 1;
 
 			// Object Code
-			if (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && object.getValue().codeInRAM))
+			if (!isCommon && (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM)))
 				nbGameModeItems++;
 		}
 
@@ -738,27 +731,27 @@ public class BuildDisk
 
 			// Sprites
 			for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
-				if (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && subSprite.inRAM))
+				if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && subSprite.inRAM))
 					items[itemIdx++] = new Item(subSprite, 1);
 
 			// ImageSet Index
 			if (object.getValue().subSpritesBin.size() > 0
-					&& (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && object.getValue().imageSetInRAM)))
+					&& (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().imageSetInRAM)))
 				items[itemIdx++] = new Item(object.getValue().imageSet, 1);
 
 			// Animation Index
 			if (!object.getValue().animationsProperties.isEmpty()
-					&& (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && object.getValue().animationInRAM)))
+					&& (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().animationInRAM)))
 				items[itemIdx++] = new Item(object.getValue().animation, 1);
 
 			// Sounds
 			for (Sound sound : object.getValue().sounds)
 				for (SoundBin soundBIN : sound.sb)
-					if (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && soundBIN.inRAM))
+					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && soundBIN.inRAM))
 						items[itemIdx++] = new Item(soundBIN, 1);
 
 			// Object Code
-			if (mode.contentEquals(FLOPPY_DISK) || (mode.contentEquals(MEGAROM_T2) && object.getValue().codeInRAM)) {
+			if (!isCommon && (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM))) {
 				Item obj = new Item(object.getValue().code, 1);
 				obj.absolute = true;
 				items[itemIdx++] = obj;	
@@ -767,41 +760,95 @@ public class BuildDisk
 
 		return items;
 	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+	private static Item[] addCommonObjectCodeToRAMItems(Item[] items, GameMode gameMode, int mode) {
+		logger.debug("\t\tAdd common ObjectCode to GameMode RAM Items for " + MODE_LABEL[mode] + " ...");
+		int nbGameModeItems = 0;
+		Item[] newItems;
+
+		// Un code objet ne peut pas être commun, il est spécifique à un GameMode MainEngine
+		// On l'extrait donc des ressources communes pour l'ajouter au GameMode
+
+		// Compte le nombre d'objets a traiter
+		for (GameModeCommon common : gameMode.gameModeCommon) {
+			if (common != null) {
+				for (Entry<String, Object> object : common.objects.entrySet()) {
+
+					// Ajoute les items du commun de type code objet
+					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM))
+						nbGameModeItems++;
+				}
+			}
+		}
+
+		// Copie les items du Game Mode dans le nouveau tableau
+		int i;
+		newItems = new Item[items.length + nbGameModeItems];
+		for (i = 0; i < items.length; i++) {
+			newItems[i] = items[i];
+		}
+
+		for (GameModeCommon common : gameMode.gameModeCommon) {
+			if (common != null) {
+				for (Entry<String, Object> object : common.objects.entrySet()) {
+					
+					// Ajoute les items du commun de type code objet
+					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM)) {
+						Item obj = new Item(object.getValue().code, 1);
+						obj.absolute = true;
+						newItems[i++] = obj;
+					}
+				}
+
+			}
+		}
+
+		return newItems;
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private static void computeItemsRamAddress(String GMName, Item[] items, RamImage rImg, boolean writeIndex) throws Exception {
+	private static int computeItemsRamAddress(String GMName, Item[] items, RamImage rImg, boolean writeIndex) throws Exception {
 		boolean firstLoop = true;
+		int nbHalfPages = 0;
+
+		if (items.length > 0) {
+			rImg.startAddress[rImg.curPage] = rImg.curAddress;
+			rImg.endAddress[rImg.curPage] = rImg.curAddress;
+		}
 		
 		while (items.length > 0) {
 
 			if (!firstLoop) {
-				rImg.page++;
-				rImg.startAddress[rImg.page] = 0x0000; // La page est montée dans l'espace cartouche
+				rImg.curPage++;
+				rImg.startAddress[rImg.curPage] = 0;
+				rImg.endAddress[rImg.curPage] = 0;
 			}
-			firstLoop = false;
 			
 			// les données sont réparties en pages en fonction de leur taille par un
 			// algorithme "sac à dos"
-			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-rImg.startAddress[rImg.page]); // Sac à dos de poids max 16Ko
-
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-rImg.startAddress[rImg.curPage]); // Sac à dos de poids max 16Ko
 			Solution solution = knapsack.solve();
-			logger.debug("\t\tFind solution for page : " + rImg.page);
 
 			// Parcours de la solution
 			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
 
 				Item currentItem = iter.next();
-
+				
 				if (writeIndex) {
-					currentItem.bin.dataIndex.page = rImg.page;					
-					currentItem.bin.dataIndex.address = rImg.endAddress[rImg.page];
+					currentItem.bin.dataIndex.page = rImg.curPage;					
+					currentItem.bin.dataIndex.address = rImg.endAddress[rImg.curPage];
 					
 					if (currentItem.absolute)
-						currentItem.bin.bin = compileObject(GMName, ((ObjectBin)currentItem.bin).parent, rImg.endAddress[rImg.page]);
+						currentItem.bin.bin = compileObject(GMName, ((ObjectBin)currentItem.bin).parent, rImg.endAddress[rImg.curPage]);
 					
 					rImg.setDataAtCurPos(currentItem.bin.bin);
-					currentItem.bin.dataIndex.endAddress = rImg.endAddress[rImg.page];
+					currentItem.bin.dataIndex.endAddress = rImg.endAddress[rImg.curPage];
+				} else {
+					rImg.endAddress[rImg.curPage] += currentItem.weight;
+					rImg.curAddress = rImg.endAddress[rImg.curPage] + 1;
 				}
 
 				// construit la liste des éléments restants à organiser
@@ -819,10 +866,22 @@ public class BuildDisk
 					}
 				}
 			}
-			if (writeIndex) {
-				logger.debug("\t\tNon allocated space    : " + (RamImage.PAGE_SIZE - rImg.endAddress[rImg.page]) + " octets");
+			
+			nbHalfPages += 1;
+			if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] >= 0x2000) {
+				nbHalfPages += 1;
 			}
+			
+			if (writeIndex) {
+				logger.debug("\t\tFound solution for page : " + rImg.curPage + " start: " + String.format("$%1$04X", rImg.startAddress[rImg.curPage]) + " end: " + String.format("$%1$04X", rImg.endAddress[rImg.curPage]) + " non allocated space: " + (RamImage.PAGE_SIZE - rImg.endAddress[rImg.curPage]) + " octets");
+			} else {
+				logger.debug("\t\tFound solution for page : " + rImg.curPage + " start: " + String.format("$%1$04X", rImg.startAddress[rImg.curPage]) + " end: " + String.format("$%1$04X", rImg.endAddress[rImg.curPage]));
+			}
+			
+			firstLoop = false;
 		}
+		
+		return nbHalfPages;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -929,11 +988,12 @@ public class BuildDisk
 		return game.engineRAMLoaderManagerBytes.length;
 	}	
 	
-	private static int compileAndWriteRAMLoaderManager(String mode) throws Exception {
+	private static int compileAndWriteRAMLoaderManager(int mode) throws Exception {
 		logger.info("Compile and Write RAM Loader Manager for " + mode + " ...");
 		int pad = 5; // T.2
+		int indexSize = 0;
 		
-		if (mode.contentEquals(FLOPPY_DISK)) {
+		if (mode == FLOPPY_DISK) {
 			pad = 6;
 		}
 
@@ -944,8 +1004,14 @@ public class BuildDisk
 		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
+			if (mode == FLOPPY_DISK) {
+				indexSize = gameMode.getValue().indexSizeFD;
+			} else {
+				indexSize = gameMode.getValue().indexSizeT2;
+			}
+			
 			dataIndex.addLabel("gm_" + gameMode.getKey());
-			dataIndex.addFdb(new String[] { "RL_RAM_index+"+(gameMode.getValue().dataSize-2+pad+1)}); // -2 index, +6 ou +5 balise FF (lecture par groupe de 7 ou 6 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
+			dataIndex.addFdb(new String[] { "RL_RAM_index+"+(indexSize-2+pad+1)}); // -2 index, +6 ou +5 balise FF (lecture par groupe de 7 ou 6 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
 			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
@@ -953,7 +1019,7 @@ public class BuildDisk
 			}
 
 			// Ecriture de l'index des de chargement des demi-pages
-			if (mode.contentEquals(FLOPPY_DISK)) {
+			if (mode == FLOPPY_DISK) {
 				Enumeration<DataIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
 				while(enumFd.hasMoreElements()) {
 					DataIndex di = enumFd.nextElement();
@@ -970,7 +1036,7 @@ public class BuildDisk
 				}
 			}
 			
-			if (mode.contentEquals(MEGAROM_T2)) {
+			if (mode == MEGAROM_T2) {
 				Enumeration<DataIndex> enumT2 = Collections.enumeration(gameMode.getValue().t2Idx);
 				while(enumT2.hasMoreElements()) {
 					DataIndex di = enumT2.nextElement();
@@ -1366,27 +1432,23 @@ public class BuildDisk
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
 	private static void writeObjIndex(AsmSourceCode asmBuilder, GameMode gameMode) {	
-		String[][] objIndexPage = new String[gameMode.objects.entrySet().size() + 1][];
-		String[][] objIndex = new String[gameMode.objects.entrySet().size() + 1][];
+		String[][] objIndexPage = new String[gameMode.objectsId.entrySet().size() + 1][];
+		String[][] objIndex = new String[gameMode.objectsId.entrySet().size() + 1][];
 		
 		// Game Mode Common
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
-					if (object.getValue().code.dataIndex != null) {
-						objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.page) };
-						objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.address >> 8), String.format("$%1$02X", object.getValue().code.dataIndex.address & 0x00FF) };
-					}
+					objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.page) };
+					objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.address >> 8), String.format("$%1$02X", object.getValue().code.dataIndex.address & 0x00FF) };
 				}
 			}
 		}
 		
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
-			if (object.getValue().code.dataIndex != null) {
-				objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.page) };
-				objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.address >> 8), String.format("$%1$02X", object.getValue().code.dataIndex.address & 0x00FF) };
-			}
+			objIndexPage[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.page) };
+			objIndex[gameMode.objectsId.get(object.getValue())] = new String[] {String.format("$%1$02X", object.getValue().code.dataIndex.address >> 8), String.format("$%1$02X", object.getValue().code.dataIndex.address & 0x00FF) };
 		}		
 
 		asmBuilder.addLabel("Obj_Index_Page");

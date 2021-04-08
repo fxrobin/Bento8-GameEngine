@@ -16,7 +16,6 @@ public class GameMode {
 
 	public String name;
 	public String fileName;
-	public int dataSize;
 	public ObjectBin code; // Main Engine
 	
 	public String engineAsmMainEngine;
@@ -32,7 +31,9 @@ public class GameMode {
 	// Ram
 	public Item[] items;
 	public RamImage ramFD;	
+	public int indexSizeFD;
 	public RamImage ramT2;	
+	public int indexSizeT2;
 
 	// Storage Index
 	public List<DataIndex> fdIdx = new ArrayList<DataIndex>();

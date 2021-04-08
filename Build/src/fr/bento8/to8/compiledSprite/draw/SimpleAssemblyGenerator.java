@@ -131,7 +131,7 @@ public class SimpleAssemblyGenerator{
 			sizeDFrameCode += getCodeFrameDrawEndSize();					
 		} else {
 			// Utilisation du .BIN existant
-			sizeDCache = Files.readAllBytes(Paths.get(binDrawFileName)).length-10;
+			sizeDCache = Files.readAllBytes(Paths.get(binDrawFileName)).length;
 			// Utilisation du .lst existant
 			cycleDCache = LWASMUtil.countCycles(lstDrawFileName);
 		}
@@ -179,7 +179,7 @@ public class SimpleAssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(Game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--decb");			
+			pb = new ProcessBuilder(Game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--raw");			
 			pb.redirectErrorStream(true);
 			p = pb.start();					
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -194,7 +194,7 @@ public class SimpleAssemblyGenerator{
 
 			// Compte le nombre de cycles du .lst
 			int compilerDCycles = LWASMUtil.countCycles(lstDrawFileName);
-			int compilerDSize = content.length - 10;			
+			int compilerDSize = content.length;			
 			int computedDCycles = getDCycles();
 			int computedDSize = getDSize();
 			logger.debug("\t\t\t" +lstDrawFileName + " lwasm.exe DRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);

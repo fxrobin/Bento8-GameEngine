@@ -5,7 +5,7 @@ import fr.bento8.to8.storage.DataIndex;
 public abstract class ItemBin {
 	
 	public byte[] bin;
-	public DataIndex dataIndex;
+	public DataIndex dataIndex = new DataIndex();
 	public int uncompressedSize = 0;
 
 	abstract public String getFullName();

@@ -13,7 +13,8 @@ public class RamImage
     public int[] startAddress;
     public int[] endAddress;
     
-	public int page;
+	public int curPage;
+	public int curAddress;	
 	public int lastPage;
 	
 	public RamImage (int lastPage) {
@@ -21,7 +22,7 @@ public class RamImage
 		this.startAddress = new int[lastPage];
 		this.endAddress = new int[lastPage];
 		this.lastPage = lastPage;
-		this.page = 0;		
+		this.curPage = 0;		
 	}
 	
 	public void setData (int page, int startPos, byte[] newData) {
@@ -41,16 +42,17 @@ public class RamImage
 	}
 	
 	public void setDataAtCurPos (byte[] newData) {
-		int startPos = this.endAddress[page];
+		int startPos = this.endAddress[curPage];
 		int endPos = newData.length+startPos;		
-		this.endAddress[page] = endPos;
+		this.endAddress[curPage] = endPos;
+		this.curAddress = endPos + 1;
 		
 		for (int i = startPos, j = 0; i < endPos; i++) {
-			this.data[page][i] = newData[j++];
+			this.data[curPage][i] = newData[j++];
 		}
 	}	
 	
 	public boolean isOutOfMemory() {
-		return (page>lastPage);
+		return (curPage>lastPage);
 	}	
 }
