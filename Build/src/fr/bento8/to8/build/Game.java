@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.T2Util;
@@ -40,6 +41,7 @@ public class Game {
 	// Storage
 	public FdUtil fd = new FdUtil();
 	public T2Util t2 = new T2Util();	
+	public static RamImage romT2 = new RamImage(128);
 	
 	public static AsmSourceCode glb;
 	

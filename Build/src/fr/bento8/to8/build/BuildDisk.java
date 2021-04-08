@@ -106,7 +106,11 @@ public class BuildDisk
 			compileMainEngines();						
 			compileObjects();
 			
-			computeRamAddress(); // TODO ROM placement
+			computeRamAddress();
+			computeRomAddress();
+			
+			// Exomize des pages RAM	
+			
 			generateImgAniIndex(); // TODO ROM data update 
 			compileMainEngines(); // OK
 			writeObjects(); // TODO refactor
@@ -663,13 +667,6 @@ public class BuildDisk
 				computeItemsRamAddress(gameMode.getKey(), gameMode.getValue().items, gameMode.getValue().ramT2, true);
 			}
 		}
-		
-		// split et exomize des pages
-		
-		
-		// TODO : générer les pages pour les objets non flagués RAM pour T.2
-		// La limite en nb de pages est maintenant basée sur nb pages T.2 et nb pages déjà prises pour la RAM
-		// Le check taille disquette est fait plus tard lors de l'écriture sur média cible	
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -886,23 +883,271 @@ public class BuildDisk
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
+	private static void computeRomAddress() throws Exception {
+		
+		logger.debug("computeRomAddress ...");
+		
+		int page = 0;
+		int address = 0; // TODO boot + RAMLoaderManager
+		
+		Item[] items = getROMItems();
+		computeItemsRomAddress(items, page, address);
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+	private static Item[] getROMItems() {
+		logger.debug("\t\tCompute ROM Items for " + MODE_LABEL[MEGAROM_T2] + " ...");
+
+		// Compte le nombre d'objets a traiter
+		int nbItems = 0;
+		
+		// Parcours unique de tous les games modes communs (sans le code objet)
+		for (Entry<String, GameModeCommon> common : allGameModeCommons.entrySet()) {
+			if (common != null) {
+				for (Entry<String, Object> object : common.getValue().objects.entrySet()) {
+					// Sprites
+					for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
+						if (!subSprite.inRAM)
+							nbItems += 1;
+
+					// ImageSet Index
+					if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
+						nbItems++;
+
+					// Animation Index
+					if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
+						nbItems++;
+
+					// Sounds
+					for (Sound sound : object.getValue().sounds)
+						for (SoundBin soundBIN : sound.sb)
+							if (!soundBIN.inRAM)
+								nbItems += 1;
+				}
+			}
+		}
+
+		// Parcours des communs de chaque game mode pour récupérer les codes objets
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+				if (common != null) {
+					for (Entry<String, Object> object : common.objects.entrySet()) {
+						// Object Code
+						if (!object.getValue().codeInRAM)
+							nbItems++;
+					}
+				}
+			}
+
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+
+				// Sprites
+				for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
+					if (!subSprite.inRAM)
+						nbItems += 1;
+
+				// ImageSet Index
+				if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
+					nbItems++;
+
+				// Animation Index
+				if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
+					nbItems++;
+
+				// Sounds
+				for (Sound sound : object.getValue().sounds)
+					for (SoundBin soundBIN : sound.sb)
+						if (!soundBIN.inRAM)
+							nbItems += 1;
+
+				// Object Code
+				if (!object.getValue().codeInRAM)
+					nbItems++;
+			}
+		}
+
+		// Initialise un item pour chaque élément a écrire en RAM
+		Item[] items = new Item[nbItems];
+		int itemIdx = 0;
+
+		// Parcours unique de tous les games modes communs (sans le code objet)
+		for (Entry<String, GameModeCommon> common : allGameModeCommons.entrySet()) {
+			if (common != null) {
+				for (Entry<String, Object> object : common.getValue().objects.entrySet()) {
+					// Sprites
+					for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
+						if (!subSprite.inRAM)
+							items[itemIdx++] = new Item(subSprite, 1);
+
+					// ImageSet Index
+					if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
+						items[itemIdx++] = new Item(object.getValue().imageSet, 1);
+
+					// Animation Index
+					if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
+						items[itemIdx++] = new Item(object.getValue().animation, 1);
+
+					// Sounds
+					for (Sound sound : object.getValue().sounds)
+						for (SoundBin soundBIN : sound.sb)
+							if (!soundBIN.inRAM)
+								items[itemIdx++] = new Item(soundBIN, 1);
+				}
+			}
+		}
+
+		// Parcours des communs de chaque game mode pour récupérer les codes objets
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+				if (common != null) {
+					for (Entry<String, Object> object : common.objects.entrySet()) {
+						// Object Code
+						if (!object.getValue().codeInRAM) {
+							Item obj = new Item(object.getValue().code, 1);
+							obj.absolute = true;
+							obj.gameMode = gameMode.getValue();
+							items[itemIdx++] = obj;	
+						}
+					}
+				}
+			}
+
+			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
+
+				// Sprites
+				for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
+					if (!subSprite.inRAM)
+						items[itemIdx++] = new Item(subSprite, 1);
+
+				// ImageSet Index
+				if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
+					items[itemIdx++] = new Item(object.getValue().imageSet, 1);
+
+				// Animation Index
+				if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
+					items[itemIdx++] = new Item(object.getValue().animation, 1);
+
+				// Sounds
+				for (Sound sound : object.getValue().sounds)
+					for (SoundBin soundBIN : sound.sb)
+						if (!soundBIN.inRAM)
+							items[itemIdx++] = new Item(soundBIN, 1);
+
+				// Object Code
+				if (!object.getValue().codeInRAM) {
+					Item obj = new Item(object.getValue().code, 1);
+					obj.absolute = true;
+					obj.gameMode = gameMode.getValue();
+					items[itemIdx++] = obj;
+				}
+			}
+		}
+
+		return items;
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private static void computeItemsRomAddress(Item[] items, int pageStart, int pageAddress) throws Exception {
+		boolean firstLoop = true;
+		Game.romT2.curPage = pageStart;
+		Game.romT2.curAddress = pageAddress;
+		
+		// les pages rom vont de 0 à 127 mais on y accede par les index 128 à 256
+		// pour ne pas interférer avec les pages de RAM 0 à 31
+
+		if (items.length > 0) {
+			Game.romT2.startAddress[Game.romT2.curPage] = Game.romT2.curAddress;
+			Game.romT2.endAddress[Game.romT2.curPage] = Game.romT2.curAddress;
+		}
+		
+		while (items.length > 0) {
+
+			if (!firstLoop) {
+				Game.romT2.curPage++;
+				if (Game.romT2.isOutOfMemory())
+					logger.fatal("C'est un peu trop ambitieux ... 2Mo pour la T.2 et pas un octet de plus !");
+				
+				Game.romT2.startAddress[Game.romT2.curPage] = 0;
+				Game.romT2.endAddress[Game.romT2.curPage] = 0;
+			}
+			
+			// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-Game.romT2.startAddress[Game.romT2.curPage]); // Sac à dos de poids max 16Ko
+			Solution solution = knapsack.solve();
+
+			// Parcours de la solution
+			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
+
+				Item currentItem = iter.next();
+				
+				currentItem.bin.dataIndex.page = Game.romT2.curPage;					
+				currentItem.bin.dataIndex.address = Game.romT2.endAddress[Game.romT2.curPage];
+					
+				if (currentItem.absolute)
+					currentItem.bin.bin = compileObject(currentItem.gameMode.name, ((ObjectBin)currentItem.bin).parent, Game.romT2.endAddress[Game.romT2.curPage]);
+					
+				Game.romT2.setDataAtCurPos(currentItem.bin.bin);
+				currentItem.bin.dataIndex.endAddress = Game.romT2.endAddress[Game.romT2.curPage];
+
+				// construit la liste des éléments restants à organiser
+				for (int i = 0; i < items.length; i++) {
+					if (items[i].bin == currentItem.bin) {
+						Item[] newItems = new Item[items.length - 1];
+						for (int l = 0; l < i; l++) {
+							newItems[l] = items[l];
+						}
+						for (int j = i; j < items.length - 1; j++) {
+							newItems[j] = items[j + 1];
+						}
+						items = newItems;
+						break;
+					}
+				}
+			}
+			
+			logger.debug("\t\tFound solution for page : " + Game.romT2.curPage + " start: " + String.format("$%1$04X", Game.romT2.startAddress[Game.romT2.curPage]) + " end: " + String.format("$%1$04X", Game.romT2.endAddress[Game.romT2.curPage]) + " non allocated space: " + (RamImage.PAGE_SIZE - Game.romT2.endAddress[Game.romT2.curPage]) + " octets");
+			
+			firstLoop = false;
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
 	private static void generateImgAniIndex() throws Exception {
 		logger.info("Generate Image index and Animation script index ...");
 		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			logger.debug("\nGame Mode : " + gameMode.getKey());
 			
+			// Ici le dataIndex ne peut pas être commun entre la disquette et la T.2
+			// Il doit y en avoir deux : un pour la FD un autre pour la T.2
+			// Dans la méthode computeRomAddress on affectera le dataindex T.2
+			// Dans la méthode computeRamAddress on affectera le dataindex T.2 en mode T.2
+			
+			// Chaque element d'objet existe en une fois sur disquette ou sur T.2 sauf pour le code objet qui est dupliqué pour chaque game mode
+			// qui l'utilise, chaque code dupliqué à un dataindex différent x2 (FD et T.2)			
+			
 			// Game Mode Common
 			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
 				if (common != null) {
 					for (Entry<String, Object> object : common.objects.entrySet()) {
 						generateImgAniIndex(object.getValue());
-						gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
-						gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));
+						gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page,
+								                          object.getValue().imageSet.dataIndex.address,
+								                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
+						gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page,
+								                          object.getValue().animation.dataIndex.address,
+								                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));
 						if (object.getValue().imageSetInRAM)
-							gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
+							gameMode.getValue().ramT2.setData(object.getValue().imageSet.dataIndex.page,
+									                          object.getValue().imageSet.dataIndex.address,
+									                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
 						if (object.getValue().animationInRAM)						
-							gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));						
+							gameMode.getValue().ramT2.setData(object.getValue().animation.dataIndex.page,
+									                          object.getValue().animation.dataIndex.address,
+									                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));						
 						//T2 in ROM
 					}
 				}
@@ -910,12 +1155,20 @@ public class BuildDisk
 			
 			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
 				generateImgAniIndex(object.getValue());
-				gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
-				gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));
+				gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page,
+						                          object.getValue().imageSet.dataIndex.address,
+						                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
+				gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page,
+						                          object.getValue().animation.dataIndex.address,
+						                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));
 				if (object.getValue().imageSetInRAM)
-					gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.page, object.getValue().imageSet.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().imageSet.fileName)));
+					gameMode.getValue().ramT2.setData(object.getValue().imageSet.dataIndex.page,
+							                          object.getValue().imageSet.dataIndex.address,
+							                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
 				if (object.getValue().animationInRAM)						
-					gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.page, object.getValue().animation.dataIndex.address, Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue() + "/" + object.getValue().animation.fileName)));						
+					gameMode.getValue().ramT2.setData(object.getValue().animation.dataIndex.page,
+							                          object.getValue().animation.dataIndex.address,
+							                          Files.readAllBytes(Paths.get(Game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));						
 				//T2 in ROM
 			}
 		}
