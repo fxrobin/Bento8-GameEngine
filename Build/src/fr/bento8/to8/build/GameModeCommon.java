@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import fr.bento8.to8.util.FileUtil;
@@ -19,7 +20,7 @@ public class GameModeCommon {
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public AsmSourceCode glb;
 	
-	public GameModeCommon(String fileName) throws Exception {
+	public GameModeCommon(GameMode gm, String fileName) throws Exception {
 		
 		this.fileName = fileName;
 		this.name = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
@@ -45,7 +46,13 @@ public class GameModeCommon {
 		// Chargement des fichiers de configuration des Objets
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
-			objects.put(curObject.getKey(), new Object(curObject.getKey(), curObject.getValue()[0]));
+			objects.put(curObject.getKey(), new Object(gm, curObject.getKey(), curObject.getValue()[0]));
 		}	
+	}
+	
+	public void registerNewGameMode(GameMode gm) throws Exception {
+		for (Entry<String, Object> curObject : objects.entrySet() ) {
+			curObject.getValue().addGameMode(gm);
+		}
 	}
 }

@@ -1,6 +1,5 @@
 package fr.bento8.to8.image;
 
-import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 
 public class SubSprite {
@@ -25,13 +24,13 @@ public class SubSprite {
 	public void setFileIndex(SubSpriteBin ss, FdUtil fd) {
 		int index;
 		if (ss.dataIndex != null) {
-			ss.dataIndex.drive = fd.getUnit();
-			ss.dataIndex.track = fd.getTrack();
-			ss.dataIndex.sector = fd.getSector();
+			ss.dataIndex.fd_drive = fd.getUnit();
+			ss.dataIndex.fd_track = fd.getTrack();
+			ss.dataIndex.fd_sector = fd.getSector();
 			index = (fd.getIndex() / 256) * 256; // round to start sector
 			fd.write(ss.bin);
-			ss.dataIndex.nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
-			ss.dataIndex.endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
+			ss.dataIndex.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
+			ss.dataIndex.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
 		}
 	}
 	

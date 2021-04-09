@@ -23,13 +23,13 @@ public class ObjectBin extends ItemBin{
 	public void setFileIndex(FdUtil fd) {
 		int index;
 		if (dataIndex != null) {
-			dataIndex.drive = fd.getUnit();
-			dataIndex.track = fd.getTrack();
-			dataIndex.sector = fd.getSector();
+			dataIndex.fd_drive = fd.getUnit();
+			dataIndex.fd_track = fd.getTrack();
+			dataIndex.fd_sector = fd.getSector();
 			index = (fd.getIndex() / 256) * 256; // round to start sector
 			fd.write(this.bin);		
-			dataIndex.nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
-			dataIndex.endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
+			dataIndex.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
+			dataIndex.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
 		}
 	}	
 	

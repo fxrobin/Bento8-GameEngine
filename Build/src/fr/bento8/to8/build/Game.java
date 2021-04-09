@@ -2,14 +2,11 @@ package fr.bento8.to8.build;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.ram.RamImage;
-import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.T2Util;
 
@@ -25,25 +22,26 @@ public class Game {
 	// Game Mode
 	public String gameModeBoot;
 	public HashMap<String, GameMode> gameModes = new HashMap<String, GameMode>();
+	public static HashMap<String, GameModeCommon> allGameModeCommons = new HashMap<String, GameModeCommon>();	
 
 	// Build
-	public static String lwasm;
-	public static String exobin;
+	public String lwasm;
+	public String exobin;
 	public boolean debug;
 	public boolean logToConsole;	
 	public String outputDiskName;
 	public static String generatedCodeDirName;
 	public boolean memoryExtension;
 	public static int nbMaxPagesRAM;	
-	public static boolean useCache;
-	public static int maxTries;
+	public boolean useCache;
+	public int maxTries;
 
 	// Storage
 	public FdUtil fd = new FdUtil();
 	public T2Util t2 = new T2Util();	
-	public static RamImage romT2 = new RamImage(128);
+	public RamImage romT2 = new RamImage(128);
 	
-	public static AsmSourceCode glb;
+	public AsmSourceCode glb;
 	
 	public byte[] engineRAMLoaderManagerBytes;	
 	public byte[] engineAsmRAMLoaderBytes;	
@@ -66,9 +64,9 @@ public class Game {
 			}
 			memoryExtension = (prop.getProperty("builder.to8.memoryExtension").contentEquals("Y")?true:false);
 			if (memoryExtension) {
-				nbMaxPagesRAM = 31;
+				nbMaxPagesRAM = 32;
 			} else {
-				nbMaxPagesRAM = 15;
+				nbMaxPagesRAM = 16;
 			}
 
 			// Engine ASM source code

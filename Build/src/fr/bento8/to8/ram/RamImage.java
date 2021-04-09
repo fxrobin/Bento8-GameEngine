@@ -17,6 +17,8 @@ public class RamImage
 	public int curAddress;	
 	public int lastPage;
 	
+	public int mode;
+	
 	public RamImage (int lastPage) {
 		this.data = new byte[lastPage][PAGE_SIZE];
 		this.startAddress = new int[lastPage];
@@ -53,6 +55,6 @@ public class RamImage
 	}	
 	
 	public boolean isOutOfMemory() {
-		return (curPage>lastPage);
+		return (curPage>=lastPage);
 	}	
 }

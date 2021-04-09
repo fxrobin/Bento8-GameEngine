@@ -9,7 +9,6 @@ import java.util.List;
 import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.build.Game;
 import fr.bento8.to8.storage.BinUtil;
-import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.util.FileUtil;
 
@@ -50,7 +49,6 @@ public class Sound{
 			
 			exomizedBin = BuildDisk.exomize(tmpDestFile);
 			SoundBin nsb = new SoundBin();
-			nsb.dataIndex = new DataIndex();
 			nsb.bin = exomizedBin;
 			nsb.uncompressedSize = dataSize;
 			nsb.inRAM = inRAM;		

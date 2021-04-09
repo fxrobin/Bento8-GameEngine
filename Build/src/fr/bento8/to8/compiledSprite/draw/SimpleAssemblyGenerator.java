@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import fr.bento8.to8.InstructionSet.Register;
-import fr.bento8.to8.build.Game;
+import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.util.LWASMUtil;
 
@@ -81,7 +81,7 @@ public class SimpleAssemblyGenerator{
 
 		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .bin et .asm
 		// on passe la génération du code de sprite compilé
-		if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
+		if (!(BuildDisk.game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 
 			//logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())
@@ -94,7 +94,7 @@ public class SimpleAssemblyGenerator{
 			PatternCluster cluster = new PatternCluster(solution, spriteSheet.getCenter());
 			cluster.cluster(REARWARD);
 
-			SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0), Game.maxTries);
+			SolutionOptim regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 0), BuildDisk.game.maxTries);
 			regOpt.build();
 
 			spriteCode1 = regOpt.getAsmCode();
@@ -112,7 +112,7 @@ public class SimpleAssemblyGenerator{
 			cluster = new PatternCluster(solution, spriteSheet.getCenter());
 			cluster.cluster(REARWARD);
 
-			regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1), Game.maxTries);
+			regOpt = new SolutionOptim(solution, spriteSheet.getSubImageData(imageNum, 1), BuildDisk.game.maxTries);
 			regOpt.build();
 
 			spriteCode2 = regOpt.getAsmCode();	
@@ -156,7 +156,7 @@ public class SimpleAssemblyGenerator{
 			
 			// Process Draw Code
 			// ****************************************************************			
-			if (!(Game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
+			if (!(BuildDisk.game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 				Files.deleteIfExists(asmDFile);
 				Files.createFile(asmDFile);
 
@@ -179,7 +179,7 @@ public class SimpleAssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(Game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--raw");			
+			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", "--pragma=undefextern,autobranchlength", "--raw");			
 			pb.redirectErrorStream(true);
 			p = pb.start();					
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));

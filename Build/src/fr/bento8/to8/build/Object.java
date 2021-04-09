@@ -17,10 +17,10 @@ public class Object {
 
 	public String name;
 	public String fileName;	
-	public ObjectBin code;
 	public String codeFileName;
 	public boolean codeInRAM = false;
 	
+	public HashMap<GameMode, ObjectCode> gmCode = new HashMap<GameMode, ObjectCode>();
 	public HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 	public List<SubSpriteBin> subSpritesBin = new ArrayList<SubSpriteBin>();
 	public AnimationBin animation;
@@ -33,12 +33,11 @@ public class Object {
 	public HashMap<String, String[]> animationsProperties;	
 	public HashMap<String, String[]> soundsProperties;
 	
-	public Object(String name, String propertiesFileName) throws Exception {
+	public Object(GameMode gm, String name, String propertiesFileName) throws Exception {
 		this.name = name;
 		this.fileName = propertiesFileName;
 		this.animation = new AnimationBin(name);
 		this.imageSet = new ImageSetBin(name);	
-		this.code = new ObjectBin(this);
 		
 		Properties prop = new Properties();
 		try {
@@ -51,9 +50,14 @@ public class Object {
 		String[] codeFileNameTmp = prop.getProperty("code").split(";");
 		if (codeFileNameTmp.length == 0)
 			throw new Exception("code not found in " + propertiesFileName);
+		
+		// Quand l'objet est créé, un premier code objet est rattaché à un gameMode
+		ObjectCode oc = new ObjectCode(this);
+		oc.code = new ObjectBin(this);		
 		codeFileName = codeFileNameTmp[0];
 		if (codeFileNameTmp.length > 1 && codeFileNameTmp[1].equalsIgnoreCase(BuildDisk.RAM))
-			codeInRAM = true;
+			codeInRAM = true;				
+		gmCode.put(gm, oc);
 
 		spritesProperties = PropertyList.get(prop, "sprite");
 		animationsProperties = PropertyList.get(prop, "animation");
@@ -65,4 +69,12 @@ public class Object {
 		if (prop.getProperty("animationIndex") != null && prop.getProperty("animationIndex").equalsIgnoreCase(BuildDisk.RAM))
 			animationInRAM = true;
 	}	
+	
+	public void addGameMode(GameMode gm) throws Exception {
+		if (!gmCode.containsKey(gm)) {
+			ObjectCode oc = new ObjectCode(this);
+			oc.code = new ObjectBin(this);				
+			gmCode.put(gm, oc);
+		}
+	}
 }

@@ -7,23 +7,27 @@ package fr.bento8.to8.storage;
  */
 public class DataIndex
 {
-	public String gmNameCommon; // nom du commun utilisé par le game mode
-	
 	// FLOPPY DISK
-	public int drive;
-	public int track;
-	public int sector;
-	public int nbSector;
-	public int endOffset;
+	public int fd_drive;
+	public int fd_track;
+	public int fd_sector;
+	public int fd_nbSector;
+	public int fd_endOffset;
 	
 	// MEGAROM T.2
-	public int t2Page;	     // page de source ROM
-	public int t2EndAddress; // adresse de source (ptr de fin pour exomizer) ROM
+	public int t2_page;	          // page de source ROM
+	public int t2_address;	      // adresse RAM	
+	public int t2_endAddress;     // adresse de source (ptr de fin pour exomizer) ROM
 	
-	// RAM
-	public int page;         // page de destination RAM
-	public int address;	     // adresse RAM
-	public int endAddress;   // adresse de destination (ptr de fin) RAM	
+	// RAM FD
+	public int fd_ram_page;       // page de destination RAM
+	public int fd_ram_address;	  // adresse RAM
+	public int fd_ram_endAddress; // adresse de destination (ptr de fin) RAM	
+
+	// RAM T.2	
+	public int t2_ram_page;       // page de destination RAM
+	public int t2_ram_address;	  // adresse RAM
+	public int t2_ram_endAddress; // adresse de destination (ptr de fin) RAM		
 	
 	public DataIndex() {
 	}

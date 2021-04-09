@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.DataIndex;
@@ -19,18 +20,17 @@ public class GameMode {
 	public ObjectBin code; // Main Engine
 	
 	public String engineAsmMainEngine;
-	public List<GameModeCommon> gameModeCommon = new ArrayList<GameModeCommon>();
+	public List<GameModeCommon> gameModeCommon = new ArrayList<GameModeCommon>();	
 	public HashMap<String, Object> objects = new HashMap<String, Object>();
 	public HashMap<Object, Integer> objectsId = new HashMap<Object, Integer>();
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
 	public HashMap<String, Act> acts = new HashMap<String, Act>(); 
 	public String actBoot;
 	public AsmSourceCode glb;
-	public GameModeCommon common;
 	
 	// Ram
 	public Item[] items;
-	public RamImage ramFD;	
+	public RamImage ramFD;
 	public int indexSizeFD;
 	public RamImage ramT2;	
 	public int indexSizeT2;
@@ -47,7 +47,9 @@ public class GameMode {
 		
 		glb = new AsmSourceCode(BuildDisk.createFile(FileNames.OBJECTID, name));
 		this.ramFD = new RamImage(Game.nbMaxPagesRAM);	
+		ramFD.mode = BuildDisk.FLOPPY_DISK;
 		this.ramT2 = new RamImage(Game.nbMaxPagesRAM);
+		ramT2.mode = BuildDisk.MEGAROM_T2;
 		
 		Properties prop = new Properties();
 		try {
@@ -85,12 +87,16 @@ public class GameMode {
 					BuildDisk.logger.fatal("In "+gameModeName+" GameMode definition, gameModeCommon."+curGameModeCommon.getKey()+" shoud be of type gameModeCommon.<n> where <n> is a number.\n" + nfe.getMessage());
 				}
 				
-				if (!BuildDisk.allGameModeCommons.containsKey(curGameModeCommon.getValue()[0])) {
-					GameModeCommon newCommon = new GameModeCommon(curGameModeCommon.getValue()[0]);
+				// construction du catalgue des objets communs
+				GameModeCommon newCommon;
+				if (!Game.allGameModeCommons.containsKey(curGameModeCommon.getValue()[0])) {
+					newCommon = new GameModeCommon(this, curGameModeCommon.getValue()[0]);
 					gameModeCommon.add(i, newCommon);
-					BuildDisk.allGameModeCommons.put(curGameModeCommon.getValue()[0], newCommon);
+					Game.allGameModeCommons.put(curGameModeCommon.getValue()[0], newCommon);
 				} else {
-					gameModeCommon.add(i,BuildDisk.allGameModeCommons.get(curGameModeCommon.getKey()));
+					newCommon = Game.allGameModeCommons.get(curGameModeCommon.getValue()[0]);
+					newCommon.registerNewGameMode(this);
+					gameModeCommon.add(i, newCommon);
 				}
 			}
 		}
@@ -106,7 +112,7 @@ public class GameMode {
 		// Chargement des fichiers de configuration des Objets
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
-			objects.put(curObject.getKey(), new Object(curObject.getKey(), curObject.getValue()[0]));
+			objects.put(curObject.getKey(), new Object(this, curObject.getKey(), curObject.getValue()[0]));
 		}	
 		
 		// Palettes
