@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ public class BuildDisk
 
 	private static FdUtil fd = new FdUtil();
 	
+	public static int UNDEFINED = 0;
 	public static int FLOPPY_DISK = 0;
 	public static int MEGAROM_T2 = 1;
 	public static String[] MODE_LABEL = new String[]{"FLOPPY_DISK", "MEGAROM_T2"};
@@ -296,7 +298,7 @@ public class BuildDisk
 		SubSprite curSubSprite;		
 		
 		// Parcours des images de l'objet et compilation de l'image
-		AsmSourceCode asmImgIndex = new AsmSourceCode(createFile(object.imageSet.fileName, object.name));
+		AsmSourceCode asmImgIndex = new AsmSourceCode(createFile(object.imageSet.fileName, gameMode.name + "/" + object.name));
 		for (Entry<String, String[]> spriteProperties : object.spritesProperties.entrySet()) {
 
 			Sprite sprite = new Sprite(spriteProperties.getKey());
@@ -316,7 +318,7 @@ public class BuildDisk
 				if (cur_variant.contains("B")) {
 					logger.debug("\t\t- BackupBackground/Draw/Erase");
 					SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant);
-					asm = new AssemblyGenerator(ss, game.generatedCodeDirName + object.name, 0);
+					asm = new AssemblyGenerator(ss, Game.generatedCodeDirName + object.name, 0);
 					asm.compileCode("A000");
 					// La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
 					// 16 octets supplémentaires pour IRQ 12 octets du bckp registres et 4 pour les appels sous programmes
@@ -346,7 +348,7 @@ public class BuildDisk
 				if (cur_variant.contains("D")) {
 					logger.debug("\t\t- Draw");
 					SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant);
-					sasm = new SimpleAssemblyGenerator(ss, game.generatedCodeDirName + object.name, 0);
+					sasm = new SimpleAssemblyGenerator(ss, Game.generatedCodeDirName + object.name, 0);
 					sasm.compileCode("A000");
 					curSubSprite.nb_cell = 0;
 					curSubSprite.x1_offset = sasm.getX1_offset();
@@ -368,7 +370,7 @@ public class BuildDisk
 
 			// Sauvegarde de tous les rendus demandés pour l'image en cours
 			object.sprites.put(sprite.name, sprite);
-			object.imageSet.uncompressedSize += writeImgIndex(asmImgIndex, sprite);
+			object.imageSet.uncompressedSize += writeImgIndex(asmImgIndex, sprite, UNDEFINED);
 			object.imageSet.bin = new byte[object.imageSet.uncompressedSize];
 		}
 		AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(object.animation.fileName, object.name));
@@ -505,12 +507,12 @@ public class BuildDisk
 		prepend = "\torg   $" + org + "\n";
 		prepend = "\topt   c,ct\n";
 		
-		prepend += "\tINCLUDE \"" + game.generatedCodeDirName + gm.name + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
-		prepend += "\tINCLUDE \"" + game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
 		
 		if (object.sprites.size() > 0) {
-			prepend += "\tINCLUDE \"" + game.generatedCodeDirName + object.name + "/" + object.imageSet.fileName + "\"\n";
-			prepend += "\tINCLUDE \"" + game.generatedCodeDirName + object.name + "/" + object.animation.fileName + "\"\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + object.name + "/" + object.imageSet.fileName + "\"\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + object.name + "/" + object.animation.fileName + "\"\n";
 		}
 		
 		// Compilation du code Objet
@@ -526,8 +528,8 @@ public class BuildDisk
 
 		return object.gmCode.get(gm).code.bin;
 	}		
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
 	private static void computeRamAddress() throws Exception {
 		
@@ -1137,104 +1139,129 @@ public class BuildDisk
 		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			logger.debug("\nGame Mode : " + gameMode.getKey());
+			GameMode gm = gameMode.getValue();
 			
-			// Game Mode Common
-			for (GameModeCommon common : gameMode.getValue().gameModeCommon) {
+			// Objets Communs au Game Mode
+			for (GameModeCommon common : gm.gameModeCommon) {
 				if (common != null) {
 					for (Entry<String, Object> object : common.objects.entrySet()) {
-						
-						generateImgAniIndex(object.getValue());
-						// TODO:
-						// - rendre parametrable car utilise uniquement fd_ram actuellement, il faut fd_ram et (t2_ram ou t2_)
-						// - fichier asm a inclure avec le code obj pour fd ou t2
-						
-						AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(object.getValue().animation.fileName, object.getValue().name));
-						writeAniIndex(asmAniIndex, object.getValue());
-						// TODO: Le fichier asm d'animation est généré ... mais il nous faut les données compilées pour les écrire
-						// en RAM ou ROM ...
-						
-						gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.fd_ram_page,
-														  object.getValue().imageSet.dataIndex.fd_ram_address,
-														  Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
-						
-						gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.fd_ram_page,
-														  object.getValue().animation.dataIndex.fd_ram_address,
-														  Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));
-						
-						generateImgAniIndex(object.getValue());
-						if (object.getValue().imageSetInRAM) {
-							gameMode.getValue().ramT2.setData(object.getValue().imageSet.dataIndex.t2_ram_page,
-															  object.getValue().imageSet.dataIndex.t2_ram_address,
-															  Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
-						} else {
-							game.romT2.setData(object.getValue().imageSet.dataIndex.t2_ram_page,
-											   object.getValue().imageSet.dataIndex.t2_ram_address,
-											   Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));							
-						}
-						
-						if (object.getValue().animationInRAM) {						
-							gameMode.getValue().ramT2.setData(object.getValue().animation.dataIndex.t2_page,
-										                      object.getValue().animation.dataIndex.t2_address,
-											                  Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));
-						} else {
-							game.romT2.setData(object.getValue().animation.dataIndex.t2_page,
-											   object.getValue().animation.dataIndex.t2_address,
-											   Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));							
-						}
+						generateImgAniIndex(gameMode.getValue(), object.getValue());
 					}
 				}
 			}
 			
-			for (Entry<String, Object> object : gameMode.getValue().objects.entrySet()) {
-				
-				generateImgAniIndex(object.getValue());
-				// TODO:
-				// - rendre parametrable car utilise uniquement fd_ram actuellement, il faut fd_ram et (t2_ram ou t2_)
-				// - fichier asm a inclure avec le code obj pour fd ou t2
-				
-				AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(object.getValue().animation.fileName, object.getValue().name));
-				writeAniIndex(asmAniIndex, object.getValue());
-				// TODO: Le fichier asm d'animation est généré ... mais il nous faut les données compilées pour les écrire
-				// en RAM ou ROM ...				
-				
-				gameMode.getValue().ramFD.setData(object.getValue().imageSet.dataIndex.fd_ram_page,
-						                          object.getValue().imageSet.dataIndex.fd_ram_address,
-						                          Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
-				
-				gameMode.getValue().ramFD.setData(object.getValue().animation.dataIndex.fd_ram_page,
-						                          object.getValue().animation.dataIndex.fd_ram_address,
-						                          Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));
-				
-				generateImgAniIndex(object.getValue());
-				if (object.getValue().imageSetInRAM) {
-					gameMode.getValue().ramT2.setData(object.getValue().imageSet.dataIndex.t2_ram_page,
-							                          object.getValue().imageSet.dataIndex.t2_ram_address,
-							                          Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));
-				} else {
-					game.romT2.setData(object.getValue().imageSet.dataIndex.t2_page,
-	                          		   object.getValue().imageSet.dataIndex.t2_address,
-	                          		   Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().imageSet.fileName)));					
-				}
-				
-				if (object.getValue().animationInRAM) {						
-					gameMode.getValue().ramT2.setData(object.getValue().animation.dataIndex.t2_ram_page,
-													  object.getValue().animation.dataIndex.t2_ram_address,
-							                          Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));
-				} else {
-					game.romT2.setData(object.getValue().animation.dataIndex.t2_page,
-	                          		   object.getValue().animation.dataIndex.t2_address,
-	                          		   Files.readAllBytes(Paths.get(game.generatedCodeDirName + object.getValue().name + "/" + object.getValue().animation.fileName)));					
-				}
+			// Objets du Game Mode
+			for (Entry<String, Object> object : gm.objects.entrySet()) {
+				generateImgAniIndex(gameMode.getValue(), object.getValue());
 			}
 		}
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 	
-	private static void generateImgAniIndex(Object object) throws Exception {
-		AsmSourceCode asmImgIndex = new AsmSourceCode(createFile(object.imageSet.fileName, object.name));
-		for (Entry<String, Sprite> sprite : object.sprites.entrySet()) {
-			writeImgIndex(asmImgIndex, sprite.getValue());
+	private static void generateImgAniIndex(GameMode gm, Object obj) throws Exception {
+		AsmSourceCode asmImgIndexFd;
+		AsmSourceCode asmImgIndexT2;		
+		
+		String imgSetDirFd = gm.name + "/FD/" + obj.name;
+		String imgSetDirT2 = gm.name + "/T2/" + obj.name;
+		String aniDir = obj.name;
+		
+		RamImage imgSetData, aniData, codeData;
+		int objCodePage, objCodeAddress;
+		int imgSetPage, imgSetAddress;
+		int aniPage, aniAddress;
+		
+		// Génération de l'index ImageSet pour FD	
+		asmImgIndexFd = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirFd));
+		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
+			writeImgIndex(asmImgIndexFd, sprite.getValue(), FLOPPY_DISK);
 		}
+		
+		// Génération de l'index Animation pour FD et T2				
+		AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(obj.animation.fileName, aniDir));
+		writeAniIndex(asmAniIndex, obj);
+		
+		codeData = gm.ramFD;
+		imgSetData = gm.ramFD;
+		aniData = gm.ramFD;
+		objCodePage = obj.gmCode.get(gm).code.dataIndex.fd_ram_page;
+		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.fd_ram_address;
+		imgSetPage = obj.imageSet.dataIndex.fd_ram_page;
+		imgSetAddress = obj.imageSet.dataIndex.fd_ram_address;
+		aniPage = obj.animation.dataIndex.fd_ram_page;
+		aniAddress = obj.animation.dataIndex.fd_ram_address;		
+		
+		// Compilation de ImageSet, Animation, Object pour FD
+		compileObjectWithImageRef(gm, obj, imgSetDirFd, aniDir, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress);
+
+		// Génération de l'index ImageSet pour T2
+		asmImgIndexT2 = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirT2));
+		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
+			writeImgIndex(asmImgIndexT2, sprite.getValue(), MEGAROM_T2);
+		}
+		
+		codeData = gm.ramT2;
+		objCodePage = obj.gmCode.get(gm).code.dataIndex.t2_ram_page;
+		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.t2_ram_address;
+		
+		if (obj.imageSetInRAM) {
+			imgSetData = gm.ramT2;
+			imgSetPage = obj.imageSet.dataIndex.t2_ram_page;
+			imgSetAddress = obj.imageSet.dataIndex.t2_ram_address;			
+		} else {
+			imgSetData = game.romT2;
+			imgSetPage = obj.imageSet.dataIndex.t2_page;
+			imgSetAddress = obj.imageSet.dataIndex.t2_address;			
+		}
+		
+		if (obj.animationInRAM) {
+			aniData = gm.ramT2;
+			aniPage = obj.animation.dataIndex.t2_ram_page;
+			aniAddress = obj.animation.dataIndex.t2_ram_address;				
+		} else {
+			aniData = game.romT2;
+			aniPage = obj.animation.dataIndex.t2_page;
+			aniAddress = obj.animation.dataIndex.t2_address;				
+		}		
+
+		compileObjectWithImageRef(gm, obj, imgSetDirT2, aniDir, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress);
 	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+	
+	private static void compileObjectWithImageRef(GameMode gm, Object obj, String imgSetDir, String aniDir, RamImage codeData, RamImage imgSetData, RamImage aniData,
+			                                      int objCodePage, int objCodeAddress, int imgSetPage, int imgSetAddress, int aniPage, int aniAddress) throws Exception {
+		logger.info("\t\t"+obj.name+" at "+String.format("$%1$04X", objCodeAddress)+" imageSet at "+String.format("$%1$04X", imgSetAddress)+" animation at "+String.format("$%1$04X", aniAddress));
+
+		String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
+		prepend += "\topt   c,ct\n";		
+		
+		if (obj.sprites.size() > 0) {
+			prepend += "\torg   $" + imgSetAddress + "\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + imgSetDir + "/" + obj.imageSet.fileName + "\"\n";
+			
+			prepend += "\torg   $" + aniAddress + "\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + aniDir + "/" + obj.animation.fileName + "\"\n";
+		}
+		
+		prepend += "\torg   $" + objCodeAddress + "\n";
+		
+		// Compilation du code Objet
+		String objectCodeTmpFile = duplicateFilePrepend(obj.codeFileName, imgSetDir, prepend);
+		compileRAW(objectCodeTmpFile);
+		byte[] allBytes = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
+		
+		// Mise à jour des données du code objet 
+		obj.imageSet.bin = Arrays.copyOfRange(allBytes, 0, obj.imageSet.uncompressedSize-1);
+		obj.animation.bin = Arrays.copyOfRange(allBytes, obj.imageSet.uncompressedSize, obj.imageSet.uncompressedSize+obj.animation.uncompressedSize-1);
+		obj.gmCode.get(gm).code.bin = Arrays.copyOfRange(allBytes, obj.imageSet.uncompressedSize+obj.animation.uncompressedSize-1, obj.imageSet.uncompressedSize+obj.animation.uncompressedSize+obj.gmCode.get(gm).code.uncompressedSize-1);
+		
+		imgSetData.setData(imgSetPage, imgSetAddress, obj.imageSet.bin);
+		aniData.setData(aniPage, aniAddress, obj.animation.bin);
+		codeData.setData(objCodePage, objCodeAddress, obj.gmCode.get(gm).code.bin);		
+	}		
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 	
@@ -1443,7 +1470,7 @@ public class BuildDisk
 		return size;
 	}
 	
-	private static int writeImgIndex(AsmSourceCode asm, Sprite sprite) {
+	private static int writeImgIndex(AsmSourceCode asm, Sprite sprite, int mode) {
 		
 		// Sorry for this code ... should be a better way of doing that
 		// Note : index to image sub set is limited to an offset of +127
@@ -1621,19 +1648,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", n_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", n_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("NB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("NB0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("NB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("ND0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("ND0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("ND0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("NB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("NB1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("NB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("ND1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("ND1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("ND1"), line, mode);
 			}
 		}
 		
@@ -1645,19 +1672,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", x_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", x_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("XB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XB0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XD0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XD0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XD0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XB1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XD1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XD1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XD1"), line, mode);
 			}
 		}
 		
@@ -1669,19 +1696,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", y_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", y_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("YB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YB0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("YB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("YD0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YD0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("YD0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("YB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YB1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("YB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("YD1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YD1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("YD1"), line, mode);
 			}
 		}
 		
@@ -1693,19 +1720,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", xy_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", xy_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("XYB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYB0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XYB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XYD0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYD0"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XYD0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XYB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYB1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XYB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XYD1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYD1"), line);
+				getImgSubSpriteIndex(sprite.subSprites.get("XYD1"), line, mode);
 			}
 		}		
 		
@@ -1717,16 +1744,41 @@ public class BuildDisk
 		return result[0].length()/3;
 	}
 	
-	private static void getImgSubSpriteIndex(SubSprite s, List<String> line) {
-		line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_page));
-		line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address >> 8));		
-		line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address & 0xFF));
+	private static void getImgSubSpriteIndex(SubSprite s, List<String> line, int mode) {
 		
-		if (s.erase != null) {
-			line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_page));
-			line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address >> 8));		
-			line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address & 0xFF));
-			line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+		if (mode == FLOPPY_DISK) {
+			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_page));
+			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address >> 8));		
+			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address & 0xFF));
+		
+			if (s.erase != null) {
+				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_page));
+				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address >> 8));		
+				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address & 0xFF));
+				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+			}
+		} else if (mode == MEGAROM_T2 && s.parent.inRAM) {
+			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_ram_page));
+			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_ram_address >> 8));		
+			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_ram_address & 0xFF));
+		
+			if (s.erase != null) {
+				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_ram_page));
+				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_ram_address >> 8));		
+				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_ram_address & 0xFF));
+				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+			}
+		} else if (mode == MEGAROM_T2 && !s.parent.inRAM) {
+			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_page));
+			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_address >> 8));		
+			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_address & 0xFF));
+		
+			if (s.erase != null) {
+				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_page));
+				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_address >> 8));		
+				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_address & 0xFF));
+				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+			}
 		}
 	}
 	
@@ -1976,7 +2028,7 @@ public class BuildDisk
 
 	public static String duplicateFile(String fileName) throws IOException {
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
-		String destFileName = game.generatedCodeDirName+basename+".asm";
+		String destFileName = Game.generatedCodeDirName+basename+".asm";
 
 		Path original = Paths.get(fileName);        
 		Path copied = Paths.get(destFileName);
@@ -1986,7 +2038,7 @@ public class BuildDisk
 	
 	public static String duplicateFile(String fileName, String subDir) throws IOException {
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
-		String destFileName = game.generatedCodeDirName+subDir+"/"+basename+".asm";
+		String destFileName = Game.generatedCodeDirName+subDir+"/"+basename+".asm";
 
 		// Creation du chemin si les répertoires sont manquants
 		File file = new File (destFileName);
@@ -2000,7 +2052,7 @@ public class BuildDisk
 	
 	public static String duplicateFilePrepend(String fileName, String subDir, String prepend) throws IOException {
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
-		String destFileName = game.generatedCodeDirName+subDir+"/"+basename+".asm";
+		String destFileName = Game.generatedCodeDirName+subDir+"/"+basename+".asm";
 
 		// Creation du chemin si les répertoires sont manquants
 		File file = new File (destFileName);
@@ -2031,7 +2083,7 @@ public class BuildDisk
 	
 	public static Path createFile (String fileName, String subDir) throws Exception {	
 		
-		String newFileName = game.generatedCodeDirName + subDir + "/" + fileName;
+		String newFileName = Game.generatedCodeDirName + subDir + "/" + fileName;
 		
 		// Creation du chemin si les répertoires sont manquants
 		File file = new File (newFileName);
