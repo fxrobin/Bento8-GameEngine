@@ -55,9 +55,10 @@ public class Object {
 		ObjectCode oc = new ObjectCode(this);
 		oc.code = new ObjectBin(this);		
 		codeFileName = codeFileNameTmp[0];
+		gmCode.put(gm, oc);
+		
 		if (codeFileNameTmp.length > 1 && codeFileNameTmp[1].equalsIgnoreCase(BuildDisk.RAM))
 			codeInRAM = true;				
-		gmCode.put(gm, oc);
 
 		spritesProperties = PropertyList.get(prop, "sprite");
 		animationsProperties = PropertyList.get(prop, "animation");

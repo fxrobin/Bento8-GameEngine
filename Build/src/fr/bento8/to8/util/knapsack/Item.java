@@ -8,7 +8,6 @@ public class Item {
 	public ItemBin bin;
 	public int value;
 	public int weight;
-	public boolean absolute = false;
 	public GameMode gameMode;
 	
 	public Item(ItemBin bin, int value) {

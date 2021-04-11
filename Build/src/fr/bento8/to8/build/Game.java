@@ -23,6 +23,7 @@ public class Game {
 	public String gameModeBoot;
 	public HashMap<String, GameMode> gameModes = new HashMap<String, GameMode>();
 	public static HashMap<String, GameModeCommon> allGameModeCommons = new HashMap<String, GameModeCommon>();	
+	public static HashMap<String, Object> allObjects = new HashMap<String, Object>();
 
 	// Build
 	public String lwasm;

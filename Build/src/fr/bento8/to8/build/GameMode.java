@@ -91,13 +91,12 @@ public class GameMode {
 				GameModeCommon newCommon;
 				if (!Game.allGameModeCommons.containsKey(curGameModeCommon.getValue()[0])) {
 					newCommon = new GameModeCommon(this, curGameModeCommon.getValue()[0]);
-					gameModeCommon.add(i, newCommon);
 					Game.allGameModeCommons.put(curGameModeCommon.getValue()[0], newCommon);
 				} else {
 					newCommon = Game.allGameModeCommons.get(curGameModeCommon.getValue()[0]);
 					newCommon.registerNewGameMode(this);
-					gameModeCommon.add(i, newCommon);
 				}
+				gameModeCommon.add(i, newCommon);
 			}
 		}
 		
@@ -110,9 +109,19 @@ public class GameMode {
 			throw new Exception("object not found in " + fileName);
 		
 		// Chargement des fichiers de configuration des Objets
+		Object object;
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
-			objects.put(curObject.getKey(), new Object(this, curObject.getKey(), curObject.getValue()[0]));
+			
+			if (!Game.allObjects.containsKey(curObject.getKey())) {
+				object = new Object(this, curObject.getKey(), curObject.getValue()[0]);
+				Game.allObjects.put(curObject.getKey(), object);
+			} else {
+				object = Game.allObjects.get(curObject.getKey());
+				object.addGameMode(this);
+			}			
+
+			objects.put(curObject.getKey(), object);
 		}	
 		
 		// Palettes

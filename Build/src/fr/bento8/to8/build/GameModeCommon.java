@@ -44,10 +44,20 @@ public class GameModeCommon {
 		}
 		
 		// Chargement des fichiers de configuration des Objets
+		Object object;
 		for (Map.Entry<String,String[]> curObject : objectProperties.entrySet()) {
 			BuildDisk.logger.debug("\tLoad Object "+curObject.getKey()+": "+curObject.getValue()[0]);
-			objects.put(curObject.getKey(), new Object(gm, curObject.getKey(), curObject.getValue()[0]));
-		}	
+			
+			if (!Game.allObjects.containsKey(curObject.getKey())) {
+				object = new Object(gm, curObject.getKey(), curObject.getValue()[0]);
+				Game.allObjects.put(curObject.getKey(), object);
+			} else {
+				object = Game.allObjects.get(curObject.getKey());
+				object.addGameMode(gm);
+			}					
+			
+			objects.put(curObject.getKey(), object);
+		}		
 	}
 	
 	public void registerNewGameMode(GameMode gm) throws Exception {
