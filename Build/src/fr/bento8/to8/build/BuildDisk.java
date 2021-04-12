@@ -117,11 +117,10 @@ public class BuildDisk
 			// TODO Exomize des pages RAM	
 			// TODO Renseignement de fdIdx et T2Idx
 			
-			writeObjects(); // TODO refactor
-			compileAndWriteRAMLoaderManager(FLOPPY_DISK);
-			compileAndWriteRAMLoaderManager(MEGAROM_T2);
-			compileAndWriteBoot(); // TODO
-			writeDiskImage(); // TODO
+			writeObjects(); // TODO écriture sur FD (entrelacé 2) des pages RAM et T2 (par Pages ROM) des pages RAM en ROM
+			compileAndWriteRAMLoaderManager(); // TODO séparation en 2 fichiers FD et T2 + update données sur storage FD ou t2
+			compileAndWriteBoot(); // TODO séparation en 2 fichiers FD et T2 + update données sur storage FD ou t2
+			writeDiskImage(); // TODO ajout T2
 			
 			// Ecriture sur disquette
 			//fd.setIndex(0, 0, 2);		
@@ -623,23 +622,19 @@ public class BuildDisk
 			totalIndexSizeT2 += gm.indexSizeT2;
 			logger.debug("\t\tindex size T2: "+gm.indexSizeT2);
 		}
-		
-		// Add one byte for end flag
-		totalIndexSizeFD += 1;
-		totalIndexSizeT2 += 1;
 
 		if (abortFloppyDisk && abortT2)
 			logger.fatal("Not enough RAM !");
 		
 		// Positionnement des adresses de départ du code en RAM
 		// calcul de la taille des index fichier de RAMLoader/RAMLoaderManager
-		int initStartAddressFD = getRAMLoaderManagerSize();
-		int initStartAddressT2 = initStartAddressFD;
-		initStartAddressFD += totalIndexSizeFD + 1; // ajout du bloc de fin
-		initStartAddressT2 += totalIndexSizeT2 + 1; // ajout du bloc de fin
+		Game.loadManagerSizeFd = getRAMLoaderManagerSize();
+		Game.loadManagerSizeT2 = Game.loadManagerSizeFd;
+		Game.loadManagerSizeFd += totalIndexSizeFD + 1; // ajout du bloc de fin
+		Game.loadManagerSizeT2 += totalIndexSizeT2 + 1; // ajout du bloc de fin
 		
-		logger.debug("\t\tinitStartAddressFD: "+initStartAddressFD);
-		logger.debug("\t\tinitStartAddressT2: "+initStartAddressT2);
+		logger.debug("\t\tinitStartAddressFD: "+Game.loadManagerSizeFd);
+		logger.debug("\t\tinitStartAddressT2: "+Game.loadManagerSizeT2);
 		
 		logger.debug("compute ram position ... ");
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
@@ -648,7 +643,7 @@ public class BuildDisk
 
 			if (!abortFloppyDisk) {
 				gm.ramFD.curPage = initStartPage;
-				gm.ramFD.curAddress = initStartAddressFD;
+				gm.ramFD.curAddress = Game.loadManagerSizeFd;
 
 				for (GameModeCommon common : gm.gameModeCommon) {
 					if (common != null) {
@@ -664,7 +659,7 @@ public class BuildDisk
 			
 			if (!abortT2) {
 				gm.ramT2.curPage = initStartPage;
-				gm.ramT2.curAddress = initStartAddressT2;
+				gm.ramT2.curAddress = Game.loadManagerSizeT2;
 
 				for (GameModeCommon common : gm.gameModeCommon) {
 					if (common != null) {
@@ -909,7 +904,7 @@ public class BuildDisk
 		logger.debug("computeRomAddress ...");
 		
 		int page = 0;
-		int address = 0; // TODO boot + RAMLoaderManager
+		int address = 256 + Game.loadManagerSizeT2; // TODO boot + RAMLoaderManager
 		
 		Item[] items = getROMItems();
 		computeItemsRomAddress(items, page, address);
@@ -1311,6 +1306,8 @@ public class BuildDisk
 		}
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
 	private static int getRAMLoaderManagerSize() throws Exception {
 		logger.info("get RAM Loader Manager size ...");
 
@@ -1329,6 +1326,13 @@ public class BuildDisk
 		}	
 		
 		return game.engineRAMLoaderManagerBytes.length;
+	}	
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+
+	private static void compileAndWriteRAMLoaderManager() throws Exception {
+		compileAndWriteRAMLoaderManager(FLOPPY_DISK);
+		compileAndWriteRAMLoaderManager(MEGAROM_T2);
 	}	
 	
 	private static int compileAndWriteRAMLoaderManager(int mode) throws Exception {

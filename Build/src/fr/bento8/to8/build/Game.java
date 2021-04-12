@@ -18,6 +18,8 @@ public class Game {
 	public String engineAsmBoot;
 	public String engineAsmRAMLoaderManager;
 	public String engineAsmRAMLoader;
+	public static int loadManagerSizeFd = 0;
+	public static int loadManagerSizeT2 = 0;
 	
 	// Game Mode
 	public String gameModeBoot;
