@@ -45,6 +45,7 @@ import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.BinUtil;
 import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
+import fr.bento8.to8.storage.RAMLoaderIndex;
 import fr.bento8.to8.util.FileUtil;
 import fr.bento8.to8.util.LWASMUtil;
 import fr.bento8.to8.util.knapsack.Item;
@@ -846,7 +847,7 @@ public class BuildDisk
 					if (rImg.mode == BuildDisk.FLOPPY_DISK) {
 						currentItem.bin.dataIndex.fd_ram_page = rImg.curPage;					
 						currentItem.bin.dataIndex.fd_ram_address = rImg.endAddress[rImg.curPage];
-					} else {
+					} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
 						currentItem.bin.dataIndex.t2_ram_page = rImg.curPage;					
 						currentItem.bin.dataIndex.t2_ram_address = rImg.endAddress[rImg.curPage];
 					}
@@ -854,7 +855,7 @@ public class BuildDisk
 					rImg.setDataAtCurPos(currentItem.bin.bin);
 					if (rImg.mode == BuildDisk.FLOPPY_DISK) {
 						currentItem.bin.dataIndex.fd_ram_endAddress = rImg.endAddress[rImg.curPage];
-					} else {
+					} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
 						currentItem.bin.dataIndex.t2_ram_endAddress = rImg.endAddress[rImg.curPage];
 					}
 				} else {
@@ -880,9 +881,35 @@ public class BuildDisk
 				}
 			}
 			
+			// Division de la page RAM en deux parties
 			nbHalfPages += 1;
-			if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] >= 0x2000) {
+			RAMLoaderIndex rli = new RAMLoaderIndex();
+			rli.ram_page = rImg.curPage;
+			rli.ram_address = rImg.startAddress[rImg.curPage];
+			if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] > 0x2000) {
+				rli.ram_endAddress = 0x2000;
+			} else {
+				rli.ram_endAddress = rImg.endAddress[rImg.curPage];
+			}
+			
+			if (rImg.mode == BuildDisk.FLOPPY_DISK) {
+				gm.fdIdx.add(rli);
+			} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
+				gm.t2Idx.add(rli);				
+			}
+			
+			if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] > 0x2000) {
 				nbHalfPages += 1;
+				rli = new RAMLoaderIndex();
+				rli.ram_page = rImg.curPage;
+				rli.ram_address = 0x2000;
+				rli.ram_endAddress = rImg.endAddress[rImg.curPage];
+				
+				if (rImg.mode == BuildDisk.FLOPPY_DISK) {
+					gm.fdIdx.add(rli);
+				} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
+					gm.t2Idx.add(rli);				
+				}				
 			}
 			
 			if (writeIndex) {
@@ -1285,23 +1312,23 @@ public class BuildDisk
 
 				// Ecriture sur disquette des images de sprite
 				// ------------------------------------------------------------
-				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
-					sprite.getValue().setAllFileIndex(fd);
-				}
+//				for (Entry<String, Sprite> sprite : object.getValue().sprites.entrySet()) {
+//					sprite.getValue().setAllFileIndex(fd);
+//				}
 				
 				// Ecriture sur disquette des données audio
 				// ---------------------------------------------------------
-				for (Sound sound : object.getValue().sounds) {
-					sound.setAllFileIndex(fd);
-				}				
+//				for (Sound sound : object.getValue().sounds) {
+//					sound.setAllFileIndex(fd);
+//				}				
 
 				// Ecriture sur disquette du code des objets
 				// ----------------------------------------------------------
-				object.getValue().gmCode.get(gameMode.getValue()).code.setFileIndex(fd);
+//				object.getValue().gmCode.get(gameMode.getValue()).code.setFileIndex(fd);
 
 				// Ecriture sur disquette des Main Engines
 				// --------------------------------------------------------
-				gameMode.getValue().code.setFileIndex(fd);
+//				gameMode.getValue().code.setFileIndex(fd);
 			}
 		}
 	}
@@ -1367,31 +1394,31 @@ public class BuildDisk
 
 			// Ecriture de l'index des de chargement des demi-pages
 			if (mode == FLOPPY_DISK) {
-				Enumeration<DataIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
+				Enumeration<RAMLoaderIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
 				while(enumFd.hasMoreElements()) {
-					DataIndex di = enumFd.nextElement();
+					RAMLoaderIndex di = enumFd.nextElement();
 						dataIndex.addFcb(new String[] {
 						String.format("$%1$02X", di.fd_sector),
 						String.format("$%1$02X", di.fd_nbSector-1),
 						String.format("$%1$02X", (di.fd_drive << 7)+di.fd_track),				
 						String.format("$%1$02X", -di.fd_endOffset & 0xFF),
-						String.format("$%1$02X", di.fd_ram_page),	
-						String.format("$%1$02X", di.fd_ram_endAddress >> 8),			
-						String.format("$%1$02X", di.fd_ram_endAddress & 0x00FF)});			
+						String.format("$%1$02X", di.ram_page),	
+						String.format("$%1$02X", di.ram_endAddress >> 8),			
+						String.format("$%1$02X", di.ram_endAddress & 0x00FF)});			
 				}
 			}
 			
 			if (mode == MEGAROM_T2) {
-				Enumeration<DataIndex> enumT2 = Collections.enumeration(gameMode.getValue().t2Idx);
+				Enumeration<RAMLoaderIndex> enumT2 = Collections.enumeration(gameMode.getValue().t2Idx);
 				while(enumT2.hasMoreElements()) {
-					DataIndex di = enumT2.nextElement();
+					RAMLoaderIndex di = enumT2.nextElement();
 					dataIndex.addFcb(new String[] {
 						String.format("$%1$02X", di.t2_page),
 						String.format("$%1$02X", di.t2_endAddress >> 8),			
 						String.format("$%1$02X", di.t2_endAddress & 0x00FF),								
-						String.format("$%1$02X", di.t2_ram_page),	
-						String.format("$%1$02X", di.t2_ram_endAddress >> 8),			
-						String.format("$%1$02X", di.t2_ram_endAddress & 0x00FF)});			
+						String.format("$%1$02X", di.ram_page),	
+						String.format("$%1$02X", di.ram_endAddress >> 8),			
+						String.format("$%1$02X", di.ram_endAddress & 0x00FF)});			
 			     }
 			}			
 		}
@@ -1963,31 +1990,33 @@ public class BuildDisk
 		logger.info("Exomize data ...");
 		
 		for(Entry<String, GameMode> gm : game.gameModes.entrySet()) {
+			logger.info("\t"+gm.getValue().name);
 			exomizeData(FLOPPY_DISK, gm.getValue().ramFD, gm.getValue().fdIdx);
 			exomizeData(MEGAROM_T2, gm.getValue().ramT2, gm.getValue().t2Idx);
 		}
 	}
 	
-	private static void exomizeData(int mode, RamImage ram, List<DataIndex> ldi) throws Exception {
-		logger.info("Exomize data for " + MODE_LABEL[mode] + "...");
+	private static void exomizeData(int mode, RamImage ram, List<RAMLoaderIndex> ldi) throws Exception {
+		logger.debug("\t\t" + MODE_LABEL[mode] + "...");
 		
 		String tmpFile = Game.generatedCodeDirName+FileNames.TEMPORARY_FILE;
 		
-		Enumeration<DataIndex> edi = Collections.enumeration(ldi);
+		Enumeration<RAMLoaderIndex> edi = Collections.enumeration(ldi);
 		while(edi.hasMoreElements()) {
 			
-			DataIndex di = edi.nextElement();
-			byte[] fileData = new byte[di.fd_ram_endAddress-di.fd_ram_address];
+			RAMLoaderIndex di = edi.nextElement();
+			logger.debug(di.ram_page+" "+String.format("$%1$04X", di.ram_address)+" "+String.format("$%1$04X", di.ram_endAddress));
+			byte[] fileData = new byte[di.ram_endAddress-di.ram_address];
 			int j = 0;
 			
-			for (int i = di.fd_ram_address; i < di.fd_ram_endAddress; i++) {
-				fileData[j++] = ram.data[di.fd_ram_page][i];
+			for (int i = di.ram_address; i < di.ram_endAddress; i++) {
+				fileData[j++] = ram.data[di.ram_page][i];
 			}
 			
 			Files.write(Paths.get(tmpFile), fileData);
-			BinUtil.RawToLinear(tmpFile, di.fd_ram_address);
+			BinUtil.RawToLinear(tmpFile, 0xA000);
 
-			di.exoBin = exomize(getBINFileName(tmpFile));
+			di.exoBin = exomize(tmpFile);
 		}
 	}	
 	
@@ -2007,8 +2036,8 @@ public class BuildDisk
 
 			ProcessBuilder pb = new ProcessBuilder(game.exobin, Paths.get(binFile).toString());
 			pb.redirectErrorStream(true);
-			Process p = pb.start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
+			Process p = pb.start();			
+			BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 
 			while((line=br.readLine())!=null){

@@ -17,9 +17,9 @@ public class Sprite {
 		this.name = name;
 	}
 	
-	public void setAllFileIndex(FdUtil fd) {
-		for (Entry<String, SubSprite> subSprite : subSprites.entrySet()) {
-			subSprite.getValue().setAllFileIndex(fd);
-		}		
-	}	
+//	public void setAllFileIndex(FdUtil fd) {
+//		for (Entry<String, SubSprite> subSprite : subSprites.entrySet()) {
+//			subSprite.getValue().setAllFileIndex(fd);
+//		}		
+//	}	
 }

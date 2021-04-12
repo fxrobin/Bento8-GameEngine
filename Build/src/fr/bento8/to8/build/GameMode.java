@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.DataIndex;
+import fr.bento8.to8.storage.RAMLoaderIndex;
 import fr.bento8.to8.util.knapsack.Item;
 
 public class GameMode {
@@ -36,8 +37,8 @@ public class GameMode {
 	public int indexSizeT2;
 
 	// Storage Index
-	public List<DataIndex> fdIdx = new ArrayList<DataIndex>();
-	public List<DataIndex> t2Idx = new ArrayList<DataIndex>();
+	public List<RAMLoaderIndex> fdIdx = new ArrayList<RAMLoaderIndex>();
+	public List<RAMLoaderIndex> t2Idx = new ArrayList<RAMLoaderIndex>();
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		

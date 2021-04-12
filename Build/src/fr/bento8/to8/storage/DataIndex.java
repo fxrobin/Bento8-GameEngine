@@ -7,13 +7,6 @@ package fr.bento8.to8.storage;
  */
 public class DataIndex
 {
-	// FLOPPY DISK
-	public int fd_drive;
-	public int fd_track;
-	public int fd_sector;
-	public int fd_nbSector;
-	public int fd_endOffset;
-	
 	// MEGAROM T.2
 	public int t2_page;	          // page de source ROM
 	public int t2_address;	      // adresse RAM	
@@ -27,9 +20,7 @@ public class DataIndex
 	// RAM T.2	
 	public int t2_ram_page;       // page de destination RAM
 	public int t2_ram_address;	  // adresse RAM
-	public int t2_ram_endAddress; // adresse de destination (ptr de fin) RAM		
-	
-	public byte[] exoBin;
+	public int t2_ram_endAddress; // adresse de destination (ptr de fin) RAM	
 	
 	public DataIndex() {
 	}

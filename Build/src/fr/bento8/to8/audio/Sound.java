@@ -59,9 +59,9 @@ public class Sound{
 		Files.deleteIfExists(Paths.get(exoDestFile));
 	}	
 		
-	public void setAllFileIndex(FdUtil fd) {
-		for (SoundBin soundBin:sb) {
-			soundBin.setFileIndex(fd);
-		}
-	}
+//	public void setAllFileIndex(FdUtil fd) {
+//		for (SoundBin soundBin:sb) {
+//			soundBin.setFileIndex(fd);
+//		}
+//	}
 }
