@@ -31,14 +31,13 @@ public class GameMode {
 	// Ram
 	public Item[] items;
 	public RamImage ramFD;
-	public int indexSizeFD;
 	public RamImage ramT2;	
+	public int indexSizeFD;	
 	public int indexSizeT2;
 
 	// Storage Index
 	public List<DataIndex> fdIdx = new ArrayList<DataIndex>();
-	public List<DataIndex> t2Idx = new ArrayList<DataIndex>();	
-
+	public List<DataIndex> t2Idx = new ArrayList<DataIndex>();
 	
 	public GameMode(String gameModeName, String fileName) throws Exception {
 		

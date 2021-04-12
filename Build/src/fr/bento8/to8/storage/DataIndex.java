@@ -29,6 +29,8 @@ public class DataIndex
 	public int t2_ram_address;	  // adresse RAM
 	public int t2_ram_endAddress; // adresse de destination (ptr de fin) RAM		
 	
+	public byte[] exoBin;
+	
 	public DataIndex() {
 	}
 }

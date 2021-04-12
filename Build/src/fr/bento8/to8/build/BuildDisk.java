@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +42,7 @@ import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
 import fr.bento8.to8.image.SubSpriteBin;
 import fr.bento8.to8.ram.RamImage;
+import fr.bento8.to8.storage.BinUtil;
 import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.util.FileUtil;
@@ -113,9 +115,7 @@ public class BuildDisk
 			computeRomAddress();
 			generateImgAniIndex(); 
 			compileMainEngines();
-
-			// TODO Exomize des pages RAM	
-			// TODO Renseignement de fdIdx et T2Idx
+			exomizeData();
 			
 			writeObjects(); // TODO écriture sur FD (entrelacé 2) des pages RAM et T2 (par Pages ROM) des pages RAM en ROM
 			compileAndWriteRAMLoaderManager(); // TODO séparation en 2 fichiers FD et T2 + update données sur storage FD ou t2
@@ -1959,6 +1959,76 @@ public class BuildDisk
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
+	private static void exomizeData() throws Exception {
+		logger.info("Exomize data ...");
+		
+		for(Entry<String, GameMode> gm : game.gameModes.entrySet()) {
+			exomizeData(FLOPPY_DISK, gm.getValue().ramFD, gm.getValue().fdIdx);
+			exomizeData(MEGAROM_T2, gm.getValue().ramT2, gm.getValue().t2Idx);
+		}
+	}
+	
+	private static void exomizeData(int mode, RamImage ram, List<DataIndex> ldi) throws Exception {
+		logger.info("Exomize data for " + MODE_LABEL[mode] + "...");
+		
+		String tmpFile = Game.generatedCodeDirName+FileNames.TEMPORARY_FILE;
+		
+		Enumeration<DataIndex> edi = Collections.enumeration(ldi);
+		while(edi.hasMoreElements()) {
+			
+			DataIndex di = edi.nextElement();
+			byte[] fileData = new byte[di.fd_ram_endAddress-di.fd_ram_address];
+			int j = 0;
+			
+			for (int i = di.fd_ram_address; i < di.fd_ram_endAddress; i++) {
+				fileData[j++] = ram.data[di.fd_ram_page][i];
+			}
+			
+			Files.write(Paths.get(tmpFile), fileData);
+			BinUtil.RawToLinear(tmpFile, di.fd_ram_address);
+
+			di.exoBin = exomize(getBINFileName(tmpFile));
+		}
+	}	
+	
+	/**
+	 * Effectue la compression du code assembleur
+	 * 
+	 * @param binFile fichier contenant le code assembleur a compiler
+	 * @return
+	 */
+	public static byte[] exomize(String binFile) {
+		try {
+			String basename = FileUtil.removeExtension(binFile);
+			String destFileName = basename+".EXO";
+
+			// Purge des fichiers temporaires
+			Files.deleteIfExists(Paths.get(destFileName));
+
+			ProcessBuilder pb = new ProcessBuilder(game.exobin, Paths.get(binFile).toString());
+			pb.redirectErrorStream(true);
+			Process p = pb.start();
+			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line;
+
+			while((line=br.readLine())!=null){
+				logger.debug("\t\t\t" + line);
+			}
+
+			if (p.waitFor() != 0) {
+				throw new Exception ("Erreur de compression "+binFile);
+			}
+			return Files.readAllBytes(Paths.get(destFileName));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.debug(e); 
+			return null;
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
 	/**
 	 * Effectue la compilation du code assembleur
 	 * 
@@ -2033,44 +2103,8 @@ public class BuildDisk
 			logger.debug(e); 
 			return -1;
 		}
-	}		
-
-	/**
-	 * Effectue la compression du code assembleur
-	 * 
-	 * @param binFile fichier contenant le code assembleur a compiler
-	 * @return
-	 */
-	public static byte[] exomize(String binFile) {
-		try {
-			String basename = FileUtil.removeExtension(binFile);
-			String destFileName = basename+".EXO";
-
-			// Purge des fichiers temporaires
-			Files.deleteIfExists(Paths.get(destFileName));
-
-			ProcessBuilder pb = new ProcessBuilder(game.exobin, Paths.get(binFile).toString());
-			pb.redirectErrorStream(true);
-			Process p = pb.start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line;
-
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" + line);
-			}
-
-			if (p.waitFor() != 0) {
-				throw new Exception ("Erreur de compression "+binFile);
-			}
-			return Files.readAllBytes(Paths.get(destFileName));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.debug(e); 
-			return null;
-		}
-	}
-
+	}			
+	
 	public static String duplicateFile(String fileName) throws IOException {
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
 		String destFileName = Game.generatedCodeDirName+basename+".asm";
