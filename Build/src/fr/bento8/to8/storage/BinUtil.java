@@ -4,8 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import fr.bento8.to8.build.BuildDisk;
-
 /**
  * @author Benoît Rousseau
  * @version 1.0

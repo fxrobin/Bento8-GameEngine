@@ -1,7 +1,5 @@
 package fr.bento8.to8.image;
 
-import fr.bento8.to8.storage.FdUtil;
-
 public class SubSprite {
 
 	public Sprite parent;
@@ -20,28 +18,6 @@ public class SubSprite {
 	public SubSprite(Sprite p) {
 		parent = p;
 	}
-
-//	public void setFileIndex(SubSpriteBin ss, FdUtil fd) {
-//		int index;
-//		if (ss.dataIndex != null) {
-//			ss.dataIndex.fd_drive = fd.getUnit();
-//			ss.dataIndex.fd_track = fd.getTrack();
-//			ss.dataIndex.fd_sector = fd.getSector();
-//			index = (fd.getIndex() / 256) * 256; // round to start sector
-//			fd.write(ss.bin);
-//			ss.dataIndex.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
-//			ss.dataIndex.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
-//		}
-//	}
-	
-//	public void setAllFileIndex(FdUtil fd) {
-//		if (draw != null && draw.dataIndex != null) {
-//			setFileIndex(draw, fd);
-//		}
-//		if (erase != null && erase.dataIndex != null) {
-//			setFileIndex(erase, fd);
-//		}
-//	}
 
 	public void setName(String name) {
 		this.name = name;

@@ -167,4 +167,4 @@ Glb_MainCharacter_Is_Dead     fcb   $01
 * ==============================================================================
 * Generated Code and Data
 * ==============================================================================
-        INCLUDE "./GeneratedCode/01-EHZ/BuilderMainGenCode.asm"                                                             
+        INCLUDE "./GeneratedCode/01_EHZ/BuilderMainGenCode.asm"                                                             

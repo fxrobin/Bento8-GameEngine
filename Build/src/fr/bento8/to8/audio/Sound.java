@@ -9,7 +9,6 @@ import java.util.List;
 import fr.bento8.to8.build.BuildDisk;
 import fr.bento8.to8.build.Game;
 import fr.bento8.to8.storage.BinUtil;
-import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.util.FileUtil;
 
 public class Sound{
@@ -58,10 +57,4 @@ public class Sound{
 		Files.deleteIfExists(Paths.get(tmpDestFile));		
 		Files.deleteIfExists(Paths.get(exoDestFile));
 	}	
-		
-//	public void setAllFileIndex(FdUtil fd) {
-//		for (SoundBin soundBin:sb) {
-//			soundBin.setFileIndex(fd);
-//		}
-//	}
 }

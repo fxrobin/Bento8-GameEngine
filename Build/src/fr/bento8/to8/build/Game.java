@@ -43,10 +43,13 @@ public class Game {
 	public FdUtil fd = new FdUtil();
 	public T2Util t2 = new T2Util();	
 	public RamImage romT2 = new RamImage(128);
+	public int romDataStartPgT2 = 0;
+	public int romDataStartAdrT2 = 0;
 	
 	public AsmSourceCode glb;
 	
-	public byte[] engineRAMLoaderManagerBytes;	
+	public byte[] engineRAMLoaderManagerBytesFd;	
+	public byte[] engineRAMLoaderManagerBytesT2;	
 	public byte[] engineAsmRAMLoaderBytes;	
 	public byte[] mainEXOBytes;
 	public byte[] bootLoaderBytes;
