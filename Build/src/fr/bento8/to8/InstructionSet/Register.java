@@ -69,8 +69,10 @@ public class Register {
 	public static final int[] rangeMinIndexedOffset = new int[] {0, -16, -128, -32768};
 	public static final int[] rangeMaxIndexedOffset = new int[] {0, 15, 127, 32767};
 	
-	public static final int costIndexedOffsetPCR = 5;
-	public static final int sizeIndexedOffsetPCR = 2;	
+	public static final int[] costIndexedOffsetPCR = new int[] {1, 5};
+	public static final int[] sizeIndexedOffsetPCR = new int[] {1, 2};
+	public static final int[] rangeMinIndexedOffsetPCR = new int[] {-128, -32768};
+	public static final int[] rangeMaxIndexedOffsetPCR = new int[] {127, 32767};	
 	
 	public static final int sizeImmediatePULPSH = 2;
 	public static int getCostImmediatePULPSH(int nbByte) {
@@ -87,7 +89,7 @@ public class Register {
 		}
 
 		if (cost < 0) {
-			throw new Exception("Offset: "+offset+" en dehors de la plage autoris�e.");
+			throw new Exception("Offset: "+offset+" en dehors de la plage autorisée.");
 		}
 
 		return cost;
@@ -103,9 +105,41 @@ public class Register {
 		}
 
 		if (size < 0) {
-			throw new Exception("Offset: "+offset+" en dehors de la plage autoris�e.");
+			throw new Exception("Offset: "+offset+" en dehors de la plage autorisée.");
 		}
 
 		return size;
 	}
+	
+	public static int getIndexedOffsetCostPCR(int offset) throws Exception {
+		int cost = -1;
+		for (int i = 0; i < costIndexedOffsetPCR.length; i++) {
+			if (offset <= rangeMaxIndexedOffsetPCR[i] && offset >= rangeMinIndexedOffsetPCR[i]) {
+				cost = costIndexedOffsetPCR[i];
+				break;
+			}
+		}
+
+		if (cost < 0) {
+			throw new Exception("Offset: "+offset+" en dehors de la plage autorisée.");
+		}
+
+		return cost;
+	}
+	
+	public static int getIndexedOffsetSizePCR(int offset) throws Exception {
+		int size = -1;
+		for (int i = 0; i < sizeIndexedOffsetPCR.length; i++) {
+			if (offset <= rangeMaxIndexedOffsetPCR[i] && offset >= rangeMinIndexedOffsetPCR[i]) {
+				size = sizeIndexedOffsetPCR[i];
+				break;
+			}
+		}
+
+		if (size < 0) {
+			throw new Exception("Offset: "+offset+" en dehors de la plage autorisée.");
+		}
+
+		return size;
+	}	
 }

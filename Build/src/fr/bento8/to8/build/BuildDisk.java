@@ -101,7 +101,6 @@ public class BuildDisk
 	public static void main(String[] args) throws Throwable
 	{
 		try {
-			
 			loadGameConfiguration(args[0]);
 			
 			compileRAMLoader();
@@ -117,13 +116,12 @@ public class BuildDisk
 			exomizeData();
 			writeObjectsFd(); 
 			compileRAMLoaderManager();
+			compileAndWriteBoot();
 			
-			compileAndWriteBoot(); // TODO séparation en 2 fichiers FD et T2 + update données sur storage FD ou t2
-			writeRAMLoaderAndBoot(); // TODO ajout T2
-			
-			// Ecriture sur disquette
-			//fd.setIndex(0, 0, 2);		
-			//fd.write(game.engineRAMLoaderManagerBytes);	
+			// TODO: migrer le code ASM sprite compilé de "position independant" (,PCR) a "position dependant"
+			// TODO: idem code objet
+			// TODO: etudier l'optim de exomizer si "position dependant"
+			// TODO: inclure dans les sprites compilés l'accès au variables de position plutot que de faire un passage de paramètre par registre (test performance)
 			
 		} catch (Exception e) {
 			logger.fatal("Build error.", e);
@@ -154,9 +152,19 @@ public class BuildDisk
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static void compileRAMLoader() throws IOException {
+		compileRAMLoader(FLOPPY_DISK);
+		compileRAMLoader(MEGAROM_T2);
+	}
+	
+	private static void compileRAMLoader(int mode) throws IOException {
 		logger.info("Compile RAM Loader ...");
 
-		String ramLoader = duplicateFile(game.engineAsmRAMLoader);
+		String ramLoader;
+		if (mode == FLOPPY_DISK) {
+			ramLoader = duplicateFile(game.engineAsmRAMLoaderFd);
+		} else {
+			ramLoader = duplicateFile(game.engineAsmRAMLoaderT2);
+		}
 		compileRAW(ramLoader);
 		Path binFile = Paths.get(getBINFileName(ramLoader));
 		byte[] BINBytes = Files.readAllBytes(binFile);
@@ -164,6 +172,7 @@ public class BuildDisk
         int j = 0;
         
 		// Inversion des données par bloc de 7 octets (simplifie la copie par pul/psh au runtime)
+        // TODO T2 : 6 octets
 		for (int i = BINBytes.length-7; i >= 0; i -= 7) {
 			InvBINBytes[j++] = BINBytes[i];			                          
 			InvBINBytes[j++] = BINBytes[i+1];
@@ -437,8 +446,8 @@ public class BuildDisk
 			if (act != null) {
 				if (act.bgColorIndex != null) {
 					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
-					asmBuilder.add("        ldb   #$62                     * load page 2");						
-					asmBuilder.add("        stb   $E7E6                    * in cartridge space ($0000-$3FFF)");
+					asmBuilder.add("        ldb   #$02                     * load page 2");						
+					asmBuilder.add("        stb   $E7E5                    * in data space ($A000-$DFFF)");
 					asmBuilder.add("        jsr   ClearCartMem");
 				}					
 
@@ -455,8 +464,8 @@ public class BuildDisk
 				if (act.bgColorIndex != null) {
 					asmBuilder.add("        jsr   WaitVBL");						
 					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
-					asmBuilder.add("        ldb   #$63                     * load page 3");						
-					asmBuilder.add("        stb   $E7E6                    * in cardtridge space ($0000-$3FFF)");
+					asmBuilder.add("        ldb   #$03                     * load page 3");						
+					asmBuilder.add("        stb   $E7E5                    * data space ($A000-$DFFF)");
 					asmBuilder.add("        jsr   ClearCartMem");						
 				}
 
@@ -586,7 +595,7 @@ public class BuildDisk
 			
 			gm.indexSizeFD += 1; // index supplémentaire pour ajustement avec RAM Loader Manager
 			gm.indexSizeFD *= INDEX_STRUCT_SIZE_FD;
-			gm.indexSizeFD += 2; // index
+			gm.indexSizeFD += 2+1; // index + fin
 			totalIndexSizeFD += gm.indexSizeFD;			
 			logger.debug("\t\tindex size FD: "+gm.indexSizeFD);
 			
@@ -617,7 +626,7 @@ public class BuildDisk
 			
 			gm.indexSizeT2 += 1; // index supplémentaire pour ajustement avec RAM Loader Manager			
 			gm.indexSizeT2 *= INDEX_STRUCT_SIZE_T2;
-			gm.indexSizeT2 += 2; // index
+			gm.indexSizeT2 += 2+1; // index + fin
 			totalIndexSizeT2 += gm.indexSizeT2;
 			logger.debug("\t\tindex size T2: "+gm.indexSizeT2);
 		}
@@ -627,10 +636,10 @@ public class BuildDisk
 		
 		// Positionnement des adresses de départ du code en RAM
 		// calcul de la taille des index fichier de RAMLoader/RAMLoaderManager
-		Game.loadManagerSizeFd = getRAMLoaderManagerSize();
-		Game.loadManagerSizeT2 = Game.loadManagerSizeFd;
-		Game.loadManagerSizeFd += totalIndexSizeFD + 1; // ajout du bloc de fin
-		Game.loadManagerSizeT2 += totalIndexSizeT2 + 1; // ajout du bloc de fin
+		Game.loadManagerSizeFd = getRAMLoaderManagerSizeFd();
+		Game.loadManagerSizeT2 = getRAMLoaderManagerSizeT2();
+		Game.loadManagerSizeFd += totalIndexSizeFD;
+		Game.loadManagerSizeT2 += totalIndexSizeT2;
 		
 		logger.debug("\t\tinitStartAddressFD: "+Game.loadManagerSizeFd);
 		logger.debug("\t\tinitStartAddressT2: "+Game.loadManagerSizeT2);
@@ -1324,24 +1333,42 @@ public class BuildDisk
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private static int getRAMLoaderManagerSize() throws Exception {
-		logger.info("get RAM Loader Manager size ...");
+	private static int getRAMLoaderManagerSizeFd() throws Exception {
+		logger.info("get RAM Loader Manager size for " + MODE_LABEL[FLOPPY_DISK] + "...");
 
-		AsmSourceCode dataIndex = new AsmSourceCode(createFile(FileNames.FILE_INDEX));
-		dataIndex.flush();
+		createFile(FileNames.FILE_INDEX_FD);
 
 		// Compilation du Game Mode Manager
 		// -------------------------------------------------		
 
-		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManager);
+		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerFd);
 		compileRAW(gameModeManagerTmpFile);
 		game.engineRAMLoaderManagerBytesFd = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 
 		if (game.engineRAMLoaderManagerBytesFd.length > RamImage.PAGE_SIZE) {
-			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManager+" est trop volumineux:"+game.engineRAMLoaderManagerBytesFd.length+" octets (max:"+RamImage.PAGE_SIZE+")");
+			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManagerFd+" est trop volumineux:"+game.engineRAMLoaderManagerBytesFd.length+" octets (max:"+RamImage.PAGE_SIZE+")");
 		}	
 		
 		return game.engineRAMLoaderManagerBytesFd.length;
+	}	
+
+	private static int getRAMLoaderManagerSizeT2() throws Exception {
+		logger.info("get RAM Loader Manager size for " + MODE_LABEL[MEGAROM_T2] + "...");
+
+		createFile(FileNames.FILE_INDEX_T2);
+
+		// Compilation du Game Mode Manager
+		// -------------------------------------------------		
+
+		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerT2);
+		compileRAW(gameModeManagerTmpFile);
+		game.engineRAMLoaderManagerBytesT2 = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
+
+		if (game.engineRAMLoaderManagerBytesT2.length > RamImage.PAGE_SIZE) {
+			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManagerT2+" est trop volumineux:"+game.engineRAMLoaderManagerBytesT2.length+" octets (max:"+RamImage.PAGE_SIZE+")");
+		}	
+		
+		return game.engineRAMLoaderManagerBytesT2.length;
 	}	
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -1353,29 +1380,29 @@ public class BuildDisk
 	
 	private static int compileAndWriteRAMLoaderManager(int mode) throws Exception {
 		logger.info("Compile and Write RAM Loader Manager for " + MODE_LABEL[mode] + " ...");
-		int pad = 5; // T.2
 		int indexSize = 0;
-		
-		if (mode == FLOPPY_DISK) {
-			pad = 6;
-		}
 
 		// Construction des données de chargement disquette pour chaque Game Mode
 		// ---------------------------------------------------------------------------------------
-		AsmSourceCode ramLoaderDataIdx = new AsmSourceCode(createFile(FileNames.FILE_INDEX));
-		ramLoaderDataIdx.addCommentLine("structure: sector, nb sector, drive (bit 7) track (bit 6-0), end offset, ram dest page, ram dest end addr. hb, ram dest end addr. lb");
+		AsmSourceCode ramLoaderDataIdx;
+		if (mode == FLOPPY_DISK) {
+			ramLoaderDataIdx = new AsmSourceCode(createFile(FileNames.FILE_INDEX_FD));
+			ramLoaderDataIdx.addCommentLine("structure: sector, nb sector, drive (bit 7) track (bit 6-0), end offset, ram dest page, ram dest end addr. hb, ram dest end addr. lb");			
+		} else {
+			ramLoaderDataIdx = new AsmSourceCode(createFile(FileNames.FILE_INDEX_T2));
+			ramLoaderDataIdx.addCommentLine("structure: rom src page, rom src end addr. hb, rom src end addr. lb, ram dest page, ram dest end addr. hb, ram dest end addr. lb");			
+		}
 		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
 			if (mode == FLOPPY_DISK) {
-				indexSize = gameMode.getValue().indexSizeFD;
+				indexSize = gameMode.getValue().fdIdx.size()*7+7+1; // +7 ligne debut +1 balise de fin FF
 			} else {
-				indexSize = gameMode.getValue().indexSizeT2;
+				indexSize = gameMode.getValue().t2Idx.size()*6+6+1;
 			}
 			
+			ramLoaderDataIdx.addFdb(new String[] { "RL_RAM_index+"+indexSize});	
 			ramLoaderDataIdx.addLabel("gm_" + gameMode.getKey());
-			ramLoaderDataIdx.addFdb(new String[] { "RL_RAM_index+"+(indexSize-2+pad+1)}); // -2 index, +6 ou +5 balise FF (lecture par groupe de 7 ou 6 octets), +1 balise FF ajoutée par le GameModeManager au runtime	
-			
 			// Ajout du tag pour identifier le game mode de démarrage
 			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
 				ramLoaderDataIdx.addLabel("gmboot");
@@ -1409,36 +1436,57 @@ public class BuildDisk
 						String.format("$%1$02X", di.ram_endAddress >> 8),			
 						String.format("$%1$02X", di.ram_endAddress & 0x00FF)});			
 			     }
-			}			
+			}
+			ramLoaderDataIdx.addFcb(new String[] { "$FF" });			
 		}
-		
-		ramLoaderDataIdx.addFcb(new String[] { "$FF" });		
+				
 		ramLoaderDataIdx.flush();
 
 		// Compilation du Game Mode Manager
 		// -------------------------------------------------		
 
-		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManager);
+		String gameModeManagerTmpFile;
+		if (mode == FLOPPY_DISK) {
+			gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerFd);
+		} else {
+			gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerT2);
+		}
+		
 		compileRAW(gameModeManagerTmpFile);
 		byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 		if (mode == FLOPPY_DISK) {
 			game.engineRAMLoaderManagerBytesFd = bin;
+			
+			// Ecriture disquette
+			fd.setIndex(0, 0, 2);
+			fd.write(game.engineRAMLoaderManagerBytesFd);
+			
 		} else if (mode == MEGAROM_T2) {
 			game.engineRAMLoaderManagerBytesT2 = bin;
 		}
 
 		if (bin.length > RamImage.PAGE_SIZE) { // TODO taille limite pour FD ok mais pour T2 PAGE_SIZE - boot size
-			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManager+" est trop volumineux:"+bin.length+" octets (max:"+RamImage.PAGE_SIZE+")");
+			throw new Exception("Le fichier est trop volumineux:"+bin.length+" octets (max:"+RamImage.PAGE_SIZE+")");
 		}	
 		
 		return bin.length;
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
 	private static void compileAndWriteBoot() throws IOException {
-		logger.info("Compile boot ...");
-		
-		String bootTmpFile = duplicateFile(game.engineAsmBoot);
-		game.glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", (0xA000 + game.engineRAMLoaderManagerBytesFd.length) >> 8)+"00"); // On tronque l'octet de poids faible
+		compileAndWriteBootFd();
+		compileAndWriteBootT2();
+	}	
+	
+	private static void compileAndWriteBootFd() throws IOException {
+		logger.info("Compile boot for FLOPPY_DISK ...");
+				
+		String RAMLoaderManagerGlobals = FileUtil.removeExtension(Paths.get(game.engineAsmRAMLoaderManagerFd).getFileName().toString())+".glb";
+		String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + RAMLoaderManagerGlobals + "\"\n";
+		String bootTmpFile = duplicateFilePrepend(game.engineAsmBootFd, "", prepend);
+		game.glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", (0x0000 + game.engineRAMLoaderManagerBytesFd.length) >> 8)+"00"); // On tronque l'octet de poids faible
 		game.glb.flush();
 		compileRAW(bootTmpFile);
 
@@ -1448,16 +1496,22 @@ public class BuildDisk
 		// Ecriture disquette du boot
 		fd.setIndex(0, 0, 1);
 		fd.write(bootLoader.encodeBootLoader(getBINFileName(bootTmpFile)));
-	}
-	
-	private static void writeRAMLoaderAndBoot() {
-		logger.info("Write Disk Image to output file ...");
+		
+		logger.info("Write Floppy Disk Image to output file ...");
 		
 		fd.save(game.outputDiskName);
 		fd.saveToSd(game.outputDiskName);
 		
-		logger.info("Play the game ... or debug ;-)");
+		logger.info("Build done !");		
 	}
+	
+	private static void compileAndWriteBootT2() throws IOException {
+		logger.info("Compile boot for MEGAROM_T2 ...");
+		
+		logger.info("Build done !");		
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
 	private static int writeAniIndex(AsmSourceCode asm, Object object) {
 		int size = 0;
@@ -2076,7 +2130,7 @@ public class BuildDisk
 			String glbFile = asmFileName + ".glb";			
 
 			logger.debug("\t# Compile "+path.toString());
-			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern,autobranchlength", "--symbol-dump=" + glbFile, option).start();
+			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern"+Game.pragma, "--symbol-dump=" + glbFile, option).start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			String line;
 
@@ -2106,7 +2160,7 @@ public class BuildDisk
 			String lstFile = asmFileName + ".lst";
 			
 			logger.debug("\t# Compile "+path.toString());
-			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern,autobranchlength,undefextern", "--obj").start();
+			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern"+Game.pragma, "--obj").start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			String line;
 
@@ -2190,6 +2244,7 @@ public class BuildDisk
 		// Creation du chemin si les répertoires sont manquants
 		File file = new File (newFileName);
 		file.getParentFile().mkdirs();
+		file.createNewFile();
 		
 		return Paths.get(newFileName);
 	}		

@@ -15,10 +15,14 @@ public class Game {
 	public String name;
 	
 	// Engine Loader
-	public String engineAsmBoot;
-	public String engineAsmRAMLoaderManager;
-	public String engineAsmRAMLoader;
-	public static int loadManagerSizeFd = 0;
+	public String engineAsmBootFd;
+	public String engineAsmRAMLoaderManagerFd;
+	public String engineAsmRAMLoaderFd;
+	public static int loadManagerSizeFd = 0;	
+	
+	public String engineAsmBootT2;
+	public String engineAsmRAMLoaderManagerT2;
+	public String engineAsmRAMLoaderT2;	
 	public static int loadManagerSizeT2 = 0;
 	
 	// Game Mode
@@ -38,6 +42,7 @@ public class Game {
 	public static int nbMaxPagesRAM;	
 	public boolean useCache;
 	public int maxTries;
+	public static String pragma;
 
 	// Storage
 	public FdUtil fd = new FdUtil();
@@ -78,20 +83,35 @@ public class Game {
 			// Engine ASM source code
 			// ********************************************************************
 
-			engineAsmBoot = prop.getProperty("engine.asm.boot");
-			if (engineAsmBoot == null) {
-				throw new Exception("engine.asm.boot not found in "+file);
-			}
-
-			engineAsmRAMLoaderManager = prop.getProperty("engine.asm.RAMLoaderManager");
-			if (engineAsmRAMLoaderManager == null) {
-				throw new Exception("engine.asm.RAMLoaderManager not found in "+file);
+			engineAsmBootFd = prop.getProperty("engine.asm.boot.fd");
+			if (engineAsmBootFd == null) {
+				throw new Exception("engine.asm.boot.fd not found in "+file);
 			}
 			
-			engineAsmRAMLoader = prop.getProperty("engine.asm.RAMLoader");
-			if (engineAsmRAMLoader == null) {
-				throw new Exception("engine.asm.RAMLoader not found in "+file);
+			engineAsmBootT2 = prop.getProperty("engine.asm.boot.t2");
+			if (engineAsmBootT2 == null) {
+				throw new Exception("engine.asm.boot.t2 not found in "+file);
+			}			
+
+			engineAsmRAMLoaderManagerFd = prop.getProperty("engine.asm.RAMLoaderManager.fd");
+			if (engineAsmRAMLoaderManagerFd == null) {
+				throw new Exception("engine.asm.RAMLoaderManager.fd not found in "+file);
 			}
+			
+			engineAsmRAMLoaderFd = prop.getProperty("engine.asm.RAMLoader.fd");
+			if (engineAsmRAMLoaderFd == null) {
+				throw new Exception("engine.asm.RAMLoader.fd not found in "+file);
+			}
+			
+			engineAsmRAMLoaderManagerT2 = prop.getProperty("engine.asm.RAMLoaderManager.t2");
+			if (engineAsmRAMLoaderManagerT2 == null) {
+				throw new Exception("engine.asm.RAMLoaderManager.t2 not found in "+file);
+			}
+			
+			engineAsmRAMLoaderT2 = prop.getProperty("engine.asm.RAMLoader.t2");
+			if (engineAsmRAMLoaderT2 == null) {
+				throw new Exception("engine.asm.RAMLoader.t2 not found in "+file);
+			}			
 			
 			generatedCodeDirName = prop.getProperty("builder.generatedCode") + "/";
 			if (generatedCodeDirName == null) {
@@ -123,6 +143,13 @@ public class Game {
 			lwasm = prop.getProperty("builder.lwasm");
 			if (lwasm == null) {
 				throw new Exception("builder.lwasm not found in "+file);
+			}
+			
+			pragma = prop.getProperty("builder.lwasm.pragma");
+			if (pragma != null) {
+				pragma += "," + pragma;
+			} else {
+				pragma = "";
 			}
 
 			exobin = prop.getProperty("builder.exobin");

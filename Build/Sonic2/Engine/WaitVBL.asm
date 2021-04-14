@@ -14,8 +14,8 @@
 *   bit3 bit2 bit1 bit0  (#$_0 a #$_F) : couleur du cadre
 *   Remarque : bit5 et bit4 utilisable uniquement en mode MO
 *
-* Page en espace cartouche (ecriture dans buffer invisible)
-* --------------------------------------------------------------------
+* Page en espace cartouche
+* ------------------------
 *   $E7E6 determine la page visible dans l'espace cartouche (0000 a 3FFF)
 *   bit7 toujours a 0
 *   bit6=1 : ecriture autorisee
@@ -33,6 +33,11 @@
 *   $E7C3 determine la demi-page de la page 0 visible dans l'espace ecran
 *   bit0=0 : 8Ko RAMA
 *   bit0=1 : 8ko RAMB
+*
+* Page en espace donnees
+* ----------------------
+* lda   #$04
+* sta   $E7E5                    * selection de la page 04 en RAM Donnees (A000-DFFF)
 *
 ********************************************************************************
 WaitVBL
@@ -53,8 +58,8 @@ am_SwapVideoPage
         ldb   #$00
         andb  #$01               * alterne bit0=0 et bit0=1 (suivant la valeur B $00 ou $FF)
         stb   Glb_Cur_Wrk_Screen_Id
-        orb   #$62               * bit6=1, bit5=1, bit1=1
-        stb   $E7E6              * changement page (2 ou 3) visible dans l'espace cartouche
+        orb   #$02               * bit1=1
+        stb   $E7E5              * changement page (2 ou 3) visible dans l'espace cartouche
         ldb   $E7C3              * charge l'identifiant de la demi-page 0 configuree en espace ecran
         eorb  #$01               * alterne bit0 = 0 ou 1 changement demi-page de la page 0 visible dans l'espace ecran
         stb   $E7C3

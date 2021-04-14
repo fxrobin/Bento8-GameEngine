@@ -91,6 +91,7 @@ RL_Page
         jsr   exo2                     ; decompresse les donnees
         puls  u
         bra   RAMLoader_continue
-        align 7,0                      ; le code est un multilpe de 7 octets (pour la copie)
+fill        
+        fill  0,7-((fill-exo2)%7)      ; le code est un multilpe de 7 octets (pour la copie)
         
 RL_RAM_index 

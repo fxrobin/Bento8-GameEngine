@@ -120,7 +120,7 @@ get3    decb
 * Output   : D = base[index] + readbits(&in, bits[index])
 * Modifies : D,X,U.
 
-cook    leax    biba,pcr
+cook    leax    <biba,pcr
         abx                             * bits+base = 3 bytes
         aslb                            * times 2
         abx

@@ -122,8 +122,8 @@ InitVideo
         orb   #$10                     * positionne le bit d4 a 1
         stb   $6081                    * maintient une image coherente de $E7E7
         stb   $E7E7                    * bit d4 a 1 pour pages donnees en mode registre
-        lda   #$04
-        sta   $E7E5                    * selection de la page 04 en RAM Donnees (A000-DFFF)
+        ldb   #$64                     * bit7=0, bit6=1 : ecriture autorisee, bit5=1 : espace cartouche recouvert par de la RAM, bit4-0 : numero de page 
+        stb   $E7E6                    * changement page 4 dans l'espace cartouche        
  
 ********************************************************************************
 * Lecture des donnees depuis la disquette et decompression par exomizer
@@ -134,13 +134,12 @@ DKLecture
         tfr   a,dp                     * positionne la direct page a 60
         
         ldd   #$0000
+        std   <$604F                   * DK.BUF $0000 Destination des donnees lues
         sta   <$6049                   * DK.DRV $00 Lecteur
         std   <$604A                   * DK.TRK $00 Piste
         lda   #$02
         sta   <$604C                   * DK.SEC $02 Secteur
         sta   <$6048                   * DK.OPC $02 Operation - lecture d'un secteur
-        lda   #$A0                     * DK.BUF $A000 Destination des donnees lues
-        std   <$604F
 DKCO
         jsr   $E82A                    * DKCO Appel Moniteur - lecture d'un secteur
         inc   <$604C                   * increment du registre Moniteur DK.SEC
@@ -162,7 +161,7 @@ dk_dernier_bloc
         cmpd  #boot_dernier_bloc       * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO                     * si DK.BUF inferieur ou egal a la limite alors DKCO
         ldu   #gmboot
-        jmp   $A000
+        jmp   $0000
 
 * donnees pour le fondu de palette
 ********************************************************************************

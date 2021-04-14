@@ -19,7 +19,7 @@
 *
 ********************************************************************************
 
-        INCLUDE "./GeneratedCode/RAMLoader.glb"
+        INCLUDE "./GeneratedCode/RAMLoaderFd.glb"
         
         org $0000
 
@@ -37,10 +37,10 @@ RLM_WaitVBL1
         ldb   #$C0                     ; page 3, couleur de cadre 0
         stb   $E7DD                    ; affiche la page a l'ecran
         
-* Positionnement de la page 2 en zone 0000-3FFF
+* Positionnement de la page 2 en zone A000-DFFF
 ***********************************************************
-        ldb   #$62                     ; changement page 2
-        stb   $E7E6                    ; visible dans l'espace cartouche
+        ldb   #$02                     ; changement page 2
+        stb   $E7E5                    ; visible dans l'espace donnees
         
 * Positionnement de la page 0a en zone 4000-5FFF
 ***********************************************************
@@ -83,5 +83,5 @@ RLM_CopyCode_restore_s
 * RAMLoader
 * ==============================================================================
 RAMLoaderBin
-        INCLUDEBIN "./GeneratedCode/RAMLoader.bin"
-        INCLUDE "./GeneratedCode/BuilderFileIndex.asm"
+        INCLUDEBIN "./GeneratedCode/RAMLoaderFd.bin"
+        INCLUDE "./GeneratedCode/BuilderFileIndexFd.asm"
