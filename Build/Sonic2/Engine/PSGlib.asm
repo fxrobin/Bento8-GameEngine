@@ -535,7 +535,7 @@ PSGSFXGetStatus
 PSGFrame 
 
         lda   PSGMusicPage
-        sta   $E7E5
+        sta   $E7E6
 
         lda   PSGMusicStatus                          ; check if we have got to play a tune
         bne   PSGFrame_continue
@@ -714,7 +714,7 @@ _high_part_Tone
 PSGSFXFrame 
 
         lda   PSGSFXPage
-        sta   $E7E5
+        sta   $E7E6
         
         lda   PSGSFXStatus                            ; check if we have got to play SFX
         beq   PSGSFXFrame_end

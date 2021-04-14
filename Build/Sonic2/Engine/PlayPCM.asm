@@ -11,7 +11,7 @@
 
 PlayPCM 
 
-        lda   $E7E5
+        lda   $E7E6
         sta   PlayPCM_RestorePage+1
 
         ldd   #$fb3f  ! Mute by CRA to 
@@ -25,7 +25,7 @@ PlayPCM_ReadChunk
         lda   pcm_page,y                    ; load memory page
         cmpa  #$FF
         beq   PlayPCM_End
-        sta   $E7E5                         ; mount page in A000-DFFF                
+        sta   $E7E6                         ; mount page in A000-DFFF                
         ldx   pcm_start_addr,y              ; Chunk start addr
        
 PlayPCM_Loop      
@@ -59,6 +59,6 @@ PlayPCM_End
 
 PlayPCM_RestorePage        
         lda   #$00
-        sta   $E7E5
+        sta   $E7E6
         
         rts   

@@ -95,7 +95,7 @@ Sonic_Init_Continued                                  *  Obj01_Init_Continued:
 						      *
 						      *
         ldx   #$0000          * TMP                   *
-        jsr   ClearCartMem    * TMP                   *
+        jsr   ClearDataMem    * TMP                   *
 						      *
         ldd   #Img_sonic_001  * TMP                   *
         std   image_set,u     * TMP                   *

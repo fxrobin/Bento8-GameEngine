@@ -23,7 +23,7 @@ TitleScreen_Routines
 
 Init1
         ldx   #$0000
-        jsr   ClearCartMem    
+        jsr   ClearDataMem    
         
         ldd   #Img_SonicWalk
         std   image_set,u
@@ -37,7 +37,7 @@ Init1
         
 Init2
         ldx   #$0000
-        jsr   ClearCartMem    
+        jsr   ClearDataMem    
         lda   routine,u
         adda  #$03
         sta   routine,u           

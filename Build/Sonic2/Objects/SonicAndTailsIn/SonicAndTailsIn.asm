@@ -32,7 +32,7 @@ SATI_Routines
  
 SATI_clearScreen
         ldx   #$0000
-        jsr   ClearCartMem        
+        jsr   ClearDataMem        
         
         ldd   #Img_SonicAndTailsIn
         std   image_set,u
@@ -55,7 +55,7 @@ SATI_clearScreen
 
 SATI_fadeIn
         ldx   #$0000
-        jsr   ClearCartMem        
+        jsr   ClearDataMem        
 
         ldx   #Obj_PaletteFade
         lda   #ObjID_PaletteFade
@@ -102,7 +102,7 @@ SATI_Wait
         
 SATI_clearScreen_end
         ldx   #$FFFF
-        jsr   ClearCartMem
+        jsr   ClearDataMem
         
         lda   $E7DD                    * set border color
         anda  #$F0
@@ -119,7 +119,7 @@ SATI_clearScreen_end
                 
 SATI_End
         ldx   #$FFFF
-        jsr   ClearCartMem  
+        jsr   ClearDataMem  
         jsr   DeleteObject                    
         _ldd  ObjID_TitleScreen,$03                   ; Replace this object with Title Screen Object subtype 3
         std   ,u

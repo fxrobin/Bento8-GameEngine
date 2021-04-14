@@ -116,7 +116,8 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         
 Object_RAM 
 Reserved_Object_RAM
-Obj_MainCharacter             fdb   $0403
+Obj_MainCharacter             fcb   ObjID_SEGA
+                              fcb   $03
                               fill  0,object_size-2
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
@@ -135,7 +136,7 @@ Object_RAM_End                fdb   *
 * Lifecycle
 * ---------------------------------------------------------------------------
 
-Glb_MainCharacter_Is_Dead     fcb   $01
+Glb_MainCharacter_Is_Dead     fcb   $00
 
 * ==============================================================================
 * Routines
@@ -156,7 +157,7 @@ Glb_MainCharacter_Is_Dead     fcb   $01
         INCLUDE "./Engine/DrawSprites.asm"
         INCLUDE "./Engine/BgBufferAlloc.asm"
         INCLUDE "./Engine/BgBufferFree.asm"
-        INCLUDE "./Engine/ClearCartMemory.asm"
+        INCLUDE "./Engine/ClearDataMemory.asm"
         INCLUDE "./Engine/CopyImageToCart.asm"
 		INCLUDE "./Engine/UpdatePalette.asm"
         INCLUDE "./Engine/PlayPCM.asm"

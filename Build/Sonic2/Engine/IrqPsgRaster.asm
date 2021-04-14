@@ -66,21 +66,21 @@ IrqSync_3
         rts                  
        
 IrqPsg 
-        lda   <$E5
+        lda   <$E6
         sta   IrqPsg_end+1                            ; backup data page
         jsr   PSGFrame
         jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
-        sta   <$E5                                    ; restore data page
+        sta   <$E6                                    ; restore data page
         jmp   $E830                                   ; return to caller                               
        
 IrqPsgRaster 
-        lda   <$E5
+        lda   <$E6
         sta   IrqPsgRaster_end+1                      ; backup data page
         
         lda   Irq_Raster_Page
-        sta   <$E5                                    ; load Raster data page
+        sta   <$E6                                    ; load Raster data page
         ldx   Irq_Raster_Start
         lda   #32        
 IrqPsgRaster_1      
@@ -112,5 +112,5 @@ IrqPsgRaster_render
        jsr   PSGSFXFrame
 IrqPsgRaster_end        
         lda   #$00
-        sta   <$E5                                    ; restore data page
+        sta   <$E6                                    ; restore data page
         jmp   $E830                                   ; return to caller 

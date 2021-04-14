@@ -16,7 +16,7 @@ Masher_Routines
 
 Masher_Init
         ldx   #$0000
-        jsr   ClearCartMem    
+        jsr   ClearDataMem    
         
         ldd   #Img_masher_000
         std   image_set,u

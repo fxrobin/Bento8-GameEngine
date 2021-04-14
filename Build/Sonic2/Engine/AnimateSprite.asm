@@ -15,8 +15,16 @@
                                             *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                             *
                                             *; sub_16544:
-AnimateSprite * @globals                    *AnimateSprite:
+AnimateSprite                               *AnimateSprite:
                                             *    moveq   #0,d0
+        lda   $E7E6
+        sta   Anim_Rts+1                    ; backup data page     
+        ldx   #Ani_Page_Index
+        lda   #$00
+        ldb   id,u
+        lda   d,x
+        sta   $E7E6
+                                               
         ldx   anim,u                        *    move.b  anim(a0),d0      ; move animation number to d0
         cmpx  prev_anim,u                   *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
         beq   Anim_Run                      *    beq.s   Anim_Run         ; if not, branch
@@ -27,7 +35,7 @@ AnimateSprite * @globals                    *AnimateSprite:
                                             *; loc_16560:
 Anim_Run                                    *Anim_Run:
         dec   anim_frame_duration,u         *    subq.b  #1,anim_frame_duration(a0)   ; subtract 1 from frame duration
-        bpl   Anim_Wait                     *    bpl.s   Anim_Wait                    ; if time remains, branch
+        bpl   Anim_Rts                      *    bpl.s   Anim_Wait                    ; if time remains, branch
         * no offset table                   *    add.w   d0,d0
         * anim is the address of anim       *    adda.w  (a1,d0.w),a1                 ; calculate address of appropriate animation script
         ldb   -1,x                            
@@ -56,7 +64,9 @@ Anim_dyn
         sta   render_flags,u                
         inc   anim_frame,u                  *    addq.b  #1,anim_frame(a0)     ; next frame number
                                             *; return_1659A:
-Anim_Wait                                   *Anim_Wait:
+Anim_Rts                                    *Anim_Wait:
+        lda   #$00
+        sta   $E7E6                         ; restore data page
         rts                                 *    rts 
                                             *; ===========================================================================
                                             *; loc_1659C:
@@ -88,7 +98,7 @@ Anim_End_FD                                 *Anim_End_FD:
         bne   Anim_End_FC                   *    bne.s   Anim_End_FC         ; if not, branch
         ldd   1,y                           ; read word after FD
         std   anim,u                        *    move.b  2(a1,d1.w),anim(a0) ; read next byte, run that animation
-        rts                                 *    rts
+        bra   Anim_Rts                      *    rts
                                             *; ===========================================================================
                                             *; loc_165CC:
 Anim_End_FC                                 *Anim_End_FC:
@@ -100,7 +110,7 @@ Anim_End_FC                                 *Anim_End_FC:
         lda   #0                            
         sta   anim_frame_duration,u         *    move.b  #0,anim_frame_duration(a0)
         inc   anim_frame,u                  *    addq.b  #1,anim_frame(a0)
-        rts                                 *    rts
+        bra   Anim_Rts                      *    rts
                                             *; ===========================================================================
                                             *; loc_165E0:
 Anim_End_FB                                 *Anim_End_FB:
@@ -109,7 +119,7 @@ Anim_End_FB                                 *Anim_End_FB:
         lda   #0                            
         sta   anim_frame,u                  *    move.b  #0,anim_frame(a0)     ; reset animation
         sta   routine_secondary,u           *    clr.b   routine_secondary(a0) ; reset 2nd routine counter
-        rts                                 *    rts
+        bra   Anim_Rts                      *    rts
                                             *; ===========================================================================
                                             *; loc_165F0:
 Anim_End_FA                                 *Anim_End_FA:
@@ -119,7 +129,7 @@ Anim_End_FA                                 *Anim_End_FA:
         addb  #$03
         stb   routine_secondary,u    
 Anim_End               
-        rts                                 *    rts
+        bra   Anim_Rts                      *    rts
                                             *; ===========================================================================
                                             *; loc_165FA:
                                             *Anim_End_F9:

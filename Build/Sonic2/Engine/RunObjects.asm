@@ -42,12 +42,12 @@ RunObjects_01                               *+
                                             *; sub_15FCC:
 RunObject                                   *RunObject:
         lda   #$00                          
-        ldb   ,u                            *    move.b  id(a0),d0   ; get the object's ID
+        ldb   id,u                          *    move.b  id(a0),d0   ; get the object's ID
         beq   RunNextObject                 *    beq.s   RunNextObject ; if it's obj00, skip it
 
         ldy   #Obj_Index_Page
         lda   d,y                           ; page memoire
-        sta   $E7E5                         ; selection de la page en RAM Donnees (A000-DFFF)
+        sta   $E7E6                         ; selection de la page en RAM Donnees (A000-DFFF)
         lda   #$00
         aslb                                *    add.w   d0,d0
         rola                                *    add.w   d0,d0   ; d0 = object ID * 4

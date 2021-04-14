@@ -16,7 +16,7 @@ Coconuts_Routines
 
 Coconuts_Init
         ldx   #$0000
-        jsr   ClearCartMem    
+        jsr   ClearDataMem    
         
         ldd   #Img_coconuts_000
         std   image_set,u

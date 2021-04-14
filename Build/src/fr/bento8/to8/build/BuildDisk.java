@@ -391,7 +391,8 @@ public class BuildDisk
 		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			logger.debug("\tGame Mode : " + gameMode.getKey());
 			
-			String mainEngineTmpFile = duplicateFile(gameMode.getValue().engineAsmMainEngine, gameMode.getKey()+"/"+MODE_DIR[mode]+"/");
+			String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + gameMode.getKey() + "/" + FileNames.OBJECTID+"\"\n";
+			String mainEngineTmpFile = duplicateFilePrepend(gameMode.getValue().engineAsmMainEngine, gameMode.getKey()+"/"+MODE_DIR[mode]+"/", prepend);
 			AsmSourceCode asmBuilder = new AsmSourceCode(createFile(FileNames.MAIN_GENCODE, gameMode.getValue().name));			
 			
 			writePalIndex(asmBuilder, gameMode.getValue());
@@ -408,20 +409,30 @@ public class BuildDisk
 				throw new Exception("file " + gameMode.getValue().engineAsmMainEngine + " is too large:" + binBytes.length + " bytes (max:"+RamImage.PAGE_SIZE+")");
 			}
 			
-			// Le MainEngine est de taille constante, ci dessous utilisé pour le calcul emplacement ram/rom, pas besoin de demultiplier pour FD/T2
+			// Le MainEngine est de taille constante, pas besoin de demultiplier pour FD/T2
 			gameMode.getValue().code = new ObjectBin();
-			byte[] mainBin = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
-			gameMode.getValue().code.bin = mainBin;
+			gameMode.getValue().code.bin = binBytes;
+			RAMLoaderIndex rli = new RAMLoaderIndex();
+			rli.ram_page = 1;
+			rli.ram_address = 0x0100;
+			rli.ram_endAddress = 0x0100 + binBytes.length;
+			rli.split = false; // la page 1 n'est pas utilsée en zone cartouche
 			
 			// Dans le cas d'une seconde passe on maj les données
 			if (mode == FLOPPY_DISK) {
-				gameMode.getValue().code.dataIndex.fd_ram_page = 1;
-				gameMode.getValue().code.dataIndex.fd_ram_address = 0x6100;				
-				gameMode.getValue().ramFD.setData(gameMode.getValue().code.dataIndex.fd_ram_page, 0x0100, mainBin);
+				gameMode.getValue().code.dataIndex.fd_ram_page = rli.ram_page;
+				gameMode.getValue().code.dataIndex.fd_ram_address = rli.ram_address;
+				gameMode.getValue().code.dataIndex.fd_ram_endAddress = rli.ram_endAddress;
+				gameMode.getValue().ramFD.setData(rli.ram_page, rli.ram_address, binBytes);
+				if (!gameMode.getValue().fdIdx.isEmpty())
+					gameMode.getValue().fdIdx.add(rli); // Seconde passe
 			} else {
-				gameMode.getValue().code.dataIndex.t2_ram_page = 1;
-				gameMode.getValue().code.dataIndex.t2_ram_address = 0x6100;				
-				gameMode.getValue().ramT2.setData(gameMode.getValue().code.dataIndex.t2_ram_page, 0x0100, mainBin);
+				gameMode.getValue().code.dataIndex.t2_ram_page = rli.ram_page;
+				gameMode.getValue().code.dataIndex.t2_ram_address = rli.ram_address;		
+				gameMode.getValue().code.dataIndex.t2_ram_endAddress = rli.ram_endAddress;
+				gameMode.getValue().ramT2.setData(rli.ram_page, rli.ram_address, binBytes);
+				if (!gameMode.getValue().fdIdx.isEmpty())				
+					gameMode.getValue().t2Idx.add(rli); // Seconde passe
 			}
 		}
 	}	
@@ -448,7 +459,7 @@ public class BuildDisk
 					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 					asmBuilder.add("        ldb   #$02                     * load page 2");						
 					asmBuilder.add("        stb   $E7E5                    * in data space ($A000-$DFFF)");
-					asmBuilder.add("        jsr   ClearCartMem");
+					asmBuilder.add("        jsr   ClearDataMem");
 				}					
 
 				if (act.screenBorder != null) {
@@ -466,7 +477,7 @@ public class BuildDisk
 					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 					asmBuilder.add("        ldb   #$03                     * load page 3");						
 					asmBuilder.add("        stb   $E7E5                    * data space ($A000-$DFFF)");
-					asmBuilder.add("        jsr   ClearCartMem");						
+					asmBuilder.add("        jsr   ClearDataMem");						
 				}
 
 				if (act.bgFileName != null) {
@@ -522,7 +533,7 @@ public class BuildDisk
 		prepend = "\topt   c,ct\n";
 		
 		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + MODE_DIR[UNDEFINED] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
-		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
+		//prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
 		
 		if (object.sprites.size() > 0) {
 			duplicateFile(Game.generatedCodeDirName + object.name + "/" +object.imageSet.fileName, gm.name + "/" + object.name);
@@ -593,7 +604,7 @@ public class BuildDisk
 					abortFloppyDisk = true;
 			}
 			
-			gm.indexSizeFD += 1; // index supplémentaire pour ajustement avec RAM Loader Manager
+			gm.indexSizeFD += 2; // index supplémentaire pour ajustement avec RAM Loader Manager et MaineEngine
 			gm.indexSizeFD *= INDEX_STRUCT_SIZE_FD;
 			gm.indexSizeFD += 2+1; // index + fin
 			totalIndexSizeFD += gm.indexSizeFD;			
@@ -624,7 +635,7 @@ public class BuildDisk
 					abortT2 = true;
 			}
 			
-			gm.indexSizeT2 += 1; // index supplémentaire pour ajustement avec RAM Loader Manager			
+			gm.indexSizeT2 += 2; // index supplémentaire pour ajustement avec RAM Loader Manager et MainEngine		
 			gm.indexSizeT2 *= INDEX_STRUCT_SIZE_T2;
 			gm.indexSizeT2 += 2+1; // index + fin
 			totalIndexSizeT2 += gm.indexSizeT2;
@@ -1267,7 +1278,7 @@ public class BuildDisk
 		logger.info("\t\t"+obj.name+" at "+String.format("$%1$04X|$%2$02X", objCodeAddress, objCodePage)+" imageSet at "+String.format("$%1$04X|$%2$02X", imgSetAddress, imgSetPage)+" animation at "+String.format("$%1$04X|$%2$02X", aniAddress, aniPage));
 
 		String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name+ "/" + MODE_DIR[mode] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
-		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
+		//prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name + "/" + FileNames.OBJECTID+"\"\n";
 		prepend += "\topt   c,ct\n";		
 		
 		if (obj.imageSet.uncompressedSize > 0) {
@@ -1396,9 +1407,9 @@ public class BuildDisk
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			
 			if (mode == FLOPPY_DISK) {
-				indexSize = gameMode.getValue().fdIdx.size()*7+7+1; // +7 ligne debut +1 balise de fin FF
+				indexSize = gameMode.getValue().fdIdx.size()*7+1; // +1 balise de fin FF
 			} else {
-				indexSize = gameMode.getValue().t2Idx.size()*6+6+1;
+				indexSize = gameMode.getValue().t2Idx.size()*6+1;
 			}
 			
 			ramLoaderDataIdx.addFdb(new String[] { "RL_RAM_index+"+indexSize});	
@@ -1407,20 +1418,33 @@ public class BuildDisk
 			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
 				ramLoaderDataIdx.addLabel("gmboot");
 			}
-
+			
 			// Ecriture de l'index des de chargement des demi-pages
 			if (mode == FLOPPY_DISK) {
 				Enumeration<RAMLoaderIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
 				while(enumFd.hasMoreElements()) {
 					RAMLoaderIndex di = enumFd.nextElement();
-						ramLoaderDataIdx.addFcb(new String[] {
-						String.format("$%1$02X", di.fd_sector),
-						String.format("$%1$02X", di.fd_nbSector-1),
-						String.format("$%1$02X", (di.fd_drive << 7)+di.fd_track),				
-						String.format("$%1$02X", -di.fd_endOffset & 0xFF),
-						String.format("$%1$02X", di.ram_page),	
-						String.format("$%1$02X", di.ram_endAddress >> 8),			
-						String.format("$%1$02X", di.ram_endAddress & 0x00FF)});			
+					
+					// Inversion des demi-pages liée à la copie de code en zone data qui sera executé depuis la zone cartouche
+					int ram_endDest;
+					if (di.split) {
+						if (di.ram_endAddress <= 0x2000) {
+							ram_endDest = di.ram_endAddress + 0xC000;
+						} else {
+							ram_endDest = di.ram_endAddress + 0x8000;
+						}
+					} else {
+						ram_endDest = di.ram_endAddress + 0xA000;
+					}
+					
+					ramLoaderDataIdx.addFcb(new String[] {
+					String.format("$%1$02X", di.fd_sector),
+					String.format("$%1$02X", di.fd_nbSector-1),
+					String.format("$%1$02X", (di.fd_drive << 7)+di.fd_track),				
+					String.format("$%1$02X", -di.fd_endOffset & 0xFF),
+					String.format("$%1$02X", di.ram_page),	
+					String.format("$%1$02X", ram_endDest >> 8),
+					String.format("$%1$02X", ram_endDest & 0x00FF)}); 		
 				}
 			}
 			
@@ -1428,13 +1452,26 @@ public class BuildDisk
 				Enumeration<RAMLoaderIndex> enumT2 = Collections.enumeration(gameMode.getValue().t2Idx);
 				while(enumT2.hasMoreElements()) {
 					RAMLoaderIndex di = enumT2.nextElement();
+					
+					// Inversion des demi-pages liée à la copie de code en zone data qui sera executé depuis la zone cartouche
+					int ram_endDest;
+					if (di.ram_address != 0x6100) {
+						if (di.ram_endAddress <= 0x2000) {
+							ram_endDest = di.ram_endAddress + 0xC000;
+						} else {
+							ram_endDest = di.ram_endAddress + 0x8000;
+						}
+					} else {
+						ram_endDest = di.ram_endAddress;
+					}				
+					
 					ramLoaderDataIdx.addFcb(new String[] {
 						String.format("$%1$02X", di.t2_page),
 						String.format("$%1$02X", di.t2_endAddress >> 8),			
 						String.format("$%1$02X", di.t2_endAddress & 0x00FF),								
 						String.format("$%1$02X", di.ram_page),	
-						String.format("$%1$02X", di.ram_endAddress >> 8),			
-						String.format("$%1$02X", di.ram_endAddress & 0x00FF)});			
+						String.format("$%1$02X", ram_endDest >> 8),			
+						String.format("$%1$02X", ram_endDest & 0x00FF)});			
 			     }
 			}
 			ramLoaderDataIdx.addFcb(new String[] { "$FF" });			
@@ -1837,12 +1874,12 @@ public class BuildDisk
 	private static void getImgSubSpriteIndex(SubSprite s, List<String> line, int mode) {
 		
 		if (mode == FLOPPY_DISK) {
-			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_page));
+			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_page + 0x60));
 			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address >> 8));		
 			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address & 0xFF));
 		
 			if (s.erase != null) {
-				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_page));
+				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_page + 0x60));
 				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address >> 8));		
 				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address & 0xFF));
 				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
@@ -1911,7 +1948,7 @@ public class BuildDisk
 
 	private static void writeObjIndex(String[][] objIndexPage, String[][] objIndex, GameMode gm, Object obj, int mode) {	
 		if (mode == FLOPPY_DISK) {
-			objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_page) };
+			objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_page + 0x60) };
 			objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_address & 0x00FF) };
 		} else if (mode == MEGAROM_T2) {
 			if (obj.codeInRAM) {
@@ -1951,7 +1988,7 @@ public class BuildDisk
 		asmSndIndex.addLabel(sound.name + " ");
 		for (SoundBin sb : sound.sb) {
 			String[] line = new String[5];
-			line[0] = String.format("$%1$02X", sb.dataIndex.fd_ram_page);
+			line[0] = String.format("$%1$02X", sb.dataIndex.fd_ram_page + 0x60);
 			line[1] = String.format("$%1$02X", sb.dataIndex.fd_ram_address >> 8);
 			line[2] = String.format("$%1$02X", sb.dataIndex.fd_ram_address & 0x00FF);
 			line[3] = String.format("$%1$02X", sb.dataIndex.fd_ram_endAddress >> 8);
@@ -1983,7 +2020,7 @@ public class BuildDisk
 	private static void writeImgPgIndex(AsmSourceCode asmBuilder, ImageSetBin ibin, boolean objInRAM, int mode) throws Exception {
 		if (ibin != null && ibin.dataIndex != null) {
 			if (mode == FLOPPY_DISK) {
-				asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.fd_ram_page) });
+				asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.fd_ram_page + 0x60) });
 			} else if (mode == MEGAROM_T2) {
 				if (objInRAM) {
 					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.t2_ram_page) });
@@ -2018,7 +2055,7 @@ public class BuildDisk
 	private static void writeAniPgIndex(AsmSourceCode asmBuilder, AnimationBin abin, boolean objInRAM, int mode) throws Exception {
 		if (abin != null && abin.dataIndex != null) {
 			if (mode == FLOPPY_DISK) {
-				asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.fd_ram_page) });
+				asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.fd_ram_page + 0x60) });
 			} else if (mode == MEGAROM_T2) {
 				if (objInRAM) {
 					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.t2_ram_page) });

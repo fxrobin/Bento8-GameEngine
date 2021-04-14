@@ -108,7 +108,7 @@ DRS_ProcessEachPriorityLevelB0
         ldu   rsv_mapping_frame,x           ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         lda   page_draw_routine,u
-        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
         leau  ,y                            ; cell_end for background data
@@ -151,7 +151,7 @@ DRS_DrawWithoutBackupB0
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         lda   page_draw_routine,u
-        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
@@ -225,7 +225,7 @@ DRS_ProcessEachPriorityLevelB1
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         lda   page_draw_routine,u
-        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u        
         leau  ,y                            ; cell_end for background data
@@ -268,7 +268,7 @@ DRS_DrawWithoutBackupB1
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame        
         lda   page_draw_routine,u
-        sta   $E7E5                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (A000-DFFF)
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u        
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines

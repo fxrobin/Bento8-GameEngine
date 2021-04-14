@@ -25,6 +25,7 @@ public class RAMLoaderIndex
 	public int ram_endAddress; // adresse de destination (ptr de fin) RAM	
 	
 	public byte[] exoBin;
+	public boolean split = true;
 	
 	public RAMLoaderIndex() {
 	}

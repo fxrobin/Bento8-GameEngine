@@ -37,11 +37,6 @@ RLM_WaitVBL1
         ldb   #$C0                     ; page 3, couleur de cadre 0
         stb   $E7DD                    ; affiche la page a l'ecran
         
-* Positionnement de la page 2 en zone A000-DFFF
-***********************************************************
-        ldb   #$02                     ; changement page 2
-        stb   $E7E5                    ; visible dans l'espace donnees
-        
 * Positionnement de la page 0a en zone 4000-5FFF
 ***********************************************************
         ldb   $E7C3                    ; charge l'id de la demi-Page 0 en espace ecran
@@ -59,13 +54,14 @@ RLM_WaitVBL1
 RLM_CopyData
         pulu  d,x,y,dp                 ; on lit 7 octets
         pshs  d,x,y,dp                 ; on ecrit 7 octets
-        tsta                           ; fin ?
-        bpl   RLM_CopyData             ; non => boucle 2 + 3 cycles
+        tsta                           ; balise de fin dans REG A
+        bpl   RLM_CopyData             ; non => boucle
+        leas  7,s                      ; on remote de 7 car le dernier bloc est une balise de fin
 
 * Copie en page 0a du code Game Mode Engine
 * les groupes de 7 octets sont recopiees a l'envers, le builder va inverser
 * les donnees a l'avance on gagne un leas dans la boucle.
-************************************************************     
+************************************************************    
         ldu   #RAMLoaderBin            ; source
 RLM_CopyCode
         pulu  d,x,y,dp                 ; on lit 7 octets

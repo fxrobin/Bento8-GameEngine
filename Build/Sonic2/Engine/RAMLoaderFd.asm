@@ -25,7 +25,10 @@
         INCLUDE "./Engine/Exomizer.asm"  
 
 RAMLoader 
-        ldu   #RL_RAM_index+7          ; on saute la balise de fin du GameMode
+        ldb   #$62                     ; changement page 2
+        stb   $E7E6                    ; visible dans l'espace cartouche
+        
+        ldu   #RL_RAM_index
         pshs  u
         
 RAMLoader_continue
