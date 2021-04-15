@@ -25,7 +25,7 @@ PlayPCM_ReadChunk
         lda   pcm_page,y                    ; load memory page
         cmpa  #$FF
         beq   PlayPCM_End
-        sta   $E7E6                         ; mount page in A000-DFFF                
+        sta   $E7E6                         ; mount page in (0000-3FFF)                
         ldx   pcm_start_addr,y              ; Chunk start addr
        
 PlayPCM_Loop      

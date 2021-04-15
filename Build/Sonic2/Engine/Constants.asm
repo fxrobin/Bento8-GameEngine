@@ -36,17 +36,6 @@ nb_priority_levels            equ 8   ; number of priority levels (need code cha
 gravity                       equ $38 ; Gravite: 56 sub-pixels par frame
 
 * ===========================================================================
-* Animation Constants
-* ===========================================================================
-
-_resetAnim                    equ $FF
-_goBackNFrames                equ $FE
-_goToAnimation                equ $FD
-_nextRoutine                  equ $FC
-_resetAnimAndSubRoutine       equ $FB
-_nextSubRoutine               equ $FA
-
-* ===========================================================================
 * Images Constants
 * ===========================================================================
 

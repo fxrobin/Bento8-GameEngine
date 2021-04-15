@@ -18,7 +18,7 @@
 AnimateSprite                               *AnimateSprite:
                                             *    moveq   #0,d0
         lda   $E7E6
-        sta   Anim_Rts+1                    ; backup data page     
+        sta   Anim_Rts+1                    ; backup cart page     
         ldx   #Ani_Page_Index
         lda   #$00
         ldb   id,u

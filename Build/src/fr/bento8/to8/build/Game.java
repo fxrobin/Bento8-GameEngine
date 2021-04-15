@@ -37,6 +37,7 @@ public class Game {
 	public boolean debug;
 	public boolean logToConsole;	
 	public String outputDiskName;
+	public static String constAnim;
 	public static String generatedCodeDirName;
 	public boolean memoryExtension;
 	public static int nbMaxPagesRAM;	
@@ -111,6 +112,11 @@ public class Game {
 			engineAsmRAMLoaderT2 = prop.getProperty("engine.asm.RAMLoader.t2");
 			if (engineAsmRAMLoaderT2 == null) {
 				throw new Exception("engine.asm.RAMLoader.t2 not found in "+file);
+			}	
+			
+			constAnim = prop.getProperty("builder.constAnim");
+			if (constAnim == null) {
+				throw new Exception("builder.constAnim not found in "+file);
 			}			
 			
 			generatedCodeDirName = prop.getProperty("builder.generatedCode") + "/";

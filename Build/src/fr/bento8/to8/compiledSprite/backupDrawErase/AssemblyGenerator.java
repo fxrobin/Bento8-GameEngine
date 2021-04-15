@@ -360,7 +360,7 @@ public class AssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("\tOPT C,CT");
 		asm.add("BCKDRAW_" + spriteName + "");
-		asm.add("\tSTS SSAV_" + spriteName + "+1,PCR\n"); // TODO: ajout adressage indexé sur 8bits quand c'est possible
+		asm.add("\tSTS SSAV_" + spriteName + "+2,PCR\n"); // TODO: ajout adressage indexé sur 8bits quand c'est possible
 		asm.add("\tSTD DYN_POS+1,PCR"); // TODO: ajout adressage indexé sur 8bits quand c'est possible
 		asm.add("\tLEAS ,U");
 		asm.add("\tLDU ,Y");
@@ -436,7 +436,7 @@ public class AssemblyGenerator{
 		asm.add("\tSETDP $FF");
 		asm.add("\tOPT C,CT");		
 		asm.add("ERASE_" + spriteName + "");
-		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+1,PCR\n");  // TODO: ajout adressage indexé sur 8bits quand c'est possible
+		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2,PCR\n");  // TODO: ajout adressage indexé sur 8bits quand c'est possible
 		asm.add("\tLEAS ,U");
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;

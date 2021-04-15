@@ -146,10 +146,10 @@ CSR_CheckRefresh
         lbne  CSR_CheckErase
 
 CSR_UpdSpriteImageBasedOnMirror
-        ldx   #Img_Page_Index               ; call page that store imageset for this object
+        ldy   #Img_Page_Index               ; call page that store imageset for this object
         lda   #$00
         ldb   id,u
-        lda   d,x
+        lda   d,y
         sta   $E7E6
 
         lda   rsv_render_flags,u

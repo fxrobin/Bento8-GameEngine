@@ -87,6 +87,13 @@ DRS_rtsB1
         rts
 
 DRS_ProcessEachPriorityLevelB0
+
+        ldu   #Img_Page_Index               ; call page that store imageset for this object
+        lda   #$00
+        ldb   id,x
+        lda   d,u
+        sta   $E7E6    
+
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
         beq   DRS_NextObjectB0
@@ -108,7 +115,7 @@ DRS_ProcessEachPriorityLevelB0
         ldu   rsv_mapping_frame,x           ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (0000-3FFF)
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
         leau  ,y                            ; cell_end for background data
@@ -151,7 +158,7 @@ DRS_DrawWithoutBackupB0
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (0000-3FFF)
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
@@ -187,9 +194,9 @@ DRS_XYToAddressRAM1First
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         mul
 DRS_dyn1        
-        addd  #$0000                        ; (dynamic) RAMA start at $0000
+        addd  #$A000                        ; (dynamic) RAMA start at $A000
         std   Glb_Sprite_Screen_Pos_Part2
-        ora   #$20                          ; add $2000 to d register
+        addd  #$2000
         std   Glb_Sprite_Screen_Pos_Part1     
         rts
 DRS_XYToAddressRAM2First
@@ -197,13 +204,20 @@ DRS_XYToAddressRAM2First
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         mul
 DRS_dyn2        
-        addd  #$2000                        ; (dynamic) RAMB start at $0000
+        addd  #$C000                        ; (dynamic) RAMB start at $A000
         std   Glb_Sprite_Screen_Pos_Part2
         subd  #$1FFF
         std   Glb_Sprite_Screen_Pos_Part1
         rts
         
 DRS_ProcessEachPriorityLevelB1
+
+        ldu   #Img_Page_Index               ; call page that store imageset for this object
+        lda   #$00
+        ldb   id,x
+        lda   d,u
+        sta   $E7E6 
+
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
         beq   DRS_NextObjectB1
@@ -225,7 +239,7 @@ DRS_ProcessEachPriorityLevelB1
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (0000-3FFF)
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u        
         leau  ,y                            ; cell_end for background data
@@ -268,7 +282,7 @@ DRS_DrawWithoutBackupB1
         ldu   rsv_mapping_frame,x      ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame        
         lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (A000-DFFF)
+        sta   $E7E6                         ; select page in RAM (0000-3FFF)
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u        
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
