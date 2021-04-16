@@ -188,15 +188,15 @@ DRS_XYToAddressPositive
         subb  #$1C                          ; TODO same thing as x for negative case
         lsra                                ; x=x/2, sprites moves by 2 pixels on x axis
         lsra                                ; x=x/2, RAMA RAMB enterlace  
-        bcs   DRS_XYToAddressRAM2First      ; Branch if write must begin in RAMB first
+        bcs   DRS_XYToAddressRAM2First      ; Branch if write must begin in RAM2 first
 DRS_XYToAddressRAM1First
         sta   DRS_dyn1+2
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         mul
 DRS_dyn1        
-        addd  #$A000                        ; (dynamic) RAMA start at $A000
+        addd  #$C000                        ; (dynamic)
         std   Glb_Sprite_Screen_Pos_Part2
-        addd  #$2000
+        subd  #$2000
         std   Glb_Sprite_Screen_Pos_Part1     
         rts
 DRS_XYToAddressRAM2First
@@ -204,9 +204,9 @@ DRS_XYToAddressRAM2First
         lda   #$28                          ; 40 bytes per line in RAMA or RAMB
         mul
 DRS_dyn2        
-        addd  #$C000                        ; (dynamic) RAMB start at $A000
+        addd  #$A000                        ; (dynamic)
         std   Glb_Sprite_Screen_Pos_Part2
-        subd  #$1FFF
+        addd  #$2001
         std   Glb_Sprite_Screen_Pos_Part1
         rts
         

@@ -19,7 +19,8 @@ TestImageSet
 TitleScreen_Routines
         lbra  Init1
         lbra  Init2
-        lbra  Move
+        lbra  MovePress
+        lbra  MoveHeld
 Init1
         ldx   #$0000
         jsr   ClearDataMem    
@@ -38,9 +39,13 @@ Init2
         lda   routine,u
         adda  #$03
         sta   routine,u           
-Move
+MovePress
         lda   Dpad_Press
         ldb   Fire_Press
+        bra   TestLeft
+MoveHeld
+        lda   Dpad_Held
+        ldb   Fire_Press        
 TestLeft
         bita  #c1_button_left_mask
         beq   TestRight   
@@ -54,11 +59,23 @@ TestUp
         bita  #c1_button_up_mask
         beq   TestDown   
         dec   y_pixel,u
-        bra   Continue
+        bra   TestBtn
 TestDown
         bita  #c1_button_down_mask
-        beq   Continue   
-        inc   y_pixel,u     
+        beq   TestBtn   
+        inc   y_pixel,u
+TestBtn
+        bitb  #c1_button_A_mask
+        beq   Continue
+        lda   routine,u
+        cmpa  #$06
+        bne   TestRtSub
+        adda  #$03
+        sta   routine,u
+        bra   Continue
+TestRtSub              
+        suba  #$03
+        sta   routine,u
 Continue
         jmp   DisplaySprite
         

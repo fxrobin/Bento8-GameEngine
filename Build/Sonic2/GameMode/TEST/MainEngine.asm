@@ -117,7 +117,7 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
 Object_RAM 
 Reserved_Object_RAM
 Obj_MainCharacter             fcb   ObjID_Test
-                              fcb   $03
+                              fcb   $00
                               fill  0,object_size-2
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
