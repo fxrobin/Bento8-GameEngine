@@ -67,8 +67,8 @@ next_entry                    equ   5
 entry_size                    equ   7
 
 * ----- Cells List
-nb_free_cells                 equ   130
-cell_size                     equ   64     ; 64 bytes x 130 from $3F80 to $6000 (buffer limit is $3F40 to $6000)
+nb_free_cells                 equ   128
+cell_size                     equ   64     ; 64 bytes x 128 from $4000 to $5FFF
 cell_start_adr                equ   $6000
 
 Lst_FreeCellFirstEntry_0      fdb   Lst_FreeCell_0 ; Pointer to first entry in free cell list (buffer 0)

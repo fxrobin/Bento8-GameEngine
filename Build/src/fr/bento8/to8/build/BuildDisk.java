@@ -1581,8 +1581,8 @@ public class BuildDisk
 			int i = 0;
 
 			if (asm != null) {
-				asm.addLabel(animationProperties.getKey() + " ");
 				asm.addFcb(new String[] { animationProperties.getValue()[i] });
+				asm.addLabel(animationProperties.getKey() + " ");				
 			}
 			size++;
 

@@ -155,10 +155,11 @@ ESP_CallEraseRoutineB0
         sta   ESP_FreeEraseBufferB0+1       
         
         ldx   rsv_prev_mapping_frame_0,u    ; load previous image to erase (for this buffer) 
+        ldu   rsv_bgdata_0,u                ; cell_start background data
+        ldy   erase_routine,x
         lda   page_erase_routine,x
         sta   $E7E6                         ; select page in RAM (0000-3FFF)
-        ldu   rsv_bgdata_0,u                ; cell_start background data
-        jsr   [erase_routine,x]             ; erase sprite on working screen buffer
+        jsr   ,y                            ; erase sprite on working screen buffer
         leay  ,u                            ; cell_end background data stored in y
 ESP_CallEraseRoutineB0_00        
         ldu   #$0000                        ; restore u (pointer to object)
@@ -168,7 +169,7 @@ ESP_CallEraseRoutineB0_00
         tfr   d,x                           ; cell_start rounded stored in x
                         
 ESP_FreeEraseBufferB0
-        lda   #$00
+        lda   #$00                          ; (dynamic)
         sta   $E7E6
         jsr   BgBufferFree                  ; free background data in memory
         
@@ -219,10 +220,11 @@ ESP_CallEraseRoutineB1
         sta   ESP_FreeEraseBufferB1+1         
         
         ldx   rsv_prev_mapping_frame_1,u    ; load previous image to erase (for this buffer) 
+        ldu   rsv_bgdata_1,u                ; cell_start background data
+        ldy   erase_routine,x
         lda   page_erase_routine,x
         sta   $E7E6                         ; select page in RAM (0000-3FFF)
-        ldu   rsv_bgdata_1,u                ; cell_start background data
-        jsr   [erase_routine,x]             ; erase sprite on working screen buffer
+        jsr   ,y                            ; erase sprite on working screen buffer        
         leay  ,u                            ; cell_end background data stored in y
 ESP_CallEraseRoutineB1_00        
         ldu   #$0000                        ; restore u (pointer to object)
@@ -232,7 +234,7 @@ ESP_CallEraseRoutineB1_00
         tfr   d,x                           ; cell_start rounded stored in x
                         
 ESP_FreeEraseBufferB1
-        lda   #$00
+        lda   #$00                          ; (dynamic)
         sta   $E7E6
         jsr   BgBufferFree                  ; free background data in memory
         

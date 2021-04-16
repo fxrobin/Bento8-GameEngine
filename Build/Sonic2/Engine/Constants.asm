@@ -141,7 +141,7 @@ rsv_render_erasesprite_mask   equ $02 ; (bit 1) if a sprite need to be cleared o
 rsv_render_displaysprite_mask equ $04 ; (bit 2) if a sprite need to be rendered on screen
 rsv_render_outofrange_mask    equ $08 ; (bit 3) if a sprite is out of range for full rendering in screen
 
-rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w
+rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w * UTILE ?
 rsv_image_center_offset       equ 44 ; 0 or 1 offset that indicate if image center is even or odd (DRS_XYToAddress)
 * ne sert plus                       ; and 45 ; reference to current image set w
 rsv_image_subset              equ 46 ; and 47 ; reference to current image regarding mirror flags w

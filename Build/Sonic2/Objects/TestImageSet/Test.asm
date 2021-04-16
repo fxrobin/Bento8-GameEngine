@@ -24,12 +24,15 @@ TitleScreen_Routines
 Init1
         ldx   #$0000
         jsr   ClearDataMem    
-        ldd   #Img_SonicWalk
-        std   image_set,u
+        ldd   #SonAni_Walk
+        std   anim,u
         ldb   #$01
         stb   priority,u
         ldd   #$807F
         std   xy_pixel,u
+        ; lda   render_flags,u
+        ; ora   #render_xloop_mask
+        ; sta   render_flags,u
         lda   routine,u
         adda  #$03
         sta   routine,u   
@@ -77,6 +80,7 @@ TestRtSub
         suba  #$03
         sta   routine,u
 Continue
+        jsr   AnimateSprite   
         jmp   DisplaySprite
         
        
