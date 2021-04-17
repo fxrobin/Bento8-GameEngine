@@ -110,7 +110,7 @@ DRS_ProcessEachPriorityLevelB0
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         suba  rsv_image_center_offset,x
         jsr   DRS_XYToAddress      
-        ldu   rsv_mapping_frame,x           ; load image to draw
+*        ldu   rsv_mapping_frame,x           ; load image to draw
         stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         stx   DRS_dyn3B0+1                  ; save x reg
         ldx   draw_routine,u        
@@ -232,7 +232,7 @@ DRS_ProcessEachPriorityLevelB1
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         suba  rsv_image_center_offset,x
         jsr   DRS_XYToAddress        
-        ldu   rsv_mapping_frame,x           ; load image to draw
+*        ldu   rsv_mapping_frame,x           ; load image to draw
         stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
         stx   DRS_dyn3B1+1                  ; save x reg
         ldx   draw_routine,u

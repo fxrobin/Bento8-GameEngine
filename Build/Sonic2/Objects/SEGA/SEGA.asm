@@ -133,20 +133,20 @@ SEGA_Init
         ldx   #Obj_Sonic1
         std   ,x
         sty   xy_pixel,x
-        ldu   #Ani_SegaSonic_1
-        stu   anim,x
+        *ldu   #Ani_SegaSonic_1
+        *stu   anim,x
 
         ldx   #Obj_Sonic2
         std   ,x
         sty   xy_pixel,x
-        ldu   #Ani_SegaSonic_2
-        stu   anim,x
+        *ldu   #Ani_SegaSonic_2
+        *stu   anim,x
 
         ldx   #Obj_Sonic3
         std   ,x
         sty   xy_pixel,x
-        ldu   #Ani_SegaSonic_3
-        stu   anim,x
+        *ldu   #Ani_SegaSonic_3
+        *stu   anim,x
 
 SEGA_Init_01
         ldu   #$0000
