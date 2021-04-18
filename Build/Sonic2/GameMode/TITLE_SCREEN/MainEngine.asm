@@ -19,7 +19,8 @@
 LevelMainLoop
         jsr   WaitVBL    
         jsr   UpdatePalette
-        jsr   ReadJoypads        
+        jsr   ReadJoypads
+        jsr   LoadGameMode                
         jsr   RunObjects
         jsr   CheckSpritesRefresh
         jsr   EraseSprites
@@ -146,6 +147,7 @@ Glb_MainCharacter_Is_Dead     fcb   $00
         INCLUDE "./Engine/WaitVBL.asm"
         INCLUDE "./Engine/ReadJoypads.asm"
         INCLUDE "./Engine/RunObjects.asm"
+        INCLUDE "./Engine/LoadGameMode.asm"
         INCLUDE "./Engine/AnimateSprite.asm"
         INCLUDE "./Engine/ObjectMove.asm"
         INCLUDE "./Engine/SingleObjLoad.asm"

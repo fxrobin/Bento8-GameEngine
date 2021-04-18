@@ -15,7 +15,7 @@
 * Re-initialisation de la pile systeme a 9FFF
 * Branchement en 6100
 *
-* input REG : [u] GameMode pointer
+* input REG : [a] GameMode id
 *
 ********************************************************************************
 
@@ -25,18 +25,6 @@
 
 RAMLoaderManager
 
-* Positionnement de la page 3 a l'ecran
-***********************************************************
-RLM_WaitVBL
-        tst   $E7E7                    ; le faisceau n'est pas dans l'ecran
-        bpl   RLM_WaitVBL              ; tant que le bit est a 0 on boucle
-RLM_WaitVBL1
-        tst   $E7E7                    ; le faisceau est dans l'ecran
-        bmi   RLM_WaitVBL1             ; tant que le bit est a 1 on boucle
-
-        ldb   #$C0                     ; page 3, couleur de cadre 0
-        stb   $E7DD                    ; affiche la page a l'ecran
-        
 * Positionnement de la page 0a en zone 4000-5FFF
 ***********************************************************
         ldb   $E7C3                    ; charge l'id de la demi-Page 0 en espace ecran
@@ -48,6 +36,9 @@ RLM_WaitVBL1
 * la fin des donnees est marquee par un octet negatif ($FF par exemple)
 ************************************************************            
         sts   RLM_CopyCode_restore_s+2 ; sauve s
+        ldu   #Gm_Index
+        asla
+        ldu   a,u
         lds   -2,u                     ; s=destination u=source
         lda   #$FF                     ; ecriture balise de fin
         pshs  a                        ; pour GameModeEngine

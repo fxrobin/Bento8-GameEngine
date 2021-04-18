@@ -1321,6 +1321,12 @@ IslandMask_continue
 * ---------------------------------------------------------------------------        
         
 PressStart
+        ldb   Fire_Press
+		bitb  #c1_button_A_mask
+        beq   NoPress
+        lda   #GmID_01_EHZ
+        sta   GameMode                           * Load a new Game Mode
+NoPress	
         lda   routine_secondary,u
         sta   *+4,pcr
         bra   PressStart_Routines

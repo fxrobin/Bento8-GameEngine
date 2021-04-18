@@ -18,11 +18,12 @@ PalInit
         lda   #$62
         tfr   a,dp                     * positionne la direct page a 62
         
-Vsync_1
+PalFade        
         clr   <pal_idx
         ldx   #pal_len                 * index limite de chargement pour couleur courante 
         ldu   #pal_from                * chargement pointeur valeur des couleurs actuelles
-                                
+        
+Vsync_1                                
         tst   $E7E7                    * le faisceau n'est pas dans l'ecran utile
         bpl   Vsync_1                  * tant que le bit est a 0 on boucle
 Vsync_2                                 
@@ -88,7 +89,7 @@ SetPalNext
         leax  1,x                      * on avance le pointeur vers la nouvelle limite
         cmpx  #end_pal_len             * test de fin de liste
         bne   PalRun                   * on reboucle si fin de liste pas atteinte
-        bra   Vsync_1
+        bra   PalFade
         
 pal_buffer                             
         fcb   $42                      * B et buffer de comparaison
@@ -160,7 +161,25 @@ DKContinue
 dk_dernier_bloc                        
         cmpd  #boot_dernier_bloc       * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO                     * si DK.BUF inferieur ou egal a la limite alors DKCO
-        ldu   #gmboot
+
+BOO_WaitVBL
+        tst   $E7E7                    ; le faisceau n'est pas dans l'ecran
+        bpl   BOO_WaitVBL              ; tant que le bit est a 0 on boucle
+BOO_WaitVBL1
+        tst   $E7E7                    ; le faisceau est dans l'ecran
+        bmi   BOO_WaitVBL1             ; tant que le bit est a 1 on boucle
+
+* Positionnement de la page 3 a l'ecran
+***********************************************************
+        ldb   #$C0                     ; page 3, couleur de cadre 0
+        stb   $E7DD                    ; affiche la page a l'ecran
+        
+* Positionnement de la page 2 en zone A000-DFFF
+***********************************************************
+        ldb   #$02                     ; changement page 2
+        stb   $E7E5                    ; visible dans l'espace donnees
+        
+        lda   #gmboot
         jmp   $0000
 
 * donnees pour le fondu de palette

@@ -102,6 +102,7 @@ public class BuildDisk
 			
 			compileRAMLoader();
 			generateObjectIDs();
+			generateGameModeIDs();
 			processSounds();			
 			generateSprites();
 			compileMainEngines();						
@@ -150,7 +151,9 @@ public class BuildDisk
 	
 	private static void compileRAMLoader() throws IOException {
 		compileRAMLoader(FLOPPY_DISK);
+		Files.deleteIfExists(Paths.get(Game.generatedCodeDirName + FileNames.FILE_INDEX_FD));
 		compileRAMLoader(MEGAROM_T2);
+		Files.deleteIfExists(Paths.get(Game.generatedCodeDirName + FileNames.FILE_INDEX_T2));
 	}
 	
 	private static void compileRAMLoader(int mode) throws IOException {
@@ -229,6 +232,31 @@ public class BuildDisk
 		logger.debug("\t\tObjID_"+object.name+" "+Integer.toString(objIndex));
 		return ++objIndex; 
 	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+	private static void generateGameModeIDs() throws Exception {
+		logger.info("Set GameMode Id as Globals ...");
+
+		int gmIndex = 0;
+		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			gmIndex = generateGameModeIDs(gameMode.getValue(), gmIndex);
+			game.glb.flush();
+		}
+	}
+	
+	private static int generateGameModeIDs(GameMode gameMode, int gmIndex) throws Exception {
+		// Génération de la constante ASM
+		game.glb.addConstant("GmID_"+gameMode.name, Integer.toString(gmIndex));
+		
+		// game mode de démarrage
+		if (gameMode.name.contentEquals(game.gameModeBoot)) {
+			game.glb.addConstant("gmboot", Integer.toString(gmIndex));
+		}
+		
+		logger.debug("\t\tGmID_"+gameMode.name+" "+Integer.toString(gmIndex));
+		return ++gmIndex; 
+	}	
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	 
@@ -553,6 +581,7 @@ public class BuildDisk
 		// Compilation de l'objet
 		prepend = "\topt   c,ct\n";
 		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name+ "/" + MODE_DIR[UNDEFINED] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";		
 
 		if (obj.imageSet.uncompressedSize > 0 && obj.animation.uncompressedSize == 0) {
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + imgSetDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
@@ -1327,6 +1356,7 @@ public class BuildDisk
 		// Compilation de l'objet
 		prepend = "\topt   c,ct\n";		
 		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name+ "/" + MODE_DIR[mode] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
 		
 		if (obj.imageSet.uncompressedSize > 0 && obj.animation.uncompressedSize == 0) {			
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + imgSetDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
@@ -1377,9 +1407,13 @@ public class BuildDisk
 		createFile(FileNames.FILE_INDEX_FD);
 
 		// Compilation du Game Mode Manager
-		// -------------------------------------------------		
-
-		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerFd);
+		// -------------------------------------------------
+		String prepend = "Gm_Index\n";
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			prepend += "\tfdb $0000\n";
+		}		
+		String gameModeManagerTmpFile = duplicateFilePrepend(game.engineAsmRAMLoaderManagerFd, "", prepend);
+		
 		compileRAW(gameModeManagerTmpFile);
 		game.engineRAMLoaderManagerBytesFd = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 
@@ -1387,6 +1421,7 @@ public class BuildDisk
 			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManagerFd+" est trop volumineux:"+game.engineRAMLoaderManagerBytesFd.length+" octets (max:"+RamImage.PAGE_SIZE+")");
 		}	
 		
+		logger.info("size: " + game.engineRAMLoaderManagerBytesFd.length);
 		return game.engineRAMLoaderManagerBytesFd.length;
 	}	
 
@@ -1406,6 +1441,7 @@ public class BuildDisk
 			throw new Exception("Le fichier "+game.engineAsmRAMLoaderManagerT2+" est trop volumineux:"+game.engineRAMLoaderManagerBytesT2.length+" octets (max:"+RamImage.PAGE_SIZE+")");
 		}	
 		
+		logger.info("size: " + game.engineRAMLoaderManagerBytesT2.length);
 		return game.engineRAMLoaderManagerBytesT2.length;
 	}	
 	
@@ -1441,10 +1477,6 @@ public class BuildDisk
 			
 			ramLoaderDataIdx.addFdb(new String[] { "RL_RAM_index+"+indexSize});	
 			ramLoaderDataIdx.addLabel("gm_" + gameMode.getKey());
-			// Ajout du tag pour identifier le game mode de démarrage
-			if (gameMode.getKey().contentEquals(game.gameModeBoot)) {
-				ramLoaderDataIdx.addLabel("gmboot");
-			}
 			
 			// Ecriture de l'index des de chargement des demi-pages
 			if (mode == FLOPPY_DISK) {
@@ -1502,6 +1534,11 @@ public class BuildDisk
 			     }
 			}
 			ramLoaderDataIdx.addFcb(new String[] { "$FF" });			
+		}
+		
+		ramLoaderDataIdx.addLabel("Gm_Index");
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			ramLoaderDataIdx.addFdb(new String[] {"gm_" + gameMode.getKey()});
 		}
 				
 		ramLoaderDataIdx.flush();

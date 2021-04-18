@@ -25,8 +25,6 @@
 
 RAMLoaderManager
 
-* Positionnement de la page 3 a l'ecran
-***********************************************************
 RLM_WaitVBL
         tst   $E7E7                    ; le faisceau n'est pas dans l'ecran
         bpl   RLM_WaitVBL              ; tant que le bit est a 0 on boucle
@@ -36,11 +34,6 @@ RLM_WaitVBL1
 
         ldb   #$C0                     ; page 3, couleur de cadre 0
         stb   $E7DD                    ; affiche la page a l'ecran
-        
-* Positionnement de la page 2 en zone A000-DFFF
-***********************************************************
-        ldb   #$02                     ; changement page 2
-        stb   $E7E5                    ; visible dans l'espace donnees
         
 * Positionnement de la page 0a en zone 4000-5FFF
 ***********************************************************

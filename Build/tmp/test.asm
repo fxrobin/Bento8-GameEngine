@@ -4,7 +4,7 @@
         mul                                           ; tempo
         tfr   a,b                                     ; tempo        
         ldd   1,x
-        std   *+8
+        std   >*+8
         lda   ,x        
         sta   <$DB
         ldd   #$0000
