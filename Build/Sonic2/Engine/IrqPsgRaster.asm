@@ -69,7 +69,7 @@ IrqPsg
         lda   <$E6
         sta   IrqPsg_end+1                            ; backup data page
         jsr   PSGFrame
-        jsr   PSGSFXFrame
+        * jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
         sta   <$E6                                    ; restore data page
@@ -98,7 +98,7 @@ IrqPsgRaster_render
         tfr   a,b                                     ; tempo
         tfr   a,b                                     ; tempo        
         ldd   1,x
-        std   *+8
+        std   >*+8
         lda   ,x        
         sta   <$DB
         ldd   #$0000
@@ -108,8 +108,8 @@ IrqPsgRaster_render
         cmpx  Irq_Raster_End
         bne   IrqPsgRaster_render 
 
-       jsr   PSGFrame
-       jsr   PSGSFXFrame
+        jsr   PSGFrame
+        * jsr   PSGSFXFrame
 IrqPsgRaster_end        
         lda   #$00
         sta   <$E6                                    ; restore data page

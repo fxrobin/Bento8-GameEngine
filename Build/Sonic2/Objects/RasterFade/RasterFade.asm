@@ -61,7 +61,7 @@ RasterFade_InInit
         lda   raster_frames,u
         sta   raster_cur_frame,u
         
-        lda   $E7E5
+        lda   $E7E6
         sta   Irq_Raster_Page
         
         leax  pal_RasterCurrent,pcr                   ; calcul des adresses de debut et de fin

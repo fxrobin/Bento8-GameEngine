@@ -59,7 +59,7 @@ am_SwapVideoPage
         andb  #$01               * alterne bit0=0 et bit0=1 (suivant la valeur B $00 ou $FF)
         stb   Glb_Cur_Wrk_Screen_Id
         orb   #$02               * bit1=1
-        stb   $E7E5              * changement page (2 ou 3) visible dans l'espace cartouche
+        stb   $E7E5              * changement page (2 ou 3) visible dans l'espace donnees
         ldb   $E7C3              * charge l'identifiant de la demi-page 0 configuree en espace ecran
         eorb  #$01               * alterne bit0 = 0 ou 1 changement demi-page de la page 0 visible dans l'espace ecran
         stb   $E7C3
