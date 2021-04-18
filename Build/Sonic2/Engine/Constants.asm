@@ -74,7 +74,7 @@ nb_objects                    equ 43 * max 64 total
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ 90 ; the size of an object - DEPENDENCY ClearObj routine
+object_size                   equ 100 ; the size of an object - DEPENDENCY ClearObj routine
 next_object                   equ object_size
 
 id                            equ 0           ; reference to object model id (ObjID_) (0: free slot)
@@ -143,74 +143,84 @@ rsv_render_outofrange_mask    equ $08 ; (bit 3) if a sprite is out of range for 
 
 rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w * UTILE ?
 rsv_image_center_offset       equ 44 ; 0 or 1 offset that indicate if image center is even or odd (DRS_XYToAddress)
-* ne sert plus                       ; and 45 ; reference to current image set w
-rsv_image_subset              equ 46 ; and 47 ; reference to current image regarding mirror flags w
-rsv_mapping_frame             equ 48 ; and 49 ; reference to current image regarding mirror flags, overlay flag and x precision w
-rsv_xy1_pixel                 equ 50          ;
-rsv_x1_pixel                  equ 50          ; x+x_offset-(x_size/2) screen coordinate
-rsv_y1_pixel                  equ 51          ; y+y_offset-(y_size/2) screen coordinate, must follow rsv_x1_pixel
-rsv_xy2_pixel                 equ 52          ;
-rsv_x2_pixel                  equ 52          ; x+x_offset+(x_size/2) screen coordinate
-rsv_y2_pixel                  equ 53          ; y+y_offset+(y_size/2) screen coordinate, must follow rsv_x2_pixel
+rsv_image_subset              equ 45 ; and 46 ; reference to current image regarding mirror flags w
+rsv_mapping_frame             equ 47 ; and 48 ; reference to current image regarding mirror flags, overlay flag and x precision w
+rsv_erase_nb_cell             equ 49 ; b 
+rsv_page_draw_routine         equ 50 ; b
+rsv_draw_routine              equ 51 ; and 52 ; w
+rsv_page_erase_routine        equ 97 ; b
+rsv_erase_routine             equ 98 ; and 99 ; w 
+rsv_xy1_pixel                 equ 53 ;
+rsv_x1_pixel                  equ 53 ; x+x_offset-(x_size/2) screen coordinate
+rsv_y1_pixel                  equ 54 ; y+y_offset-(y_size/2) screen coordinate, must follow rsv_x1_pixel
+rsv_xy2_pixel                 equ 55 ;
+rsv_x2_pixel                  equ 55 ; x+x_offset+(x_size/2) screen coordinate
+rsv_y2_pixel                  equ 56 ; y+y_offset+(y_size/2) screen coordinate, must follow rsv_x2_pixel
 
 * ---------------------------------------------------------------------------
 * reserved variables (engine) - buffer specific
 
-rsv_buffer_0                  equ 54 ; Start index of buffer 0 variables
-rsv_priority_0                equ 54 ; internal value that hold priority in video buffer 0
-rsv_priority_prev_obj_0       equ 55 ; and 56 ; previous object (OST address) in display priority list for video buffer 0 (0000 if none) w
-rsv_priority_next_obj_0       equ 57 ; and 58 ; next object (OST address) in display priority list for video buffer 0 (0000 if none) w
-*rsv_prev_image_subset_0       equ 59 ; and 60 ; reference to previous image subset in video buffer 0 w
-rsv_prev_mapping_frame_0      equ 61 ; and 62 ; reference to previous image in video buffer 0 w
-rsv_bgdata_0                  equ 63 ; and 64 ; address of background data in screen 0 w
-rsv_prev_xy_pixel_0           equ 65 ;
-rsv_prev_x_pixel_0            equ 65 ; previous x screen coordinate b
-rsv_prev_y_pixel_0            equ 66 ; previous y screen coordinate b, must follow x_pixel
-rsv_prev_xy1_pixel_0          equ 67 ;
-rsv_prev_x1_pixel_0           equ 67 ; previous x+x_offset-(x_size/2) screen coordinate b
-rsv_prev_y1_pixel_0           equ 68 ; previous y+y_offset-(y_size/2) screen coordinate b, must follow x1_pixel
-rsv_prev_xy2_pixel_0          equ 69 ;
-rsv_prev_x2_pixel_0           equ 69 ; previous x+x_offset+(x_size/2) screen coordinate b
-rsv_prev_y2_pixel_0           equ 70 ; previous y+y_offset+(y_size/2) screen coordinate b, must follow x2_pixel
-rsv_prev_render_flags_0       equ 71 ;
+rsv_buffer_0                  equ 57 ; Start index of buffer 0 variables
+rsv_priority_0                equ 57 ; internal value that hold priority in video buffer 0
+rsv_priority_prev_obj_0       equ 58 ; and 59 ; previous object (OST address) in display priority list for video buffer 0 (0000 if none) w
+rsv_priority_next_obj_0       equ 60 ; and 61 ; next object (OST address) in display priority list for video buffer 0 (0000 if none) w
+rsv_prev_mapping_frame_0      equ 62 ; and 63 ; reference to previous image in video buffer 0 w
+rsv_prev_erase_nb_cell_0      equ 64 : b
+rsv_prev_page_erase_routine_0 equ 65 ; b
+rsv_prev_erase_routine_0      equ 66 ; and 67 ; w
+rsv_bgdata_0                  equ 68 ; and 69 ; address of background data in screen 0 w
+rsv_prev_xy_pixel_0           equ 70 ;
+rsv_prev_x_pixel_0            equ 70 ; previous x screen coordinate b
+rsv_prev_y_pixel_0            equ 71 ; previous y screen coordinate b, must follow x_pixel
+rsv_prev_xy1_pixel_0          equ 72 ;
+rsv_prev_x1_pixel_0           equ 72 ; previous x+x_offset-(x_size/2) screen coordinate b
+rsv_prev_y1_pixel_0           equ 73 ; previous y+y_offset-(y_size/2) screen coordinate b, must follow x1_pixel
+rsv_prev_xy2_pixel_0          equ 74 ;
+rsv_prev_x2_pixel_0           equ 74 ; previous x+x_offset+(x_size/2) screen coordinate b
+rsv_prev_y2_pixel_0           equ 75 ; previous y+y_offset+(y_size/2) screen coordinate b, must follow x2_pixel
+rsv_prev_render_flags_0       equ 76 ;
 * --- rsv_prev_render_flags_0 bitfield variables ---
 rsv_prev_render_overlay_mask  equ $01 ; (bit 0) if a sprite has been rendered with compilated sprite and no background save on screen buffer 0/1
 rsv_prev_render_onscreen_mask equ $80 ; (bit 7) DEPENDENCY should be bit 7 - has been rendered on screen buffer 0/1
 
-rsv_buffer_1                  equ 72 ; Start index of buffer 1 variables
-rsv_priority_1                equ 72 ; internal value that hold priority in video buffer 1
-rsv_priority_prev_obj_1       equ 73 ; and 74 ; previous object (OST address) in display priority list for video buffer 1 (0000 if none) w
-rsv_priority_next_obj_1       equ 75 ; and 76 ; next object (OST address) in display priority list for video buffer 1 (0000 if none) w
-*rsv_prev_image_subset_1       equ 77 ; and 78 ; reference to previous image subset in video buffer 1 w
-rsv_prev_mapping_frame_1      equ 79 ; and 80 ; reference to previous image in video buffer 1 w
-rsv_bgdata_1                  equ 81 ; and 82 ; address of background data in screen 1 w
-rsv_prev_xy_pixel_1           equ 83 ;
-rsv_prev_x_pixel_1            equ 83 ; previous x screen coordinate b
-rsv_prev_y_pixel_1            equ 84 ; previous y screen coordinate b, must follow x_pixel
-rsv_prev_xy1_pixel_1          equ 85 ;
-rsv_prev_x1_pixel_1           equ 85 ; previous x+x_size screen coordinate b
-rsv_prev_y1_pixel_1           equ 86 ; previous y+y_size screen coordinate b, must follow x_pixel
-rsv_prev_xy2_pixel_1          equ 87 ;
-rsv_prev_x2_pixel_1           equ 87 ; previous x+x_size screen coordinate b
-rsv_prev_y2_pixel_1           equ 88 ; previous y+y_size screen coordinate b, must follow x_pixel
-rsv_prev_render_flags_1       equ 89 ;
+rsv_buffer_1                  equ 77 ; Start index of buffer 1 variables
+rsv_priority_1                equ 77 ; internal value that hold priority in video buffer 1
+rsv_priority_prev_obj_1       equ 78 ; and 79 ; previous object (OST address) in display priority list for video buffer 1 (0000 if none) w
+rsv_priority_next_obj_1       equ 80 ; and 81 ; next object (OST address) in display priority list for video buffer 1 (0000 if none) w
+rsv_prev_mapping_frame_1      equ 82 ; and 83 ; reference to previous image in video buffer 1 w
+rsv_prev_erase_nb_cell_1      equ 84 ; b
+rsv_prev_page_erase_routine_1 equ 85 ; b
+rsv_prev_erase_routine_1      equ 86 ; and 87 ; w
+rsv_bgdata_1                  equ 88 ; and 89 ; address of background data in screen 1 w
+rsv_prev_xy_pixel_1           equ 90 ;
+rsv_prev_x_pixel_1            equ 90 ; previous x screen coordinate b
+rsv_prev_y_pixel_1            equ 91 ; previous y screen coordinate b, must follow x_pixel
+rsv_prev_xy1_pixel_1          equ 92 ;
+rsv_prev_x1_pixel_1           equ 92 ; previous x+x_size screen coordinate b
+rsv_prev_y1_pixel_1           equ 93 ; previous y+y_size screen coordinate b, must follow x_pixel
+rsv_prev_xy2_pixel_1          equ 94 ;
+rsv_prev_x2_pixel_1           equ 94 ; previous x+x_size screen coordinate b
+rsv_prev_y2_pixel_1           equ 95 ; previous y+y_size screen coordinate b, must follow x_pixel
+rsv_prev_render_flags_1       equ 96 ;
 
 buf_priority                  equ 0  ; offset for each rsv_buffer variables
 buf_priority_prev_obj         equ 1  ;
 buf_priority_next_obj         equ 3  ;
-*buf_prev_image_subset         equ 5  ;
-buf_prev_mapping_frame        equ 7  ;
-buf_bgdata                    equ 9  ;
-buf_prev_xy_pixel             equ 11 ;
-buf_prev_x_pixel              equ 11 ;
-buf_prev_y_pixel              equ 12 ;
-buf_prev_xy1_pixel            equ 13 ;
-buf_prev_x1_pixel             equ 13 ;
-buf_prev_y1_pixel             equ 14 ;
-buf_prev_xy2_pixel            equ 15 ;
-buf_prev_x2_pixel             equ 15 ;
-buf_prev_y2_pixel             equ 16 ;
-buf_prev_render_flags         equ 17 ;
+buf_prev_mapping_frame        equ 5  ;
+buf_erase_nb_cell             equ 7  ;
+buf_page_erase_routine        equ 8 ;
+buf_erase_routine             equ 9 ;
+buf_bgdata                    equ 11 ;
+buf_prev_xy_pixel             equ 13 ;
+buf_prev_x_pixel              equ 13 ;
+buf_prev_y_pixel              equ 14 ;
+buf_prev_xy1_pixel            equ 15 ;
+buf_prev_x1_pixel             equ 15 ;
+buf_prev_y1_pixel             equ 16 ;
+buf_prev_xy2_pixel            equ 17 ;
+buf_prev_x2_pixel             equ 17 ;
+buf_prev_y2_pixel             equ 18 ;
+buf_prev_render_flags         equ 19 ;
 
 * TODO Doit etre gere dynamiquement par le builder en fonction du properties
 PalID_TitleScreenRaster       equ 0

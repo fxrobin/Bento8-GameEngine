@@ -145,21 +145,12 @@ ESP_CheckEraseB0
         bne   ESP_UnsetOnScreenFlagB0
         
 ESP_CallEraseRoutineB0
-        stu   ESP_CallEraseRoutineB0_00+1   ; backup u (pointer to object)
-        
-        ldx   #Img_Page_Index               ; call page that store imageset for this object
-        lda   #$00
-        ldb   id,u
-        lda   d,x
-        sta   $E7E6
-        sta   ESP_FreeEraseBufferB0+1       
-        
-        ldx   rsv_prev_mapping_frame_0,u    ; load previous image to erase (for this buffer) 
-        ldu   rsv_bgdata_0,u                ; cell_start background data
-        ldy   erase_routine,x
-        lda   page_erase_routine,x
+        lda   rsv_prev_page_erase_routine_0,u
         sta   $E7E6                         ; select page in RAM (0000-3FFF)
-        jsr   ,y                            ; erase sprite on working screen buffer
+        ldx   rsv_prev_erase_routine_0,u
+        stu   ESP_CallEraseRoutineB0_00+1   ; backup u (pointer to object)                
+        ldu   rsv_bgdata_0,u                ; cell_start background data        
+        jsr   ,x                            ; erase sprite on working screen buffer
         leay  ,u                            ; cell_end background data stored in y
 ESP_CallEraseRoutineB0_00        
         ldu   #$0000                        ; restore u (pointer to object)
@@ -169,8 +160,6 @@ ESP_CallEraseRoutineB0_00
         tfr   d,x                           ; cell_start rounded stored in x
                         
 ESP_FreeEraseBufferB0
-        lda   #$00                          ; (dynamic)
-        sta   $E7E6
         jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB0
@@ -210,21 +199,12 @@ ESP_CheckEraseB1
         bne   ESP_UnsetOnScreenFlagB1        
         
 ESP_CallEraseRoutineB1
-        stu   ESP_CallEraseRoutineB1_00+1   ; backup u (pointer to object)
-        
-        ldx   #Img_Page_Index               ; call page that store imageset for this object
-        lda   #$00
-        ldb   id,u
-        lda   d,x
-        sta   $E7E6     
-        sta   ESP_FreeEraseBufferB1+1         
-        
-        ldx   rsv_prev_mapping_frame_1,u    ; load previous image to erase (for this buffer) 
-        ldu   rsv_bgdata_1,u                ; cell_start background data
-        ldy   erase_routine,x
-        lda   page_erase_routine,x
+        lda   rsv_prev_page_erase_routine_1,u
         sta   $E7E6                         ; select page in RAM (0000-3FFF)
-        jsr   ,y                            ; erase sprite on working screen buffer        
+        ldx   rsv_prev_erase_routine_1,u
+        stu   ESP_CallEraseRoutineB1_00+1   ; backup u (pointer to object)                
+        ldu   rsv_bgdata_1,u                ; cell_start background data        
+        jsr   ,x                            ; erase sprite on working screen buffer
         leay  ,u                            ; cell_end background data stored in y
 ESP_CallEraseRoutineB1_00        
         ldu   #$0000                        ; restore u (pointer to object)
@@ -234,8 +214,6 @@ ESP_CallEraseRoutineB1_00
         tfr   d,x                           ; cell_start rounded stored in x
                         
 ESP_FreeEraseBufferB1
-        lda   #$00                          ; (dynamic)
-        sta   $E7E6
         jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB1

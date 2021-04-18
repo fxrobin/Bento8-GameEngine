@@ -146,15 +146,15 @@ CSR_CheckRefresh
         lbne  CSR_CheckErase
 
 CSR_UpdSpriteImageBasedOnMirror
+        lda   rsv_render_flags,u
+        ora   #rsv_render_checkrefresh_mask
+        sta   rsv_render_flags,u            ; set checkrefresh flag to true
+        
         ldy   #Img_Page_Index               ; call page that store imageset for this object
         lda   #$00
         ldb   id,u
         lda   d,y
-        sta   $E7E6
-
-        lda   rsv_render_flags,u
-        ora   #rsv_render_checkrefresh_mask
-        sta   rsv_render_flags,u            ; set checkrefresh flag to true
+        sta   $E7E6        
         
         lda   render_flags,u                ; set image to display based on x and y mirror flags
         anda  #render_xmirror_mask|render_ymirror_mask
@@ -253,8 +253,19 @@ CSR_NoFrameFound
         ldy   #$0000        
         sty   rsv_mapping_frame,u
 
-CSR_CVP_Continue        
-        ldb   y_pixel,u                               ; check if sprite is fully in screen vertical range
+CSR_CVP_Continue
+        lda   erase_nb_cell,y               ; copy current image metadata into object data
+        sta   rsv_erase_nb_cell,u           ; this is needed to avoid a lot of page switch 
+        lda   page_draw_routine,y           ; during following routines
+		sta   rsv_page_draw_routine,u
+		ldd   draw_routine,y
+		std   rsv_draw_routine,u
+        lda   page_erase_routine,y
+		sta   rsv_page_erase_routine,u
+		ldd   erase_routine,y
+		std   rsv_erase_routine,u		
+                
+        ldb   y_pixel,u                     ; check if sprite is fully in screen vertical range
         ldy   rsv_image_subset,u
         addb  image_subset_y1_offset,y
         cmpb  #screen_bottom

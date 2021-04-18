@@ -90,36 +90,29 @@ DRS_ProcessEachPriorityLevelB0
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
         beq   DRS_NextObjectB0
-
-        ldu   #Img_Page_Index               ; call page that store imageset for this object
-        lda   #$00
-        ldb   id,x
-        lda   d,u
-        sta   $E7E6        
         
         lda   rsv_prev_render_flags_0,x
         bmi   DRS_NextObjectB0
         lda   render_flags,x
         anda  #render_overlay_mask
         bne   DRS_DrawWithoutBackupB0
-        ldu   rsv_mapping_frame,x
-        lda   erase_nb_cell,u        
+        lda   rsv_erase_nb_cell,x        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
         beq   DRS_NextObjectB0              ; branch if no more free space
+        leau  ,y                            ; cell_end for background data        
+DRS_DrawWithoutBackupB0        
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         suba  rsv_image_center_offset,x
-        jsr   DRS_XYToAddress      
-*        ldu   rsv_mapping_frame,x           ; load image to draw
-        stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
-        stx   DRS_dyn3B0+1                  ; save x reg
-        ldx   draw_routine,u        
-        lda   page_draw_routine,u
+        jsr   DRS_XYToAddress
+        ldd   rsv_mapping_frame,x
+        std   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
+        lda   rsv_page_draw_routine,x
         sta   $E7E6                         ; select page in RAM (0000-3FFF)        
-        leau  ,y                            ; cell_end for background data
+        stx   DRS_dyn3B0+1                  ; save x reg
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
         ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
-        jsr   ,x                            ; backup background and draw sprite on working screen buffer
+        jsr   [rsv_draw_routine,x]          ; backup background and draw sprite on working screen buffer
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_0,x                ; store pointer to saved background data
@@ -130,6 +123,12 @@ DRS_dyn3B0
         std   rsv_prev_xy1_pixel_0,x        ; save as previous x' and y'        
         ldd   rsv_xy2_pixel,x               ; load x'' and y'' in one operation
         std   rsv_prev_xy2_pixel_0,x        ; save as previous x'' and y''
+        lda   rsv_erase_nb_cell,x
+        sta   rsv_prev_erase_nb_cell_0,x
+        lda   rsv_page_erase_routine,x
+        sta   rsv_prev_page_erase_routine_0,x
+        ldd   rsv_erase_routine,x
+        std   rsv_prev_erase_routine_0,x
         lda   rsv_prev_render_flags_0,x
         ora   #rsv_prev_render_onscreen_mask
         ldb   render_flags,x
@@ -148,21 +147,6 @@ DRS_NextObjectB0
         ldx   rsv_priority_next_obj_0,x
         lbne  DRS_ProcessEachPriorityLevelB0   
         rts
-        
-DRS_DrawWithoutBackupB0
-        ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
-        suba  rsv_image_center_offset,x        
-        jsr   DRS_XYToAddress
-        ldu   rsv_mapping_frame,x           ; load image to draw
-        stu   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
-        stx   DRS_dyn3B0+1                  ; save x reg
-        ldx   draw_routine,u
-        lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)                
-        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
-        jsr   ,x                            ; draw sprite on working screen buffer
-        bra   DRS_dyn3B0          
 
 ********************************************************************************
 * x_pixel and y_pixel coordinate system
@@ -213,35 +197,28 @@ DRS_ProcessEachPriorityLevelB1
         anda  #rsv_render_displaysprite_mask
         beq   DRS_NextObjectB1
         
-        ldu   #Img_Page_Index               ; call page that store imageset for this object
-        lda   #$00
-        ldb   id,x
-        lda   d,u
-        sta   $E7E6         
-        
         lda   rsv_prev_render_flags_1,x
         bmi   DRS_NextObjectB1
         lda   render_flags,x
         anda  #render_overlay_mask
         bne   DRS_DrawWithoutBackupB1
-        ldu   rsv_mapping_frame,x
-        lda   erase_nb_cell,u        
+        lda   rsv_erase_nb_cell,x        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
-        cmpy  #$0000                        ; y contains cell_end of allocated space 
+        cmpy  #$0000                        ; y contains cell_end of allocated space
         beq   DRS_NextObjectB1              ; branch if no more free space
+        leau  ,y                            ; cell_end for background data        
+DRS_DrawWithoutBackupB1        
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
         suba  rsv_image_center_offset,x
-        jsr   DRS_XYToAddress        
-*        ldu   rsv_mapping_frame,x           ; load image to draw
-        stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame 
+        jsr   DRS_XYToAddress
+        ldd   rsv_mapping_frame,x
+        std   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame
+        lda   rsv_page_draw_routine,x
+        sta   $E7E6                         ; select page in RAM (0000-3FFF)        
         stx   DRS_dyn3B1+1                  ; save x reg
-        ldx   draw_routine,u
-        lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)
-        leau  ,y                            ; cell_end for background data
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
         ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
-        jsr   ,x                            ; backup background and draw sprite on working screen buffer
+        jsr   [rsv_draw_routine,x]          ; backup background and draw sprite on working screen buffer
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_1,x                ; store pointer to saved background data
@@ -252,6 +229,12 @@ DRS_dyn3B1
         std   rsv_prev_xy1_pixel_1,x        ; save as previous x' and y'        
         ldd   rsv_xy2_pixel,x               ; load x'' and y'' in one operation
         std   rsv_prev_xy2_pixel_1,x        ; save as previous x'' and y''
+        lda   rsv_erase_nb_cell,x
+        sta   rsv_prev_erase_nb_cell_1,x
+        lda   rsv_page_erase_routine,x
+        sta   rsv_prev_page_erase_routine_1,x
+        ldd   rsv_erase_routine,x
+        std   rsv_prev_erase_routine_1,x                        
         lda   rsv_prev_render_flags_1,x
         ora   #rsv_prev_render_onscreen_mask
         ldb   render_flags,x
@@ -270,18 +253,3 @@ DRS_NextObjectB1
         ldx   rsv_priority_next_obj_1,x
         lbne  DRS_ProcessEachPriorityLevelB1   
         rts
-        
-DRS_DrawWithoutBackupB1
-        ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
-        suba  rsv_image_center_offset,x        
-        jsr   DRS_XYToAddress
-        ldu   rsv_mapping_frame,x           ; load image to draw
-        stu   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame        
-        stx   DRS_dyn3B1+1                  ; save x reg
-        ldx   draw_routine,u        
-        lda   page_draw_routine,u
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)        
-        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
-        jsr   ,x                            ; draw sprite on working screen buffer
-        bra   DRS_dyn3B1

@@ -184,12 +184,13 @@ public class AssemblyGenerator{
 			Path path = Paths.get(lstEraseFileName);
 			String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 			
-			Pattern pn = Pattern.compile("(Equ)\\s*([0-9a-fA-F]*)\\sDataSize") ;  
+			Pattern pn = Pattern.compile("DataSize\\s(equ)\\s\\$([0-9a-fA-F]*)\\s") ;  
 			Matcher m = pn.matcher(content);
 
 			while (m.find()) {
 				sizeSpriteEData1=Integer.parseInt(m.group(2), 16);			
 			}
+			logger.debug("\t\t\tTaille de la zone data 1 et 2: "+sizeSpriteEData1);
 		}
 	}
 
