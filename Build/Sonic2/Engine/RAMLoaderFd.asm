@@ -25,8 +25,9 @@
         INCLUDE "./Engine/Exomizer.asm"  
 
 RAMLoader 
-        ldb   #$62                     ; changement page 2
-        stb   $E7E6                    ; visible dans l'espace cartouche
+        ldb   $E7E5
+        orb   #$60                     ; charge la page video de travail et la positionne
+        stb   $E7E6                    ; dans l'espace cartouche comme buffer pour exomizer
         
         ldu   #RL_RAM_index
         pshs  u

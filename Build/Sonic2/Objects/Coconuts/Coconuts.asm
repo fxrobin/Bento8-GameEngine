@@ -15,9 +15,6 @@ Coconuts_Routines
         lbra  Coconuts_Display
 
 Coconuts_Init
-        ldx   #$0000
-        jsr   ClearDataMem    
-        
         ldd   #Img_coconuts_000
         std   image_set,u
         ldb   #$01

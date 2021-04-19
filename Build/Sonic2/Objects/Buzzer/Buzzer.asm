@@ -16,9 +16,6 @@ Buzzer_Routines
         lbra  Buzzer_Display
 
 Buzzer_Init
-        ldx   #$0000
-        jsr   ClearDataMem    
-        
         ldd   #Img_buzzer_000
         std   image_set,u
         ldb   #$01

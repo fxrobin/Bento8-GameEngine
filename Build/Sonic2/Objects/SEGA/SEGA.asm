@@ -279,9 +279,9 @@ SEGA_MidWipe
         ldx   #Obj_PaletteFade
         lda   #ObjID_PaletteFade
         sta   id,x
-        ldd   #Pal_SEGA *@IgnoreUndefined
+        ldd   #Pal_SEGA
         std   ext_variables,x
-        ldd   #Pal_SEGAMid *@IgnoreUndefined
+        ldd   #Pal_SEGAMid
         std   ext_variables+2,x
         lda   routine_secondary,u
         adda  #$03
@@ -358,9 +358,9 @@ SEGA_EndWipe
         ldx   #Obj_PaletteFade
         lda   #ObjID_PaletteFade
         sta   id,x
-        ldd   Cur_palette *@IgnoreUndefined
+        ldd   Cur_palette
         std   ext_variables,x
-        ldd   #Pal_SEGAEnd *@IgnoreUndefined
+        ldd   #Pal_SEGAEnd
         std   ext_variables+2,x
         
         lda   routine_secondary,u
@@ -380,7 +380,7 @@ SEGA_PlaySample
         adda  #$03
         sta   routine_secondary,u
 
-        ldy   #Pcm_SEGA *@IgnoreUndefined
+        ldy   #Pcm_SEGA
         jsr   PlayPCM
 
         ldd   #$0000
@@ -397,9 +397,9 @@ SEGA_fadeOut
         ldx   #Obj_PaletteFade
         lda   #ObjID_PaletteFade
         sta   id,x
-        ldd   Cur_palette *@IgnoreUndefined
+        ldd   Cur_palette
         std   ext_variables,x
-        ldd   #Black_palette *@IgnoreUndefined
+        ldd   #Black_palette
         std   ext_variables+2,x
         lda   routine_secondary,u
         adda  #$03

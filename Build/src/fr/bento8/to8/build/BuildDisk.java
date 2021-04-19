@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -429,11 +430,15 @@ public class BuildDisk
 			writeAniPgIndex(asmBuilder, gameMode.getValue(), mode);
 			writeLoadActIndex(asmBuilder, gameMode.getValue());
 			
+			Files.write(Paths.get(mainEngineTmpFile), ("\tINCLUDE \"" + Game.generatedCodeDirName + gameMode.getKey() + "/" + FileNames.MAIN_GENCODE + "\"\n").getBytes(), StandardOpenOption.APPEND);
+			
 			compileRAW(mainEngineTmpFile);
 			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
 
 			if (binBytes.length > RamImage.PAGE_SIZE) {
 				throw new Exception("file " + gameMode.getValue().engineAsmMainEngine + " is too large:" + binBytes.length + " bytes (max:"+RamImage.PAGE_SIZE+")");
+			} else {
+				logger.info("bin length: " + binBytes.length);
 			}
 			
 			// Le MainEngine est de taille constante, pas besoin de demultiplier pour FD/T2

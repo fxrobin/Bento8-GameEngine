@@ -10,16 +10,16 @@
 * ---------------------------------------------------------------------------
 * Subtypes
 * ---------------------------------------------------------------------------
-Sub_RasterFadeInColor  equ 3 
-Sub_RasterFadeOutColor equ 3 
-Sub_RasterFadeInPal    equ 3
-Sub_RasterFadeOutPal   equ 3
-Sub_RasterMain         equ 6
+Sub_RasterFadeInColor  equ 1 
+Sub_RasterFadeOutColor equ 2 
+Sub_RasterFadeInPal    equ 0 * not implemented
+Sub_RasterFadeOutPal   equ 0 * not implemented
+Sub_RasterMain         equ 3
+Sub_RasterCycle        equ 4
 
 * ---------------------------------------------------------------------------
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
-raster_pal_src        equ ext_variables                  * ptr to source pal
 raster_pal_dst        equ ext_variables+1                * ptr to destination pal
 raster_nb_fade_colors equ ext_variables+2                * number of colors to fade (from start)
 raster_cycle_idx      equ ext_variables+3                * current index in cycling pal
@@ -34,14 +34,16 @@ raster_cycle_frame    equ ext_variables+12               * current frame in cycl
 
 RasterFade
         lda   routine,u
-        sta   *+4,pcr
-        bra   RasterFade_Routines
+        asla
+        ldx   #RasterFade_Routines
+        jmp   [a,x]
  
 RasterFade_Routines
-        lbra  RasterFade_SubtypeInit
-        lbra  RasterFade_InInit
-        lbra  RasterFade_Main
-        lbra  RasterCycle_Main
+        fdb  RasterFade_SubtypeInit
+        fdb  RasterFade_InInit
+        fdb  RasterFade_OutInit
+        fdb  RasterFade_Main
+        fdb  RasterCycle_Main
 
 RasterFade_SubtypeInit
         lda   subtype,u
@@ -49,10 +51,6 @@ RasterFade_SubtypeInit
         bra   RasterFade 
 
 RasterFade_InInit
-        lda   routine,u
-        adda  #$03
-        sta   routine,u 
-        
         lda   #Sub_RasterMain
         sta   routine,u 
         
@@ -64,24 +62,24 @@ RasterFade_InInit
         lda   $E7E6
         sta   Irq_Raster_Page
         
-        leax  pal_RasterCurrent,pcr                   ; calcul des adresses de debut et de fin
+        ldx   #pal_RasterCurrent                      ; calcul des adresses de debut et de fin
         stx   Irq_Raster_Start                        ; pour les donnees de palette
-        stx   RFA_InitColor_endloop1+1,pcr
+        stx   RFA_InitColor_endloop1+1
         
         lda   #$03                                    ; affectation aux variables globales de
         ldb   raster_nb_colors,u                      ; la routine Irq Raster
         mul
         leax  d,x
         stx   Irq_Raster_End        
-        stx   RFA_end+2,pcr
-        stx   RFA_InitColor_endloop3+1,pcr
+        stx   RFA_end+2
+        stx   RFA_InitColor_endloop3+1
         
-        leax  pal_RasterCurrent,pcr        
+        ldx   #pal_RasterCurrent        
         lda   #$03
         ldb   raster_nb_fade_colors,u
         mul
         leax  d,x        
-        stx   RFA_InitColor_endloop2+1,pcr
+        stx   RFA_InitColor_endloop2+1
         
         lda   raster_inc,u                            ; precalcul de l'increment
         asla                                          ; 1 devient 11, A devient AA ...
@@ -100,9 +98,8 @@ RFA_InitColor_endloop1
         bne   RFA_InitColor_loop1
 
         lda   raster_pal_dst,u                        ; recopie les index de couleur cible dans le tableau raster
-        leay  Pal_Index,pcr
-        ldd   a,y
-        leay  d,y
+        ldy   #Pal_Index
+        ldy   a,y
 RFA_InitColor_loop2
         lda   ,y
         leay  3,y
@@ -111,6 +108,7 @@ RFA_InitColor_loop2
 RFA_InitColor_endloop2        
         cmpx  #$0000
         bne   RFA_InitColor_loop2
+        bra   RFA_InitColor_endloop3
         
 RFA_InitColor_loop3                                   
         lda   ,y+                                     ; copie des index et couleurs non traite par le fade
@@ -121,6 +119,70 @@ RFA_InitColor_endloop3
         cmpx  #$0000          
         bne   RFA_InitColor_loop3
         rts                                                                                                                
+
+*******************************************************************************
+
+RasterFade_OutInit
+        lda   #Sub_RasterMain
+        sta   routine,u 
+        
+        clr   raster_cycle_idx,u
+        
+        lda   raster_frames,u
+        sta   raster_cur_frame,u
+        
+        lda   $E7E6
+        sta   Irq_Raster_Page
+        
+        ldx   #pal_RasterCurrent                      ; calcul des adresses de debut et de fin
+        stx   Irq_Raster_Start                        ; pour les donnees de palette
+        
+        lda   #$03                                    ; affectation aux variables globales de
+        ldb   raster_nb_colors,u                      ; la routine Irq Raster
+        mul
+        leax  d,x
+        stx   Irq_Raster_End        
+        stx   RFA_end+2
+        stx   RFA_OutInitColor_endloop3+1
+        
+        ldx   #pal_RasterCurrent       
+        lda   #$03
+        ldb   raster_nb_fade_colors,u
+        mul
+        leax  d,x        
+        stx   RFA_OutInitColor_endloop2+1
+        
+        lda   raster_inc,u                            ; precalcul de l'increment
+        asla                                          ; 1 devient 11, A devient AA ...
+        asla
+        asla
+        asla
+        adda  raster_inc,u
+        sta   raster_inc_,u
+                
+        ldx   Irq_Raster_Start
+        lda   raster_pal_dst,u                        ; recopie les index de couleur cible dans le tableau raster
+        ldy   #Pal_Index
+        ldy   a,y
+RFA_OutInitColor_loop2
+        lda   ,y
+        leay  3,y
+        sta   ,x
+        leax  3,x
+RFA_OutInitColor_endloop2        
+        cmpx  #$0000
+        bne   RFA_OutInitColor_loop2
+        bra   RFA_OutInitColor_endloop3
+        
+RFA_OutInitColor_loop3                                   
+        lda   ,y+                                     ; copie des index et couleurs non traite par le fade
+        sta   ,x+
+        ldd   ,y++
+        std   ,x++        
+RFA_OutInitColor_endloop3        
+        cmpx  #$0000          
+        bne   RFA_OutInitColor_loop3
+        rts                                                               
                                                  
 RasterFade_Main
         dec   raster_cur_frame,u
@@ -132,40 +194,37 @@ RFA_Continue
         sta   raster_cur_frame,u
         
         lda   raster_pal_dst,u                        ; recopie les index de couleur cible dans le tableau raster
-        leax  Pal_Index,pcr
-        ldd   a,x
-        addd  #1
-        leax  d,x
-        leay  pal_RasterCurrent+1,pcr
+        ldx   #Pal_Index
+        ldx   a,x
+        leax  1,x
+        ldy   #pal_RasterCurrent+1
         dec   raster_cycles,u          * decremente le compteur du nombre de frame
         bne   RFA_Loop                 * on reboucle si nombre de frame n'est pas realise
-        lda   routine,u
-        adda  #$03
-        sta   routine,u 
+        inc   routine,u
         bra   RasterCycle_Main
         
 RFA_Loop
         lda   1,y	                   * chargement de la composante verte et rouge
-        anda  pal_mask,pcr             * on efface la valeur vert ou rouge par masque
+        anda  pal_mask                 * on efface la valeur vert ou rouge par masque
         ldb   1,x                      * composante verte et rouge couleur cible
-        andb  pal_mask,pcr             * on efface la valeur vert ou rouge par masque
-        stb   pal_buffer,pcr           * on stocke la valeur cible pour comparaison
+        andb  pal_mask                 * on efface la valeur vert ou rouge par masque
+        stb   pal_buffer               * on stocke la valeur cible pour comparaison
         ldb   raster_inc_,u            * preparation de la valeur d'increment de couleur
-        andb  pal_mask,pcr             * on efface la valeur non utile par masque
-        stb   pal_buffer+1,pcr         * on stocke la valeur pour ADD ou SUB ulterieur
-        cmpa  pal_buffer,pcr           * comparaison de la composante courante et cible
+        andb  pal_mask                 * on efface la valeur non utile par masque
+        stb   pal_buffer+1             * on stocke la valeur pour ADD ou SUB ulterieur
+        cmpa  pal_buffer               * comparaison de la composante courante et cible
         beq   RFA_VRSuivante           * si composante est egale a la cible on passe
         bhi   RFA_VRDec                * si la composante est superieure on branche
         lda   1,y                      * on recharge la valeur avec vert et rouge
-        adda  pal_buffer+1,pcr         * on incremente la composante verte ou rouge
+        adda  pal_buffer+1             * on incremente la composante verte ou rouge
         bra   RFA_VRSave               * on branche pour sauvegarder
 RFA_VRDec
         lda   1,y                      * on recharge la valeur avec vert et rouge
-        suba  pal_buffer+1,pcr         * on decremente la composante verte ou rouge
+        suba  pal_buffer+1             * on decremente la composante verte ou rouge
 RFA_VRSave                             
         sta   1,y                      * sauvegarde de la nouvelle valeur vert ou rouge
 RFA_VRSuivante                         
-        com   pal_mask,pcr             * inversion du masque pour traiter l'autre semioctet
+        com   pal_mask                 * inversion du masque pour traiter l'autre semioctet
         bmi   RFA_Loop                 * si on traite $F0 on branche sinon on continue
 	    
 RFA_SetPalBleu
@@ -204,9 +263,9 @@ RasterCycle_Main_continue
         sta   raster_cycle_idx,u
         asla
         
-        leax  Pal_TitleScreenCycle,pcr
+        ldx   #Pal_TitleScreenCycle
         ldx   a,x
-        leay  pal_RasterCurrent+124,pcr        
+        ldy   #pal_RasterCurrent+124        
         stx   ,y
         
 RasterCycle_Main_end
@@ -229,7 +288,10 @@ Pal_TitleScreenCycle
 		fdb   $0b74 
 Pal_TitleScreenCycle_end	
 
-Pal_Index    fdb Pal_TitleScreenRaster-Pal_Index           
+Pal_Index
+        fdb   Pal_TitleScreenRaster
+        fdb   Pal_TitleScreenRasterBlack
+                   
 Pal_TitleScreenRaster
         fcb   $08
         fdb   $0020	* 148-154 island 4
@@ -315,7 +377,6 @@ Pal_TitleScreenRaster
 		fdb   $0b74	* 175-180 island 13
         fcb   $16
 		fdb   $0a42	* 175-180 island 11
-		
         fcb   $1e
         fdb   $0c00	* 181-131
         fcb   $1e
@@ -348,7 +409,6 @@ Pal_TitleScreenRaster
         fdb   $0c00	* 181-131
         fcb   $1e
         fdb   $0c00	* 181-131	
-
         fcb   $00
         fdb   $0fff	* title screen 0		
         fcb   $04
@@ -377,4 +437,149 @@ Pal_TitleScreenRaster
         fdb   $0e00	* title screen 13
         fcb   $1c
         fdb   $0001	* title screen 14        
-Pal_TitleScreenRaster_end                
+
+Pal_TitleScreenRasterBlack
+        fcb   $08
+        fdb   $0000
+        fcb   $0a
+        fdb   $0000
+        fcb   $12
+        fdb   $0000
+        fcb   $14
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $0e
+        fdb   $0000
+        fcb   $0c
+        fdb   $0000
+        fcb   $10
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1c
+        fdb   $0000
+        fcb   $06
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $18
+        fdb   $0000
+        fcb   $04
+        fdb   $0000
+        fcb   $00
+        fdb   $0000
+        fcb   $1a
+        fdb   $0000
+        fcb   $16
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $1e
+        fdb   $0000
+        fcb   $00
+        fdb   $0000
+        fcb   $04
+        fdb   $0000
+        fcb   $06
+        fdb   $0000
+        fcb   $08
+        fdb   $0000
+        fcb   $0a
+        fdb   $0000
+        fcb   $0c
+        fdb   $0000
+        fcb   $0e
+        fdb   $0000
+        fcb   $10
+        fdb   $0000
+        fcb   $12
+        fdb   $0000
+        fcb   $14
+        fdb   $0000
+        fcb   $16
+        fdb   $0000
+        fcb   $18
+        fdb   $0000
+        fcb   $1a
+        fdb   $0000
+        fcb   $1c
+        fdb   $0000

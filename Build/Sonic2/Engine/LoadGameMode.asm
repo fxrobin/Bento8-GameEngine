@@ -13,7 +13,6 @@ LoadGameMode
         rts
         
 LoadGameModeNow
-        jsr   IrqOff
 		ldb   #$64                     * Page 4 contains RAMLoaderManager
-        stb   $E7E6                    * 
+        stb   $E7E6                    *
         jmp   >$0000                   * Call RAMLoaderManager           

@@ -1,5 +1,7 @@
+        opt   c,ct
+
 ********************************************************************************
-* Game Engine (TO8 Thomson) - Benoit Rousseau 07/10/2020
+* Game Engine (TO8 Thomson) - Benoit Rousseau 2020-2021
 * ------------------------------------------------------------------------------
 *
 *
@@ -17,7 +19,8 @@
 LevelMainLoop
         jsr   WaitVBL    
         jsr   UpdatePalette
-        jsr   ReadJoypads        
+        jsr   ReadJoypads
+        jsr   LoadGameMode                
         jsr   RunObjects
         jsr   CheckSpritesRefresh
         jsr   EraseSprites
@@ -116,12 +119,16 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         
 Object_RAM 
 Reserved_Object_RAM
-Obj_MainCharacter             fdb   $0403
-                              fill  0,object_size-2
+Obj_MainCharacter             fcb   ObjID_Sonic
+                              fill  0,object_size-1
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
-Dynamic_Object_RAM            fill  0,nb_dynamic_objects*object_size
+Dynamic_Object_RAM            fcb   ObjID_Spiny
+                              fill  0,object_size-1                              
+                              fcb   ObjID_Masher
+                              fill  0,object_size-1                              
+                              fill  0,(nb_dynamic_objects-2)*object_size
 Dynamic_Object_RAM_End
 
 LevelOnly_Object_RAM                              * faire comme pour Dynamic_Object_RAM
@@ -134,9 +141,8 @@ Object_RAM_End                fdb   *
 * ---------------------------------------------------------------------------
 * Lifecycle
 * ---------------------------------------------------------------------------
-        INCLUDE "./Objects/Sonic/Sonic.glb"
 
-Glb_MainCharacter_Is_Dead     fcb   $01
+Glb_MainCharacter_Is_Dead     fcb   $00
 
 * ==============================================================================
 * Routines
@@ -144,6 +150,7 @@ Glb_MainCharacter_Is_Dead     fcb   $01
         INCLUDE "./Engine/WaitVBL.asm"
         INCLUDE "./Engine/ReadJoypads.asm"
         INCLUDE "./Engine/RunObjects.asm"
+        INCLUDE "./Engine/LoadGameMode.asm"
         INCLUDE "./Engine/AnimateSprite.asm"
         INCLUDE "./Engine/ObjectMove.asm"
         INCLUDE "./Engine/SingleObjLoad.asm"
@@ -160,11 +167,4 @@ Glb_MainCharacter_Is_Dead     fcb   $01
         INCLUDE "./Engine/ClearDataMemory.asm"
         INCLUDE "./Engine/CopyImageToCart.asm"
 		INCLUDE "./Engine/UpdatePalette.asm"
-        INCLUDE "./Engine/PlayPCM.asm"
         INCLUDE "./Engine/PSGlib.asm"
-        INCLUDE "./Engine/IrqPsgRaster.asm"
-        
-* ==============================================================================
-* Generated Code and Data
-* ==============================================================================
-        INCLUDE "./GeneratedCode/02_CPZ/BuilderMainGenCode.asm"                                                             

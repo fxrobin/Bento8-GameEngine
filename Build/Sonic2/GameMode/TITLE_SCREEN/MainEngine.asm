@@ -1,7 +1,7 @@
         opt   c,ct
 
 ********************************************************************************
-* Game Engine (TO8 Thomson) - Benoit Rousseau 07/10/2020
+* Game Engine (TO8 Thomson) - Benoit Rousseau 2020-2021
 * ------------------------------------------------------------------------------
 *
 *
@@ -167,8 +167,3 @@ Glb_MainCharacter_Is_Dead     fcb   $00
         INCLUDE "./Engine/PlayPCM.asm"
         INCLUDE "./Engine/PSGlib.asm"
         INCLUDE "./Engine/IrqPsgRaster.asm"
-        
-* ==============================================================================
-* Generated Code and Data
-* ==============================================================================
-        INCLUDE "./GeneratedCode/TITLE_SCREEN/BuilderMainGenCode.asm"                                                             

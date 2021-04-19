@@ -134,6 +134,7 @@ b_TitleScr_final_state          equ ext_variables+6
 b_TitleScr_music_is_playing     equ ext_variables+7
 b_TitleScr_ripple_index         equ ext_variables
 b_TitleScr_water_index          equ ext_variables+2
+b_TitleScr_pressed              equ ext_variables+2
 
 * ---------------------------------------------------------------------------
 * Subtypes
@@ -229,7 +230,7 @@ Sonic_Routines                                   *off_12E76:      offsetTable
                                                  *; spawn more stars
 Sonic_Init                                       *Obj0E_Sonic_Init:
 
-        ldd   #Pal_TitleScreen *@IgnoreUndefined
+        ldd   #Pal_TitleScreen                  
 		std   Cur_palette
         clr   Refresh_palette                    * will call refresh palette after next VBL
 
@@ -262,7 +263,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
 
                                                  *        move.b  #6,subtype(a1)                          ; logo top
         *ldb   #SFX_CHANNEL2
-        *ldx   #Psg_Sparkle *@IgnoreUndefined     *        moveq   #SndID_Sparkle,d0
+        *ldx   #Psg_Sparkle                       *        moveq   #SndID_Sparkle,d0
         *jmp   PSGSFXPlay                         *        jmpto   (PlaySound).l, JmpTo4_PlaySound
         rts
                                                  *; ===========================================================================
@@ -390,11 +391,11 @@ Sonic_PaletteFadeAfterWait                       *+
         clr   subtype,x                          *        move.b  #0,subtype(a1)
         ldd   #Black_palette
         std   ext_variables,x
-        ldd   #Pal_TitleScreen *@IgnoreUndefined
+        ldd   #Pal_TitleScreen                  
         std   ext_variables+2,x
         lda   #$FF  
         sta   b_TitleScr_music_is_playing        *        st.b    objoff_30(a0)
-        ldx   #Psg_TitleScreen  *@IgnoreUndefined *        moveq   #MusID_Title,d0 ; title music
+        ldx   #Psg_TitleScreen                    *        moveq   #MusID_Title,d0 ; title music
         jmp   PSGPlayNoRepeat                    *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
                                                  *; ===========================================================================
                                                  *
@@ -514,9 +515,9 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldx   #Obj_RasterFade
         lda   #ObjID_RasterFade
         sta   id,x
-        lda   #3
+        lda   #1                                 * Sub_RasterFadeInColor
         sta   subtype,x
-        lda   #PalID_TitleScreenRaster
+        lda   #0                                 * PalID_TitleScreenRaster
         sta   ext_variables+1,x                  * ptr to destination pal
         ldd   #$0fff
         std   ext_variables+4,x                  * src color
@@ -874,7 +875,7 @@ LargeStar_MoveContinue
                                                  *        swap    d0
                                                  *        move.w  d0,x_pixel(a0)
         *ldb   #SFX_CHANNEL2
-        *ldx   #Psg_Sparkle *@IgnoreUndefined     *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
+        *ldx   #Psg_Sparkle                       *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
         *jmp   PSGSFXPlay                         *        jmpto   (PlaySound).l, JmpTo4_PlaySound
         rts        
         
@@ -1199,6 +1200,7 @@ Island_Move
         ldx   #Obj_PressStart
         _ldd  ObjID_TitleScreen,Sub_PressStart
         std   id,x                                    ; id and subtype
+        clr   b_TitleScr_pressed,x
                 
         jmp   DisplaySprite
 Island_Move_InScreen
@@ -1323,10 +1325,39 @@ IslandMask_continue
 PressStart
         ldb   Fire_Press
 		bitb  #c1_button_A_mask
-        beq   NoPress
+        beq   PressStart_NoPress
+        
+        lda   #$FF
+        sta   b_TitleScr_pressed,u
+        
+        ldx   #Obj_RasterFade
+        lda   #2                                 * Sub_RasterFadeOutColor
+        sta   routine,x
+        
+        lda   #2                                 * Pal_TitleScreenRasterBlack
+        sta   ext_variables+1,x                  * ptr to dest pal        
+        ldd   #$1048                             * 72 lines to fade
+        sta   ext_variables+6,x                  * nb of frames
+        stb   ext_variables+2,x                  * number of colors to fade (from start)  
+        lda   #$01
+        sta   ext_variables+7,x                  * increment
+        sta   ext_variables+9,x                  * frame duration
+        stb   ext_variables+11,x                 * number of colors or lines            
+                
+PressStart_NoPress
+        lda   b_TitleScr_pressed,u
+        beq   PressStart_While
+        
+        ldx   #Obj_RasterFade
+        lda   routine,x
+        cmpa  #4                                 * Sub_RasterCycle
+        bne   PressStart_While
+        
+        jsr   IrqOff	
         lda   #GmID_01_EHZ
         sta   GameMode                           * Load a new Game Mode
-NoPress	
+        
+PressStart_While
         lda   routine_secondary,u
         sta   *+4,pcr
         bra   PressStart_Routines
@@ -1340,6 +1371,7 @@ PressStart_Init
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
+        
         ldd   #Img_pressStart
         std   image_set,u
         lda   #1
@@ -1349,7 +1381,7 @@ PressStart_Init
         lda   #$07
         sta   w_TitleScr_time_frame_count,u
         
-        ldx   #Psg_MarbleZone *@IgnoreUndefined
+        ldx   #Psg_MarbleZone                  
         jmp   PSGPlay
         
         jmp   DisplaySprite
@@ -1482,7 +1514,7 @@ TitleScreen_SetFinalState                        *TitleScreen_SetFinalState:
                                                  *
         tst   b_TitleScr_music_is_playing        *        tst.b   objoff_30(a0)
         bne   TitleScreen_SetFinalState_end      *        bne.s   +       ; rts
-        ldx   #Psg_TitleScreen *@IgnoreUndefined *        moveq   #MusID_Title,d0 ; title music
+        ldx   #Psg_TitleScreen                   *        moveq   #MusID_Title,d0 ; title music
         jmp   PSGPlayNoRepeat                    *        jsrto   (PlayMusic).l, JmpTo4_PlayMusic
 TitleScreen_SetFinalState_end                    *+
         rts                                      *        rts

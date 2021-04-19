@@ -221,6 +221,3 @@ buf_prev_xy2_pixel            equ 17 ;
 buf_prev_x2_pixel             equ 17 ;
 buf_prev_y2_pixel             equ 18 ;
 buf_prev_render_flags         equ 19 ;
-
-* TODO Doit etre gere dynamiquement par le builder en fonction du properties
-PalID_TitleScreenRaster       equ 0
