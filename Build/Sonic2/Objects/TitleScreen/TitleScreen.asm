@@ -164,6 +164,7 @@ Sub_PressStart  equ 36
 TitleScreen                                      *Obj0E:
                                                  *        moveq   #0,d0
         lda   routine,u                          *        move.b  routine(a0),d0
+        
         sta   *+4,pcr                            *        move.w  Obj0E_Index(pc,d0.w),d1
         bra   TitleScreen_Routines               *        jmp     Obj0E_Index(pc,d1.w)
                                                  *; ===========================================================================
