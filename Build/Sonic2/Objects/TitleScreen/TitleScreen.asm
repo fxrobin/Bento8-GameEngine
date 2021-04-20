@@ -990,6 +990,8 @@ SmallStar_Routines                               *off_132A2:      offsetTable
                                                  *; ===========================================================================
                                                  *
 SmallStar_Init                                   *Obj0E_SmallStar_Init:
+        ldd   Vint_runcount
+        std   w_TitleScr_time_frame_count,u
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_star_2
         std   image_set,u                        *        move.b  #$C,mapping_frame(a0)
@@ -1006,14 +1008,27 @@ SmallStar_Init                                   *Obj0E_SmallStar_Init:
                                                  *; ===========================================================================
                                                  *
 SmallStar_Move                                   *loc_132D2:
-        ldd   w_TitleScr_time_frame_countdown,u
-        subd  #1                                 *        subq.w  #1,objoff_2A(a0)
-        std   w_TitleScr_time_frame_countdown,u
+        lda   x_pixel,u
+        cmpa  #$30                               *        subq.w  #1,objoff_2A(a0)
         bpl   SmallStar_MoveContinue
         jmp   DeleteObject                       *        bmi.w   DeleteObject
 SmallStar_MoveContinue
-        dec   x_pixel,u                          *        subq.w  #2,x_pixel(a0)
-        inc   y_pixel,u                          *        addq.w  #1,y_pixel(a0)
+        ldd   Vint_runcount
+        subd  w_TitleScr_time_frame_count,u
+        stb   SmallStar_MoveContinue_d1+1
+        stb   SmallStar_MoveContinue_d2+1
+        lda   x_pixel,u                          *        subq.w  #2,x_pixel(a0)
+SmallStar_MoveContinue_d1
+        suba  #$00
+        sta   x_pixel,u
+        lda   y_pixel,u                          *        addq.w  #1,y_pixel(a0)
+SmallStar_MoveContinue_d2        
+        adda  #$00     
+        sta   y_pixel,u 
+        
+        ldd   Vint_runcount
+        std   w_TitleScr_time_frame_count,u
+        
         * no more offset table                   *        lea     (Ani_obj0E).l,a1
         jsr   AnimateSprite                      *        bsr.w   AnimateSprite
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
