@@ -384,11 +384,11 @@ SEGA_PlaySample
         jsr   PlayPCM
 
         ldd   #$0000
-        std   Vint_runcount
+        std   Main_runcount
         rts
 
 SEGA_Wait
-        ldd   Vint_runcount
+        ldd   Main_runcount
         cmpd  #3*50 ; 3 seconds
         beq   SEGA_fadeOut
         rts

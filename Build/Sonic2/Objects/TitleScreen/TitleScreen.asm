@@ -4,14 +4,6 @@
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
 ;
-; Instructions for position-independent code
-; ------------------------------------------
-; - call to a Main Engine routine (6100 - 9FFF): use a jump (jmp, jsr, rts), do not use branch
-; - call to internal object routine: use branch ((l)b__), do not use jump
-; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
-;
-; ---------------------------------------------------------------------------
-;
 ; Sonic 2 - Notes
 ; ---------------
 ;
@@ -70,6 +62,8 @@
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Engine/Macros.asm"   
+        INCLUDE "./Objects/RasterFade/RasterFade.idx"     
+        INCLUDE "./Objects/PaletteFade/PaletteFade.idx"           
 
 * ---------------------------------------------------------------------------
 * Object Status Table index
@@ -391,9 +385,9 @@ Sonic_PaletteFadeAfterWait                       *+
         sta   id,x                               *        move.b  #ObjID_TtlScrPalChanger,id(a1) ; load objC9 (palette change)
         clr   subtype,x                          *        move.b  #0,subtype(a1)
         ldd   #Black_palette
-        std   ext_variables,x
+        std   pal_src,x
         ldd   #Pal_TitleScreen                  
-        std   ext_variables+2,x
+        std   pal_dst,x
         lda   #$FF  
         sta   b_TitleScr_music_is_playing        *        st.b    objoff_30(a0)
         ldx   #Psg_TitleScreen                    *        moveq   #MusID_Title,d0 ; title music
@@ -516,19 +510,19 @@ Sonic_FadeInBackground                           *loc_12F9A:
         ldx   #Obj_RasterFade
         lda   #ObjID_RasterFade
         sta   id,x
-        lda   #1                                 * Sub_RasterFadeInColor
+        lda   #Sub_RasterFadeInColor
         sta   subtype,x
-        lda   #0                                 * PalID_TitleScreenRaster
-        sta   ext_variables+1,x                  * ptr to destination pal
+        lda   #PalID_TitleScreenRaster
+        sta   raster_pal_dst,x
         ldd   #$0fff
-        std   ext_variables+4,x                  * src color
-        ldd   #$103a                             * 58 lines to fade
-        sta   ext_variables+6,x                  * nb of frames
-        stb   ext_variables+2,x                    
-        ldd   #$0148                             * 72 total lines
-        sta   ext_variables+7,x                  * increment
-        sta   ext_variables+9,x                  * frame duration
-        stb   ext_variables+11,x                 * number of colors or lines        
+        std   raster_color,x
+        ldd   #$103a                             
+        sta   raster_cycles,x
+        stb   raster_nb_fade_colors,x            * 58 lines to fade        
+        ldd   #$0148                             
+        sta   raster_inc,x
+        sta   raster_frames,x
+        stb   raster_nb_colors,x                 * 72 total lines
                                                  *        lea     (Normal_palette_line3).w,a1
                                                  *        move.w  #$EEE,d0
                                                  *
@@ -1073,7 +1067,7 @@ Island_Init
         ldd   #$A3C0
         std   xy_pixel,u
         lda   render_flags,u
-        ora   #render_xloop_mask
+        ora   #render_xloop_mask|render_overlay_mask
         sta   render_flags,u
         
         ldx   #Obj_IslandMask
@@ -1226,10 +1220,10 @@ IslandWater_Init
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-        lda   #7
+        lda   #2
         sta   priority,u
         lda   render_flags,u
-        ora   #render_xloop_mask
+        ora   #render_xloop_mask|render_overlay_mask
         sta   render_flags,u
         ldx   #Obj_Island
         lda   y_pixel,x        
@@ -1239,7 +1233,7 @@ IslandWater_Ripple
         ldx   #Obj_Island
         
         ldb   b_TitleScr_ripple_index,u
-        lda   Vint_runcount+1
+        lda   Main_runcount+1
         anda  #1
         bne   IslandWater_continue1
                 
@@ -1301,7 +1295,7 @@ IslandMask_Init
         sta   routine_secondary,u
         ldd   #Img_islandMask
         std   image_set,u
-        lda   #6
+        lda   #1
         sta   priority,u
         ldd   #$BBC0
         std   xy_pixel,u
@@ -1332,18 +1326,18 @@ PressStart
         sta   b_TitleScr_pressed,u
         
         ldx   #Obj_RasterFade
-        lda   #2                                 * Sub_RasterFadeOutColor
+        lda   #Sub_RasterFadeOutColor
         sta   routine,x
         
-        lda   #2                                 * Pal_TitleScreenRasterBlack
-        sta   ext_variables+1,x                  * ptr to dest pal        
-        ldd   #$1048                             * 72 lines to fade
-        sta   ext_variables+6,x                  * nb of frames
-        stb   ext_variables+2,x                  * number of colors to fade (from start)  
-        lda   #$01
-        sta   ext_variables+7,x                  * increment
-        sta   ext_variables+9,x                  * frame duration
-        stb   ext_variables+11,x                 * number of colors or lines            
+        lda   #PalID_TitleScreenRasterBlack
+        sta   raster_pal_dst,x
+        ldd   #$1048                             
+        sta   raster_cycles,x
+        stb   raster_nb_fade_colors,x            * 58 lines to fade        
+        lda   #$01                             
+        sta   raster_inc,x
+        sta   raster_frames,x
+        stb   raster_nb_colors,x                 * 72 total lines
                 
 PressStart_NoPress
         lda   b_TitleScr_pressed,u
@@ -1351,7 +1345,7 @@ PressStart_NoPress
         
         ldx   #Obj_RasterFade
         lda   routine,x
-        cmpa  #4                                 * Sub_RasterCycle
+        cmpa  #Sub_RasterCycle
         bne   PressStart_While
         
         jsr   IrqOff	
@@ -1379,8 +1373,8 @@ PressStart_Init
         sta   priority,u
         ldd   #$80D8
         std   xy_pixel,u
-        lda   #$07
-        sta   w_TitleScr_time_frame_count,u
+        ldd   Vint_runcount
+        std   w_TitleScr_time_frame_count,u
         
         ldx   #Psg_MarbleZone                  
         jmp   PSGPlay
@@ -1388,27 +1382,28 @@ PressStart_Init
         jmp   DisplaySprite
 
 PressStart_display
-        lda   w_TitleScr_time_frame_count,u
-        deca
-        bne   PressStart_display1
+        ldd   Vint_runcount
+        subd  w_TitleScr_time_frame_count,u
+        cmpd  #50                                * 1 sec
+        lblo  DisplaySprite
         lda   routine_secondary,u
         adda  #$03
         sta   routine_secondary,u
-        lda   #$07        
-PressStart_display1        
-        sta   w_TitleScr_time_frame_count,u
-        jmp   DisplaySprite 
+        ldd   Vint_runcount
+        std   w_TitleScr_time_frame_count,u    
+        jmp   DisplaySprite    
         
 PressStart_hide
-        lda   w_TitleScr_time_frame_count,u
-        deca
-        bne   PressStart_hide1
+        ldd   Vint_runcount
+        subd  w_TitleScr_time_frame_count,u
+        cmpd  #50                                * 1 sec
+        blo   PressStart_hide1
         lda   routine_secondary,u
         suba  #$03
         sta   routine_secondary,u
-        lda   #$07        
+        ldd   Vint_runcount
+        std   w_TitleScr_time_frame_count,u           
 PressStart_hide1        
-        sta   w_TitleScr_time_frame_count,u
         rts      
 
 * ---------------------------------------------------------------------------

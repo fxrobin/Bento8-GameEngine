@@ -35,9 +35,16 @@ IrqOff
 IrqPsg 
         lda   <$E6
         sta   IrqPsg_end+1                            ; backup data page
+        
+        ldd   Vint_runcount
+        addd  #1
+        std   Vint_runcount        
+        
         jsr   PSGFrame
        *jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
         sta   <$E6                                    ; restore data page
         jmp   $E830                                   ; return to caller
+        
+Vint_runcount fdb $0000
