@@ -1384,7 +1384,7 @@ PressStart_Init
 PressStart_display
         ldd   Vint_runcount
         subd  w_TitleScr_time_frame_count,u
-        cmpd  #50                                * 1 sec
+        cmpd  #35                                * 700ms
         lblo  DisplaySprite
         lda   routine_secondary,u
         adda  #$03
@@ -1396,7 +1396,7 @@ PressStart_display
 PressStart_hide
         ldd   Vint_runcount
         subd  w_TitleScr_time_frame_count,u
-        cmpd  #50                                * 1 sec
+        cmpd  #35                                * 700ms
         blo   PressStart_hide1
         lda   routine_secondary,u
         suba  #$03
