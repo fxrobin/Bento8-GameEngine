@@ -7,12 +7,13 @@
 ; ---------------------------------------------------------------------------
 Masher
         lda   routine,u
-        sta   *+4,pcr
-        bra   Masher_Routines
+        asla
+        ldx   #Masher_Routines
+        jmp   [a,x]
 
 Masher_Routines
-        lbra  Masher_Init
-        lbra  Masher_Display
+        fdb   Masher_Init
+        fdb   Masher_Display
 
 Masher_Init
         ldd   #Img_masher_000
@@ -21,9 +22,7 @@ Masher_Init
         stb   priority,u
         ldd   #$A09F
         std   xy_pixel,u
-        lda   routine,u
-        adda  #$03
-        sta   routine,u   
+        inc   routine,u   
         
 Masher_Display
         jmp   DisplaySprite

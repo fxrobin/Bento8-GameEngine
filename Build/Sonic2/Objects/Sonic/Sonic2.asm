@@ -4,26 +4,21 @@
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
 ;
-; Instructions for position-independent code
-; ------------------------------------------
-; - call to a Main Engine routine (6100 - 9FFF): use a jump (jmp, jsr, rts), do not use branch
-; - call to internal object routine: use branch ((l)b__), do not use jump
-; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
-;
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Engine/Macros.asm"   
 
 TestImageSet
         lda   routine,u
-        sta   *+4,pcr
-        bra   TitleScreen_Routines
+        asla
+        ldx   #TitleScreen_Routines
+        jmp   [a,x]
 
 TitleScreen_Routines
-        lbra  Init1
-        lbra  Init2
-        lbra  MovePress
-        lbra  MoveHeld
+        fdb   Init1
+        fdb   Init2
+        fdb   MovePress
+        fdb   MoveHeld
 Init1
         ldx   #$0000
         jsr   ClearDataMem    
@@ -101,23 +96,22 @@ Sonic                                                 *Obj01:
                                                       *Obj01_Normal:
                                                       *  moveq   #0,d0
         lda   routine,u                               *  move.b  routine(a0),d0
-        sta   *+4,pcr                                 *  move.w  Obj01_Index(pc,d0.w),d1
-        bra   Sonic_Routines                          *  jmp Obj01_Index(pc,d1.w)
+        asla
+        ldx   #TitleScreen_Routines                   *  move.w  Obj01_Index(pc,d0.w),d1
+        jmp   [a,x]                                   *  jmp Obj01_Index(pc,d1.w)
                                                       *; ===========================================================================
                                                       *; off_19F6A: Obj01_States:
 Sonic_Routines                                        *Obj01_Index:  offsetTable
-        lbra  Sonic_Init                              *      offsetTableEntry.w Obj01_Init       ;  0
-        lbra  Sonic_Control                           *      offsetTableEntry.w Obj01_Control    ;  2
-        lbra  Sonic_Hurt                              *      offsetTableEntry.w Obj01_Hurt       ;  4
-        lbra  Sonic_Dead                              *      offsetTableEntry.w Obj01_Dead       ;  6
-        lbra  Sonic_Gone                              *      offsetTableEntry.w Obj01_Gone       ;  8
-        lbra  Sonic_Respawning                        *      offsetTableEntry.w Obj01_Respawning ; $A
+        fdb   Sonic_Init                              *      offsetTableEntry.w Obj01_Init       ;  0
+        fdb   Sonic_Control                           *      offsetTableEntry.w Obj01_Control    ;  2
+        fdb   Sonic_Hurt                              *      offsetTableEntry.w Obj01_Hurt       ;  4
+        fdb   Sonic_Dead                              *      offsetTableEntry.w Obj01_Dead       ;  6
+        fdb   Sonic_Gone                              *      offsetTableEntry.w Obj01_Gone       ;  8
+        fdb   Sonic_Respawning                        *      offsetTableEntry.w Obj01_Respawning ; $A
                                                       *; ===========================================================================
                                                       *; loc_19F76: Obj_01_Sub_0: Obj01_Main:
 Sonic_Init                                            *  Obj01_Init:
-        lda   routine,u                               *
-        adda  #$03                                    *
-        sta   routine,u                               *  addq.b  #2,routine(a0)  ; => Obj01_Control
+        inc   routine,u                               *  addq.b  #2,routine(a0)  ; => Obj01_Control
                                                       *  move.b  #$13,y_radius(a0) ; this sets Sonic's collision height (2*pixels)
                                                       *  move.b  #9,x_radius(a0)
                                                       *  move.l  #Mapunc_Sonic,mappings(a0)

@@ -6,12 +6,6 @@
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
 ;
-; Instructions for position-independent code
-; ------------------------------------------
-; - call to a Main Engine routine (6100 - 9FFF): use a jump (jmp, jsr, rts), do not use branch
-; - call to internal object routine: use branch ((l)b__), do not use jump
-; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
-;
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Engine/Macros.asm"   
@@ -38,20 +32,21 @@ b_nbFrames              equ ext_variables
 * Subtypes
 * ---------------------------------------------------------------------------
 Sub_Init        equ 0
-Sub_SEGA        equ 3
-Sub_Trails      equ 6
-Sub_Sonic       equ 9
+Sub_SEGA        equ 1
+Sub_Trails      equ 2
+Sub_Sonic       equ 3
 
 SEGA_Main
         lda   routine,u
-        sta   *+4,pcr
-        bra   SEGA_Routines
+        asla
+        ldx   #SEGA_Routines
+        jmp   [a,x]
 
 SEGA_Routines
-        lbra  SEGA_MainInit
-        lbra  SEGA
-        lbra  Trails
-        lbra  Sonic
+        fdb   SEGA_MainInit
+        fdb   SEGA
+        fdb   Trails
+        fdb   Sonic
 
 SEGA_MainInit
         lda   #2
@@ -69,19 +64,23 @@ Sonic
 
 SEGA
         lda   routine_secondary,u
-        sta   *+4,pcr
-        bra   SEGA_Routines
+        asla
+        ldx   #SEGA_SubRoutines
+        jmp   [a,x]
 
 SEGA_SubRoutines
-        lbra  SEGA_Init
-        lbra  SEGA_RunLeft
-        lbra  SEGA_MidWipe
-        lbra  SEGA_MidWipeWaitPal
-        lbra  SEGA_RunRight
-        lbra  SEGA_EndWipe
-        lbra  SEGA_EndWipeWaitPal
-        lbra  SEGA_Wait
-        lbra  SEGA_end
+        fdb   SEGA_Init
+        fdb   SEGA_RunLeft
+        fdb   SEGA_MidWipe
+        fdb   SEGA_MidWipeWaitPal
+        fdb   SEGA_RunRight
+        fdb   SEGA_EndWipe
+        fdb   SEGA_EndWipeWaitPal
+        fdb   SEGA_Wait
+        fdb   SEGA_End
+        fdb   SEGA_Rts      
+        
+SEGA_Rts   
         rts
 
 SEGA_Init
@@ -99,7 +98,7 @@ SEGA_Init
         sta   render_flags,u
 
         * Init all sub objects
-        stu   SEGA_Init_01+1,pcr
+        stu   SEGA_Init_01+1
         _ldd  ObjID_SEGA,Sub_Trails
         ldy   #$F080
 
@@ -187,9 +186,7 @@ SEGA_Init_01
         sta   status,x
         stb   priority,x
 
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 
 SEGA_RunLeft
@@ -219,9 +216,7 @@ SEGA_RunLeft
         rts
 
 SEGA_RunLeft_continue
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
 
         lda   #$E
         sta   b_nbFrames,u
@@ -283,9 +278,7 @@ SEGA_MidWipe
         std   ext_variables,x
         ldd   #Pal_SEGAMid
         std   ext_variables+2,x
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
 
         jmp   DisplaySprite
 
@@ -296,9 +289,7 @@ SEGA_MidWipeWaitPal
         jmp   DisplaySprite
 
 SEGA_MidWipeWaitPal_continue
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 
 SEGA_RunRight
@@ -327,9 +318,7 @@ SEGA_RunRight
         rts
 
 SEGA_RunRight_continue
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 
 SEGA_EndWipe
@@ -363,9 +352,7 @@ SEGA_EndWipe
         ldd   #Pal_SEGAEnd
         std   ext_variables+2,x
         
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u        
+        inc   routine_secondary,u
 
         jmp   DisplaySprite
 
@@ -376,9 +363,7 @@ SEGA_EndWipeWaitPal
         jmp   DisplaySprite
 
 SEGA_PlaySample
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
 
         ldy   #Pcm_SEGA
         jsr   PlayPCM
@@ -401,12 +386,10 @@ SEGA_fadeOut
         std   ext_variables,x
         ldd   #Black_palette
         std   ext_variables+2,x
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 
-SEGA_end
+SEGA_End
         ldx   #Obj_PaletteFade
         tst   ,x
         beq   SEGA_return

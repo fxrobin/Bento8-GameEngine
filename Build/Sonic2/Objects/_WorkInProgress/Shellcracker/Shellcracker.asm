@@ -19,6 +19,7 @@ instance equ $1E (numero d'instance du sous objet, w dans code 68k, b dans le co
 Shellcracker                           *Obj9F:
                                        *    moveq   #0,d0
         lda   routine,u                *    move.b  routine(a0),d0
+        asla
         ldx   Shellcracker_Routines    *    move.w  Obj9F_Index(pc,d0.w),d1
         jmp   [a,x]                    *    jmp Obj9F_Index(pc,d1.w)
                                        *; ===========================================================================
@@ -39,7 +40,6 @@ Shellcracker_Init                      *Obj9F_Init:
         sta   render_flags,u
         ldd   #priority_5
         std   priority,u
-        inc   routine,u
         inc   routine,u                *    ; fin LoadSubObject
         bita  #render_xmirror_mask     *    btst    #0,render_flags(a0)
         beq   Shellcracker_Init_01     *    beq.s   +
@@ -97,7 +97,6 @@ Shellcracker_Walk_03                   *loc_38096:
         std   x_vel,u                  *    neg.w   x_vel(a0)
                                        *
 Shellcracker_Walk_04                   *loc_3809A:
-        inc   routine,u
         inc   routine,u                *    addq.b  #2,routine(a0)
         ldd   #$003B
         sta   mapping_frame,u          *    move.b  #0,mapping_frame(a0)
@@ -106,7 +105,7 @@ Shellcracker_Walk_04                   *loc_3809A:
                                        *; ===========================================================================
                                        *
 Shellcracker_Walk_05                   *loc_380AE:
-        lda   #$06
+        lda   #$03
         sta   routine,u                *    move.b  #6,routine(a0)
         ldd   #$0008
         sta   mapping_frame,u          *    move.b  #0,mapping_frame(a0)
@@ -140,7 +139,6 @@ Shellcracker_Pause_02                  *loc_380E4:
                                        *; ===========================================================================
                                        *
 Shellcracker_Pause_03                  *loc_380EE:
-        dec   routine,u
         dec   routine,u                *    subq.b  #2,routine(a0)
         ldd   #$0140
         std   delay,u                  *    move.w  #$140,objoff_2A(a0)
@@ -202,7 +200,7 @@ Shellcracker_Punch_End                 *loc_3813E:
                                        *; ===========================================================================
                                        *
 Shellcracker_Punch_End_01              *loc_38146:
-        lda   #$0002
+        ldd   #$0001
         sta   routine_secondary,u      *    clr.b   routine_secondary(a0)
         sta   parent,u                 *    clr.b   objoff_2C(a0)
         stb   routine,u                *    move.b  #2,routine(a0)

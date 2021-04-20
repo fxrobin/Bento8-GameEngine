@@ -8,12 +8,13 @@
 
 Buzzer
         lda   routine,u
-        sta   *+4,pcr
-        bra   Buzzer_Routines
+        asla
+        ldx   #Buzzer_Routines
+        jmp   [a,x]
 
 Buzzer_Routines
-        lbra  Buzzer_Init
-        lbra  Buzzer_Display
+        fdb   Buzzer_Init
+        fdb   Buzzer_Display
 
 Buzzer_Init
         ldd   #Img_buzzer_000
@@ -22,9 +23,7 @@ Buzzer_Init
         stb   priority,u
         ldd   #$A07F
         std   xy_pixel,u
-        lda   routine,u
-        adda  #$03
-        sta   routine,u   
+        inc   routine,u   
         
 Buzzer_Display
         jmp   DisplaySprite

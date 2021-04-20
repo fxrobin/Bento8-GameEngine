@@ -5,12 +5,6 @@
 ;
 ; --------------------------------------
 ;
-; Implantation memoire
-; --------------------
-; Appel a une routine du main (6100 - 9FFF) : utiliser un saut (jmp, jsr, rts), ne pas utiliser les branchements.
-; Appel a une routine interne de l'objet : utiliser les branchements ((l)b__), ne pas utiliser les sauts.
-; Utilisation de l'adressage indexe pour acceder a des donnees internes de l'objet : utilisation de "mon_tableau,pcr" pour charger l'adresse du tableau dans un registre
-;
 ; Colors
 ; ------
 ; Genesis/Megadrive: 8 values for each component (BGR) 0, 2, 4, 6, 8, A, C, E
@@ -49,17 +43,16 @@
 
 PaletteFade
         lda   routine,u
-        sta   *+4,pcr
-        bra   PaletteFade_Routines
+        asla
+        ldx   #PaletteFade_Routines
+        jmp   [a,x]
  
 PaletteFade_Routines
-        lbra  PaletteFade_Init
-        lbra  PaletteFade_Main
+        fdb   PaletteFade_Init
+        fdb   PaletteFade_Main
  
 PaletteFade_Init
-        lda   routine,u
-        adda  #$03
-        sta   routine,u 
+        inc   routine,u
         ldd   #$100F    
         sta   pal_cycles,u
         stb   pal_mask,u

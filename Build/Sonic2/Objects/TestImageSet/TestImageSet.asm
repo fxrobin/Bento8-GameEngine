@@ -4,22 +4,18 @@
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
 ;
-; Instructions for position-independent code
-; ------------------------------------------
-; - call to a Main Engine routine (6100 - 9FFF): use a jump (jmp, jsr, rts), do not use branch
-; - call to internal object routine: use branch ((l)b__), do not use jump
-; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ; ---------------------------------------------------------------------------
 
 TestImageSet
         lda   routine,u
-        sta   *+4,pcr
-        bra   TitleScreen_Routines
+        asla
+        ldx   #TitleScreen_Routines
+        jmp   [a,x]
 
 TitleScreen_Routines
-        lbra  Init1
-        lbra  Init2
-        lbra  Move
+        fdb   Init1
+        fdb   Init2
+        fdb   Move
 
 Init1
         ldx   #$0000
@@ -31,16 +27,12 @@ Init1
         stb   priority,u
         ldd   #$807F
         std   xy_pixel,u
-        lda   routine,u
-        adda  #$03
-        sta   routine,u   
+        inc   routine,u
         
 Init2
         ldx   #$0000
         jsr   ClearDataMem    
-        lda   routine,u
-        adda  #$03
-        sta   routine,u           
+        inc   routine,u
         
 Move
         lda   Dpad_Press
@@ -75,14 +67,15 @@ Continue
 
 NextTest
         lda   routine_secondary,u
-        sta   *+4,pcr
-        bra   TIS_SubRoutines
+        asla
+        ldx   #TIS_SubRoutines
+        jmp   [a,x]
 
 TIS_SubRoutines
-        lbra  Run
-        lbra  Fall
-        lbra  Breathe
-        lbra  Walk        
+        fdb   Run
+        fdb   Fall
+        fdb   Breathe
+        fdb   Walk        
         
 Run
         ldd   #Img_SonicRun
@@ -90,9 +83,7 @@ Run
         lda   render_flags,u
         anda  #^render_overlay_mask
         sta   render_flags,u           
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 Fall
         ldd   #Img_SonicFall
@@ -100,9 +91,7 @@ Fall
         lda   render_flags,u
         ora   #render_overlay_mask
         sta   render_flags,u        
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 Breathe     
         ldd   #Img_SonicBreathe
@@ -110,9 +99,7 @@ Breathe
         lda   render_flags,u
         ora   #render_overlay_mask
         sta   render_flags,u           
-        lda   routine_secondary,u
-        adda  #$03
-        sta   routine_secondary,u
+        inc   routine_secondary,u
         rts
 Walk
         *ldd   #Img_SonicWalk

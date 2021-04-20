@@ -6,12 +6,6 @@
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
 ;
-; Instructions for position-independent code
-; ------------------------------------------
-; - call to a Main Engine routine (6100 - 9FFF): use a jump (jmp, jsr, rts), do not use branch
-; - call to internal object routine: use branch ((l)b__), do not use jump
-; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
-;
 ; ---------------------------------------------------------------------------
         
         INCLUDE "./Engine/Macros.asm"      
@@ -20,15 +14,16 @@ Obj_PaletteFade      equ Object_RAM+(object_size*1)
         
 SonicAndTailsIn
         lda   routine,u
-        sta   *+4,pcr
-        bra   SATI_Routines
+        asla
+        ldx   #SATI_Routines
+        jmp   [a,x]
 
 SATI_Routines
-        lbra  SATI_clearScreen
-        lbra  SATI_fadeIn
-        lbra  SATI_fadeOut        
-        lbra  SATI_Wait
-        lbra  SATI_End
+        fdb   SATI_clearScreen
+        fdb   SATI_fadeIn
+        fdb   SATI_fadeOut        
+        fdb   SATI_Wait
+        fdb   SATI_End
  
 SATI_clearScreen
         ldx   #$0000
@@ -47,9 +42,7 @@ SATI_clearScreen
         ldb   #1
         stb   priority,u     
         
-        lda   routine,u
-        adda  #$03
-        sta   routine,u   
+        inc   routine,u
 
         jmp   DisplaySprite
 
@@ -65,10 +58,8 @@ SATI_fadeIn
         ldd   #Pal_SonicAndTailsIn
         std   ext_variables+2,x    
         
-        lda   routine,u
-        adda  #$03
-        sta   routine,u    
-           
+        inc   routine,u
+
         ldd   #$0000
         std   Main_runcount           
               
@@ -89,9 +80,7 @@ SATI_fadeOut_continue
         ldd   #Black_palette
         std   ext_variables+2,x  
           
-        lda   routine,u
-        adda  #$03
-        sta   routine,u    
+        inc   routine,u    
         rts                
                 
 SATI_Wait
@@ -112,16 +101,14 @@ SATI_clearScreen_end
         adda  #$80
         sta   screen_border_color+1    * maj WaitVBL
                      
-        lda   routine,u
-        adda  #$03
-        sta   routine,u    
+        inc   routine,u    
         rts            
                 
 SATI_End
         ldx   #$FFFF
         jsr   ClearDataMem  
         jsr   DeleteObject                    
-        _ldd  ObjID_TitleScreen,$03                   ; Replace this object with Title Screen Object subtype 3
+        _ldd  ObjID_TitleScreen,$01                   ; Replace this object with Title Screen Object subtype 3
         std   ,u
         ldu   #Obj_PaletteFade
         jsr   ClearObj        

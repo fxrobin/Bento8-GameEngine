@@ -7,12 +7,13 @@
 ; ---------------------------------------------------------------------------
 Coconuts
         lda   routine,u
-        sta   *+4,pcr
-        bra   Coconuts_Routines
+        asla
+        ldx   #Coconuts_Routines
+        jmp   [a,x]
 
 Coconuts_Routines
-        lbra  Coconuts_Init
-        lbra  Coconuts_Display
+        fdb   Coconuts_Init
+        fdb   Coconuts_Display
 
 Coconuts_Init
         ldd   #Img_coconuts_000
@@ -21,9 +22,7 @@ Coconuts_Init
         stb   priority,u
         ldd   #$607F
         std   xy_pixel,u
-        lda   routine,u
-        adda  #$03
-        sta   routine,u   
+        inc   routine,u   
         
 Coconuts_Display
         jmp   DisplaySprite

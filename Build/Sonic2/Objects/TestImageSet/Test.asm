@@ -4,23 +4,19 @@
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
 ;
-; Instructions for position-independent code
-; ------------------------------------------
-; - call to a Main Engine routine (6100 - 9FFF): use a jump (jmp, jsr, rts), do not use branch
-; - call to internal object routine: use branch ((l)b__), do not use jump
-; - use indexed addressing to access data table: first load table address by using "leax my_table,pcr"
 ; ---------------------------------------------------------------------------
 
 TestImageSet
         lda   routine,u
-        sta   *+4,pcr
-        bra   TitleScreen_Routines
+        asla
+        ldx   #TitleScreen_Routines
+        jmp   [a,x]
 
 TitleScreen_Routines
-        lbra  Init1
-        lbra  Init2
-        lbra  MovePress
-        lbra  MoveHeld
+        fdb   Init1
+        fdb   Init2
+        fdb   MovePress
+        fdb   MoveHeld
 Init1
         ldx   #$0000
         jsr   ClearDataMem    
@@ -33,15 +29,11 @@ Init1
         ; lda   render_flags,u
         ; ora   #render_xloop_mask
         ; sta   render_flags,u
-        lda   routine,u
-        adda  #$03
-        sta   routine,u   
+        inc   routine,u
 Init2
         ldx   #$0000
         jsr   ClearDataMem    
-        lda   routine,u
-        adda  #$03
-        sta   routine,u           
+        inc   routine,u           
 MovePress
         lda   Dpad_Press
         ldb   Fire_Press
@@ -73,11 +65,11 @@ TestBtn
         lda   routine,u
         cmpa  #$06
         bne   TestRtSub
-        adda  #$03
+        inca
         sta   routine,u
         bra   Continue
 TestRtSub              
-        suba  #$03
+        deca
         sta   routine,u
 Continue
         jsr   AnimateSprite   

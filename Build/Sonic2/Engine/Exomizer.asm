@@ -22,7 +22,7 @@
 exo2    pshs    u,y,x,dp,d,cc           * Save context
         tfr     pc,d                    * Set direct page
         tfr     a,dp
-        leay    biba,pcr                * Set ptr to bits and base table
+        ldy     #biba                   * Set ptr to bits and base table
         clrb
         stb     <bitbuf+1               * Init bit buffer
 
@@ -74,7 +74,7 @@ cpyl    lda     ,-u
 
 coffs   bsr     cook                    * Compute length
         pshs    d
-        leax    <tab1,pcr
+        ldx     #tab1
         cmpd    #$03
         bhs     scof
         abx
@@ -120,7 +120,7 @@ get3    decb
 * Output   : D = base[index] + readbits(&in, bits[index])
 * Modifies : D,X,U.
 
-cook    leax    <biba,pcr
+cook    ldx     #biba
         abx                             * bits+base = 3 bytes
         aslb                            * times 2
         abx
