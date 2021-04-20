@@ -64,9 +64,9 @@ am_SwapVideoPage
         eorb  #$01               * alterne bit0 = 0 ou 1 changement demi-page de la page 0 visible dans l'espace ecran
         stb   $E7C3
         
-        ldd   Vint_runcount
+        ldd   Main_runcount
         addd  #1
-        std   Vint_runcount        
+        std   Main_runcount        
         rts
         
-Vint_runcount fill  0,$2 
+Main_runcount fdb $0000 

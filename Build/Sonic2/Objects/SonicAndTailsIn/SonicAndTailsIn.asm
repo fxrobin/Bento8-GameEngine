@@ -70,12 +70,12 @@ SATI_fadeIn
         sta   routine,u    
            
         ldd   #$0000
-        std   Vint_runcount           
+        std   Main_runcount           
               
         jmp   DisplaySprite    
                 
 SATI_fadeOut
-        ldd   Vint_runcount
+        ldd   Main_runcount
         cmpd  #3*50 ; 3 seconds
         beq   SATI_fadeOut_continue
         rts

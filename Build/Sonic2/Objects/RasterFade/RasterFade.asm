@@ -6,31 +6,7 @@
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Engine/Macros.asm"   
-
-* ---------------------------------------------------------------------------
-* Subtypes
-* ---------------------------------------------------------------------------
-Sub_RasterFadeInColor  equ 1 
-Sub_RasterFadeOutColor equ 2 
-Sub_RasterFadeInPal    equ 0 * not implemented
-Sub_RasterFadeOutPal   equ 0 * not implemented
-Sub_RasterMain         equ 3
-Sub_RasterCycle        equ 4
-
-* ---------------------------------------------------------------------------
-* Object Status Table offsets
-* ---------------------------------------------------------------------------
-raster_pal_dst        equ ext_variables+1                * ptr to destination pal
-raster_nb_fade_colors equ ext_variables+2                * number of colors to fade (from start)
-raster_cycle_idx      equ ext_variables+3                * current index in cycling pal
-raster_color          equ ext_variables+4                * src or dst color
-raster_cycles         equ ext_variables+6                * nb of frames
-raster_inc            equ ext_variables+7                * increment value
-raster_inc_           equ ext_variables+8                * increment value
-raster_frames         equ ext_variables+9                * fame duration
-raster_cur_frame      equ ext_variables+10               * fame counter
-raster_nb_colors      equ ext_variables+11               * number of colors or lines
-raster_cycle_frame    equ ext_variables+12               * current frame in cycling pal
+        INCLUDE "./Objects/RasterFade/RasterFade.idx"        
 
 RasterFade
         lda   routine,u
