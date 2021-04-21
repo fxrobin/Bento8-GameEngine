@@ -127,7 +127,8 @@ w_TitleScr_xy_data_index        equ ext_variables+4
 b_TitleScr_final_state          equ ext_variables+6
 b_TitleScr_music_is_playing     equ ext_variables+7
 b_TitleScr_ripple_index         equ ext_variables
-b_TitleScr_water_index          equ ext_variables+2
+b_TitleScr_water_index          equ ext_variables+1
+b_TitleScr_time_frame_count     equ ext_variables+2
 b_TitleScr_pressed              equ ext_variables+2
 
 * ---------------------------------------------------------------------------
@@ -1216,15 +1217,21 @@ IslandWater_Init
         ldx   #Obj_Island
         lda   y_pixel,x
         sta   y_pixel,u
+        lda   Vint_runcount+1
+        sta   b_TitleScr_time_frame_count,u
 
 IslandWater_Ripple
         ldx   #Obj_Island
 
         ldb   b_TitleScr_ripple_index,u
-        lda   Main_runcount+1
-        anda  #1
-        bne   IslandWater_continue1
+        lda   Vint_runcount+1
+        suba  b_TitleScr_time_frame_count,u
+        cmpa  #8
+        blo   IslandWater_continue1
 
+        lda   Vint_runcount+1
+        sta   b_TitleScr_time_frame_count,u
+        
         incb
         cmpb  #65
         bls   IslandWater_continue1

@@ -2149,32 +2149,35 @@ public class BuildDisk
 		
 		for(Entry<String, GameMode> gm : game.gameModes.entrySet()) {
 			logger.info("\t"+gm.getValue().name);
-			exomizeData(FLOPPY_DISK, gm.getValue().ramFD, gm.getValue().fdIdx);
-			exomizeData(MEGAROM_T2, gm.getValue().ramT2, gm.getValue().t2Idx);
+			exomizeData(FLOPPY_DISK, gm.getValue().ramFD, gm.getValue().fdIdx, gm.getValue().name);
+			exomizeData(MEGAROM_T2, gm.getValue().ramT2, gm.getValue().t2Idx, gm.getValue().name);
 		}
 	}
 	
-	private static void exomizeData(int mode, RamImage ram, List<RAMLoaderIndex> ldi) throws Exception {
+	private static void exomizeData(int mode, RamImage ram, List<RAMLoaderIndex> ldi, String gmName) throws Exception {
 		logger.debug("\t\t" + MODE_LABEL[mode] + "...");
 		
-		String tmpFile = Game.generatedCodeDirName+FileNames.TEMPORARY_FILE;
+		String tmpFile = Game.generatedCodeDirName+"RAM data/"+MODE_LABEL[mode]+"/";
 		
 		Enumeration<RAMLoaderIndex> edi = Collections.enumeration(ldi);
 		while(edi.hasMoreElements()) {
 			
 			RAMLoaderIndex di = edi.nextElement();
-			logger.debug(di.ram_page+" "+String.format("$%1$04X", di.ram_address)+" "+String.format("$%1$04X", di.ram_endAddress));
+			logger.debug("Page: " + di.ram_page+" "+String.format("$%1$04X", di.ram_address)+" "+String.format("$%1$04X", di.ram_endAddress));
 			byte[] fileData = new byte[di.ram_endAddress-di.ram_address];
 			int j = 0;
 			
 			for (int i = di.ram_address; i < di.ram_endAddress; i++) {
 				fileData[j++] = ram.data[di.ram_page][i];
 			}
-			
-			Files.write(Paths.get(tmpFile), fileData);
-			BinUtil.RawToLinear(tmpFile, 0xA000);
 
-			di.exoBin = exomize(tmpFile);
+			String filename = tmpFile+gmName+"_p"+String.format("%03d", di.ram_page)+"_"+String.format("0x%1$04X", di.ram_address)+"_"+String.format("0x%1$04X", di.ram_endAddress);
+			File file = new File (filename+".raw");
+			file.getParentFile().mkdirs();
+			Files.write(Paths.get(filename+".raw"), fileData);
+			//BinUtil.RawToLinear(tmpFile, 0xA000);
+
+			di.exoBin = exomize(filename);
 		}
 	}	
 	
@@ -2186,13 +2189,8 @@ public class BuildDisk
 	 */
 	public static byte[] exomize(String binFile) {
 		try {
-			String basename = FileUtil.removeExtension(binFile);
-			String destFileName = basename+".EXO";
-
-			// Purge des fichiers temporaires
-			Files.deleteIfExists(Paths.get(destFileName));
-
-			ProcessBuilder pb = new ProcessBuilder(game.exobin, Paths.get(binFile).toString());
+			//ProcessBuilder pb = new ProcessBuilder(game.exobin, Paths.get(binFile).toString());
+			ProcessBuilder pb = new ProcessBuilder("exomizer.exe", "raw", "-B", "-b", "-P0", "-o", Paths.get(binFile+".exo").toString(), Paths.get(binFile+".raw").toString());
 			pb.redirectErrorStream(true);
 			Process p = pb.start();			
 			BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -2205,7 +2203,7 @@ public class BuildDisk
 			if (p.waitFor() != 0) {
 				throw new Exception ("Erreur de compression "+binFile);
 			}
-			return Files.readAllBytes(Paths.get(destFileName));
+			return Files.readAllBytes(Paths.get(binFile+".exo"));
 
 		} catch (Exception e) {
 			e.printStackTrace();

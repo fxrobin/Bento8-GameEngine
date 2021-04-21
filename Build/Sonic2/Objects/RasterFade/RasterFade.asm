@@ -177,6 +177,8 @@ RFA_Continue
         dec   raster_cycles,u          * decremente le compteur du nombre de frame
         bne   RFA_Loop                 * on reboucle si nombre de frame n'est pas realise
         inc   routine,u
+        lda   Vint_runcount+1
+        sta   raster_cycle_frame,u        
         bra   RasterCycle_Main
         
 RFA_Loop
@@ -224,12 +226,14 @@ RFA_end
         rts
         
 RasterCycle_Main     
-        lda   raster_cycle_frame,u
-        inca
-        sta   raster_cycle_frame,u
-        anda  #3
-        bne   RasterCycle_Main_end
+        lda   Vint_runcount+1
+        suba  raster_cycle_frame,u
+        cmpa  #8
+        blo   RasterCycle_Main_end
 
+        lda   Vint_runcount+1
+        sta   raster_cycle_frame,u
+        
         lda   raster_cycle_idx,u
         inca
         cmpa  #6
