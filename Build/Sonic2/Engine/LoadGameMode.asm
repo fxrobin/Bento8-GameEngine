@@ -6,13 +6,16 @@
 ********************************************************************************
 
 GameMode         fcb $00
+ChangeGameMode   fcb $00
 
 LoadGameMode
-        lda   GameMode                 * Game Mode to call
+        lda   ChangeGameMode
         bne   LoadGameModeNow
         rts
         
 LoadGameModeNow
 		ldb   #$64                     * Page 4 contains RAMLoaderManager
-        stb   $E7E6                    *
-        jmp   >$0000                   * Call RAMLoaderManager           
+        stb   $E7E6                    
+        lda   GameMode
+        ldb   Glb_Cur_Game_Mode
+        jmp   >$0000              

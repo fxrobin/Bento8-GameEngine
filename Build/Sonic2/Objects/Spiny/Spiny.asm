@@ -5,14 +5,34 @@
 ; ---------
 ;
 ; ---------------------------------------------------------------------------
+Spiny
+        lda   routine,u
+        asla
+        ldx   #Spiny_Routines
+        jmp   [a,x]
+
+Spiny_Routines
+        fdb   Spiny_Init
+        fdb   Spiny_Display
+
+Spiny_Init
+        ldd   #Img_spiny_000
+        std   image_set,u
+        ldb   #$01
+        stb   priority,u
+        ldd   #$609F
+        std   xy_pixel,u
+        inc   routine,u   
         
+Spiny_Display
+        jmp   DisplaySprite        
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------
                                                       *; Object A5 - Spiny (crawling badnik) from CPZ
                                                       *; ----------------------------------------------------------------------------
                                                       *; Sprite_38AEA:
-Spiny                                                 *ObjA5:
-        rts                                           *    moveq   #0,d0
+                                                      *ObjA5:
+                                                      *    moveq   #0,d0
                                                       *    move.b  routine(a0),d0
                                                       *    move.w  ObjA5_Index(pc,d0.w),d1
                                                       *    jmp ObjA5_Index(pc,d1.w)

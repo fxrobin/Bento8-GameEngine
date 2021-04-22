@@ -1,5 +1,6 @@
 package fr.bento8.to8.audio;
 
+import fr.bento8.to8.build.Object;
 import fr.bento8.to8.util.knapsack.ItemBin;
 
 public class SoundBin extends ItemBin{
@@ -18,7 +19,10 @@ public class SoundBin extends ItemBin{
 		return "ObjectBin "+this.name;
 	}
 
+	@Override
 	public Object getObject() {
+		// TODO Auto-generated method stub
 		return null;
-	}		
+	}
+	
 }

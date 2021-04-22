@@ -1,6 +1,7 @@
 package fr.bento8.to8.image;
 
 import fr.bento8.to8.build.FileNames;
+import fr.bento8.to8.build.Object;
 import fr.bento8.to8.util.knapsack.ItemBin;
 
 public class AnimationBin extends ItemBin{
@@ -20,8 +21,11 @@ public class AnimationBin extends ItemBin{
 		return "AnimationBin "+this.name;
 	}
 
+	@Override
 	public Object getObject() {
+		// TODO Auto-generated method stub
 		return null;
-	}	
+	}
+
 	
 }

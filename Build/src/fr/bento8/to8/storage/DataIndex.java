@@ -7,11 +7,6 @@ package fr.bento8.to8.storage;
  */
 public class DataIndex
 {
-	// MEGAROM T.2
-	public int t2_page;	          // page de source ROM
-	public int t2_address;	      // adresse RAM	
-	public int t2_endAddress;     // adresse de source (ptr de fin pour exomizer) ROM
-	
 	// RAM FD
 	public int fd_ram_page;       // page de destination RAM
 	public int fd_ram_address;	  // adresse RAM

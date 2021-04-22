@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import fr.bento8.to8.image.SubSprite;
 import fr.bento8.to8.image.SubSpriteBin;
 import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.BinUtil;
+import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.RAMLoaderIndex;
 import fr.bento8.to8.util.FileUtil;
@@ -100,6 +102,7 @@ public class BuildDisk
 	{
 		try {
 			loadGameConfiguration(args[0]);
+			clean();
 			
 			compileRAMLoader();
 			generateObjectIDs();
@@ -127,6 +130,27 @@ public class BuildDisk
 		}
 	}
 
+	
+	private static void clean() throws IOException {
+		logger.debug("Delete RAM data files ...");
+
+		File file = new File (Game.generatedCodeDirName+"RAM data/"+MODE_LABEL[FLOPPY_DISK]+"/tmp");
+		file.getParentFile().mkdirs();
+		file = new File (Game.generatedCodeDirName+"RAM data/"+MODE_LABEL[MEGAROM_T2]+"/tmp");
+		file.getParentFile().mkdirs();		
+		
+		final File downloadDirectory = new File(Game.generatedCodeDirName+"RAM data/"+MODE_LABEL[FLOPPY_DISK]);   
+	    final File[] files = downloadDirectory.listFiles( (dir,name) -> name.matches(".*\\.raw" ));
+	    Arrays.asList(files).stream().forEach(File::delete);
+	    final File[] filesExo = downloadDirectory.listFiles( (dir,name) -> name.matches(".*\\.exo" ));
+	    Arrays.asList(filesExo).stream().forEach(File::delete);	
+	    
+		final File downloadDirectoryT2 = new File(Game.generatedCodeDirName+"RAM data/"+MODE_LABEL[MEGAROM_T2]);   
+	    final File[] filesT2 = downloadDirectoryT2.listFiles( (dir,name) -> name.matches(".*\\.raw" ));
+	    Arrays.asList(filesT2).stream().forEach(File::delete);
+	    final File[] filesT2Exo = downloadDirectoryT2.listFiles( (dir,name) -> name.matches(".*\\.exo" ));
+	    Arrays.asList(filesT2Exo).stream().forEach(File::delete);		    
+	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static void loadGameConfiguration(String configFileName) throws Exception {
@@ -396,7 +420,7 @@ public class BuildDisk
 
 			// Sauvegarde de tous les rendus demandés pour l'image en cours
 			object.sprites.put(sprite.name, sprite);
-			object.imageSet.uncompressedSize += writeImgIndex(asmImgIndex, sprite, UNDEFINED);
+			object.imageSet.uncompressedSize += writeImgIndex(asmImgIndex, null, sprite, UNDEFINED);
 		}
 		
 		object.imageSet.bin = new byte[object.imageSet.uncompressedSize];
@@ -420,6 +444,7 @@ public class BuildDisk
 			logger.debug("\tGame Mode : " + gameMode.getKey());
 			
 			String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + gameMode.getKey() + "/" + FileNames.OBJECTID+"\"\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";			
 			String mainEngineTmpFile = duplicateFilePrepend(gameMode.getValue().engineAsmMainEngine, gameMode.getKey()+"/"+MODE_DIR[mode]+"/", prepend);
 			AsmSourceCode asmBuilder = new AsmSourceCode(createFile(FileNames.MAIN_GENCODE, gameMode.getValue().name));			
 			
@@ -451,17 +476,21 @@ public class BuildDisk
 			rli.split = false; // la page 1 n'est pas utilsée en zone cartouche
 			
 			// Dans le cas d'une seconde passe on maj les données
+			if (gameMode.getValue().code.dataIndex.get(gameMode.getValue()) == null) {
+				gameMode.getValue().code.dataIndex.put(gameMode.getValue(), new DataIndex());
+			}
+			
 			if (mode == FLOPPY_DISK) {
-				gameMode.getValue().code.dataIndex.fd_ram_page = rli.ram_page;
-				gameMode.getValue().code.dataIndex.fd_ram_address = rli.ram_address;
-				gameMode.getValue().code.dataIndex.fd_ram_endAddress = rli.ram_endAddress;
+				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_page = rli.ram_page;
+				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_address = rli.ram_address;
+				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_endAddress = rli.ram_endAddress;
 				gameMode.getValue().ramFD.setData(rli.ram_page, rli.ram_address, binBytes);
 				if (!gameMode.getValue().fdIdx.isEmpty())
 					gameMode.getValue().fdIdx.add(rli); // Seconde passe
 			} else {
-				gameMode.getValue().code.dataIndex.t2_ram_page = rli.ram_page;
-				gameMode.getValue().code.dataIndex.t2_ram_address = rli.ram_address;		
-				gameMode.getValue().code.dataIndex.t2_ram_endAddress = rli.ram_endAddress;
+				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_page = rli.ram_page;
+				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_address = rli.ram_address;		
+				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_endAddress = rli.ram_endAddress;
 				gameMode.getValue().ramT2.setData(rli.ram_page, rli.ram_address, binBytes);
 				if (!gameMode.getValue().fdIdx.isEmpty())				
 					gameMode.getValue().t2Idx.add(rli); // Seconde passe
@@ -585,8 +614,7 @@ public class BuildDisk
 		
 		// Compilation de l'objet
 		prepend = "\topt   c,ct\n";
-		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name+ "/" + MODE_DIR[UNDEFINED] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
-		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";		
+		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name+ "/" + MODE_DIR[UNDEFINED] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";		
 
 		if (obj.imageSet.uncompressedSize > 0 && obj.animation.uncompressedSize == 0) {
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + imgSetDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
@@ -707,10 +735,12 @@ public class BuildDisk
 		logger.debug("\t\tinitStartAddressFD: "+Game.loadManagerSizeFd);
 		logger.debug("\t\tinitStartAddressT2: "+Game.loadManagerSizeT2);
 		
-		logger.debug("compute ram position ... ");
+		logger.debug("\n\ncompute ram position ... ");
+		logger.debug("--------------------------------------------------------------------------------");		
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			gm = gameMode.getValue();
-			logger.debug("\tGame Mode : " + gm.name);
+			logger.debug("\n\n\tGame Mode : " + gm.name);
+			logger.debug("-----------------------------");
 
 			if (!abortFloppyDisk) {
 				gm.ramFD.curPage = initStartPage;
@@ -914,26 +944,31 @@ public class BuildDisk
 				Item currentItem = iter.next();
 				
 				if (writeIndex) {
+					if (currentItem.bin.dataIndex.get(gm) == null) {
+						currentItem.bin.dataIndex.put(gm, new DataIndex());
+					}
+					
 					if (rImg.mode == BuildDisk.FLOPPY_DISK) {
-						currentItem.bin.dataIndex.fd_ram_page = rImg.curPage;					
-						currentItem.bin.dataIndex.fd_ram_address = rImg.endAddress[rImg.curPage];
+						currentItem.bin.dataIndex.get(gm).fd_ram_page = rImg.curPage;					
+						currentItem.bin.dataIndex.get(gm).fd_ram_address = rImg.endAddress[rImg.curPage];
 					} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
-						currentItem.bin.dataIndex.t2_ram_page = rImg.curPage;					
-						currentItem.bin.dataIndex.t2_ram_address = rImg.endAddress[rImg.curPage];
+						currentItem.bin.dataIndex.get(gm).t2_ram_page = rImg.curPage;					
+						currentItem.bin.dataIndex.get(gm).t2_ram_address = rImg.endAddress[rImg.curPage];
 					}
 					
 					rImg.setDataAtCurPos(currentItem.bin.bin);
 					if (rImg.mode == BuildDisk.FLOPPY_DISK) {
-						currentItem.bin.dataIndex.fd_ram_endAddress = rImg.endAddress[rImg.curPage];
+						currentItem.bin.dataIndex.get(gm).fd_ram_endAddress = rImg.endAddress[rImg.curPage];
 					} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
-						currentItem.bin.dataIndex.t2_ram_endAddress = rImg.endAddress[rImg.curPage];
+						currentItem.bin.dataIndex.get(gm).t2_ram_endAddress = rImg.endAddress[rImg.curPage];
 					}
+					
+					logger.debug("\t\t\tItem: "+currentItem.name+" FD "+currentItem.bin.dataIndex.get(gm).fd_ram_page+" "+String.format("$%1$04X", currentItem.bin.dataIndex.get(gm).fd_ram_address)+" T2 "+currentItem.bin.dataIndex.get(gm).t2_ram_page+" "+String.format("$%1$04X", currentItem.bin.dataIndex.get(gm).t2_ram_address));
 				} else {
 					rImg.endAddress[rImg.curPage] += currentItem.weight;
 					rImg.curAddress = rImg.endAddress[rImg.curPage] + 1;
+					logger.debug("\t\t\tItem: "+currentItem.name);					
 				}
-				
-				logger.debug("Item: "+currentItem.name+" FD "+currentItem.bin.dataIndex.fd_ram_page+" "+currentItem.bin.dataIndex.fd_ram_address+" T2 "+currentItem.bin.dataIndex.t2_ram_page+" "+currentItem.bin.dataIndex.t2_ram_address);
 
 				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
@@ -1198,12 +1233,12 @@ public class BuildDisk
 
 				Item currentItem = iter.next();
 				
-				currentItem.bin.dataIndex.t2_page = game.romT2.curPage;					
-				currentItem.bin.dataIndex.t2_address = game.romT2.endAddress[game.romT2.curPage];
+				currentItem.bin.t2_page = game.romT2.curPage;					
+				currentItem.bin.t2_address = game.romT2.endAddress[game.romT2.curPage];
 				game.romT2.setDataAtCurPos(currentItem.bin.bin);
-				currentItem.bin.dataIndex.t2_endAddress = game.romT2.endAddress[game.romT2.curPage];
+				currentItem.bin.t2_endAddress = game.romT2.endAddress[game.romT2.curPage];
 				
-				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.dataIndex.t2_page+" "+currentItem.bin.dataIndex.t2_address);
+				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.t2_page+" "+currentItem.bin.t2_address);
 
 				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
@@ -1272,7 +1307,7 @@ public class BuildDisk
 		// Génération de l'index ImageSet pour FD	
 		asmImgIndexFd = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirFd));
 		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
-			writeImgIndex(asmImgIndexFd, sprite.getValue(), FLOPPY_DISK);
+			writeImgIndex(asmImgIndexFd, gm, sprite.getValue(), FLOPPY_DISK);
 		}
 		
 		// Génération de l'index Animation pour FD				
@@ -1282,12 +1317,22 @@ public class BuildDisk
 		codeData = gm.ramFD;
 		imgSetData = gm.ramFD;
 		aniData = gm.ramFD;
-		objCodePage = obj.gmCode.get(gm).code.dataIndex.fd_ram_page;
-		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.fd_ram_address;
-		imgSetPage = obj.imageSet.dataIndex.fd_ram_page;
-		imgSetAddress = obj.imageSet.dataIndex.fd_ram_address;
-		aniPage = obj.animation.dataIndex.fd_ram_page;
-		aniAddress = obj.animation.dataIndex.fd_ram_address;		
+		objCodePage = obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_page;
+		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address;
+		
+		if (obj.imageSet.dataIndex.get(gm) == null) {
+			obj.imageSet.dataIndex.put(gm, new DataIndex());
+		}
+		
+		imgSetPage = obj.imageSet.dataIndex.get(gm).fd_ram_page;
+		imgSetAddress = obj.imageSet.dataIndex.get(gm).fd_ram_address;
+		
+		if (obj.animation.dataIndex.get(gm) == null) {
+			obj.animation.dataIndex.put(gm, new DataIndex());
+		}		
+		
+		aniPage = obj.animation.dataIndex.get(gm).fd_ram_page;
+		aniAddress = obj.animation.dataIndex.get(gm).fd_ram_address;		
 		
 		// Compilation de ImageSet, Animation, Object pour FD
 		compileObjectWithImageRef(gm, obj, imgSetDirFd, aniDirFd, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress, FLOPPY_DISK);
@@ -1295,34 +1340,34 @@ public class BuildDisk
 		// Génération de l'index ImageSet pour T2
 		asmImgIndexT2 = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirT2));
 		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
-			writeImgIndex(asmImgIndexT2, sprite.getValue(), MEGAROM_T2);
+			writeImgIndex(asmImgIndexT2, gm, sprite.getValue(), MEGAROM_T2);
 		}
 		
 		asmAniIndex = new AsmSourceCode(createFile(obj.animation.fileName, aniDirT2));
 		writeAniIndex(asmAniIndex, obj);				
 		
 		codeData = gm.ramT2;
-		objCodePage = obj.gmCode.get(gm).code.dataIndex.t2_ram_page;
-		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.t2_ram_address;
+		objCodePage = obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_page;
+		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address;
 		
 		if (obj.imageSetInRAM) {
 			imgSetData = gm.ramT2;
-			imgSetPage = obj.imageSet.dataIndex.t2_ram_page;
-			imgSetAddress = obj.imageSet.dataIndex.t2_ram_address;			
+			imgSetPage = obj.imageSet.dataIndex.get(gm).t2_ram_page;
+			imgSetAddress = obj.imageSet.dataIndex.get(gm).t2_ram_address;			
 		} else {
 			imgSetData = game.romT2;
-			imgSetPage = obj.imageSet.dataIndex.t2_page;
-			imgSetAddress = obj.imageSet.dataIndex.t2_address;			
+			imgSetPage = obj.imageSet.t2_page;
+			imgSetAddress = obj.imageSet.t2_address;			
 		}
 		
 		if (obj.animationInRAM) {
 			aniData = gm.ramT2;
-			aniPage = obj.animation.dataIndex.t2_ram_page;
-			aniAddress = obj.animation.dataIndex.t2_ram_address;				
+			aniPage = obj.animation.dataIndex.get(gm).t2_ram_page;
+			aniAddress = obj.animation.dataIndex.get(gm).t2_ram_address;				
 		} else {
 			aniData = game.romT2;
-			aniPage = obj.animation.dataIndex.t2_page;
-			aniAddress = obj.animation.dataIndex.t2_address;				
+			aniPage = obj.animation.t2_page;
+			aniAddress = obj.animation.t2_address;				
 		}		
 
 		compileObjectWithImageRef(gm, obj, imgSetDirT2, aniDirT2, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress, MEGAROM_T2);
@@ -1361,7 +1406,6 @@ public class BuildDisk
 		// Compilation de l'objet
 		prepend = "\topt   c,ct\n";		
 		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + gm.name+ "/" + MODE_DIR[mode] + "/" + FileNames.MAIN_GENCODEGLB+"\"\n";
-		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
 		
 		if (obj.imageSet.uncompressedSize > 0 && obj.animation.uncompressedSize == 0) {			
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + imgSetDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
@@ -1666,7 +1710,7 @@ public class BuildDisk
 		return size;
 	}
 	
-	private static int writeImgIndex(AsmSourceCode asm, Sprite sprite, int mode) {
+	private static int writeImgIndex(AsmSourceCode asm, GameMode gm, Sprite sprite, int mode) {
 		
 		// Sorry for this code ... should be a better way of doing that
 		// Note : index to image sub set is limited to an offset of +127
@@ -1844,19 +1888,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", n_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", n_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("NB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("NB0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("NB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("ND0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("ND0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("ND0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("NB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("NB1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("NB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("ND1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("ND1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("ND1"), line, mode);
 			}
 		}
 		
@@ -1868,19 +1912,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", x_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", x_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("XB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XB0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XD0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XD0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XD0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XB1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XD1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XD1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XD1"), line, mode);
 			}
 		}
 		
@@ -1892,19 +1936,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", y_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", y_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("YB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YB0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("YB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("YD0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YD0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("YD0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("YB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YB1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("YB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("YD1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("YD1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("YD1"), line, mode);
 			}
 		}
 		
@@ -1916,19 +1960,19 @@ public class BuildDisk
 			line.add(String.format("$%1$02X", xy_x1 & 0xFF)); // signed value		
 			line.add(String.format("$%1$02X", xy_y1 & 0xFF)); // signed value			
 			if (sprite.subSprites.containsKey("XYB0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYB0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XYB0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XYD0")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYD0"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XYD0"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XYB1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYB1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XYB1"), line, mode);
 			}
 
 			if (sprite.subSprites.containsKey("XYD1")) {
-				getImgSubSpriteIndex(sprite.subSprites.get("XYD1"), line, mode);
+				getImgSubSpriteIndex(gm, sprite.subSprites.get("XYD1"), line, mode);
 			}
 		}		
 		
@@ -1940,40 +1984,53 @@ public class BuildDisk
 		return line.size();
 	}
 	
-	private static void getImgSubSpriteIndex(SubSprite s, List<String> line, int mode) {
+	private static void getImgSubSpriteIndex(GameMode gm, SubSprite s, List<String> line, int mode) {
 		
-		if (mode == FLOPPY_DISK) {
-			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_page + 0x60));
-			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address >> 8));		
-			line.add(String.format("$%1$02X", s.draw.dataIndex.fd_ram_address & 0xFF));
+		if (gm == null) {
+			line.add(String.format("$%1$02X", 0));
+			line.add(String.format("$%1$02X", 0));		
+			line.add(String.format("$%1$02X", 0));
 		
 			if (s.erase != null) {
-				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_page + 0x60));
-				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address >> 8));		
-				line.add(String.format("$%1$02X", s.erase.dataIndex.fd_ram_address & 0xFF));
+				line.add(String.format("$%1$02X", 0));
+				line.add(String.format("$%1$02X", 0));		
+				line.add(String.format("$%1$02X", 0));
 				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
 			}
-		} else if (mode == MEGAROM_T2 && s.parent.inRAM) {
-			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_ram_page));
-			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_ram_address >> 8));		
-			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_ram_address & 0xFF));
-		
-			if (s.erase != null) {
-				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_ram_page));
-				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_ram_address >> 8));		
-				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_ram_address & 0xFF));
-				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
-			}
-		} else if (mode == MEGAROM_T2 && !s.parent.inRAM) {
-			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_page));
-			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_address >> 8));		
-			line.add(String.format("$%1$02X", s.draw.dataIndex.t2_address & 0xFF));
-		
-			if (s.erase != null) {
-				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_page));
-				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_address >> 8));		
-				line.add(String.format("$%1$02X", s.erase.dataIndex.t2_address & 0xFF));
-				line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+		} else {
+			if (mode == FLOPPY_DISK) {
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).fd_ram_page + 0x60));
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).fd_ram_address >> 8));		
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).fd_ram_address & 0xFF));
+			
+				if (s.erase != null) {
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).fd_ram_page + 0x60));
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).fd_ram_address >> 8));		
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).fd_ram_address & 0xFF));
+					line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+				}
+			} else if (mode == MEGAROM_T2 && s.parent.inRAM) {
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_page));
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_address >> 8));		
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_address & 0xFF));
+			
+				if (s.erase != null) {
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_page));
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_address >> 8));		
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_address & 0xFF));
+					line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+				}
+			} else if (mode == MEGAROM_T2 && !s.parent.inRAM) {
+				line.add(String.format("$%1$02X", s.draw.t2_page));
+				line.add(String.format("$%1$02X", s.draw.t2_address >> 8));		
+				line.add(String.format("$%1$02X", s.draw.t2_address & 0xFF));
+			
+				if (s.erase != null) {
+					line.add(String.format("$%1$02X", s.erase.t2_page));
+					line.add(String.format("$%1$02X", s.erase.t2_address >> 8));		
+					line.add(String.format("$%1$02X", s.erase.t2_address & 0xFF));
+					line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
+				}
 			}
 		}
 	}
@@ -2015,17 +2072,22 @@ public class BuildDisk
 		}	
 	}
 
-	private static void writeObjIndex(String[][] objIndexPage, String[][] objIndex, GameMode gm, Object obj, int mode) {	
+	private static void writeObjIndex(String[][] objIndexPage, String[][] objIndex, GameMode gm, Object obj, int mode) {
+		
+		if (obj.gmCode.get(gm).code.dataIndex.get(gm) == null) {
+			obj.gmCode.get(gm).code.dataIndex.put(gm, new DataIndex());
+		}
+		
 		if (mode == FLOPPY_DISK) {
-			objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_page + 0x60) };
-			objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.fd_ram_address & 0x00FF) };
+			objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_page + 0x60) };
+			objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address & 0x00FF) };
 		} else if (mode == MEGAROM_T2) {
 			if (obj.codeInRAM) {
-				objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.t2_ram_page) };
-				objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.t2_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.t2_ram_address & 0x00FF) };					
+				objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_page) };
+				objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address & 0x00FF) };					
 			} else {
-				objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.t2_page) };
-				objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.t2_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.t2_address & 0x00FF) };
+				objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.t2_page) };
+				objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.t2_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.t2_address & 0x00FF) };
 			}			
 		}	
 	}	
@@ -2039,7 +2101,7 @@ public class BuildDisk
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
 					for (Sound sound : object.getValue().sounds) {
-						writeSndIndex(asmSndIndex, sound);
+						writeSndIndex(asmSndIndex, sound, gameMode);
 					}
 				}
 			}
@@ -2048,20 +2110,22 @@ public class BuildDisk
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
 			for (Sound sound : object.getValue().sounds) {
-				writeSndIndex(asmSndIndex, sound);
+				writeSndIndex(asmSndIndex, sound, gameMode);
 			}
 		}
 	}
 	
-	private static void writeSndIndex(AsmSourceCode asmSndIndex, Sound sound) {
+	private static void writeSndIndex(AsmSourceCode asmSndIndex, Sound sound, GameMode gm) {
 		asmSndIndex.addLabel(sound.name + " ");
 		for (SoundBin sb : sound.sb) {
-			String[] line = new String[5];
-			line[0] = String.format("$%1$02X", sb.dataIndex.fd_ram_page + 0x60);
-			line[1] = String.format("$%1$02X", sb.dataIndex.fd_ram_address >> 8);
-			line[2] = String.format("$%1$02X", sb.dataIndex.fd_ram_address & 0x00FF);
-			line[3] = String.format("$%1$02X", sb.dataIndex.fd_ram_endAddress >> 8);
-			line[4] = String.format("$%1$02X", sb.dataIndex.fd_ram_endAddress & 0x00FF);
+			String[] line = new String[]{"0","0","0","0","0"};
+			if (sb.dataIndex.get(gm) != null) {
+				line[0] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_page + 0x60);
+				line[1] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_address >> 8);
+				line[2] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_address & 0x00FF);
+				line[3] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_endAddress >> 8);
+				line[4] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_endAddress & 0x00FF);
+			}
 			asmSndIndex.addFcb(line);
 		}
 		asmSndIndex.addFcb(new String[] { "$00" });
@@ -2077,26 +2141,26 @@ public class BuildDisk
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
-					writeImgPgIndex(asmBuilder, object.getValue().imageSet, object.getValue().imageSetInRAM, mode);
+					writeImgPgIndex(asmBuilder, object.getValue().imageSet, object.getValue().imageSetInRAM, mode, gameMode);
 				}
 			}
 		}
 		
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
-			writeImgPgIndex(asmBuilder, object.getValue().imageSet, object.getValue().imageSetInRAM, mode);
+			writeImgPgIndex(asmBuilder, object.getValue().imageSet, object.getValue().imageSetInRAM, mode, gameMode);
 		}
 	}	
 	
-	private static void writeImgPgIndex(AsmSourceCode asmBuilder, ImageSetBin ibin, boolean objInRAM, int mode) throws Exception {
-		if (ibin != null && ibin.dataIndex != null) {
+	private static void writeImgPgIndex(AsmSourceCode asmBuilder, ImageSetBin ibin, boolean objInRAM, int mode, GameMode gm) throws Exception {
+		if (ibin != null && ibin.dataIndex != null && ibin.dataIndex.get(gm) != null) {
 			if (mode == FLOPPY_DISK) {
-				asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.fd_ram_page + 0x60) });
+				asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.get(gm).fd_ram_page + 0x60) });
 			} else if (mode == MEGAROM_T2) {
 				if (objInRAM) {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.t2_ram_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.get(gm).t2_ram_page) });
 				} else {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.t2_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.t2_page) });
 				}			
 			}
 		} else {
@@ -2114,26 +2178,26 @@ public class BuildDisk
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
-					writeAniPgIndex(asmBuilder, object.getValue().animation, object.getValue().animationInRAM, mode);
+					writeAniPgIndex(asmBuilder, object.getValue().animation, object.getValue().animationInRAM, mode, gameMode);
 				}
 			}
 		}
 		
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
-			writeAniPgIndex(asmBuilder, object.getValue().animation, object.getValue().animationInRAM, mode);
+			writeAniPgIndex(asmBuilder, object.getValue().animation, object.getValue().animationInRAM, mode, gameMode);
 		}
 	}	
 	
-	private static void writeAniPgIndex(AsmSourceCode asmBuilder, AnimationBin abin, boolean objInRAM, int mode) throws Exception {
-		if (abin != null && abin.dataIndex != null) {
+	private static void writeAniPgIndex(AsmSourceCode asmBuilder, AnimationBin abin, boolean objInRAM, int mode, GameMode gm) throws Exception {
+		if (abin != null && abin.dataIndex != null && abin.dataIndex.get(gm) != null) {
 			if (mode == FLOPPY_DISK) {
-				asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.fd_ram_page + 0x60) });
+				asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.get(gm).fd_ram_page + 0x60) });
 			} else if (mode == MEGAROM_T2) {
 				if (objInRAM) {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.t2_ram_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.get(gm).t2_ram_page) });
 				} else {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.t2_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.t2_page) });
 				}			
 			}
 		} else {

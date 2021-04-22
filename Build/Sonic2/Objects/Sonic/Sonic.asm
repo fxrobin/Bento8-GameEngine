@@ -16,8 +16,7 @@ TestImageSet
 
 TitleScreen_Routines
         fdb   Init
-        fdb   MovePress
-        fdb   MoveHeld
+        fdb   Move
 Init
         ldd   #SonAni_Walk
         std   anim,u
@@ -25,17 +24,10 @@ Init
         stb   priority,u
         ldd   #$807F
         std   xy_pixel,u
-        ; lda   render_flags,u
-        ; ora   #render_xloop_mask
-        ; sta   render_flags,u
         inc   routine,u
-MovePress
-        lda   Dpad_Press
-        ldb   Fire_Press
-        bra   TestLeft
-MoveHeld
+Move
         lda   Dpad_Held
-        ldb   Fire_Press        
+        ldb   Fire_Press
 TestLeft
         bita  #c1_button_left_mask
         beq   TestRight   
@@ -57,15 +49,10 @@ TestDown
 TestBtn
         bitb  #c1_button_A_mask
         beq   Continue
-        lda   routine,u
-        cmpa  #$01
-        bne   TestRtSub
-        inca
-        sta   routine,u
-        bra   Continue
-TestRtSub              
-        deca
-        sta   routine,u
+        lda   Glb_Next_Game_Mode
+        sta   GameMode
+        lda   #$FF
+        sta   ChangeGameMode
 Continue
         jsr   AnimateSprite   
         jmp   DisplaySprite
