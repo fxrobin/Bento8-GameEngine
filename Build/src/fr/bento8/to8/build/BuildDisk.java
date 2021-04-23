@@ -42,7 +42,6 @@ import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
 import fr.bento8.to8.image.SubSpriteBin;
 import fr.bento8.to8.ram.RamImage;
-import fr.bento8.to8.storage.BinUtil;
 import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.RAMLoaderIndex;
@@ -474,6 +473,7 @@ public class BuildDisk
 			rli.ram_address = 0x0100;
 			rli.ram_endAddress = 0x0100 + binBytes.length;
 			rli.split = false; // la page 1 n'est pas utilsée en zone cartouche
+			rli.gml.add(gameMode.getValue());
 			
 			// Dans le cas d'une seconde passe on maj les données
 			if (gameMode.getValue().code.dataIndex.get(gameMode.getValue()) == null) {
@@ -668,7 +668,7 @@ public class BuildDisk
 					if (!abortFloppyDisk) {
 						logger.debug("\t\tCommon : " + common.name);
 						common.items = getRAMItems(gm, common.objects, FLOPPY_DISK, GAMEMODE_COMMON);
-						gm.indexSizeFD += computeItemsRamAddress(gm, common.items, gm.ramFD, false);
+						gm.indexSizeFD += computeItemsRamAddress(gm, common, common.items, gm.ramFD, false);
 						if (gm.ramFD.isOutOfMemory())
 							abortFloppyDisk = true;
 					}
@@ -679,7 +679,7 @@ public class BuildDisk
 			if (!abortFloppyDisk) {
 				gm.items = getRAMItems(gm, gm.objects, FLOPPY_DISK, GAMEMODE);
 				gm.items = addCommonObjectCodeToRAMItems(gm.items, gm, FLOPPY_DISK);
-				gm.indexSizeFD += computeItemsRamAddress(gm, gm.items, gm.ramFD, false);
+				gm.indexSizeFD += computeItemsRamAddress(gm, null, gm.items, gm.ramFD, false);
 				if (gm.ramFD.isOutOfMemory())
 					abortFloppyDisk = true;
 			}
@@ -699,7 +699,7 @@ public class BuildDisk
 					if (!abortT2) {
 						logger.debug("\t\tCommon : " + common.name);
 						common.items = getRAMItems(gm, common.objects, MEGAROM_T2, GAMEMODE_COMMON);
-						gm.indexSizeT2 += computeItemsRamAddress(gm, common.items, gm.ramT2, false);
+						gm.indexSizeT2 += computeItemsRamAddress(gm, common, common.items, gm.ramT2, false);
 						if (gm.ramT2.isOutOfMemory())
 							abortFloppyDisk = true;
 					}
@@ -710,7 +710,7 @@ public class BuildDisk
 			if (!abortT2) {
 				gm.items = getRAMItems(gm, gm.objects, MEGAROM_T2, GAMEMODE);
 				gm.items = addCommonObjectCodeToRAMItems(gm.items, gm, MEGAROM_T2);
-				gm.indexSizeT2 += computeItemsRamAddress(gm, gm.items, gm.ramT2, false); 
+				gm.indexSizeT2 += computeItemsRamAddress(gm, null, gm.items, gm.ramT2, false); 
 				if (gm.ramT2.isOutOfMemory())
 					abortT2 = true;
 			}
@@ -750,12 +750,12 @@ public class BuildDisk
 					if (common != null) {
 						logger.debug("\t\tCommon : " + common.name);
 						common.items = getRAMItems(gm, common.objects, FLOPPY_DISK, GAMEMODE_COMMON);
-						computeItemsRamAddress(gm, common.items, gm.ramFD, true);
+						computeItemsRamAddress(gm, common, common.items, gm.ramFD, true);
 					}
 				}
 				gm.items = getRAMItems(gm, gm.objects, FLOPPY_DISK, GAMEMODE);
 				gm.items = addCommonObjectCodeToRAMItems(gm.items, gm, FLOPPY_DISK);
-				computeItemsRamAddress(gm, gm.items, gm.ramFD, true);
+				computeItemsRamAddress(gm, null, gm.items, gm.ramFD, true);
 			}
 			
 			if (!abortT2) {
@@ -766,12 +766,12 @@ public class BuildDisk
 					if (common != null) {
 						logger.debug("\t\tCommon : " + common.name);
 						common.items = getRAMItems(gm, common.objects, MEGAROM_T2, GAMEMODE_COMMON);
-						computeItemsRamAddress(gm, common.items, gm.ramT2, true);
+						computeItemsRamAddress(gm, common, common.items, gm.ramT2, true);
 					}
 				}
 				gm.items = getRAMItems(gm, gm.objects, MEGAROM_T2, GAMEMODE);
 				gm.items = addCommonObjectCodeToRAMItems(gm.items, gm, MEGAROM_T2);
-				computeItemsRamAddress(gm, gm.items, gm.ramT2, true);
+				computeItemsRamAddress(gm, null, gm.items, gm.ramT2, true);
 			}
 		}
 	}
@@ -912,7 +912,7 @@ public class BuildDisk
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private static int computeItemsRamAddress(GameMode gm, Item[] items, RamImage rImg, boolean writeIndex) throws Exception {
+	private static int computeItemsRamAddress(GameMode gm, GameModeCommon gmc, Item[] items, RamImage rImg, boolean writeIndex) throws Exception {
 		boolean firstLoop = true;
 		int nbHalfPages = 0;
 
@@ -993,6 +993,10 @@ public class BuildDisk
 			// Division de la page RAM en deux parties			
 			if (writeIndex) {			
 				RAMLoaderIndex rli = new RAMLoaderIndex();
+				rli.gml.add(gm);
+				if (gmc != null) {
+					rli.gmc = gmc;
+				}
 				rli.ram_page = rImg.curPage;
 				rli.ram_address = rImg.startAddress[rImg.curPage];
 				if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] > 0x2000) {
@@ -1009,6 +1013,10 @@ public class BuildDisk
 				
 				if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] > 0x2000) {
 					rli = new RAMLoaderIndex();
+					rli.gml.add(gm);
+					if (gmc != null) {
+						rli.gmc = gmc;
+					}
 					rli.ram_page = rImg.curPage;
 					rli.ram_address = 0x2000;
 					rli.ram_endAddress = rImg.endAddress[rImg.curPage];
@@ -1430,20 +1438,48 @@ public class BuildDisk
 		
 		fd.setIndex(0, 0, 2);
 		fd.setIndex(fd.getIndex() + Game.loadManagerSizeFd);
+		
+		HashMap<GameModeCommon, List<RAMLoaderIndex>> commons = new HashMap<GameModeCommon, List<RAMLoaderIndex>>();
 
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			Enumeration<RAMLoaderIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
 			while (enumFd.hasMoreElements()) {
 				RAMLoaderIndex di = enumFd.nextElement();
 
-				di.fd_drive = fd.getUnit();
-				di.fd_track = fd.getTrack();
-				di.fd_sector = fd.getSector();
-
-				index = (fd.getIndex() / 256) * 256; // round to start sector
-				fd.write(di.exoBin);
-				di.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
-				di.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
+				// Gestion des communs, on n'écrit qu'une seule fois les communs sur disquette
+				RAMLoaderIndex fdic = null;
+				if (commons.containsKey(di.gmc)) {
+					for (RAMLoaderIndex dic : commons.get(di.gmc)) {
+						if (dic.ram_page == di.ram_page && dic.ram_address == di.ram_address && dic.ram_endAddress == di.ram_endAddress && Arrays.equals(di.exoBin, dic.exoBin)) {
+							fdic = dic;
+							break;
+						}
+					}
+				}
+				
+				if (fdic != null) {
+					di.fd_drive = fdic.fd_drive;
+					di.fd_track = fdic.fd_track;
+					di.fd_sector = fdic.fd_sector;
+					di.fd_nbSector = fdic.fd_nbSector;
+					di.fd_endOffset = fdic.fd_endOffset;					
+				} else {
+					di.fd_drive = fd.getUnit();
+					di.fd_track = fd.getTrack();
+					di.fd_sector = fd.getSector();
+	
+					index = (fd.getIndex() / 256) * 256; // round to start sector
+					fd.write(di.exoBin);
+					di.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
+					di.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
+					
+					if (di.gmc != null) {
+						if (!commons.containsKey(di.gmc)) {
+							commons.put(di.gmc, new ArrayList<RAMLoaderIndex>());
+						}
+						commons.get(di.gmc).add(di);
+					}
+				}
 			}
 		}
 	}

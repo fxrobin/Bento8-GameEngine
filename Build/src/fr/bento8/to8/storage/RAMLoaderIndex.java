@@ -1,5 +1,11 @@
 package fr.bento8.to8.storage;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import fr.bento8.to8.build.GameMode;
+import fr.bento8.to8.build.GameModeCommon;
+
 /**
  * @author Benoît Rousseau
  * @version 1.0
@@ -16,7 +22,7 @@ public class RAMLoaderIndex
 	
 	// MEGAROM T.2
 	public int t2_page;	          // page de source ROM
-	public int t2_address;	      // adresse RAM	
+	public int t2_address;	      // adresse ROM	
 	public int t2_endAddress;     // adresse de source (ptr de fin pour exomizer) ROM
 
 	// RAM
@@ -26,6 +32,9 @@ public class RAMLoaderIndex
 	
 	public byte[] exoBin;
 	public boolean split = true;
+	
+	public List<GameMode> gml = new ArrayList<GameMode>();
+	public GameModeCommon gmc;
 	
 	public RAMLoaderIndex() {
 	}

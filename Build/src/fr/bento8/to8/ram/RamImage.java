@@ -13,6 +13,7 @@ public class RamImage
     public int[] startAddress;
     public int[] endAddress;
     
+	public int startPage;    
 	public int curPage;
 	public int curAddress;	
 	public int lastPage;
@@ -24,6 +25,7 @@ public class RamImage
 		this.startAddress = new int[lastPage];
 		this.endAddress = new int[lastPage];
 		this.lastPage = lastPage;
+		this.startPage = lastPage+1;
 		this.curPage = 0;		
 	}
 	
@@ -40,6 +42,10 @@ public class RamImage
 		
 		for (int i = startPos, j = 0; i < endPos; i++) {
 			this.data[page][i] = newData[j++];
+		}
+		
+		if (page < this.startPage) {
+			this.startPage = page;
 		}
 	}
 	

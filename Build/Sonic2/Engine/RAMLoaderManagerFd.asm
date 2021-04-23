@@ -32,10 +32,10 @@ RAMLoaderManager
 ************************************************************            
         sts   RLM_CopyCode_restore_s+2 ; sauve s
         ldu   #Gm_Index
+        aslb
+        ldx   b,u                      ; load address of current game mode data        
         asla
         ldu   a,u                      ; load address of new game mode data
-        aslb
-        ldx   b,u                      ; load address of current game mode data
         lds   -2,u                     ; load destination address
 RLM_SkipCommon        
         ldd   ,u

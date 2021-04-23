@@ -44,7 +44,7 @@ public class Game {
 	public boolean useCache;
 	public int maxTries;
 	public static String pragma;
-
+	
 	// Storage
 	public FdUtil fd = new FdUtil();
 	public T2Util t2 = new T2Util();	
