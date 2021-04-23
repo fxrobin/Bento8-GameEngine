@@ -16,8 +16,8 @@ Masher_Routines
         fdb   Masher_Display
 
 Masher_Init
-        ldd   #Img_masher_000
-        std   image_set,u
+        ldd   #MasAni_FastBite
+        std   anim,u
         ldb   #$01
         stb   priority,u
         ldd   #$A09F
@@ -25,6 +25,7 @@ Masher_Init
         inc   routine,u   
         
 Masher_Display
+        jsr   AnimateSprite
         jmp   DisplaySprite
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------

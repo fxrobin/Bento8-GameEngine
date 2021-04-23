@@ -16,8 +16,8 @@ Coconuts_Routines
         fdb   Coconuts_Display
 
 Coconuts_Init
-        ldd   #Img_coconuts_000
-        std   image_set,u
+        ldd   #CocAni_Two
+        std   anim,u
         ldb   #$01
         stb   priority,u
         ldd   #$607F
@@ -25,6 +25,7 @@ Coconuts_Init
         inc   routine,u   
         
 Coconuts_Display
+        jsr   AnimateSprite
         jmp   DisplaySprite
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------

@@ -53,7 +53,7 @@ LevelMainLoop
 * ---------------------------------------------------------------------------
 
 Glb_Cur_Game_Mode             fcb   GmID_03_ARZ
-Glb_Next_Game_Mode            fcb   GmID_TITLE_SCREEN
+Glb_Next_Game_Mode            fcb   GmID_01_EHZ
 
 * ---------------------------------------------------------------------------
 * Display

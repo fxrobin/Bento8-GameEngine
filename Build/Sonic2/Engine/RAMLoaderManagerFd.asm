@@ -36,7 +36,11 @@ RAMLoaderManager
         ldx   b,u                      ; load address of current game mode data        
         asla
         ldu   a,u                      ; load address of new game mode data
+        
         lds   -2,u                     ; load destination address
+        tstb
+        bmi   RLM_SetPage              ; negative value means first load so nothing to compare
+        
 RLM_SkipCommon        
         ldd   ,u
         cmpd  ,x   

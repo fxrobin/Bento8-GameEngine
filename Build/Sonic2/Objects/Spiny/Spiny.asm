@@ -16,8 +16,8 @@ Spiny_Routines
         fdb   Spiny_Display
 
 Spiny_Init
-        ldd   #Img_spiny_000
-        std   image_set,u
+        ldd   #Ani_spiny_floor
+        std   anim,u
         ldb   #$01
         stb   priority,u
         ldd   #$609F
@@ -25,6 +25,7 @@ Spiny_Init
         inc   routine,u   
         
 Spiny_Display
+        jsr   AnimateSprite
         jmp   DisplaySprite        
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------

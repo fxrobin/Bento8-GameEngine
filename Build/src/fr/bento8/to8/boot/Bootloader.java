@@ -5,38 +5,38 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**
- * @author Benoît Rousseau
+ * @author Benoï¿½t Rousseau
  * @version 1.0
  *
  */
 public class Bootloader {
 
 	public byte[] signature = {0x42, 0x41, 0x53, 0x49, 0x43, 0x32}; // "BASIC2"
-	public byte signatureSum = (byte) 0x6C; // (256-(66+65+83+73+67+50)%256)) Somme de contrôle de la signature
+	public byte signatureSum = (byte) 0x6C; // (256-(66+65+83+73+67+50)%256)) Somme de contrï¿½le de la signature
 
 	public Bootloader() {
 	}
 
 	/**
-	 * Encode le secteur d'amorçage d'une disquette Thomson TO8
+	 * Encode le secteur d'amorï¿½age d'une disquette Thomson TO8
 	 * 
-	 * Le secteur d'amorçage est présent en face=0 piste=0 secteur=1 octets=0-127 
-	 * Dans le cas d'une disquette double densité, c'est 256 octets qui sont chargés
-	 * Dans le code source, définir des données en position 120 à 125 permet de compiler
-	 * du code qui dépassera la taille des 120 octets possible pour le secteur de boot 
+	 * Le secteur d'amorï¿½age est prï¿½sent en face=0 piste=0 secteur=1 octets=0-127 
+	 * Dans le cas d'une disquette double densitï¿½, c'est 256 octets qui sont chargï¿½s
+	 * Dans le code source, dï¿½finir des donnï¿½es en position 120 ï¿½ 125 permet de compiler
+	 * du code qui dï¿½passera la taille des 120 octets possible pour le secteur de boot 
 	 * 
-	 * Le code a exécuter est contenu en position 0 à 119 (encodé par un complément à 2 sur chaque octet)
-	 * Le secteur d'amorçage contient "BASIC2" en position 120 à 125
-	 * Le secteur d'amorçage contient la somme de contrôle en position 127
+	 * Le code a exï¿½cuter est contenu en position 0 ï¿½ 119 (encodï¿½ par un complï¿½ment ï¿½ 2 sur chaque octet)
+	 * Le secteur d'amorï¿½age contient "BASIC2" en position 120 ï¿½ 125
+	 * Le secteur d'amorï¿½age contient la somme de contrï¿½le en position 127
 	 * 
-	 * La somme de contrôle est vérifiée au chargement par le TO8 en effectuant :
-	 *    - un complément à 2 sur tous les octets 0-126 (code+signature)
+	 * La somme de contrï¿½le est vï¿½rifiï¿½e au chargement par le TO8 en effectuant :
+	 *    - un complï¿½ment ï¿½ 2 sur tous les octets 0-126 (code+signature)
 	 *    - une somme de ces octets
 	 *    - l'ajout de la valeur 0x55
 	 *      
-	 * Il faut donc calculer la somme de contrôle en effectuant:
-	 *    - la somme des octets du code (0-119) avant leur complément à 2
-	 *    - ajouter la somme des octets (avec complément à 2) de la signature
+	 * Il faut donc calculer la somme de contrï¿½le en effectuant:
+	 *    - la somme des octets du code (0-119) avant leur complï¿½ment ï¿½ 2
+	 *    - ajouter la somme des octets (avec complï¿½ment ï¿½ 2) de la signature
 	 *    - ajouter 0x55
 	 * 
 	 * Les differentes machines sont differenciables au niveau de la lecture de l'octet
@@ -50,7 +50,7 @@ public class Bootloader {
 	 * Rappel:
 	 * 6000-60FF : Registres du Moniteur
 	 *
-	 * @param file fichier binaire contenant le code compilé d'amorçage
+	 * @param file fichier binaire contenant le code compilï¿½ d'amorï¿½age
 	 * @return
 	 */
 	public byte[] encodeBootLoader(String file) {
@@ -68,28 +68,28 @@ public class Bootloader {
 				bootLoader[127] = (byte) 0x55;
 
 				for (i = 0; i < bootLoaderBIN.length && i < 120; i++) {
-					// Ajout de l'octet courant (avant complément à 2) à la somme de contrôle
+					// Ajout de l'octet courant (avant complï¿½ment ï¿½ 2) ï¿½ la somme de contrï¿½le
 					bootLoader[127] = (byte) (bootLoader[127] + bootLoaderBIN[i]);
 
-					// Encodage de l'octet par complément à 2
+					// Encodage de l'octet par complï¿½ment ï¿½ 2
 					bootLoader[i] = (byte) (256 - bootLoaderBIN[i]);
 				}
 
 				for (i = 120; i <= 125; i++) {
-					// Copie de la signature (SANS complément à 2)
+					// Copie de la signature (SANS complï¿½ment ï¿½ 2)
 					bootLoader[i] = signature[j++];
 				}
 				
-				// Ajout de la somme de la signature à la somme de contrôle
+				// Ajout de la somme de la signature ï¿½ la somme de contrï¿½le
 				bootLoader[127] = (byte) (bootLoader[127] + signatureSum);
 
 				for (i = 128; i < bootLoaderBIN.length; i++) {
-					// Copie du reste du code (SANS complément à 2)
+					// Copie du reste du code (SANS complï¿½ment ï¿½ 2)
 					bootLoader[i] = (byte) bootLoaderBIN[i];
 				}
 
 			} else {
-				System.out.println("Le fichier BIN pour le bootloader doit contenir un code de 256 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
+				throw new Exception("Le fichier BIN pour le bootloader doit contenir un code de 256 octets maximum. Taille actuelle: " + bootLoaderBIN.length);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

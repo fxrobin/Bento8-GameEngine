@@ -10,6 +10,8 @@
 * Appel du Game Mode Engine
 *
 ********************************************************************************
+
+        INCLUDE "./Engine/Macros.asm"          
         
         org   $6200
 
@@ -169,17 +171,13 @@ BOO_WaitVBL1
         tst   $E7E7                    ; le faisceau est dans l'ecran
         bmi   BOO_WaitVBL1             ; tant que le bit est a 1 on boucle
 
-* Positionnement de la page 3 a l'ecran
+* Positionnement de la page 3 a l'ecran et de la page 2 en zone A000-DFFF
 ***********************************************************
-        ldb   #$C0                     ; page 3, couleur de cadre 0
-        stb   $E7DD                    ; affiche la page a l'ecran
-        
-* Positionnement de la page 2 en zone A000-DFFF
-***********************************************************
-        ldb   #$02                     ; changement page 2
+        ldd   #$C002                   ; page 3, couleur de cadre 0 et page 2
+        sta   $E7DD                    ; affiche la page a l'ecran
         stb   $E7E5                    ; visible dans l'espace donnees
         
-        lda   #gmboot
+        _ldd  gmboot,$FF               ; level to boot and flag for first level load 
         jmp   $0000
 
 * donnees pour le fondu de palette
