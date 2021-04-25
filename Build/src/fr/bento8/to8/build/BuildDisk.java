@@ -108,12 +108,12 @@ public class BuildDisk
 			generateGameModeIDs();
 			processSounds();			
 			generateSprites();
-			compileMainEngines();						
+			compileMainEngines(false);						
 			compileObjects();
 			computeRamAddress();
 			computeRomAddress();
 			generateImgAniIndex(); 
-			compileMainEngines();
+			compileMainEngines(true);
 			exomizeData();
 			writeObjectsFd(); 
 			compileRAMLoaderManager();
@@ -430,13 +430,13 @@ public class BuildDisk
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private static void compileMainEngines() throws Throwable {
+	private static void compileMainEngines(boolean writeIdx) throws Throwable {
 		logger.info("Compile Main Engines ...");
-		compileMainEngines(FLOPPY_DISK);
-		compileMainEngines(MEGAROM_T2);
+		compileMainEngines(FLOPPY_DISK, writeIdx);
+		compileMainEngines(MEGAROM_T2, writeIdx);
 	}
 	
-	private static void compileMainEngines(int mode) throws Throwable {
+	private static void compileMainEngines(int mode, boolean writeIdx) throws Throwable {
 		logger.info("Compile Main Engines for " + MODE_LABEL[mode] + "...");
 		
 		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
@@ -485,14 +485,14 @@ public class BuildDisk
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_address = rli.ram_address;
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_endAddress = rli.ram_endAddress;
 				gameMode.getValue().ramFD.setData(rli.ram_page, rli.ram_address, binBytes);
-				if (!gameMode.getValue().fdIdx.isEmpty())
+				if (writeIdx)
 					gameMode.getValue().fdIdx.add(rli); // Seconde passe
 			} else {
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_page = rli.ram_page;
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_address = rli.ram_address;		
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_endAddress = rli.ram_endAddress;
 				gameMode.getValue().ramT2.setData(rli.ram_page, rli.ram_address, binBytes);
-				if (!gameMode.getValue().fdIdx.isEmpty())				
+				if (writeIdx)				
 					gameMode.getValue().t2Idx.add(rli); // Seconde passe
 			}
 		}

@@ -11,21 +11,85 @@
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
-        jsr   LoadAct
-
 * ==============================================================================
 * Main Loop
 * ==============================================================================
-LevelMainLoop
-        jsr   WaitVBL    
-        jsr   UpdatePalette
-        jsr   ReadJoypads
-        jsr   LoadGameMode                
-        jsr   RunObjects
-        jsr   CheckSpritesRefresh
-        jsr   EraseSprites
-        jsr   UnsetDisplayPriority
-        jsr   DrawSprites        
+                                       ; init: 80 4000 6000
+        lda   #$01                     ; allocate one cell
+        jsr   BgBufferAlloc            ; result: 7F 4000 5FC0 y:6000
+        
+        lda   #$7E                     ; allocate 126 cell
+        jsr   BgBufferAlloc            ; result: 01 4000 4040 y:5FC0
+        
+        lda   #$01                     ; allocate one cell
+        jsr   BgBufferAlloc            ; result: 0000 00 4000 (4040 devrait etre 4000 mais ca ne fait pas de difference) y:4040
+        
+        lda   #$01                     ; allocate one cell
+        jsr   BgBufferAlloc            ; result: 00 4000 (4040 devrait etre 4000 mais ca ne fait pas de difference) y:0000
+        
+        ; BgBufferFree - Cas 0
+        
+        lda   #$01
+        ldu   #Obj_MainCharacter
+        sta   rsv_prev_erase_nb_cell_0,u
+        ldx   #$5FC0                   ; free one cell
+        ldy   #$6000
+        jsr   BgBufferFree
+        
+ ; Clean data structure        
+        ldd   #Lst_FreeCell_0
+        std   Lst_FreeCellFirstEntry_0
+
+        lda   #$03
+        sta   Lst_FreeCellFirstEntry_0+2
+        ldd   #$4080
+        std   Lst_FreeCellFirstEntry_0+3
+        ldd   #$4140
+        std   Lst_FreeCellFirstEntry_0+5
+        ldd   #Lst_FreeCell_0+7
+        std   Lst_FreeCellFirstEntry_0+7
+
+
+        lda   #$01
+        sta   Lst_FreeCellFirstEntry_0+9
+        ldd   #$4000
+        std   Lst_FreeCellFirstEntry_0+10
+        ldd   #$4040
+        std   Lst_FreeCellFirstEntry_0+12
+        ldd   #$0000
+        std   Lst_FreeCellFirstEntry_0+14
+                       
+        ldx   #Lst_FreeCellFirstEntry_0+16
+        lda   #$00
+clean_data
+        sta   ,x+
+        cmpx  #Lst_FreeCellFirstEntry_1
+        bne   clean_data   
+        
+        ; BgBufferFree
+        ; @6183 6185
+        ; @6185 03 4080 4140 0000
+        ; @618C 01 4000 4040 618C
+        
+        lda   #$05
+        ldu   #Obj_MainCharacter
+        sta   rsv_prev_erase_nb_cell_0,u
+        ldx   #$5EC0                   ; free one cell
+        ldy   #$6000
+        jsr   BgBufferFree
+        
+        ; @6183 6193
+        ; @6185 03 4080 4140 618C
+        ; @618C 01 4000 4040 0000
+        ; @6193 05 5EC0 6000 6185
+        
+        ; devrait etre:
+        ; @6183 6193
+        ; @6185 03 4080 4140 618C
+        ; @618C 01 4000 4040 0000
+        ; @6193 05 5EC0 6000 6185        
+         
+LevelMainLoop               
         bra   LevelMainLoop
         
 * ==============================================================================
@@ -119,12 +183,11 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         
 Object_RAM 
 Reserved_Object_RAM
-Obj_MainCharacter             fcb   ObjID_Test
-                              fill  0,object_size-1
+Obj_MainCharacter             fill  0,object_size
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
-Dynamic_Object_RAM            fill  0,nb_dynamic_objects*object_size
+Dynamic_Object_RAM            fill  0,(nb_dynamic_objects)*object_size
 Dynamic_Object_RAM_End
 
 LevelOnly_Object_RAM                              * faire comme pour Dynamic_Object_RAM
@@ -143,24 +206,5 @@ Glb_MainCharacter_Is_Dead     fcb   $00
 * ==============================================================================
 * Routines
 * ==============================================================================
-        INCLUDE "./Engine/WaitVBL.asm"
-        INCLUDE "./Engine/ReadJoypads.asm"
-        INCLUDE "./Engine/RunObjects.asm"
-        INCLUDE "./Engine/LoadGameMode.asm"
-        INCLUDE "./Engine/AnimateSprite.asm"
-        INCLUDE "./Engine/ObjectMove.asm"
-        INCLUDE "./Engine/SingleObjLoad.asm"
-        INCLUDE "./Engine/DeleteObject.asm"
-        INCLUDE "./Engine/DisplaySprite.asm"
-        INCLUDE "./Engine/MarkObjGone.asm"
-        INCLUDE "./Engine/ClearObj.asm"
-        INCLUDE "./Engine/CheckSpritesRefresh.asm"
-        INCLUDE "./Engine/EraseSprites.asm"
-        INCLUDE "./Engine/UnsetDisplayPriority.asm"
-        INCLUDE "./Engine/DrawSprites.asm"
         INCLUDE "./Engine/BgBufferAlloc.asm"
-        INCLUDE "./Engine/BgBufferFree.asm"
-        INCLUDE "./Engine/ClearDataMemory.asm"
-        INCLUDE "./Engine/CopyImageToCart.asm"
-		INCLUDE "./Engine/UpdatePalette.asm"
-        INCLUDE "./Engine/PSGlib.asm"
+        INCLUDE "./Engine/EraseSprites.asm"

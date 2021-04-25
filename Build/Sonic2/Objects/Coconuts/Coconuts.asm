@@ -5,6 +5,7 @@
 ; ---------
 ;
 ; ---------------------------------------------------------------------------
+
 Coconuts
         lda   routine,u
         asla
@@ -16,8 +17,8 @@ Coconuts_Routines
         fdb   Coconuts_Display
 
 Coconuts_Init
-        ldd   #CocAni_Two
-        std   anim,u
+        ldd   #Img_coconuts_001
+        std   image_set,u
         ldb   #$01
         stb   priority,u
         ldd   #$607F
@@ -25,7 +26,6 @@ Coconuts_Init
         inc   routine,u   
         
 Coconuts_Display
-        jsr   AnimateSprite
         jmp   DisplaySprite
                                                       *; ===========================================================================
                                                       *; ----------------------------------------------------------------------------

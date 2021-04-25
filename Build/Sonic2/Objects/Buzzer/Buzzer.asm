@@ -21,7 +21,7 @@ Buzzer_Init
         std   image_set,u
         ldb   #$01
         stb   priority,u
-        ldd   #$A07F
+        ldd   #$9560
         std   xy_pixel,u
         inc   routine,u   
         

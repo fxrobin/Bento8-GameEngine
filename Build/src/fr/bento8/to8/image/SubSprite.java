@@ -1,5 +1,8 @@
 package fr.bento8.to8.image;
 
+import fr.bento8.to8.compiledSprite.backupDrawErase.AssemblyGenerator;
+import fr.bento8.to8.compiledSprite.draw.SimpleAssemblyGenerator;
+
 public class SubSprite {
 
 	public Sprite parent;

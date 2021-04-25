@@ -118,9 +118,9 @@ ESP_P8B1
 ESP_rtsB1        
         rts
 
-* *******
+* -----------------------------------------------
 * BUFFER0
-* *******
+* -----------------------------------------------
 
 ESP_ProcessEachPriorityLevelB0
         lda   rsv_priority_0,u
@@ -151,15 +151,23 @@ ESP_CallEraseRoutineB0
         stu   ESP_CallEraseRoutineB0_00+1   ; backup u (pointer to object)                
         ldu   rsv_bgdata_0,u                ; cell_start background data        
         jsr   ,x                            ; erase sprite on working screen buffer
-        leay  ,u                            ; cell_end background data stored in y
+        stu   BBF_cell_end                  ; cell_end background data as parameter to BBF
 ESP_CallEraseRoutineB0_00        
         ldu   #$0000                        ; restore u (pointer to object)
         ldd   rsv_bgdata_0,u                ; cell_start
         subd  #16
         andb  #256-cell_size                ; round cell_start to cell size
-        tfr   d,x                           ; cell_start rounded stored in x
+        std   BBF_cell_start                ; cell_start rounded stored in x
                         
 ESP_FreeEraseBufferB0
+        lda   rsv_prev_erase_nb_cell_0,u     ; get nb of cell to free
+        sta   BBF_nb_cells
+        stu   BBF_rts+1
+        ldu   #Lst_FreeCell_0
+        stu   BBF_AddNewEntry+1
+        ldu   #Lst_FreeCellFirstEntry_0        
+        stu   BBF_SetNewEntryPrevLink+1     ; init prev address destination as Lst_FreeCellFirstEntry                
+        ldu   Lst_FreeCellFirstEntry_0      ; load first cell for screen buffer 0
         jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB0
@@ -170,11 +178,11 @@ ESP_UnsetOnScreenFlagB0
 ESP_NextObjectB0
         ldu   rsv_priority_prev_obj_0,u
         bne   ESP_ProcessEachPriorityLevelB0   
-        rts           
+        rts      
 
-* *******        
+* -----------------------------------------------        
 * BUFFER1
-* *******        
+* -----------------------------------------------        
                 
 ESP_ProcessEachPriorityLevelB1
         lda   rsv_priority_1,u
@@ -205,15 +213,23 @@ ESP_CallEraseRoutineB1
         stu   ESP_CallEraseRoutineB1_00+1   ; backup u (pointer to object)                
         ldu   rsv_bgdata_1,u                ; cell_start background data        
         jsr   ,x                            ; erase sprite on working screen buffer
-        leay  ,u                            ; cell_end background data stored in y
+        stu   BBF_cell_end                  ; cell_end background data as parameter to BBF
 ESP_CallEraseRoutineB1_00        
         ldu   #$0000                        ; restore u (pointer to object)
         ldd   rsv_bgdata_1,u                ; cell_start
         subd  #16
         andb  #256-cell_size                ; round cell_start to cell size
-        tfr   d,x                           ; cell_start rounded stored in x
+        std   BBF_cell_start                ; cell_start rounded stored in x
                         
 ESP_FreeEraseBufferB1
+        lda   rsv_prev_erase_nb_cell_1,u       
+        sta   BBF_nb_cells         
+        stu   BBF_rts+1
+        ldu   #Lst_FreeCell_1
+        stu   BBF_AddNewEntry+1
+        ldu   #Lst_FreeCellFirstEntry_1        
+        stu   BBF_SetNewEntryPrevLink+1          
+        ldu   Lst_FreeCellFirstEntry_1
         jsr   BgBufferFree                  ; free background data in memory
         
 ESP_UnsetOnScreenFlagB1
@@ -224,4 +240,114 @@ ESP_UnsetOnScreenFlagB1
 ESP_NextObjectB1
         ldu   rsv_priority_prev_obj_1,u
         bne   ESP_ProcessEachPriorityLevelB1   
-        rts        
+        rts
+        
+* ---------------------------------------------------------------------------
+* BgBufferFree
+* ------------
+* Subroutine to free memory from background buffer
+* ---------------------------------------------------------------------------
+     
+BBF_nb_cells   fcb   $00
+BBF_cell_start fdb   $0000
+BBF_cell_end   fdb   $0000       
+BBF_prev       fdb   $0000
+
+        ; search position of the new free cells in the linked list
+        ; linked list is ordered by cell_end (address) descending
+        ; starting at Lst_FreeCellFirstEntry_x
+        ; ----------------------------------------------------------
+
+BgBufferFree        
+        beq   BBF_AddLastEntry
+BBF_SearchPos 
+        ldx   cell_end,u
+        cmpx  BBF_cell_end
+        blo   BBF_CombineNext
+        stu   BBF_prev
+        ldd   next_entry,u                  ; test next entry
+        beq   BBF_CombinePrevNoNext
+        leax  next_entry,u                  ; there is a next entry, save next_entry position
+        stx   BBF_SetNewEntryPrevLink+1   
+        ldu   next_entry,u                  ; move to next entry        
+        bra   BBF_SearchPos        
+        
+        ; try to combine with next block
+        ; ----------------------------------------------------------        
+        
+BBF_CombineNext
+        stu   BBF_SetNewEntryNextentry+1
+        ldx   BBF_cell_start
+        cmpx  cell_end,u
+        bne   BBF_CombinePrev
+        ldx   BBF_cell_end
+        stx   cell_end,u
+        lda   nb_cells,u
+        adda  BBF_nb_cells
+        sta   nb_cells,u
+        
+BBF_CombineNextAndPrev
+        ldy   BBF_prev
+        cmpx  cell_start,y
+        bne   BBF_rts
+        ldx   cell_start,u
+        stx   cell_start,y
+        lda   nb_cells,u        
+        adda  nb_cells,y
+        sta   nb_cells,y
+        ldd   next_entry,u
+        std   next_entry,y
+        lda   #$00
+        sta   nb_cells,u                    ; delete the entry
+        bra   BBF_rts
+                
+        ; try to combine with prev block 
+        ; ----------------------------------------------------------      
+        
+BBF_CombinePrevNoNext
+        ldd   #$0000
+        std   BBF_SetNewEntryNextentry+1
+BBF_CombinePrev
+        ldx   BBF_cell_end
+        cmpx  cell_start,u
+        bne   BBF_AddNewEntry
+        ldx   BBF_cell_start
+        stx   cell_start,u
+        lda   nb_cells,u        
+        adda  BBF_nb_cells
+        sta   nb_cells,u
+        bra   BBF_rts   
+
+        ; Add New Entry
+        ; ----------------------------------------------------------
+        
+BBF_AddLastEntry
+        ldd   #$0000
+        std   BBF_SetNewEntryNextentry+1        
+BBF_AddNewEntry
+        ldu   #$0000                        ; (dynamic) start of linked list data index
+BBF_FindFreeSlot
+        ldb   nb_cells,u                    ; read Lst_FreeCell as a table (not a linked list)
+        beq   BBF_SetNewEntry               ; branch if empty entry
+        leau  entry_size,u                  ; move to next entry
+        bra   BBF_FindFreeSlot              ; loop             
+
+BBF_SetNewEntry        
+        lda   BBF_nb_cells              
+        sta   nb_cells,u                    ; store released cells
+        ldd   BBF_cell_start
+        std   cell_start,u                  ; store cell start adress
+        ldd   BBF_cell_end
+        std   cell_end,u                    ; store cell end adress
+        
+BBF_SetNewEntryNextentry        
+        ldd   #$0000                        ; (dynamic) value is dynamically set
+        std   next_entry,u                  ; link to 0000 if no more entry or next_entry
+        
+BBF_SetNewEntryPrevLink        
+        stu   $FFFF                         ; (dynamic) set Lst_FreeCellFirstEntry or prev_entry.next_entry with new entry
+        
+BBF_rts
+        ldu   #$0000
+        rts
+                
