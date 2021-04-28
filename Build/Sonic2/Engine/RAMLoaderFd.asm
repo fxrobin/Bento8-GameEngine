@@ -6,8 +6,7 @@
 * decompresse les donnees avec exomizer et copie ces donnees en RAM
 * Les donnees sont stockees par groupe de 7 octets
 * Donnees b: SEC, b: DRV/TRK, b: nb SEC, b: offset de fin, b: dest Page, w: dest Adresse
-* on termine par l'ecriture en page 1 des donnees 0000-0100
-* la derniere ligne contient un premier octet negtif (exemple $FF)
+* la derniere ligne contient comme premier octet une valeur negative (exemple $FF)
 * Remarque:
 * ---------
 * Les donnees sur la disquette sont continues. Lorsque des donnees se terminent a moitie

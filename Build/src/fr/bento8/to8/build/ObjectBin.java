@@ -2,6 +2,7 @@ package fr.bento8.to8.build;
 
 import fr.bento8.to8.util.knapsack.ItemBin;
 import fr.bento8.to8.build.Object;
+import fr.bento8.to8.storage.RAMLoaderIndex;
 
 public class ObjectBin extends ItemBin{
 
@@ -25,6 +26,10 @@ public class ObjectBin extends ItemBin{
 
 	public Object getObject() {
 		return parent;
+	}
+
+	public RAMLoaderIndex getRAMLoaderIndex() {
+		return null;
 	}
 			
 }

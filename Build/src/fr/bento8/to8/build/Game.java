@@ -25,6 +25,8 @@ public class Game {
 	public String engineAsmRAMLoaderT2;	
 	public static int loadManagerSizeT2 = 0;
 	
+	public static int bootSizeT2 = 0;
+	
 	// Game Mode
 	public String gameModeBoot;
 	public HashMap<String, GameMode> gameModes = new HashMap<String, GameMode>();
@@ -49,8 +51,6 @@ public class Game {
 	public FdUtil fd = new FdUtil();
 	public T2Util t2 = new T2Util();	
 	public RamImage romT2 = new RamImage(128);
-	public int romDataStartPgT2 = 0;
-	public int romDataStartAdrT2 = 0;
 	
 	public AsmSourceCode glb;
 	

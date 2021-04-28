@@ -24,7 +24,7 @@ PlayPCM
 PlayPCM_ReadChunk
         lda   pcm_page,y                    ; load memory page
         beq   PlayPCM_End
-        sta   $E7E6                         ; mount page in (0000-3FFF)                
+        _SetCartPageA                
         ldx   pcm_start_addr,y              ; Chunk start addr
        
 PlayPCM_Loop      

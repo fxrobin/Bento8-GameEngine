@@ -5,14 +5,16 @@ import java.util.List;
 
 import fr.bento8.to8.build.GameMode;
 import fr.bento8.to8.build.GameModeCommon;
+import fr.bento8.to8.build.Object;
+import fr.bento8.to8.util.knapsack.ItemBin;
 
 /**
  * @author Benoît Rousseau
  * @version 1.0
  *
  */
-public class RAMLoaderIndex
-{
+public class RAMLoaderIndex extends ItemBin{
+	
 	// FLOPPY DISK
 	public int fd_drive;
 	public int fd_track;
@@ -35,7 +37,20 @@ public class RAMLoaderIndex
 	
 	public List<GameMode> gml = new ArrayList<GameMode>();
 	public GameModeCommon gmc;
+	public List<RAMLoaderIndex> rli = new ArrayList<RAMLoaderIndex>();
 	
 	public RAMLoaderIndex() {
+	}
+
+	public String getFullName() {
+		return "RAMLoaderIndex "+String.format("$%1$04X", ram_page)+" "+ram_address+" "+String.format("$%1$04X", ram_endAddress);
+	}
+
+	public Object getObject() {
+		return null;
+	}
+
+	public RAMLoaderIndex getRAMLoaderIndex() {
+		return this;
 	}
 }

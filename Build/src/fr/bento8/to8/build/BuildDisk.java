@@ -45,6 +45,7 @@ import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.RAMLoaderIndex;
+import fr.bento8.to8.storage.T2Util;
 import fr.bento8.to8.util.FileUtil;
 import fr.bento8.to8.util.LWASMUtil;
 import fr.bento8.to8.util.knapsack.Item;
@@ -57,6 +58,7 @@ public class BuildDisk
 
 	public static Game game;
 	private static FdUtil fd = new FdUtil();
+	private static T2Util t2 = new T2Util();
 	
 	public static int UNDEFINED = 0;
 	public static int FLOPPY_DISK = 0;
@@ -103,6 +105,7 @@ public class BuildDisk
 			loadGameConfiguration(args[0]);
 			clean();
 			
+			initT2();
 			compileRAMLoader();
 			generateObjectIDs();
 			generateGameModeIDs();
@@ -116,12 +119,12 @@ public class BuildDisk
 			compileMainEngines(true);
 			exomizeData();
 			writeObjectsFd(); 
+			writeObjectsT2();
 			compileRAMLoaderManager();
-			compileAndWriteBoot();
+			compileAndWriteBootFd();
+			compileAndWriteBootT2();			
 			
 			// TODO: migrer le code ASM sprite compilé de "position independant" (,PCR) a "position dependant"
-			// TODO: idem code objet
-			// TODO: etudier l'optim de exomizer si "position dependant"
 			// TODO: inclure dans les sprites compilés l'accès au variables de position plutot que de faire un passage de paramètre par registre (test performance)
 			
 		} catch (Exception e) {
@@ -150,7 +153,16 @@ public class BuildDisk
 	    final File[] filesT2Exo = downloadDirectoryT2.listFiles( (dir,name) -> name.matches(".*\\.exo" ));
 	    Arrays.asList(filesT2Exo).stream().forEach(File::delete);		    
 	}
+	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private static void initT2() throws Exception {
+		Game.bootSizeT2 = getBINSize(game.engineAsmBootT2);
+		game.glb.addConstant("Build_RAMLoaderManager", String.format("$%1$04X", Game.bootSizeT2));
+		game.glb.flush();
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
 	private static void loadGameConfiguration(String configFileName) throws Exception {
 		logger.info("Load Game configuration: "+configFileName+" ...");
@@ -173,14 +185,14 @@ public class BuildDisk
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private static void compileRAMLoader() throws IOException {
+	private static void compileRAMLoader() throws Exception {
 		compileRAMLoader(FLOPPY_DISK);
 		Files.deleteIfExists(Paths.get(Game.generatedCodeDirName + FileNames.FILE_INDEX_FD));
 		compileRAMLoader(MEGAROM_T2);
 		Files.deleteIfExists(Paths.get(Game.generatedCodeDirName + FileNames.FILE_INDEX_T2));
 	}
 	
-	private static void compileRAMLoader(int mode) throws IOException {
+	private static void compileRAMLoader(int mode) throws Exception {
 		logger.info("Compile RAM Loader ...");
 
 		String ramLoader;
@@ -189,14 +201,13 @@ public class BuildDisk
 		} else {
 			ramLoader = duplicateFile(game.engineAsmRAMLoaderT2);
 		}
-		compileRAW(ramLoader);
+		compileRAW(ramLoader, mode);
 		Path binFile = Paths.get(getBINFileName(ramLoader));
 		byte[] BINBytes = Files.readAllBytes(binFile);
 		byte[] InvBINBytes = new byte[BINBytes.length];
         int j = 0;
         
 		// Inversion des données par bloc de 7 octets (simplifie la copie par pul/psh au runtime)
-        // TODO T2 : 6 octets
 		for (int i = BINBytes.length-7; i >= 0; i -= 7) {
 			InvBINBytes[j++] = BINBytes[i];			                          
 			InvBINBytes[j++] = BINBytes[i+1];
@@ -449,14 +460,14 @@ public class BuildDisk
 			
 			writePalIndex(asmBuilder, gameMode.getValue());
 			writeObjIndex(asmBuilder, gameMode.getValue(), mode);
-			writeSndIndex(asmBuilder, gameMode.getValue());
+			writeSndIndex(asmBuilder, gameMode.getValue(), mode);
 			writeImgPgIndex(asmBuilder, gameMode.getValue(), mode);
 			writeAniPgIndex(asmBuilder, gameMode.getValue(), mode);
 			writeLoadActIndex(asmBuilder, gameMode.getValue());
 			
 			Files.write(Paths.get(mainEngineTmpFile), ("\tINCLUDE \"" + Game.generatedCodeDirName + gameMode.getKey() + "/" + FileNames.MAIN_GENCODE + "\"\n").getBytes(), StandardOpenOption.APPEND);
 			
-			compileRAW(mainEngineTmpFile);
+			compileRAW(mainEngineTmpFile, mode);
 			byte[] binBytes = Files.readAllBytes(Paths.get(getBINFileName(mainEngineTmpFile)));
 
 			if (binBytes.length > RamImage.PAGE_SIZE) {
@@ -596,7 +607,7 @@ public class BuildDisk
 		if (obj.imageSet.uncompressedSize > 0) {
 			prepend = "\torg   $A000\n"; // dummy
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + obj.name + "/" + obj.imageSet.fileName, imgSetDir + "/", prepend);
-			compileRAW(objectCodeTmpFile);
+			compileRAW(objectCodeTmpFile, UNDEFINED);
 			obj.imageSet.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 			obj.imageSet.uncompressedSize = obj.imageSet.bin.length;
 		}		
@@ -607,7 +618,7 @@ public class BuildDisk
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + aniDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
 			prepend += "\torg   $A000\n"; // dummy
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + obj.name + "/" + obj.animation.fileName, aniDir + "/", prepend);
-			compileRAW(objectCodeTmpFile);
+			compileRAW(objectCodeTmpFile, UNDEFINED);
 			obj.animation.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 			obj.animation.uncompressedSize = obj.animation.bin.length;
 		}			
@@ -624,9 +635,9 @@ public class BuildDisk
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + aniDir + "/" + FileUtil.removeExtension(obj.animation.fileName)+".glb" + "\"\n";
 		}
 		
-		prepend += "\torg   $" + org + "\n";
+		prepend += "\torg   " + String.format("$%1$04X", org) + "\n";
 		objectCodeTmpFile = duplicateFilePrepend(obj.codeFileName, imgSetDir, prepend);
-		compileRAW(objectCodeTmpFile);
+		compileRAW(objectCodeTmpFile, UNDEFINED);
 		obj.gmCode.get(gm).code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 		obj.gmCode.get(gm).code.uncompressedSize = obj.gmCode.get(gm).code.bin.length;
 		
@@ -728,8 +739,9 @@ public class BuildDisk
 		// Positionnement des adresses de départ du code en RAM
 		// calcul de la taille des index fichier de RAMLoader/RAMLoaderManager
 		Game.loadManagerSizeFd = getRAMLoaderManagerSizeFd();
-		Game.loadManagerSizeT2 = getRAMLoaderManagerSizeT2();
 		Game.loadManagerSizeFd += totalIndexSizeFD;
+		
+		Game.loadManagerSizeT2 = getRAMLoaderManagerSizeT2();		
 		Game.loadManagerSizeT2 += totalIndexSizeT2;
 		
 		logger.debug("\t\tinitStartAddressFD: "+Game.loadManagerSizeFd);
@@ -822,7 +834,7 @@ public class BuildDisk
 						nbGameModeItems += 1;
 
 			// Object Code
-			if (!isCommon && (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM)))
+			if (!isCommon)
 				nbGameModeItems++;
 		}
 
@@ -855,7 +867,7 @@ public class BuildDisk
 						items[itemIdx++] = new Item(soundBIN, 1);
 
 			// Object Code
-			if (!isCommon && (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM))) {
+			if (!isCommon) {
 				Item obj = new Item(object.getValue().gmCode.get(gm).code, 1);
 				items[itemIdx++] = obj;	
 			}
@@ -880,8 +892,7 @@ public class BuildDisk
 				for (Entry<String, Object> object : common.objects.entrySet()) {
 
 					// Ajoute les items du commun de type code objet
-					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM))
-						nbGameModeItems++;
+					nbGameModeItems++;
 				}
 			}
 		}
@@ -898,12 +909,9 @@ public class BuildDisk
 				for (Entry<String, Object> object : common.objects.entrySet()) {
 					
 					// Ajoute les items du commun de type code objet
-					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && object.getValue().codeInRAM)) {
-						Item obj = new Item(object.getValue().gmCode.get(gm).code, 1);
-						newItems[i++] = obj;
-					}
+					Item obj = new Item(object.getValue().gmCode.get(gm).code, 1);
+					newItems[i++] = obj;
 				}
-
 			}
 		}
 
@@ -1045,13 +1053,14 @@ public class BuildDisk
 		
 		logger.debug("computeRomAddress ...");
 		
-		game.romDataStartPgT2 = 0;
-		game.romDataStartAdrT2 = 256 + Game.loadManagerSizeT2; // TODO boot + RAMLoaderManager
+		game.romT2.curPage = 0;
+		game.romT2.startAddress[game.romT2.curPage] = 0;
+		game.romT2.endAddress[game.romT2.curPage] = Game.bootSizeT2 + Game.loadManagerSizeT2;
 		
 		Item[] items = getROMItems();
-		computeItemsRomAddress(items, game.romDataStartPgT2, game.romDataStartAdrT2);
+		computeItemsRomAddress(items, game.romT2.startAddress[game.romT2.curPage], game.romT2.endAddress[game.romT2.curPage]);
 	}
-
+	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
 	private static Item[] getROMItems() {
@@ -1059,148 +1068,54 @@ public class BuildDisk
 
 		// Compte le nombre d'objets a traiter
 		int nbItems = 0;
-		GameMode gm;
 		
-		// Parcours unique de tous les games modes communs (sans le code objet)
-		for (Entry<String, GameModeCommon> common : Game.allGameModeCommons.entrySet()) {
-			if (common != null) {
-				for (Entry<String, Object> object : common.getValue().objects.entrySet()) {
-					// Sprites
-					for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
-						if (!subSprite.inRAM)
-							nbItems += 1;
+		// Parcours unique de tous les objets
+		for (Entry<String, Object> object : Game.allObjects.entrySet()) {
 
-					// ImageSet Index
-					if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
-						nbItems++;
+			// Sprites
+			for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
+				if (!subSprite.inRAM)
+					nbItems += 1;
 
-					// Animation Index
-					if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
-						nbItems++;
+			// ImageSet Index
+			if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
+				nbItems++;
 
-					// Sounds
-					for (Sound sound : object.getValue().sounds)
-						for (SoundBin soundBIN : sound.sb)
-							if (!soundBIN.inRAM)
-								nbItems += 1;
-				}
-			}
-		}
+			// Animation Index
+			if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
+				nbItems++;
 
-		// Parcours des communs de chaque game mode pour récupérer les codes objets
-		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			gm = gameMode.getValue();
-			for (GameModeCommon common : gm.gameModeCommon) {
-				if (common != null) {
-					for (Entry<String, Object> object : common.objects.entrySet()) {
-						// Object Code
-						if (!object.getValue().codeInRAM)
-							nbItems++;
-					}
-				}
-			}
-
-			for (Entry<String, Object> object : gm.objects.entrySet()) {
-
-				// Sprites
-				for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
-					if (!subSprite.inRAM)
+			// Sounds
+			for (Sound sound : object.getValue().sounds)
+				for (SoundBin soundBIN : sound.sb)
+					if (!soundBIN.inRAM)
 						nbItems += 1;
-
-				// ImageSet Index
-				if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
-					nbItems++;
-
-				// Animation Index
-				if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
-					nbItems++;
-
-				// Sounds
-				for (Sound sound : object.getValue().sounds)
-					for (SoundBin soundBIN : sound.sb)
-						if (!soundBIN.inRAM)
-							nbItems += 1;
-
-				// Object Code
-				if (!object.getValue().codeInRAM)
-					nbItems++;
-			}
 		}
 
-		// Initialise un item pour chaque élément a écrire en RAM
+		// Initialise un item pour chaque élément a écrire en ROM
 		Item[] items = new Item[nbItems];
 		int itemIdx = 0;
 
-		// Parcours unique de tous les games modes communs (sans le code objet)
-		for (Entry<String, GameModeCommon> common : Game.allGameModeCommons.entrySet()) {
-			if (common != null) {
-				for (Entry<String, Object> object : common.getValue().objects.entrySet()) {
-					// Sprites
-					for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
-						if (!subSprite.inRAM)
-							items[itemIdx++] = new Item(subSprite, 1);
+		for (Entry<String, Object> object : Game.allObjects.entrySet()) {
 
-					// ImageSet Index
-					if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
-						items[itemIdx++] = new Item(object.getValue().imageSet, 1);
+			// Sprites
+			for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
+				if (!subSprite.inRAM)
+					items[itemIdx++] = new Item(subSprite, 1);
 
-					// Animation Index
-					if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
-						items[itemIdx++] = new Item(object.getValue().animation, 1);
+			// ImageSet Index
+			if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
+				items[itemIdx++] = new Item(object.getValue().imageSet, 1);
 
-					// Sounds
-					for (Sound sound : object.getValue().sounds)
-						for (SoundBin soundBIN : sound.sb)
-							if (!soundBIN.inRAM)
-								items[itemIdx++] = new Item(soundBIN, 1);
-				}
-			}
-		}
+			// Animation Index
+			if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
+				items[itemIdx++] = new Item(object.getValue().animation, 1);
 
-		// Parcours des communs de chaque game mode pour récupérer les codes objets
-		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			gm = gameMode.getValue();
-			for (GameModeCommon common : gm.gameModeCommon) {
-				if (common != null) {
-					for (Entry<String, Object> object : common.objects.entrySet()) {
-						// Object Code
-						if (!object.getValue().codeInRAM) {
-							Item obj = new Item(object.getValue().gmCode.get(gm).code, 1);
-							obj.gameMode = gm;
-							items[itemIdx++] = obj;	
-						}
-					}
-				}
-			}
-
-			for (Entry<String, Object> object : gm.objects.entrySet()) {
-
-				// Sprites
-				for (SubSpriteBin subSprite : object.getValue().subSpritesBin)
-					if (!subSprite.inRAM)
-						items[itemIdx++] = new Item(subSprite, 1);
-
-				// ImageSet Index
-				if (object.getValue().subSpritesBin.size() > 0 && !object.getValue().imageSetInRAM)
-					items[itemIdx++] = new Item(object.getValue().imageSet, 1);
-
-				// Animation Index
-				if (!object.getValue().animationsProperties.isEmpty() && !object.getValue().animationInRAM)
-					items[itemIdx++] = new Item(object.getValue().animation, 1);
-
-				// Sounds
-				for (Sound sound : object.getValue().sounds)
-					for (SoundBin soundBIN : sound.sb)
-						if (!soundBIN.inRAM)
-							items[itemIdx++] = new Item(soundBIN, 1);
-
-				// Object Code
-				if (!object.getValue().codeInRAM) {
-					Item obj = new Item(object.getValue().gmCode.get(gm).code, 1);
-					obj.gameMode = gm;
-					items[itemIdx++] = obj;
-				}
-			}
+			// Sounds
+			for (Sound sound : object.getValue().sounds)
+				for (SoundBin soundBIN : sound.sb)
+					if (!soundBIN.inRAM)
+						items[itemIdx++] = new Item(soundBIN, 1);
 		}
 
 		return items;
@@ -1209,44 +1124,38 @@ public class BuildDisk
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static void computeItemsRomAddress(Item[] items, int pageStart, int pageAddress) throws Exception {
-		boolean firstLoop = true;
+		boolean firstPass = true;
 		game.romT2.curPage = pageStart;
 		game.romT2.curAddress = pageAddress;
 		
-		// les pages rom vont de 0 à 127 mais on y accede par les index 128 à 256
-		// pour ne pas interférer avec les pages de RAM 0 à 31
-
-		if (items.length > 0) {
-			game.romT2.startAddress[game.romT2.curPage] = game.romT2.curAddress;
-			game.romT2.endAddress[game.romT2.curPage] = game.romT2.curAddress;
-		}
+		// les pages rom vont de 0 à 127 mais on y accede par les index 128 à 255 (80-FF)
+		// pour ne pas interférer avec les pages de RAM 0 à 31 (60-7F)
 		
 		while (items.length > 0) {
 
-			if (!firstLoop) {
+			if (!firstPass) {
 				game.romT2.curPage++;
-				if (game.romT2.isOutOfMemory())
-					throw new Exception("C'est un peu trop ambitieux ... 2Mo pour la T.2 et pas un octet de plus !");
 				
-				game.romT2.startAddress[game.romT2.curPage] = 0;
-				game.romT2.endAddress[game.romT2.curPage] = 0;
+				if (game.romT2.isOutOfMemory()) {
+					throw new Exception("C'est un peu trop ambitieux ... 2Mo pour la T.2 et pas un octet de plus !");
+				}
 			}
 			
 			// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
-			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.startAddress[game.romT2.curPage]); // Sac à dos de poids max 16Ko
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.endAddress[game.romT2.curPage]); // Sac à dos de poids max 16Ko
 			Solution solution = knapsack.solve();
 
 			// Parcours de la solution
 			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
 
 				Item currentItem = iter.next();
-				
+
 				currentItem.bin.t2_page = game.romT2.curPage;					
 				currentItem.bin.t2_address = game.romT2.endAddress[game.romT2.curPage];
 				game.romT2.setDataAtCurPos(currentItem.bin.bin);
 				currentItem.bin.t2_endAddress = game.romT2.endAddress[game.romT2.curPage];
 				
-				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.t2_page+" "+currentItem.bin.t2_address);
+				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.t2_page+" "+String.format("$%1$04X", currentItem.bin.t2_address)+" "+String.format("$%1$04X", currentItem.bin.t2_endAddress));
 
 				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
@@ -1266,7 +1175,7 @@ public class BuildDisk
 			
 			logger.debug("\t\tFound solution for page : " + game.romT2.curPage + " start: " + String.format("$%1$04X", game.romT2.startAddress[game.romT2.curPage]) + " end: " + String.format("$%1$04X", game.romT2.endAddress[game.romT2.curPage]) + " non allocated space: " + (RamImage.PAGE_SIZE - game.romT2.endAddress[game.romT2.curPage]) + " octets");
 			
-			firstLoop = false;
+			firstPass = false;
 		}
 	}
 
@@ -1393,7 +1302,7 @@ public class BuildDisk
 		if (obj.imageSet.uncompressedSize > 0) {
 			prepend = "\torg   $" + String.format("%1$04X", imgSetAddress) + "\n";
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + imgSetDir + "/" + obj.imageSet.fileName, imgSetDir + "/", prepend);
-			compileRAW(objectCodeTmpFile);
+			compileRAW(objectCodeTmpFile, mode);
 			obj.imageSet.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 			obj.imageSet.uncompressedSize = obj.imageSet.bin.length;
 			imgSetData.setData(imgSetPage, imgSetAddress, obj.imageSet.bin);			
@@ -1405,7 +1314,7 @@ public class BuildDisk
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + aniDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
 			prepend += "\torg   $" + String.format("%1$04X", aniAddress) + "\n";
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + aniDir + "/" + obj.animation.fileName, aniDir + "/", prepend);
-			compileRAW(objectCodeTmpFile);
+			compileRAW(objectCodeTmpFile, mode);
 			obj.animation.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 			obj.animation.uncompressedSize = obj.animation.bin.length;
 			imgSetData.setData(aniPage, aniAddress, obj.animation.bin);			
@@ -1425,7 +1334,7 @@ public class BuildDisk
 		
 		prepend += "\torg   $" + String.format("%1$04X", objCodeAddress) + "\n";
 		objectCodeTmpFile = duplicateFilePrepend(obj.codeFileName, imgSetDir, prepend);
-		compileRAW(objectCodeTmpFile);
+		compileRAW(objectCodeTmpFile, mode);
 		obj.gmCode.get(gm).code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 		codeData.setData(objCodePage, objCodeAddress, obj.gmCode.get(gm).code.bin);		
 	}		
@@ -1484,6 +1393,140 @@ public class BuildDisk
 		}
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+	
+	private static void writeObjectsT2() throws Exception {
+		logger.info("Write Objects to MEGAROM_T2 image ...");
+		
+		// TODO : Remplacer cette ecriture sequentielle par un algo sac à dos qui va remplir Game.romT2
+		// a partir de la derniere page/adresse dispo (suite à ecriture rom des obj qui ne sont pas en RAM)
+		// utiliser setDataAtCurPos
+		
+		// Compte le nombre d'objets a traiter
+		int nbItems = 0;
+				
+		HashMap<GameModeCommon, List<RAMLoaderIndex>> commons = new HashMap<GameModeCommon, List<RAMLoaderIndex>>();
+
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			Enumeration<RAMLoaderIndex> enumT2 = Collections.enumeration(gameMode.getValue().t2Idx);
+			while (enumT2.hasMoreElements()) {
+				RAMLoaderIndex di = enumT2.nextElement();
+
+				RAMLoaderIndex fdic = null;
+				if (commons.containsKey(di.gmc)) {
+					for (RAMLoaderIndex dic : commons.get(di.gmc)) {
+						if (dic.ram_page == di.ram_page && dic.ram_address == di.ram_address && dic.ram_endAddress == di.ram_endAddress && Arrays.equals(di.exoBin, dic.exoBin)) {
+							fdic = dic;
+							break;
+						}
+					}
+				}
+				
+				if (fdic == null) {
+					nbItems++;
+					
+					if (di.gmc != null) {
+						if (!commons.containsKey(di.gmc)) {
+							commons.put(di.gmc, new ArrayList<RAMLoaderIndex>());
+						}
+						commons.get(di.gmc).add(di);
+					}
+				}
+			}
+		}
+		
+		commons.clear();
+		// Initialise un item pour chaque élément a écrire en ROM
+		Item[] items = new Item[nbItems];
+		int itemIdx = 0;		
+		
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			Enumeration<RAMLoaderIndex> enumT2 = Collections.enumeration(gameMode.getValue().t2Idx);
+			while (enumT2.hasMoreElements()) {
+				RAMLoaderIndex di = enumT2.nextElement();
+
+				RAMLoaderIndex fdic = null;
+				if (commons.containsKey(di.gmc)) {
+					for (RAMLoaderIndex dic : commons.get(di.gmc)) {
+						if (dic.ram_page == di.ram_page && dic.ram_address == di.ram_address && dic.ram_endAddress == di.ram_endAddress && Arrays.equals(di.exoBin, dic.exoBin)) {
+							fdic = dic;
+							break;
+						}
+					}
+				}
+				
+				if (fdic != null) {
+					fdic.rli.add(di); // save identical common, will be updated in knapsack
+				} else {
+					items[itemIdx++] = new Item(di, 1, di.exoBin.length);
+					
+					if (di.gmc != null) {
+						if (!commons.containsKey(di.gmc)) {
+							commons.put(di.gmc, new ArrayList<RAMLoaderIndex>());
+						}
+						commons.get(di.gmc).add(di);
+					}
+				}
+			}
+		}
+
+		boolean firstPass = true;
+		
+		while (items.length > 0) {
+
+			if (!firstPass) {
+				game.romT2.curPage++;
+				
+				if (game.romT2.isOutOfMemory()) {
+					throw new Exception("C'est un peu trop ambitieux ... 2Mo pour la T.2 et pas un octet de plus !");
+				}
+			}
+			
+			// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.endAddress[game.romT2.curPage]); // Sac à dos de poids max 16Ko
+			Solution solution = knapsack.solve();
+
+			// Parcours de la solution
+			for (Iterator<Item> iter = solution.items.listIterator(); iter.hasNext();) {
+
+				Item currentItem = iter.next();
+				
+				currentItem.bin.t2_page = game.romT2.curPage;					
+				currentItem.bin.t2_address = game.romT2.endAddress[game.romT2.curPage];
+				game.romT2.setDataAtCurPos(((RAMLoaderIndex) currentItem.bin).exoBin);
+				currentItem.bin.t2_endAddress = game.romT2.endAddress[game.romT2.curPage];
+				
+				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.t2_page+" "+String.format("$%1$04X", currentItem.bin.t2_address) + " " + String.format("$%1$04X", currentItem.bin.t2_endAddress));
+				
+				// Update all identical index on other GameModes
+				for (RAMLoaderIndex di : currentItem.bin.getRAMLoaderIndex().rli) {
+					di.t2_page = currentItem.bin.t2_page;
+					di.t2_address = currentItem.bin.t2_address;
+					di.t2_endAddress = currentItem.bin.t2_endAddress;
+				}
+
+				// construit la liste des éléments restants à organiser
+				for (int i = 0; i < items.length; i++) {
+					if (items[i].bin == currentItem.bin) {
+						Item[] newItems = new Item[items.length - 1];
+						for (int l = 0; l < i; l++) {
+							newItems[l] = items[l];
+						}
+						for (int j = i; j < items.length - 1; j++) {
+							newItems[j] = items[j + 1];
+						}
+						items = newItems;
+						break;
+					}
+				}
+			}
+			
+			logger.debug("\t\tFound solution for page : " + game.romT2.curPage + " start: " + String.format("$%1$04X", game.romT2.startAddress[game.romT2.curPage]) + " end: " + String.format("$%1$04X", game.romT2.endAddress[game.romT2.curPage]) + " non allocated space: " + (RamImage.PAGE_SIZE - game.romT2.endAddress[game.romT2.curPage]) + " octets");
+			
+			firstPass = false;
+		}
+	}
+	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
 	private static int getRAMLoaderManagerSizeFd() throws Exception {
@@ -1499,7 +1542,7 @@ public class BuildDisk
 		}		
 		String gameModeManagerTmpFile = duplicateFilePrepend(game.engineAsmRAMLoaderManagerFd, "", prepend);
 		
-		compileRAW(gameModeManagerTmpFile);
+		compileRAW(gameModeManagerTmpFile, FLOPPY_DISK);
 		game.engineRAMLoaderManagerBytesFd = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 
 		if (game.engineRAMLoaderManagerBytesFd.length > RamImage.PAGE_SIZE) {
@@ -1517,9 +1560,14 @@ public class BuildDisk
 
 		// Compilation du Game Mode Manager
 		// -------------------------------------------------		
+		
+		String prepend = "Gm_Index\n";
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			prepend += "\tfdb $0000\n";
+		}		
+		String gameModeManagerTmpFile = duplicateFilePrepend(game.engineAsmRAMLoaderManagerT2, "", prepend);		
 
-		String gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerT2);
-		compileRAW(gameModeManagerTmpFile);
+		compileRAW(gameModeManagerTmpFile, MEGAROM_T2);
 		game.engineRAMLoaderManagerBytesT2 = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 
 		if (game.engineRAMLoaderManagerBytesT2.length > RamImage.PAGE_SIZE) {
@@ -1611,9 +1659,9 @@ public class BuildDisk
 					
 					ramLoaderDataIdx.addFcb(new String[] {
 						String.format("$%1$02X", di.t2_page),
+						String.format("$%1$02X", di.ram_page),						
 						String.format("$%1$02X", di.t2_endAddress >> 8),			
 						String.format("$%1$02X", di.t2_endAddress & 0x00FF),								
-						String.format("$%1$02X", di.ram_page),	
 						String.format("$%1$02X", ram_endDest >> 8),			
 						String.format("$%1$02X", ram_endDest & 0x00FF)});			
 			     }
@@ -1635,10 +1683,11 @@ public class BuildDisk
 		if (mode == FLOPPY_DISK) {
 			gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerFd);
 		} else {
-			gameModeManagerTmpFile = duplicateFile(game.engineAsmRAMLoaderManagerT2);
+			String prepend = "\torg   " + String.format("$%1$04X", Game.bootSizeT2) + "\n";
+			gameModeManagerTmpFile = duplicateFilePrepend(game.engineAsmRAMLoaderManagerT2, "", prepend);
 		}
 		
-		compileRAW(gameModeManagerTmpFile);
+		compileRAW(gameModeManagerTmpFile, mode);
 		byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(gameModeManagerTmpFile)));
 		if (mode == FLOPPY_DISK) {
 			game.engineRAMLoaderManagerBytesFd = bin;
@@ -1649,32 +1698,30 @@ public class BuildDisk
 			
 		} else if (mode == MEGAROM_T2) {
 			game.engineRAMLoaderManagerBytesT2 = bin;
-		}
 
-		if (bin.length > RamImage.PAGE_SIZE) { // TODO taille limite pour FD ok mais pour T2 PAGE_SIZE - boot size
-			throw new Exception("Le fichier est trop volumineux:"+bin.length+" octets (max:"+RamImage.PAGE_SIZE+")");
-		}	
+			if (Game.bootSizeT2+bin.length > RamImage.PAGE_SIZE) {
+				throw new Exception("Le fichier est trop volumineux:"+(Game.bootSizeT2+bin.length)+" octets (max:"+RamImage.PAGE_SIZE+")");
+			}	
+			
+			// Ecriture T2
+			game.romT2.setData(0, Game.bootSizeT2, bin);
+		}
 		
 		return bin.length;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private static void compileAndWriteBoot() throws IOException {
-		compileAndWriteBootFd();
-		compileAndWriteBootT2();
-	}	
-	
-	private static void compileAndWriteBootFd() throws IOException {
+	private static void compileAndWriteBootFd() throws Exception {
 		logger.info("Compile boot for FLOPPY_DISK ...");
 				
 		String RAMLoaderManagerGlobals = FileUtil.removeExtension(Paths.get(game.engineAsmRAMLoaderManagerFd).getFileName().toString())+".glb";
 		String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
 		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + RAMLoaderManagerGlobals + "\"\n";
 		String bootTmpFile = duplicateFilePrepend(game.engineAsmBootFd, "", prepend);
-		game.glb.addConstant("boot_dernier_bloc", String.format("$%1$02X", (0x0000 + game.engineRAMLoaderManagerBytesFd.length) >> 8)+"00"); // On tronque l'octet de poids faible
+		game.glb.addConstant("Build_BootLastBlock", String.format("$%1$02X", (0x0000 + game.engineRAMLoaderManagerBytesFd.length) >> 8)+"00"); // On tronque l'octet de poids faible
 		game.glb.flush();
-		compileRAW(bootTmpFile);
+		compileRAW(bootTmpFile, FLOPPY_DISK);
 
 		// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
 		Bootloader bootLoader = new Bootloader();
@@ -1691,10 +1738,22 @@ public class BuildDisk
 		logger.info("Build done !");		
 	}
 	
-	private static void compileAndWriteBootT2() throws IOException {
+	private static void compileAndWriteBootT2() throws Exception {
 		logger.info("Compile boot for MEGAROM_T2 ...");
 		
-		logger.info("Build done !");		
+		String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
+		String bootTmpFile = duplicateFilePrepend(game.engineAsmBootT2, "", prepend);
+		compileRAW(bootTmpFile, MEGAROM_T2);
+		byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(bootTmpFile)));
+		
+		game.romT2.setData(0, 0, bin);
+		t2.write(game.romT2);
+		
+		logger.info("Write Megarom T.2 Image to output file ...");
+		
+		t2.save(game.outputDiskName);
+		
+		logger.info("Build done !");	
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -2046,23 +2105,23 @@ public class BuildDisk
 					line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
 				}
 			} else if (mode == MEGAROM_T2 && s.parent.inRAM) {
-				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_page));
+				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_page + 0x60));
 				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_address >> 8));		
 				line.add(String.format("$%1$02X", s.draw.dataIndex.get(gm).t2_ram_address & 0xFF));
 			
 				if (s.erase != null) {
-					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_page));
+					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_page + 0x60));
 					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_address >> 8));		
 					line.add(String.format("$%1$02X", s.erase.dataIndex.get(gm).t2_ram_address & 0xFF));
 					line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
 				}
 			} else if (mode == MEGAROM_T2 && !s.parent.inRAM) {
-				line.add(String.format("$%1$02X", s.draw.t2_page));
+				line.add(String.format("$%1$02X", s.draw.t2_page + 0x80));
 				line.add(String.format("$%1$02X", s.draw.t2_address >> 8));		
 				line.add(String.format("$%1$02X", s.draw.t2_address & 0xFF));
 			
 				if (s.erase != null) {
-					line.add(String.format("$%1$02X", s.erase.t2_page));
+					line.add(String.format("$%1$02X", s.erase.t2_page + 0x80));
 					line.add(String.format("$%1$02X", s.erase.t2_address >> 8));		
 					line.add(String.format("$%1$02X", s.erase.t2_address & 0xFF));
 					line.add(String.format("$%1$02X", s.nb_cell)); // unsigned value
@@ -2118,26 +2177,21 @@ public class BuildDisk
 			objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_page + 0x60) };
 			objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address & 0x00FF) };
 		} else if (mode == MEGAROM_T2) {
-			if (obj.codeInRAM) {
-				objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_page) };
-				objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address & 0x00FF) };					
-			} else {
-				objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.t2_page) };
-				objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.t2_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.t2_address & 0x00FF) };
-			}			
+			objIndexPage[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_page + 0x60) };
+			objIndex[gm.objectsId.get(obj)] = new String[] {String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address >> 8), String.format("$%1$02X", obj.gmCode.get(gm).code.dataIndex.get(gm).t2_ram_address & 0x00FF) };					
 		}	
 	}	
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private static void writeSndIndex(AsmSourceCode asmSndIndex, GameMode gameMode) {
+	private static void writeSndIndex(AsmSourceCode asmSndIndex, GameMode gameMode, int mode) {
 		
 		// Game Mode Common
 		for (GameModeCommon common : gameMode.gameModeCommon) {
 			if (common != null) {
 				for (Entry<String, Object> object : common.objects.entrySet()) {
 					for (Sound sound : object.getValue().sounds) {
-						writeSndIndex(asmSndIndex, sound, gameMode);
+						writeSndIndex(asmSndIndex, sound, gameMode, mode);
 					}
 				}
 			}
@@ -2146,21 +2200,35 @@ public class BuildDisk
 		// Objets du Game Mode
 		for (Entry<String, Object> object : gameMode.objects.entrySet()) {
 			for (Sound sound : object.getValue().sounds) {
-				writeSndIndex(asmSndIndex, sound, gameMode);
+				writeSndIndex(asmSndIndex, sound, gameMode, mode);
 			}
 		}
 	}
 	
-	private static void writeSndIndex(AsmSourceCode asmSndIndex, Sound sound, GameMode gm) {
+	private static void writeSndIndex(AsmSourceCode asmSndIndex, Sound sound, GameMode gm, int mode) {
 		asmSndIndex.addLabel(sound.name + " ");
 		for (SoundBin sb : sound.sb) {
 			String[] line = new String[]{"0","0","0","0","0"};
 			if (sb.dataIndex.get(gm) != null) {
-				line[0] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_page + 0x60);
-				line[1] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_address >> 8);
-				line[2] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_address & 0x00FF);
-				line[3] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_endAddress >> 8);
-				line[4] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_endAddress & 0x00FF);
+				if (mode == FLOPPY_DISK) {
+					line[0] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_page + 0x60);
+					line[1] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_address >> 8);
+					line[2] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_address & 0x00FF);
+					line[3] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_endAddress >> 8);
+					line[4] = String.format("$%1$02X", sb.dataIndex.get(gm).fd_ram_endAddress & 0x00FF);
+				} else if (mode == MEGAROM_T2 && sb.inRAM) {
+					line[0] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_page + 0x60);
+					line[1] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_address >> 8);
+					line[2] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_address & 0x00FF);
+					line[3] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_endAddress >> 8);
+					line[4] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_endAddress & 0x00FF);					
+				} else if (mode == MEGAROM_T2 && !sb.inRAM) {
+					line[0] = String.format("$%1$02X", sb.t2_page + 0x60);
+					line[1] = String.format("$%1$02X", sb.t2_address >> 8);
+					line[2] = String.format("$%1$02X", sb.t2_address & 0x00FF);
+					line[3] = String.format("$%1$02X", sb.t2_endAddress >> 8);
+					line[4] = String.format("$%1$02X", sb.t2_endAddress & 0x00FF);					
+				}
 			}
 			asmSndIndex.addFcb(line);
 		}
@@ -2194,9 +2262,9 @@ public class BuildDisk
 				asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.get(gm).fd_ram_page + 0x60) });
 			} else if (mode == MEGAROM_T2) {
 				if (objInRAM) {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.get(gm).t2_ram_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.dataIndex.get(gm).t2_ram_page + 0x60) });
 				} else {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.t2_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", ibin.t2_page + 0x80) });
 				}			
 			}
 		} else {
@@ -2231,9 +2299,9 @@ public class BuildDisk
 				asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.get(gm).fd_ram_page + 0x60) });
 			} else if (mode == MEGAROM_T2) {
 				if (objInRAM) {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.get(gm).t2_ram_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.dataIndex.get(gm).t2_ram_page + 0x60) });
 				} else {
-					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.t2_page) });
+					asmBuilder.addFcb(new String[] { String.format("$%1$02X", abin.t2_page + 0x80) });
 				}			
 			}
 		} else {
@@ -2321,47 +2389,43 @@ public class BuildDisk
 	 * @return
 	 */
 
-	private static int compileRAW(String asmFile) {
-		return compile(asmFile, "--raw");
+	private static int compileRAW(String asmFile, int mode) throws Exception {
+		return compile(asmFile, "--raw", mode);
 	}	
 
-	private static int compileLIN(String asmFile) {
-		return compile(asmFile, "--decb");
+	private static int compileLIN(String asmFile, int mode) throws Exception {
+		return compile(asmFile, "--decb", mode);
 	}
 
-	private static int compile(String asmFile, String option) {
-		try {
-			Path path = Paths.get(asmFile);
-			String asmFileName = FileUtil.removeExtension(asmFile);
-			String binFile = asmFileName + ".bin";
-			String lstFile = asmFileName + ".lst";
-			String glbFile = asmFileName + ".glb";			
+	private static int compile(String asmFile, String option, int mode) throws Exception {
+		Path path = Paths.get(asmFile);
+		String asmFileName = FileUtil.removeExtension(asmFile);
+		String binFile = asmFileName + ".bin";
+		String lstFile = asmFileName + ".lst";
+		String glbFile = asmFileName + ".glb";			
 
-			logger.debug("\t# Compile "+path.toString());
-			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern"+Game.pragma, "--symbol-dump=" + glbFile, option).start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
+		logger.debug("\t# Compile "+path.toString());
+		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern"+Game.pragma, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbFile, option).start();
+		BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
+		String line;
 
-			while((line=br.readLine())!=null){
-				logger.debug("\t"+line);
-			}
-
-			int result = p.waitFor();
-			if (result != 0) {
-				throw new Exception ("Error "+asmFile);
-			}
-
-			return result;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.debug(e); 
-			return -1;
+		while((line=br.readLine())!=null){
+			logger.debug("\t"+line);
 		}
+
+		int result = p.waitFor();
+		if (result != 0) {
+			throw new Exception ("Error "+asmFile);
+		}
+
+		return result;
 	}
 	
-	private static int getBINSize(String asmFile) {
+	private static int getBINSize(String inAsmFile) {
 		try {
+			String asmFile = duplicateFilePrepend(inAsmFile, "", " SECTION GETSIZE\n");
+			Files.write(Paths.get(asmFile), (" ENDSECTION\n").getBytes(), StandardOpenOption.APPEND);
+			
 			Path path = Paths.get(asmFile);
 			String asmFileName = FileUtil.removeExtension(asmFile);
 			String binFile = asmFileName + ".bin";

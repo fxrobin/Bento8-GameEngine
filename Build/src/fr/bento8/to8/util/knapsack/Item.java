@@ -17,6 +17,13 @@ public class Item {
 		this.weight = bin.uncompressedSize;
 	}
 	
+	public Item(ItemBin bin, int value, int weight) {
+		this.name = bin.getFullName();
+		this.bin = bin;
+		this.value = value;
+		this.weight = weight;
+	}	
+	
 	public String str() {
 		return name + " [value = " + value + ", weight = " + weight + "]";
 	}

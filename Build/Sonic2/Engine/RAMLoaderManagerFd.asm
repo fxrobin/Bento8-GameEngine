@@ -1,19 +1,9 @@
 ********************************************************************************
 * Gestionnaire de chargement du RAM Loader (TO8 Thomson) - Benoit Rousseau 07/11/2020
 * ------------------------------------------------------------------------------
-* 
-* A pour role de charger en page 0 le programme de chargement de RAM
-* 
-* Positionnement de la page 3 a l'ecran
-* Positionnement de la page 2 en zone 0000-3FFF
-* Positionnement de la page 0a en zone 4000-5FFF
-* Copie en page 0a du RAM Loader (dont exomizer) et des index de donnees a charger
-* Execution du RAM Loader en page 0a
-* Chargement des donnees exomizee en 2 demi-pages depuis la disquette/cartouche vers 0000-3FFF
-* Decompression et ecriture de la RAM en A000-DFFF (pages 4-31)
-* Decompression et ecriture de la RAM en 6100-9FFF (page 1) Main Engine
-* Re-initialisation de la pile systeme a 9FFF
-* Branchement en 6100
+*
+* Copie en page 0 le programme de chargement de RAM, ainsi que les index
+* des donnees du niveau de jeu a charger
 *
 * input REG : [a] Game Mode to load
 *             [b] Current Game Mode
@@ -75,7 +65,7 @@ RLM_CopyData
         bpl   RLM_CopyData             ; non => boucle
         leas  7,s                      ; on remote de 7 car le dernier bloc est une balise de fin
 
-* Copie en page 0a du code Game Mode Engine
+* Copie en page 0a du code RAMLoader
 * les groupes de 7 octets sont recopiees a l'envers, le builder va inverser
 * les donnees a l'avance on gagne un leas dans la boucle.
 ************************************************************    
@@ -88,7 +78,7 @@ RLM_CopyCode
 RLM_CopyCode_restore_s
         lds   #0                       ; restaure s
         
-* Execution du Game Mode Engine en page 0a
+* Execution du RAMLoader en page 0a
 ************************************************************         
         jmp   RAMLoader     
 

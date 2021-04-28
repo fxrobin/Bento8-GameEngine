@@ -89,10 +89,10 @@ DRS_rtsB1
 DRS_ProcessEachPriorityLevelB0    
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
-        beq   DRS_NextObjectB0
+        lbeq  DRS_NextObjectB0
         
         lda   rsv_prev_render_flags_0,x
-        bmi   DRS_NextObjectB0
+        lbmi  DRS_NextObjectB0
         lda   render_flags,x
         anda  #render_overlay_mask
         bne   DRS_DrawWithoutBackupB0
@@ -108,7 +108,7 @@ DRS_DrawWithoutBackupB0
         ldd   rsv_mapping_frame,x
         std   rsv_prev_mapping_frame_0,x    ; save previous mapping_frame
         lda   rsv_page_draw_routine,x
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)        
+        _SetCartPageA        
         stx   DRS_dyn3B0+1                  ; save x reg
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
         ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
@@ -195,10 +195,10 @@ DRS_dyn2
 DRS_ProcessEachPriorityLevelB1
         lda   rsv_render_flags,x
         anda  #rsv_render_displaysprite_mask
-        beq   DRS_NextObjectB1
+        lbeq  DRS_NextObjectB1
         
         lda   rsv_prev_render_flags_1,x
-        bmi   DRS_NextObjectB1
+        lbmi  DRS_NextObjectB1
         lda   render_flags,x
         anda  #render_overlay_mask
         bne   DRS_DrawWithoutBackupB1
@@ -214,7 +214,7 @@ DRS_DrawWithoutBackupB1
         ldd   rsv_mapping_frame,x
         std   rsv_prev_mapping_frame_1,x    ; save previous mapping_frame
         lda   rsv_page_draw_routine,x
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)        
+        _SetCartPageA        
         stx   DRS_dyn3B1+1                  ; save x reg
         ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
         ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program

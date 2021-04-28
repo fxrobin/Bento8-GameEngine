@@ -23,7 +23,7 @@ AnimateSprite                               *AnimateSprite:
         lda   #$00
         ldb   id,u
         lda   d,x
-        sta   $E7E6
+        _SetCartPageA
                                                
         ldx   anim,u                        *    move.b  anim(a0),d0      ; move animation number to d0
         cmpx  prev_anim,u                   *    cmp.b   prev_anim(a0),d0 ; is animation set to change?

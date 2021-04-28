@@ -1,5 +1,5 @@
 ********************************************************************************
-* Boot loader - Benoit Rousseau 05/11/2020
+* Boot loader FD - Benoit Rousseau 05/11/2020
 * ------------------------------------------------------------------------------
 * 
 * Description
@@ -161,7 +161,7 @@ DKContinue
         inc   <$604F                   * increment de 256 octets de la zone a ecrire DK.BUF
         ldd   <$604F                   * chargement de la zone a ecrire DK.BUF
 dk_dernier_bloc                        
-        cmpd  #boot_dernier_bloc       * test debut du dernier bloc de 256 octets a ecrire
+        cmpd  #Build_BootLastBlock     * test debut du dernier bloc de 256 octets a ecrire
         bls   DKCO                     * si DK.BUF inferieur ou egal a la limite alors DKCO
 
 BOO_WaitVBL

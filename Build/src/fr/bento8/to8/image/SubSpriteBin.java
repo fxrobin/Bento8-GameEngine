@@ -3,6 +3,7 @@ package fr.bento8.to8.image;
 import fr.bento8.to8.build.Object;
 import fr.bento8.to8.compiledSprite.backupDrawErase.AssemblyGenerator;
 import fr.bento8.to8.compiledSprite.draw.SimpleAssemblyGenerator;
+import fr.bento8.to8.storage.RAMLoaderIndex;
 import fr.bento8.to8.util.knapsack.ItemBin;
 
 public class SubSpriteBin extends ItemBin{
@@ -25,6 +26,12 @@ public class SubSpriteBin extends ItemBin{
 
 	@Override
 	public Object getObject() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RAMLoaderIndex getRAMLoaderIndex() {
 		// TODO Auto-generated method stub
 		return null;
 	}

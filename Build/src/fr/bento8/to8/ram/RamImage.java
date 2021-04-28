@@ -50,14 +50,14 @@ public class RamImage
 	}
 	
 	public void setDataAtCurPos (byte[] newData) {
-		int startPos = this.endAddress[curPage];
-		int endPos = newData.length+startPos;		
-		this.endAddress[curPage] = endPos;
-		this.curAddress = endPos + 1;
+		int startPos = this.endAddress[curPage];	
+		this.endAddress[curPage] = newData.length+startPos;
 		
-		for (int i = startPos, j = 0; i < endPos; i++) {
+		for (int i = startPos, j = 0; i < this.endAddress[curPage]; i++) {
 			this.data[curPage][i] = newData[j++];
 		}
+		
+		this.curAddress = this.endAddress[curPage];
 	}	
 	
 	public boolean isOutOfMemory() {

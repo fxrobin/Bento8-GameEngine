@@ -3,8 +3,9 @@ package fr.bento8.to8.util.knapsack;
 import java.util.HashMap;
 
 import fr.bento8.to8.build.GameMode;
-import fr.bento8.to8.build.Object;
 import fr.bento8.to8.storage.DataIndex;
+import fr.bento8.to8.build.Object;
+import fr.bento8.to8.storage.RAMLoaderIndex;
 
 public abstract class ItemBin {
 	
@@ -19,4 +20,5 @@ public abstract class ItemBin {
 
 	abstract public String getFullName();
 	abstract public Object getObject();
+	abstract public RAMLoaderIndex getRAMLoaderIndex();
 }

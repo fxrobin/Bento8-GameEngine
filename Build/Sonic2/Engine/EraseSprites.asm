@@ -146,7 +146,7 @@ ESP_CheckEraseB0
         
 ESP_CallEraseRoutineB0
         lda   rsv_prev_page_erase_routine_0,u
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)
+        _SetCartPageA
         ldx   rsv_prev_erase_routine_0,u
         stu   ESP_CallEraseRoutineB0_00+1   ; backup u (pointer to object)                
         ldu   rsv_bgdata_0,u                ; cell_start background data        
@@ -177,7 +177,7 @@ ESP_UnsetOnScreenFlagB0
 
 ESP_NextObjectB0
         ldu   rsv_priority_prev_obj_0,u
-        bne   ESP_ProcessEachPriorityLevelB0   
+        lbne   ESP_ProcessEachPriorityLevelB0   
         rts      
 
 * -----------------------------------------------        
@@ -208,7 +208,7 @@ ESP_CheckEraseB1
         
 ESP_CallEraseRoutineB1
         lda   rsv_prev_page_erase_routine_1,u
-        sta   $E7E6                         ; select page in RAM (0000-3FFF)
+        _SetCartPageA
         ldx   rsv_prev_erase_routine_1,u
         stu   ESP_CallEraseRoutineB1_00+1   ; backup u (pointer to object)                
         ldu   rsv_bgdata_1,u                ; cell_start background data        
@@ -239,7 +239,7 @@ ESP_UnsetOnScreenFlagB1
         
 ESP_NextObjectB1
         ldu   rsv_priority_prev_obj_1,u
-        bne   ESP_ProcessEachPriorityLevelB1   
+        lbne   ESP_ProcessEachPriorityLevelB1   
         rts
         
 * ---------------------------------------------------------------------------

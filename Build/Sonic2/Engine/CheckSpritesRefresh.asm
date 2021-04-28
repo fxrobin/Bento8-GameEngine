@@ -154,7 +154,7 @@ CSR_UpdSpriteImageBasedOnMirror
         lda   #$00
         ldb   id,u
         lda   d,y
-        sta   $E7E6        
+        _SetCartPageA        
         
         lda   render_flags,u                ; set image to display based on x and y mirror flags
         anda  #render_xmirror_mask|render_ymirror_mask
