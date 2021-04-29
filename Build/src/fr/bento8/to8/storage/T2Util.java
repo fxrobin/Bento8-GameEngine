@@ -21,7 +21,7 @@ public class T2Util
 	
     public static int NB_PAGES = 128;	
     public static int PAGE_SIZE = 0x4000;	
-	private final byte[] t2Bytes = new byte[NB_PAGES*PAGE_SIZE];
+	public final byte[] t2Bytes = new byte[NB_PAGES*PAGE_SIZE];
 
 	public T2Util() {
 	}

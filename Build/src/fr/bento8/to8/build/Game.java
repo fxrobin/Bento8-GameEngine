@@ -24,8 +24,10 @@ public class Game {
 	public String engineAsmRAMLoaderManagerT2;
 	public String engineAsmRAMLoaderT2;	
 	public static int loadManagerSizeT2 = 0;
-	
 	public static int bootSizeT2 = 0;
+	
+	public String engineAsmBootT2Loader;
+	public String engineAsmT2Loader;
 	
 	// Game Mode
 	public String gameModeBoot;
@@ -92,8 +94,18 @@ public class Game {
 			engineAsmBootT2 = prop.getProperty("engine.asm.boot.t2");
 			if (engineAsmBootT2 == null) {
 				throw new Exception("engine.asm.boot.t2 not found in "+file);
-			}			
+			}
+			
+			engineAsmBootT2Loader = prop.getProperty("engine.asm.boot.t2Loader");
+			if (engineAsmBootT2Loader == null) {
+				throw new Exception("engine.asm.boot.t2Loader not found in "+file);
+			}						
 
+			engineAsmT2Loader = prop.getProperty("engine.asm.t2Loader");
+			if (engineAsmT2Loader == null) {
+				throw new Exception("engine.asm.t2Loader not found in "+file);
+			}				
+			
 			engineAsmRAMLoaderManagerFd = prop.getProperty("engine.asm.RAMLoaderManager.fd");
 			if (engineAsmRAMLoaderManagerFd == null) {
 				throw new Exception("engine.asm.RAMLoaderManager.fd not found in "+file);

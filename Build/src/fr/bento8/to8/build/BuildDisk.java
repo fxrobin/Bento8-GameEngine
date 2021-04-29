@@ -45,6 +45,7 @@ import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.DataIndex;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.RAMLoaderIndex;
+import fr.bento8.to8.storage.SdUtil;
 import fr.bento8.to8.storage.T2Util;
 import fr.bento8.to8.util.FileUtil;
 import fr.bento8.to8.util.LWASMUtil;
@@ -59,6 +60,7 @@ public class BuildDisk
 	public static Game game;
 	private static FdUtil fd = new FdUtil();
 	private static T2Util t2 = new T2Util();
+	private static SdUtil t2L = new SdUtil();	
 	
 	public static int UNDEFINED = 0;
 	public static int FLOPPY_DISK = 0;
@@ -122,7 +124,8 @@ public class BuildDisk
 			writeObjectsT2();
 			compileRAMLoaderManager();
 			compileAndWriteBootFd();
-			compileAndWriteBootT2();			
+			compileAndWriteBootT2();
+			buildT2Loader();
 			
 			// TODO: migrer le code ASM sprite compilé de "position independant" (,PCR) a "position dependant"
 			// TODO: inclure dans les sprites compilés l'accès au variables de position plutot que de faire un passage de paramètre par registre (test performance)
@@ -1755,6 +1758,38 @@ public class BuildDisk
 		
 		logger.info("Build done !");	
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
+	private static void buildT2Loader() throws Exception {
+		logger.info("Build T2 Loader for SDDRIVE ...");
+		
+		String tmpFile = duplicateFile(game.engineAsmBootT2Loader);
+		compileRAW(tmpFile, MEGAROM_T2);
+		byte[] bin;
+		
+		// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
+		Bootloader bootLoader = new Bootloader();
+		
+		t2L.setIndex(0, 0, 1);
+		t2L.write(bootLoader.encodeBootLoader(getBINFileName(tmpFile)));
+		logger.info("Write Megarom T.2 Boot to output file ...");
+
+		tmpFile = duplicateFile(game.engineAsmT2Loader);
+		compileRAW(tmpFile, MEGAROM_T2);
+		bin = Files.readAllBytes(Paths.get(getBINFileName(tmpFile)));
+		
+		t2L.setIndex(0, 0, 2);		
+		t2L.write(bin);
+		logger.info("Write Megarom T.2 Loader to output file ...");
+		
+		t2L.setIndex(0, 1, 1);		
+		t2L.write(t2.t2Bytes);		
+		logger.info("Write Megarom T.2 Data to output file ...");		
+		
+		t2L.save(game.outputDiskName);
+		logger.info("Build done !");	
+	}	
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 

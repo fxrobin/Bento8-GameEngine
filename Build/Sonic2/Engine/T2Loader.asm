@@ -3,54 +3,93 @@
 ********************************************************************************
 * T2Loader (TO8 Thomson) - Benoit Rousseau 2021
 * ------------------------------------------------------------------------------
-* Changement disquette SDDRIVE : Daniel Coulom
+* Changement disquettes SDDRIVE : Daniel Coulom
+* Lib. MEGAROM T.2 : Prehisto
 *
+* premiere version tres rudimentaire
+* lecture de 4 pistes x 16 secteurs pour une page
+* 2x64 pistes par disquette = 32 pages chargees
+* il faut donc 4 disquettes pour 128 pages
+* 16 pistes par face inutiles sur chacune des 4 disquettes
+* lecture des pistes de 1 a 64 face 0 puis 1 a 64 face 1
+* la piste 1 contient le boot et ce code de chargement
+* pour chaque page lecture des secteurs de 1 a 16
+* pas d'entrelacement car les donnees sont chargees depuis SDDRIVE
 ********************************************************************************
 
-        org   $6100
+* ===========================================================================
+* TO8 Registers
+* ===========================================================================
 
+dk_lecteur                    equ $6049
+dk_piste                      equ $604A
+dk_pisteL                     equ $604B
+dk_secteur                    equ $604C
+dk_destination                equ $604F
+
+        org   $6300
         lds   #$9FFF                   ; reinit de la pile systeme
         
-        lda   #4                       ; page memoire
+        lda   #2                       ; page video
+        sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)        
+        
+        ldx   #$0000
+        jsr   ClearDataMem
+        
+Vsync_1                                
+        tst   $E7E7                    * le faisceau n'est pas dans l'ecran utile
+        bpl   Vsync_1                  * tant que le bit est a 0 on boucle
+Vsync_2                                 
+        tst   $E7E7                    * le faisceau est dans l'ecran utile
+        bmi   Vsync_2                  * tant que le bit est a 1 on boucle
+        
+        ; Couleur de la progress bar
+        
+        lda   #$02
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        ldd   #$0444
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)        
+        
+        ; Couleur du fond de la progress bar
+        
+        lda   #$04
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        ldd   #$0008
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)  
+        
+        jsr   InitProgress
+        
+        lda   #$80
+        sta   $E7DD                    ; affiche la page 2 a l'ecran        
+        
+        lda   #4                       ; page memoire buffer pour lecture disquette
         sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)
         
-        ERASE    
+        jsr   ENM7                     ; rend la MEGAROM T.2 visible
+        jsr   ERASE                    ; effacement complet de la MEGAROM T.2
+        
+        ; Couleur du fond de la progress bar
+        
+        lda   #$04
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        ldd   #$0AAA
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)          
         
         setdp $60
         lda   #$60
         tfr   a,dp                     ; positionne la direct page a 60
 
- ; lecture de 4 pistes x 16 secteurs pour une page
- ; 2x64 pistes par disquette = 32 pages chargees
- ; 16 pistes par face inutiles sur chacune des 4 disquettes
- ; lecture des pistes de 0 a 63 face 0 puis 63 a 0 face 1
- ; pour chaque page lecture des secteurs 0,2,4,6,8,10,12,14,1,3,5,7,9,11,13,15
- ; idealement il faudrait determiner sur quel secteur enchainer suite a changement de piste  
-
-ROMLoader_continue
-        lda   cur_RPG
-        bpl   RL_Continue              ; on a depasse la page 127 => fin
-        jmp   RL_END                   ; on lance le mode de jeu en page 1
-RL_Continue        
-        sta   <dk_secteur              ; secteur (1-16)
-        stb   RL_DKDernierBloc+2       ; nombre de secteurs a lire
-        
-        ldb   ,u+                      ; lecture du lecteur et du secteur
-        sex                            ; encodes dans un octet :
-        anda  #$01                     ; d7: lecteur (0-1)
-        andb  #$7F                     ; d6-d0: piste (0-79)
+        ldd   #$0001                   ; init positionnement lecture disquette
         sta   <dk_lecteur
-        lda   #$00
         std   <dk_piste
-        
-        ldb   #$00                     ; le buffer DKCO est toujours positionne a $0000
+        stb   <dk_secteur              ; secteur (1-16)        
+
+RL_Continue
+        ldd   #$A000                   ; le buffer DKCO est toujours positionne a $A000
         std   <dk_destination
-        
-        pulu  d,y                      ; y adresse de fin des donnees de destination
-        sta   RL_NegOffset+3           ; nombre d'octets inutilises dans le dernier secteur disquette
-        stb   RL_Page+1
-        
-        pshs  u        
 
         lda   #$02
         sta   <$6048                   ; DK.OPC $02 Operation - lecture d'un secteur
@@ -64,48 +103,56 @@ RL_DKCO
         sta   <dk_secteur              ; positionnement du secteur a 1
         inc   <dk_pisteL               ; increment du registre Moniteur DK.TRK
         lda   <dk_pisteL
-        cmpa  #$4F                     ; si DK.SEC est inferieur ou egal a 79
-        bls   RL_DKContinue            ; on continue le traitement
-        clr   <dk_pisteL               ; positionnement de la piste a 0
-        inc   <dk_lecteur              ; increment du registre Moniteur DK.DRV
 RL_DKContinue                            
-        inc   <$604F                   ; increment de 256 octets de la zone a ecrire DK.BUF
-        ldu   <$604F                   ; chargement de la zone a ecrire DK.BUF
-RL_DKDernierBloc                        
-        cmpu  #0                       ; test debut du dernier bloc de 256 octets a ecrire
+        inc   <dk_destination          ; increment de 256 octets de la zone a ecrire DK.BUF
+        ldx   <dk_destination          ; chargement de la zone a ecrire DK.BUF
+        cmpx  #$DF00                   ; test debut du dernier bloc de 256 octets a ecrire
         bls   RL_DKCO                  ; si DK.BUF inferieur ou egal a la limite alors DKCO
-        lda   RL_NegOffset+3           ; charge l'offset
-        beq   RL_Page                     ; on ne traite que si offset > 0
-        leau  $0100,u                  ; astuce pour conserver un code de meme taille sur l'instruction ci dessous peu importe la taille du leau
-RL_NegOffset        
-        leau  $FE00,u                  ; adresse de fin des donnees compressees - offset - 256 (astuce ci dessus)
 RL_Page
-        lda   #$00                     ; page destination
-        ldy   #$A000                   ; debut donnees a copier en ROM
-        P16K
-        puls  u
-        bra   ROMLoader_continue
-        
-cur_DRV fcb   $00
-cur_TRK fcb   $00
-cur_SEC fcb   $00
-cur_ADD fdb   $0000
-cur_RPG fcb   $00
+        ldb   #$01                     ; repositionnement pour chargement de la page RAM suivante
+        stb   <dk_secteur 
 
-cur_PAL fcb   $00
+        ldd   <dk_piste
+        addd  #$0001
+        std   <dk_piste
+        cmpd  #$0029
+        bne   RL_Copy
+        ldd   #$0001
+        std   <dk_piste
+        
+        lda   <dk_lecteur
+        inca
+        sta   <dk_lecteur
+        cmpa  #$04
+        bne   RL_Copy
+        lda   #$00
+        sta   <dk_lecteur
+        jsr   MoveToNextDisk           ; on change les deux disquettes par les suivantes
+RL_Copy
+        lda   cur_ROMPage              ; page destination
+        ldy   #$A000                   ; debut donnees a copier en ROM
+        jsr   P16K                     ; recopie RAM vers ROM
+        
+        lda   cur_ROMPage
+        jsr   DisplayProgress
+        
+        inc   cur_ROMPage              ; page ROM suivante
+        bpl   RL_Continue
+        bra   RL_END                   ; on a depasse la page 127 => fin   
+        
+cur_ROMPage fcb   $00
 
 RL_END
-        lda   cur_PAL
+        lda   #$02
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
-        adda  #$02                     * increment de l'indice de couleur (x2)
-        sta   cur_PAL                  * stockage du nouvel index        
-        ldd   #$0000
-        sta   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
-        stb   $E7DA                    * positionne la nouvelle couleur (Bleu)
-        lda   cur_PAL                  * rechargement de l'index couleur
-        cmpa  #$20                     * comparaison avec l'index limite pour cette couleur
-        bne   RL_END                   * si inferieur on continue avec la meme couleur
+        ldd   #$0080
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)  
         bra   *
+
+* ===========================================================================
+* Ext. Libraries
+* ===========================================================================
 
 ;------------------------------
 ; Changement disquette SDDRIVE
@@ -119,11 +166,10 @@ RL_END
 ; Octets   : $280000 (pour SD)
 ;------------------------------
 MoveToNextDisk
-  ORG   $6443 
-  TST   <$57           ;test type de carte 
-  LBPL  $6556          ;traitement carte SD  
+  TST   <$57              ;test type de carte 
+  LBPL  MoveToNextDisk_SD ;traitement carte SD  
 
-;carte SDHC
+MoveToNextDisk_SDHC
   LDD   <$53           ;poids faible LBA0   
   ADDA  #$14           ;ajout 5120 secteurs
   STD   <$53           ;stockage
@@ -131,14 +177,12 @@ MoveToNextDisk
   ADCB  #$00           ;ajout retenue 
   ADCA  #$00           ;ajout retenue
   STD   <$51           ;stockage D
-  BRA   $63E5          ;retour lecture secteur
+  RTS
 
-;carte SD
-  ORG   $6556
+MoveToNextDisk_SD
   LDD   <$51           ;poids fort LBA0 
   ADDD  #$0028         ;ajout decalage
   STD   <$51           ;stockage D
-  LBRA  $63E5          ;retour lecture secteur
   RTS     
 
 * ERASE
@@ -239,3 +283,158 @@ SETPAG EQU    *
        STA    $0555
        RTS       
        
+* ENM7
+* Rend la MEMO7 visible sur TO8/8D/9/9+
+* In  : néant
+* Out : néant
+* Mod : néant
+
+ENM7   EQU    *
+       PSHS   A
+       LDA    $E7C3
+       ANDA   #$FB
+       STA    $E7C3
+
+       LDA    $E7E6
+       ANDA   #$DF
+       STA    $E7E6
+       PULS   A,PC       
+       
+********************************************************************************
+* Clear memory in data area
+********************************************************************************
+
+ClearDataMem 
+        pshs  u,dp
+        sts   ClearDataMem_3+2
+        lds   #$E000
+        leau  ,x
+        leay  ,x
+        tfr   x,d
+        tfr   a,dp
+ClearDataMem_2
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp,b,a
+        pshs  u,y,x,dp
+        cmps  #$A010                        
+        bne   ClearDataMem_2
+        leau  ,s        
+ClearDataMem_3        
+        lds   #$0000        ; start of memory should not be written with S as an index because of IRQ        
+        pshu  d,x,y         ; saving 12 bytes + (2 bytes * _sr calls) inside IRQ routine
+        pshu  d,x,y         ; DEPENDENCY on nb of _sr calls inside IRQ routine (here 16 bytes of margin)
+        pshu  d,x
+        puls  dp,u,pc      
+        
+********************************************************************************
+* Display progress bar
+* a: value btw 0-127
+********************************************************************************        
+        
+DisplayProgress
+        ldb   #2                       ; page video
+        stb   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)        
+        
+        adda  #$40
+        sta   DP_RestoreA+1
+        ldb   #$7F
+        jsr   DRS_XYToAddress
+DP_RestoreA                            ; (dynamic)
+        lda   #$00
+        lsra
+        bcs   DP_Odd   
+        lda   ,x
+        anda  #$0F
+        ora   #$10
+        bra   DP_Continue
+DP_Odd
+        lda   ,x        
+        anda  #$F0
+        ora   #$01
+DP_Continue
+        sta   ,x     
+        
+        lda   #4                       ; page video
+        sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)            
+        rts
+
+InitProgress
+        ldb   #2                       ; page video
+        stb   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)
+        
+        lda   #$00
+        sta   progress_value
+                
+IP_Loop        
+        adda  #$40
+        sta   IP_RestoreA+1
+        ldb   #$7F
+        jsr   DRS_XYToAddress
+IP_RestoreA                            ; (dynamic)
+        lda   #$00
+        lsra
+        bcs   IP_Odd   
+        lda   ,x
+        anda  #$0F
+        ora   #$20
+        bra   IP_Continue
+IP_Odd
+        lda   ,x        
+        anda  #$F0
+        ora   #$02
+IP_Continue
+        sta   ,x     
+        
+        lda   progress_value
+        inca
+        sta   progress_value
+        bpl   IP_Loop     
+        
+        lda   #4                       ; page video
+        sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)            
+        rts
+        
+progress_value fcb $00        
+
+********************************************************************************
+* x_pixel and y_pixel coordinate system
+* x coordinates:
+*    - off-screen left 00-2F (0-47)
+*    - on screen 30-CF (48-207)
+*    - off-screen right D0-FF (208-255)
+*
+* y coordinates:
+*    - off-screen top 00-1B (0-27)
+*    - on screen 1C-E3 (28-227)
+*    - off-screen bottom E4-FF (228-255)
+********************************************************************************
+
+DRS_XYToAddress
+        suba  #$30
+        subb  #$1C                          ; TODO same thing as x for negative case
+        lsra                                ; x=x/2, sprites moves by 2 pixels on x axis
+        lsra                                ; x=x/2, RAMA RAMB enterlace  
+        bcs   DRS_XYToAddressRAM2First      ; Branch if write must begin in RAM2 first
+DRS_XYToAddressRAM1First
+        sta   DRS_dyn1+2
+        lda   #$28                          ; 40 bytes per line in RAMA or RAMB
+        mul
+DRS_dyn1        
+        addd  #$C000                        ; (dynamic)
+        tfr   d,x     
+        rts
+DRS_XYToAddressRAM2First
+        sta   DRS_dyn2+2
+        lda   #$28                          ; 40 bytes per line in RAMA or RAMB
+        mul
+DRS_dyn2        
+        addd  #$A000                        ; (dynamic)
+        tfr   d,x
+        rts
