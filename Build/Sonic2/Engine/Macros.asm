@@ -21,7 +21,8 @@ _lds MACRO
 _SetCartPageA MACRO
  IFDEF T2
         bmi   RAMPage@
-        ldb   #$00
+        ldb   $E7E6
+        andb  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
         stb   $E7E6
         ldb   #$AA                     ; sequence pour commutation de page T.2
         stb   $0555
@@ -31,7 +32,7 @@ _SetCartPageA MACRO
         stb   $0555
         sta   $0555                    ; selection de la page T.2 en zone cartouche
         bra   End@
-RAMPage@ sta   $E7E6                    ; selection de la page RAM en zone cartouche
+RAMPage@ sta   $E7E6                   ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)
 End@    equ  *
  ELSE
         sta   $E7E6                    ; selection de la page RAM en zone cartouche

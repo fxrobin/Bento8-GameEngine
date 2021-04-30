@@ -99,7 +99,7 @@ DRS_ProcessEachPriorityLevelB0
         lda   rsv_erase_nb_cell,x        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space 
-        beq   DRS_NextObjectB0              ; branch if no more free space
+        lbeq   DRS_NextObjectB0             ; branch if no more free space
         leau  ,y                            ; cell_end for background data        
 DRS_DrawWithoutBackupB0        
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation
@@ -205,7 +205,7 @@ DRS_ProcessEachPriorityLevelB1
         lda   rsv_erase_nb_cell,x        
         jsr   BgBufferAlloc                 ; allocate free space to store sprite background data
         cmpy  #$0000                        ; y contains cell_end of allocated space
-        beq   DRS_NextObjectB1              ; branch if no more free space
+        lbeq   DRS_NextObjectB1             ; branch if no more free space
         leau  ,y                            ; cell_end for background data        
 DRS_DrawWithoutBackupB1        
         ldd   xy_pixel,x                    ; load x position (48-207) and y position (28-227) in one operation

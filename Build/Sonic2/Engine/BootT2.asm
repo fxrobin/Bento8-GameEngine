@@ -46,8 +46,56 @@
         fdb   $0000                    * reserve TO7/70
         fcb   $A3                      * checksum (somme des $19 premiers octets a laquelle on ajoute $55)
         fcb   $00                      * libre
-        fdb   PalFade                  * point entree (reset a chaud) 
-        fdb   PalFade                  * point entree (reset a froid)
+        fdb   PalFadeInit              * point entree (reset a chaud) 
+        fdb   PalFadeInit              * point entree (reset a froid)
+
+* donnees pour le fondu de palette
+********************************************************************************
+PalFadeInit
+        lda   #$61
+        tfr   a,dp                     * positionne la direct page
+        
+pal_from equ $6100
+        ldx   #pal_from
+        ldd   #$0000                   * couleur $00 Noir (Thomson) => 06 change bordure
+        std   ,x++ 
+        ldd   #$F00F                   * couleur $0C Turquoise (Bordure ecran)
+        std   ,x++        
+        ldd   #$FF0F                   * couleur $0E Blanc (TO8)
+        std   ,x++        
+        ldd   #$7707                   * couleur $10 Gris (Fond Bas)
+        std   ,x++        
+        ldd   #$AA03                   * couleur $16 Jaune (Interieur case)
+        std   ,x++        
+        ldd   #$330A                   * couleur $18 Mauve (Fond TO8)
+        std   ,x++        
+								       
+pal_len equ pal_from+12                              
+        ldd   #$0C0E                   * pour chaque couleur on defini un index limite
+        std   ,x++                     * (exclu) de chargement. ex: 0C, 0E, ... 
+        ldd   #$1016                   * la premiere couleur de PAL_FROM est chargee
+        std   ,x++                     * pour les couleurs 0(00) a 5(0A)
+        ldd   #$1820                   * la seconde couleur de PAL_FORM  est chargee
+        std   ,x++                     * pour la couleur 6(0C)
+end_pal_len equ pal_len+6 
+   
+pal_cycles equ pal_len+6
+        lda   #$10                     * nombre de frames de la transition (VSYNC)
+        sta   ,x+
+								       
+pal_mask equ pal_cycles+1                              
+        lda   #$0F                     * masque pour l'aternance du traitemet vert/rouge
+        sta   ,x+                
+        
+pal_buffer equ pal_mask+1                           
+        lda   #$42                     * buffer de comparaison
+        sta   ,x+        
+        lda   #$41                     * buffer de comparaison
+        sta   ,x+        
+								       
+pal_idx equ pal_buffer+2                                 
+        lda   #$00                     * index de la couleur courante dans le traitement
+        sta   ,x        
         
 ********************************************************************************  
 * Fondu palette
@@ -126,39 +174,6 @@ SetPalNext
         bne   PalRun                   * on reboucle si fin de liste pas atteinte
         bra   PalFade
         
-* donnees pour le fondu de palette
-********************************************************************************
-
-pal_from
-        fdb   $0000                    * couleur $00 Noir (Thomson) => 06 change bordure
-        fdb   $F00F                    * couleur $0C Turquoise (Bordure ecran)
-        fdb   $FF0F                    * couleur $0E Blanc (TO8)
-        fdb   $7707                    * couleur $10 Gris (Fond Bas)
-        fdb   $AA03                    * couleur $16 Jaune (Interieur case)
-        fdb   $330A                    * couleur $18 Mauve (Fond TO8)
-								       
-pal_len                                
-        fcb   $0C                      * pour chaque couleur on defini un index limite
-        fcb   $0E                      * (exclu) de chargement. ex: 0C, 0E, ... 
-        fcb   $10                      * la premiere couleur de PAL_FROM est chargee
-        fcb   $16                      * pour les couleurs 0(00) a 5(0A)
-        fcb   $18                      * la seconde couleur de PAL_FORM  est chargee
-        fcb   $20                      * pour la couleur 6(0C)
-end_pal_len
-   
-pal_cycles
-        fcb   $10                      * nombre de frames de la transition (VSYNC)
-								       
-pal_mask                               
-        fcb   $0F                      * masque pour l'aternance du traitemet vert/rouge        
-        
-pal_buffer                             
-        fcb   $42                      * buffer de comparaison
-        fcb   $41                      * buffer de comparaison
-								       
-pal_idx                                
-        fcb   $00                      * index de la couleur courante dans le traitement
-   
 ********************************************************************************  
 * Initialisation du mode video
 ********************************************************************************

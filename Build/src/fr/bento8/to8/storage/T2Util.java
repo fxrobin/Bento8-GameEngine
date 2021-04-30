@@ -47,7 +47,7 @@ public class T2Util
 	 * @param outputFileName nom du fichier a écrire
 	 */
 	public void save(String outputFileName) {
-		Path outputFile = Paths.get(outputFileName+".bin");
+		Path outputFile = Paths.get(outputFileName+".rom");
 		try {
 			Files.deleteIfExists(outputFile);
 			Files.createFile(outputFile);
