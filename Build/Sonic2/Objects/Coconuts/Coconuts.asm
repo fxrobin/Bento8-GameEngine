@@ -19,7 +19,7 @@ Coconuts_Routines
 Coconuts_Init
         ldd   #Img_coconuts_001
         std   image_set,u
-        ldb   #$01
+        ldb   #$02
         stb   priority,u
         ldd   #$607F
         std   xy_pixel,u

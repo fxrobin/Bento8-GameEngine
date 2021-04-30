@@ -20,7 +20,7 @@ TitleScreen_Routines
 Init
         ldd   #SonAni_Walk
         std   anim,u
-        ldb   #$01
+        ldb   #$04
         stb   priority,u
         ldd   #$807F
         std   xy_pixel,u

@@ -163,6 +163,7 @@ public class BuildDisk
 		Game.bootSizeT2 = getBINSize(game.engineAsmBootT2);
 		game.glb.addConstant("Build_RAMLoaderManager", String.format("$%1$04X", Game.bootSizeT2));
 		game.glb.flush();
+		//game.romT2.reserveT2Header();
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -1400,11 +1401,7 @@ public class BuildDisk
 	
 	private static void writeObjectsT2() throws Exception {
 		logger.info("Write Objects to MEGAROM_T2 image ...");
-		
-		// TODO : Remplacer cette ecriture sequentielle par un algo sac à dos qui va remplir Game.romT2
-		// a partir de la derniere page/adresse dispo (suite à ecriture rom des obj qui ne sont pas en RAM)
-		// utiliser setDataAtCurPos
-		
+
 		// Compte le nombre d'objets a traiter
 		int nbItems = 0;
 				
@@ -1494,18 +1491,18 @@ public class BuildDisk
 
 				Item currentItem = iter.next();
 				
-				currentItem.bin.t2_page = game.romT2.curPage;					
-				currentItem.bin.t2_address = game.romT2.endAddress[game.romT2.curPage];
+				currentItem.bin.getRAMLoaderIndex().t2_page = game.romT2.curPage;					
+				currentItem.bin.getRAMLoaderIndex().t2_address = game.romT2.endAddress[game.romT2.curPage];
 				game.romT2.setDataAtCurPos(((RAMLoaderIndex) currentItem.bin).exoBin);
-				currentItem.bin.t2_endAddress = game.romT2.endAddress[game.romT2.curPage];
+				currentItem.bin.getRAMLoaderIndex().t2_endAddress = game.romT2.endAddress[game.romT2.curPage];
 				
-				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.t2_page+" "+String.format("$%1$04X", currentItem.bin.t2_address) + " " + String.format("$%1$04X", currentItem.bin.t2_endAddress));
+				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.getRAMLoaderIndex().t2_page+" "+String.format("$%1$04X", currentItem.bin.getRAMLoaderIndex().t2_address) + " " + String.format("$%1$04X", currentItem.bin.getRAMLoaderIndex().t2_endAddress));
 				
 				// Update all identical index on other GameModes
 				for (RAMLoaderIndex di : currentItem.bin.getRAMLoaderIndex().rli) {
-					di.t2_page = currentItem.bin.t2_page;
-					di.t2_address = currentItem.bin.t2_address;
-					di.t2_endAddress = currentItem.bin.t2_endAddress;
+					di.t2_page = currentItem.bin.getRAMLoaderIndex().t2_page;
+					di.t2_address = currentItem.bin.getRAMLoaderIndex().t2_address;
+					di.t2_endAddress = currentItem.bin.getRAMLoaderIndex().t2_endAddress;
 				}
 
 				// construit la liste des éléments restants à organiser
@@ -1528,6 +1525,7 @@ public class BuildDisk
 			
 			firstPass = false;
 		}
+		firstPass = false;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -1650,14 +1648,14 @@ public class BuildDisk
 					
 					// Inversion des demi-pages liée à la copie de code en zone data qui sera executé depuis la zone cartouche
 					int ram_endDest;
-					if (di.ram_address != 0x6100) {
+					if (di.split) {
 						if (di.ram_endAddress <= 0x2000) {
 							ram_endDest = di.ram_endAddress + 0xC000;
 						} else {
 							ram_endDest = di.ram_endAddress + 0x8000;
 						}
 					} else {
-						ram_endDest = di.ram_endAddress;
+						ram_endDest = di.ram_endAddress + 0xA000;
 					}				
 					
 					ramLoaderDataIdx.addFcb(new String[] {
@@ -1749,6 +1747,7 @@ public class BuildDisk
 		compileRAW(bootTmpFile, MEGAROM_T2);
 		byte[] bin = Files.readAllBytes(Paths.get(getBINFileName(bootTmpFile)));
 		
+		//game.romT2.writeT2Header(bin);
 		game.romT2.setData(0, 0, bin);
 		t2.write(game.romT2);
 		

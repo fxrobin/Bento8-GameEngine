@@ -18,7 +18,7 @@ Masher_Routines
 Masher_Init
         ldd   #MasAni_FastBite
         std   anim,u
-        ldb   #$01
+        ldb   #$03
         stb   priority,u
         ldd   #$A09F
         std   xy_pixel,u

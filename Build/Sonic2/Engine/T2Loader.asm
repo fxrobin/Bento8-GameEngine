@@ -137,17 +137,28 @@ RL_Copy
         jsr   DisplayProgress
         
         inc   cur_ROMPage              ; page ROM suivante
-        bpl   RL_Continue
+        
+        lda   cur_ROMPage
+        cmpa  #$03
+        bne   RL_Continue
+        *bpl   RL_Continue
         bra   RL_END                   ; on a depasse la page 127 => fin   
         
 cur_ROMPage fcb   $00
 
 RL_END
+        lda   #$00
+        jsr   SETPAG
         lda   #$02
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
         ldd   #$0080
         stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
-        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)  
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)
+        lda   #$04
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        ldd   #$0080
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)          
         bra   *
 
 * ===========================================================================

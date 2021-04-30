@@ -196,12 +196,16 @@ InitVideo
         sta   $E7DD                    ; affiche la page a l'ecran
         stb   $E7E5                    ; visible dans l'espace donnees
         
-        ldb   #$AA
-        stb   $0555
-        ldb   #$55
-        stb   $02AA
-        ldb   #$B0
-        stb   $0555
+        lda   $E7E6
+        anda  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
+        sta   $E7E6
+        
+        lda   #$AA
+        sta   $0555
+        lda   #$55
+        sta   $02AA
+        lda   #$B0
+        sta   $0555
         lda   #$02                     ; mode neutre pour la T.2
 		sta   $0556
         

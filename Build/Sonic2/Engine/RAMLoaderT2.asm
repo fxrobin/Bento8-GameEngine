@@ -23,18 +23,20 @@
         setdp $40                      ; dp for exomizer
         INCLUDE "./Engine/Exomizer.asm"  
 
-RAMLoader 
-        ldx   #RL_RAM_index+6          ; on saute la balise de fin du GameMode
+RAMLoader
+        ldx   #RL_RAM_index          
         
 RL_While
-        ldd   ,x++
+        ldd   ,x++                     ; A: T2 src page, B: Dest RAM page
         bpl   RL_LoadData              ; valeur negative de secteur signifie fin du tableau de donnee
         jmp   $6100                    ; on lance le mode de jeu en page 1
         
 RL_LoadData
-        ldb   #0                       ; page memoire
         stb   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)
       
+        ldb   $E7E6
+        andb  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
+        stb   $E7E6      
         ldb   #$AA                     ; sequence pour commutation de page T.2
         stb   $0555
         ldb   #$55
@@ -45,7 +47,7 @@ RL_LoadData
 
         ldu   ,x++                     ; source ROM (fin des donnees)
         ldy   ,x++                     ; destination RAM (fin des donnees)
-        jsr   exo2                     ; decompresse les donnees
+        jsr   >exo2                    ; decompresse les donnees        
         bra   RL_While
 fill        
         fill  0,7-((fill-exo2)%7)      ; le code est un multilpe de 7 octets (pour la copie)

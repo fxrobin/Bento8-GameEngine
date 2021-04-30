@@ -62,5 +62,19 @@ public class RamImage
 	
 	public boolean isOutOfMemory() {
 		return (curPage>=lastPage);
+	}
+	
+	public void reserveT2Header () {
+		for (int p = 1; p < lastPage; p++) {
+			this.endAddress[p] = 32;
+		}
 	}	
+
+	public void writeT2Header (byte[] newData) {
+		for (int p = 1; p < lastPage; p++) {
+			for (int i = 0; i < 32; i++) {
+				this.data[p][i] = newData[i];
+			}
+		}
+	}
 }

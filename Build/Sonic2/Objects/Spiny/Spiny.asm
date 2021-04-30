@@ -18,7 +18,7 @@ Spiny_Routines
 Spiny_Init
         ldd   #Ani_spiny_floor
         std   anim,u
-        ldb   #$01
+        ldb   #$05
         stb   priority,u
         ldd   #$609F
         std   xy_pixel,u
