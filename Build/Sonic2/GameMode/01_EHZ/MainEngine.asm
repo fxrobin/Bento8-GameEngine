@@ -49,6 +49,11 @@ LevelMainLoop
 * ==============================================================================
 
 * ---------------------------------------------------------------------------
+* Engine
+* ---------------------------------------------------------------------------
+Glb_Page                      fcb   $00
+
+* ---------------------------------------------------------------------------
 * Level (Game Mode)
 * ---------------------------------------------------------------------------
 
@@ -131,13 +136,15 @@ Obj_MainCharacter             fcb   ObjID_Sonic
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
-Dynamic_Object_RAM            fcb   ObjID_Buzzer
-                              fill  0,object_size-1
-                              fcb   ObjID_Coconuts
-                              fill  0,object_size-1                              
-                              fcb   ObjID_Masher
-                              fill  0,object_size-1                              
-                              fill  0,(nb_dynamic_objects-3)*object_size
+* Dynamic_Object_RAM            fcb   ObjID_Buzzer
+*                              fill  0,object_size-1
+*                              fcb   ObjID_Coconuts
+*                              fill  0,object_size-1                              
+*                              fcb   ObjID_Masher
+*                              fill  0,object_size-1
+*                              fill  0,(nb_dynamic_objects-3)*object_size
+Dynamic_Object_RAM                              
+                              fill  0,nb_dynamic_objects*object_size
 Dynamic_Object_RAM_End
 
 LevelOnly_Object_RAM                              * faire comme pour Dynamic_Object_RAM

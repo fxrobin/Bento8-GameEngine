@@ -66,7 +66,7 @@ IrqSync_3
         rts                  
        
 IrqPsg 
-        lda   <$E6
+        _GetCartPageA
         sta   IrqPsg_end+1                            ; backup data page
         
         ldd   Vint_runcount
@@ -77,15 +77,15 @@ IrqPsg
         * jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
-        sta   <$E6                                    ; restore data page
+        _SetCartPageA                                 ; restore data page
         jmp   $E830                                   ; return to caller                               
        
 IrqPsgRaster 
-        lda   <$E6
+        _GetCartPageA
         sta   IrqPsgRaster_end+1                      ; backup data page
         
         lda   Irq_Raster_Page
-        sta   <$E6                                    ; load Raster data page
+        sta   _SetCartPageA                           ; load Raster data page
         ldx   Irq_Raster_Start
         lda   #32        
 IrqPsgRaster_1      
@@ -121,7 +121,7 @@ IrqPsgRaster_render
         * jsr   PSGSFXFrame
 IrqPsgRaster_end        
         lda   #$00
-        sta   <$E6                                    ; restore data page
+        _SetCartPageA                                 ; restore data page
         jmp   $E830                                   ; return to caller 
 
 Vint_runcount fdb $0000

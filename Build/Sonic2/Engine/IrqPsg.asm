@@ -33,7 +33,7 @@ IrqOff
         rts
         
 IrqPsg 
-        lda   <$E6
+        _GetCartPageA
         sta   IrqPsg_end+1                            ; backup data page
         
         ldd   Vint_runcount
@@ -44,7 +44,7 @@ IrqPsg
        *jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
-        sta   <$E6                                    ; restore data page
+        _SetCartPageA                                 ; restore data page
         jmp   $E830                                   ; return to caller
         
 Vint_runcount fdb $0000

@@ -11,7 +11,7 @@
 
 PlayPCM 
 
-        lda   $E7E6
+        _GetCartPageA
         sta   PlayPCM_RestorePage+1
 
         ldd   #$fb3f  ! Mute by CRA to 
@@ -58,6 +58,6 @@ PlayPCM_End
 
 PlayPCM_RestorePage        
         lda   #$00
-        sta   $E7E6
+        _SetCartPageA
         
         rts   

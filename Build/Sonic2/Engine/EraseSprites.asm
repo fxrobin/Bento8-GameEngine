@@ -127,7 +127,7 @@ ESP_ProcessEachPriorityLevelB0
         
 ESP_CheckPriorityB0
         cmpa  #0                            ; dynamic current priority
-        bne   ESP_NextObjectB0              ; do not process this entry (case of priority change)
+        lbne   ESP_NextObjectB0             ; do not process this entry (case of priority change)
         
 ESP_UnsetCheckRefreshB0
         lda   rsv_render_flags,u
@@ -189,7 +189,7 @@ ESP_ProcessEachPriorityLevelB1
         
 ESP_CheckPriorityB1
         cmpa  #0                            ; dynamic current priority
-        bne   ESP_NextObjectB1              ; do not process this entry (case of priority change)
+        lbne   ESP_NextObjectB1             ; do not process this entry (case of priority change)
         
 ESP_UnsetCheckRefreshB1
         lda   rsv_render_flags,u

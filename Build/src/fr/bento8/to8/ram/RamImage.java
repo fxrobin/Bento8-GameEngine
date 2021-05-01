@@ -22,6 +22,14 @@ public class RamImage
 	
 	public RamImage (int lastPage) {
 		this.data = new byte[lastPage][PAGE_SIZE];
+
+//      Pour test de copie vers T.2: valorise tt les données d'une page par son numéro		
+//		for (int i=0; i<lastPage; i++) {
+//			for (int j=0; j<PAGE_SIZE; j++) {
+//				this.data[i][j] = (byte)i;
+//			}
+//		}
+//		
 		this.startAddress = new int[lastPage];
 		this.endAddress = new int[lastPage];
 		this.lastPage = lastPage;

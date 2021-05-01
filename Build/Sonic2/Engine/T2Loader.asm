@@ -12,7 +12,7 @@
 * il faut donc 4 disquettes pour 128 pages
 * 16 pistes par face inutiles sur chacune des 4 disquettes
 * lecture des pistes de 1 a 64 face 0 puis 1 a 64 face 1
-* la piste 1 contient le boot et ce code de chargement
+* la piste 0 contient le boot et ce code de chargement
 * pour chaque page lecture des secteurs de 1 a 16
 * pas d'entrelacement car les donnees sont chargees depuis SDDRIVE
 ********************************************************************************
@@ -102,7 +102,6 @@ RL_DKCO
         lda   #$01                     ; sinon on a depasse le secteur 16
         sta   <dk_secteur              ; positionnement du secteur a 1
         inc   <dk_pisteL               ; increment du registre Moniteur DK.TRK
-        lda   <dk_pisteL
 RL_DKContinue                            
         inc   <dk_destination          ; increment de 256 octets de la zone a ecrire DK.BUF
         ldx   <dk_destination          ; chargement de la zone a ecrire DK.BUF
@@ -112,17 +111,13 @@ RL_Page
         ldb   #$01                     ; repositionnement pour chargement de la page RAM suivante
         stb   <dk_secteur 
 
-        ldd   <dk_piste
-        addd  #$0001
-        std   <dk_piste
-        cmpd  #$0029
+        lda   <dk_pisteL
+        cmpa  #$0029
         bne   RL_Copy
         ldd   #$0001
         std   <dk_piste
-        
+        inc   <dk_lecteur
         lda   <dk_lecteur
-        inca
-        sta   <dk_lecteur
         cmpa  #$04
         bne   RL_Copy
         lda   #$00
@@ -137,18 +132,19 @@ RL_Copy
         jsr   DisplayProgress
         
         inc   cur_ROMPage              ; page ROM suivante
-        
         lda   cur_ROMPage
-        cmpa  #$03
+        
+        cmpa  #$03                     ; TODO a rendre dynamique en fonction des pages ROM generees par le builder
         bne   RL_Continue
         *bpl   RL_Continue
+        
         bra   RL_END                   ; on a depasse la page 127 => fin   
         
 cur_ROMPage fcb   $00
 
 RL_END
         lda   #$00
-        jsr   SETPAG
+        jsr   SETPAG                   * ROM page a 0 pour la voir apres reboot
         lda   #$02
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
         ldd   #$0080
@@ -408,7 +404,7 @@ IP_Continue
         sta   progress_value
         bpl   IP_Loop     
         
-        lda   #4                       ; page video
+        lda   #4                       ; page de travail
         sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)            
         rts
         

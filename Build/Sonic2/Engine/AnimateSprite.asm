@@ -17,7 +17,7 @@
                                             *; sub_16544:
 AnimateSprite                               *AnimateSprite:
                                             *    moveq   #0,d0
-        lda   $E7E6
+        _GetCartPageA
         sta   Anim_Rts+1                    ; backup cart page     
         ldx   #Ani_Page_Index
         lda   #$00
@@ -65,8 +65,8 @@ Anim_dyn
         inc   anim_frame,u                  *    addq.b  #1,anim_frame(a0)     ; next frame number
                                             *; return_1659A:
 Anim_Rts                                    *Anim_Wait:
-        lda   #$00
-        sta   $E7E6                         ; restore data page
+        lda   #$00                          ; (dynamic)
+        _SetCartPageA                       ; restore data page
         rts                                 *    rts 
                                             *; ===========================================================================
                                             *; loc_1659C:

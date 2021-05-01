@@ -34,9 +34,6 @@ RL_While
 RL_LoadData
         stb   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)
       
-        ldb   $E7E6
-        andb  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
-        stb   $E7E6      
         ldb   #$AA                     ; sequence pour commutation de page T.2
         stb   $0555
         ldb   #$55

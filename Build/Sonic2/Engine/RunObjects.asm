@@ -47,7 +47,7 @@ RunObject                                   *RunObject:
 
         ldy   #Obj_Index_Page
         lda   d,y                           ; page memoire
-        sta   $E7E6                         ; selection de la page en RAM (0000-3FFF)
+        _SetCartPageA                       ; selection de la page en RAM (0000-3FFF)
         lda   #$00
         aslb                                *    add.w   d0,d0
         rola                                *    add.w   d0,d0   ; d0 = object ID * 4
