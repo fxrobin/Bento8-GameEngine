@@ -110,8 +110,7 @@ DRS_DrawWithoutBackupB0
         lda   rsv_page_draw_routine,x
         _SetCartPageA        
         stx   DRS_dyn3B0+1                  ; save x reg
-        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
+        ldy   #Glb_Sprite_Screen_Pos_Part2
         jsr   [rsv_draw_routine,x]          ; backup background and draw sprite on working screen buffer
 DRS_dyn3B0        
         ldx   #$0000                        ; (dynamic) restore x reg
@@ -216,9 +215,8 @@ DRS_DrawWithoutBackupB1
         lda   rsv_page_draw_routine,x
         _SetCartPageA        
         stx   DRS_dyn3B1+1                  ; save x reg
-        ldy   #Glb_Sprite_Screen_Pos_Part2  ; position is a parameter, it allows different Main engines
-        ldd   Glb_Sprite_Screen_Pos_Part1   ; to be used with compiled sprites in a single program
-        jsr   [rsv_draw_routine,x]          ; backup background and draw sprite on working screen buffer
+        ldy   #Glb_Sprite_Screen_Pos_Part2
+        jsr   [rsv_draw_routine,x]        
 DRS_dyn3B1        
         ldx   #$0000                        ; (dynamic) restore x reg
         stu   rsv_bgdata_1,x                ; store pointer to saved background data

@@ -114,7 +114,7 @@ pal_idx
 ********************************************************************************
 InitVideo
         orcc  #$50                     * desactive les interruptions
-        lds   #$9FFF                   * positionnement pile systeme
+        lds   #Glb_SystemStack         * positionnement pile systeme
         lda   #$7B                     * passage en mode 160x200x16c
         sta   $E7DC
   

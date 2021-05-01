@@ -265,13 +265,13 @@ public class AssemblyGenerator{
 			logger.debug("\t\t\t" +lstBckDrawFileName + " lwasm.exe BCKDRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
 			logger.debug("\t\t\t" +lstBckDrawFileName + " lwasm.exe BCKDRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
-//			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-//				throw new Exception("\t\t\t" +lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
-//			}
-//			
-//			if (compilerDSize > 16384) {
-//				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
-//			}			
+			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
+				throw new Exception("\t\t\t" +lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+			}
+			
+			if (compilerDSize > 16384) {
+				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
+			}			
 
 			// Process Erase Code
 			// ****************************************************************
@@ -322,13 +322,13 @@ public class AssemblyGenerator{
 			logger.debug("\t\t\t" +lstEraseFileName + " lwasm.exe ERASE cycles: " + compilerECycles + " computed cycles: " + computedECycles);
 			logger.debug("\t\t\t" +lstEraseFileName + " lwasm.exe ERASE size: " + compilerESize + " computed size: " + computedESize);
 
-//			if (computedECycles != compilerECycles || compilerESize != computedESize) {
-//				throw new Exception("\t\t\t" +lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
-//			}
-//			
-//			if (compilerDSize > 16384) {
-//				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
-//			}			
+			if (computedECycles != compilerECycles || compilerESize != computedESize) {
+				throw new Exception("\t\t\t" +lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+			}
+			
+			if (compilerDSize > 16384) {
+				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
+			}			
 			
 		} 
 		catch (Exception e)
@@ -357,12 +357,12 @@ public class AssemblyGenerator{
 
 	public List<String> getCodeFrameBckDrawStart(String org) {
 		List<String> asm = new ArrayList<String>();
+		asm.add("\tINCLUDE \"../../Engine/Constants.asm\"");
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
 		asm.add("\tOPT C,CT");
 		asm.add("BCKDRAW_" + spriteName + "");
-		asm.add("\tSTS SSAV_" + spriteName + "+2,PCR\n");
-		asm.add("\tSTD DYN_POS+1,PCR");
+		asm.add("\tSTS Glb_SaveS\n");
 		asm.add("\tLEAS ,U");
 		asm.add("\tLDU ,Y");
 
@@ -372,7 +372,6 @@ public class AssemblyGenerator{
 	public int getCodeFrameBckDrawStartCycles() throws Exception {
 		int cycles = 0;
 		cycles += Register.costExtendedST[Register.S];
-		cycles += Register.costExtendedST[Register.D];
 		cycles += Register.costIndexedLEA;
 		cycles += Register.costIndexedLD[Register.U];
 		return cycles;
@@ -381,7 +380,6 @@ public class AssemblyGenerator{
 	public int getCodeFrameBckDrawStartSize() throws Exception {
 		int size = 0;
 		size += Register.sizeExtendedST[Register.S];
-		size += Register.sizeExtendedST[Register.D];
 		size += Register.sizeIndexedLEA;		
 		size += Register.sizeIndexedLD[Register.U];
 		return size;
@@ -389,20 +387,19 @@ public class AssemblyGenerator{
 
 	public List<String> getCodeFrameBckDrawMid() {
 		List<String> asm = new ArrayList<String>();
-		asm.add("DYN_POS");
-		asm.add("\n\tLDU #$0000");		
+		asm.add("\n\tLDU Glb_Sprite_Screen_Pos_Part1");		
 		return asm;
 	}
 
 	public int getCodeFrameBckDrawMidCycles() {
 		int cycles = 0;
-		cycles += Register.costImmediateLD[Register.U];
+		cycles += Register.costExtendedST[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameBckDrawMidSize() {
 		int size = 0;
-		size += Register.costImmediateLD[Register.U];
+		size += Register.sizeExtendedST[Register.U];
 		return size;
 	}
 
@@ -410,7 +407,7 @@ public class AssemblyGenerator{
 		List<String> asm = new ArrayList<String>();
 		asm.add("\tLEAU ,S");
 		asm.add("SSAV_" + spriteName + "");
-		asm.add("\tLDS #$0000");
+		asm.add("\tLDS Glb_SaveS");
 		asm.add("\tRTS\n");
 		return asm;
 	}
@@ -418,7 +415,7 @@ public class AssemblyGenerator{
 	public int getCodeFrameBckDrawEndCycles() {
 		int cycles = 0;
 		cycles += Register.costIndexedLEA;
-		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.costExtendedLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
 	}
@@ -426,18 +423,19 @@ public class AssemblyGenerator{
 	public int getCodeFrameBckDrawEndSize() {
 		int size = 0;
 		size += Register.sizeIndexedLEA;
-		size += Register.sizeImmediateLD[Register.S];
+		size += Register.sizeExtendedLD[Register.S];
 		size += 1; // RTS
 		return size;
 	}
 
 	public List<String> getCodeFrameEraseStart(String org) {
 		List<String> asm = new ArrayList<String>();
+		asm.add("\tINCLUDE \"../../Engine/Constants.asm\"");		
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
 		asm.add("\tOPT C,CT");		
 		asm.add("ERASE_" + spriteName + "");
-		asm.add("\tSTS ERASE_SSAV_" + spriteName + "+2,PCR\n");
+		asm.add("\tSTS Glb_SaveS\n");
 		asm.add("\tLEAS ,U");                                // usage de S a cause des irq musique
 		asm.add("ERASE_CODE_" + spriteName + "_1");
 		return asm;
@@ -460,8 +458,7 @@ public class AssemblyGenerator{
 	public List<String> getCodeFrameEraseEnd() {
 		List<String> asm = new ArrayList<String>();
 		asm.add("\tLEAU ,S");
-		asm.add("ERASE_SSAV_" + spriteName + "");
-		asm.add("\tLDS #$0000");
+		asm.add("\tLDS Glb_SaveS");
 		asm.add("\tRTS\n");
 		return asm;
 	}
@@ -469,7 +466,7 @@ public class AssemblyGenerator{
 	public int getCodeFrameEraseEndCycles() {
 		int cycles = 0;
 		cycles += Register.costIndexedLEA;
-		cycles += Register.costImmediateLD[Register.S];
+		cycles += Register.costExtendedLD[Register.S];
 		cycles += 5; // RTS
 		return cycles;
 	}
@@ -477,7 +474,7 @@ public class AssemblyGenerator{
 	public int getCodeFrameEraseEndSize() {
 		int size = 0;
 		size += Register.sizeIndexedLEA;
-		size += Register.sizeImmediateLD[Register.S];	
+		size += Register.sizeExtendedLD[Register.S];	
 		size += 1; // RTS
 		return size;
 	}

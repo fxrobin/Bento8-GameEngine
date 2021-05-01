@@ -85,7 +85,7 @@ IrqPsgRaster
         sta   IrqPsgRaster_end+1                      ; backup data page
         
         lda   Irq_Raster_Page
-        sta   _SetCartPageA                           ; load Raster data page
+         _SetCartPageA                                ; load Raster data page
         ldx   Irq_Raster_Start
         lda   #32        
 IrqPsgRaster_1      

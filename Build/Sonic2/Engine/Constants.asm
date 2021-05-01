@@ -28,6 +28,10 @@ screen_bottom                 equ 28+199 ; in pixel
 screen_left                   equ 48 ; in pixel
 screen_right                  equ 48+159 ; in pixel
 nb_priority_levels            equ 8   ; number of priority levels (need code change if modified)
+Glb_SystemStack               equ $9FFA 
+Glb_Sprite_Screen_Pos_Part1   equ $9FFA  ; start address for rendering of current sprite Part1     
+Glb_Sprite_Screen_Pos_Part2   equ $9FFC  ; start address for rendering of current sprite Part2 (Must follow Part1)
+Glb_SaveS                     equ $9FFE  ; reverved space to store S from ROM routines
 
 * ===========================================================================
 * Physics Constants

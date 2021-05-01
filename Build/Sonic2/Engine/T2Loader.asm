@@ -134,9 +134,9 @@ RL_Copy
         inc   cur_ROMPage              ; page ROM suivante
         lda   cur_ROMPage
         
-        cmpa  #$03                     ; TODO a rendre dynamique en fonction des pages ROM generees par le builder
-        bne   RL_Continue
-        *bpl   RL_Continue
+        * cmpa  #$03                     ; TODO a rendre dynamique en fonction des pages ROM generees par le builder
+        * bne   RL_Continue
+        bpl   RL_Continue
         
         bra   RL_END                   ; on a depasse la page 127 => fin   
         

@@ -201,13 +201,13 @@ public class SimpleAssemblyGenerator{
 			logger.debug("\t\t\t" +lstDrawFileName + " lwasm.exe DRAW cycles: " + compilerDCycles + " computed cycles: " + computedDCycles);
 			logger.debug("\t\t\t" +lstDrawFileName + " lwasm.exe DRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
-//			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-//				throw new Exception("\t\t\t" +lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
-//			}
-//			
-//			if (compilerDSize > 16384) {
-//				throw new Exception("\t\t\t" +lstDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
-//			}			
+			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
+				throw new Exception("\t\t\t" +lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
+			}
+			
+			if (compilerDSize > 16384) {
+				throw new Exception("\t\t\t" +lstDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
+			}			
 		} 
 		catch (Exception e)
 		{
@@ -235,45 +235,42 @@ public class SimpleAssemblyGenerator{
 
 	public List<String> getCodeFrameDrawStart(String org) {
 		List<String> asm = new ArrayList<String>();
+		asm.add("\tINCLUDE \"../../Engine/Constants.asm\"");		
 		asm.add("\tORG $" + org + "");
 		asm.add("\tSETDP $FF");
 		asm.add("\tOPT C,CT");		
 		asm.add("DRAW_" + spriteName + "");
-		asm.add("\tSTD DYN_POS+1,PCR");
 		asm.add("\tLDU ,Y");
 		return asm;
 	}
 
 	public int getCodeFrameDrawStartCycles() throws Exception {
 		int cycles = 0;
-		cycles += Register.costExtendedST[Register.D];
 		cycles += Register.costIndexedLD[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameDrawStartSize() throws Exception {
 		int size = 0;
-		size += Register.sizeExtendedST[Register.D];
 		size += Register.sizeIndexedLD[Register.U];
 		return size;
 	}
 
 	public List<String> getCodeFrameDrawMid() {
 		List<String> asm = new ArrayList<String>();
-		asm.add("DYN_POS");
-		asm.add("\n\tLDU #$0000");		
+		asm.add("\n\tLDU Glb_Sprite_Screen_Pos_Part1");		
 		return asm;
 	}
 
 	public int getCodeFrameDrawMidCycles() {
 		int cycles = 0;
-		cycles += Register.costImmediateLD[Register.U];
+		cycles += Register.costExtendedST[Register.U];
 		return cycles;
 	}
 
 	public int getCodeFrameDrawMidSize() {
 		int size = 0;
-		size += Register.costImmediateLD[Register.U];
+		size += Register.sizeExtendedST[Register.U];
 		return size;
 	}
 

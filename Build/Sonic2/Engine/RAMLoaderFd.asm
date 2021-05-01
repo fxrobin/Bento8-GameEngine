@@ -38,7 +38,7 @@ RAMLoader_continue
 
         ldd   ,u++
         bpl   RL_Continue              ; valeur negative de secteur signifie fin du tableau de donnee
-        lds   #$9FFF                   ; reinit de la pile systeme
+        lds   #Glb_SystemStack         ; reinit de la pile systeme
         jmp   $6100                    ; on lance le mode de jeu en page 1
 RL_Continue        
         sta   <dk_secteur              ; secteur (1-16)

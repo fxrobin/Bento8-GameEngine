@@ -67,8 +67,6 @@ Glb_Next_Game_Mode            fcb   GmID_02_CPZ
 Glb_Cur_Wrk_Screen_Id         fcb   $00   ; screen buffer set to write operations (0 or 1)
 Glb_Camera_X_Pos              fdb   $0000 ; camera x position in palyfield coordinates
 Glb_Camera_Y_Pos              fdb   $0000 ; camera y position in palyfield coordinates
-Glb_Sprite_Screen_Pos_Part1   fdb   $0000  ; start address for rendering of current sprite PartA     
-Glb_Sprite_Screen_Pos_Part2   fdb   $0000  ; start address for rendering of current sprite PartB (Must follow PartA)
 
 * ---------------------------------------------------------------------------
 * Background Backup Cells - BBC
@@ -136,15 +134,13 @@ Obj_MainCharacter             fcb   ObjID_Sonic
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
-* Dynamic_Object_RAM            fcb   ObjID_Buzzer
-*                              fill  0,object_size-1
-*                              fcb   ObjID_Coconuts
-*                              fill  0,object_size-1                              
-*                              fcb   ObjID_Masher
-*                              fill  0,object_size-1
-*                              fill  0,(nb_dynamic_objects-3)*object_size
-Dynamic_Object_RAM                              
-                              fill  0,nb_dynamic_objects*object_size
+Dynamic_Object_RAM            fcb   ObjID_Buzzer
+                              fill  0,object_size-1
+                              fcb   ObjID_Coconuts
+                              fill  0,object_size-1                              
+                              fcb   ObjID_Masher
+                              fill  0,object_size-1
+                              fill  0,(nb_dynamic_objects-3)*object_size
 Dynamic_Object_RAM_End
 
 LevelOnly_Object_RAM                              * faire comme pour Dynamic_Object_RAM

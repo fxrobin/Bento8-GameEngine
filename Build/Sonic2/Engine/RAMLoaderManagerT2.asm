@@ -72,7 +72,7 @@ RLM_CopyCode
         
 * Execution du Game Mode Engine en page 0a
 ************************************************************
-        lds   #$9FFF                   ; positionnement pile systeme         
+        lds   #Glb_SystemStack         ; positionnement pile systeme         
         jmp   RAMLoader     
 
 * ==============================================================================

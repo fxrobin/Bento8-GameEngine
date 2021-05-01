@@ -2,13 +2,31 @@ _ldd MACRO
         ldd   #(\1*256)+\2
  ENDM
  
+_ldx MACRO
+        ldx   #(\1*256)+\2
+ ENDM
+ 
+_ldy MACRO
+        ldy   #(\1*256)+\2
+ ENDM
+ 
+_ldu MACRO
+        ldu   #(\1*256)+\2
+ ENDM  
+ 
+_lds MACRO
+        lds   #(\1*256)+\2
+ ENDM   
+ 
 _SetCartPageA MACRO
  IFDEF T2
         bpl   RAMPg@
         sta   Glb_Page
+        
         lda   $E7E6
         anda  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
         sta   $E7E6                    ; TODO eventuellement a remplacer par un clr au lieu des trois instr.
+        
         lda   #$AA                     ; sequence pour commutation de page T.2
         sta   $0555
         lda   #$55
