@@ -1139,6 +1139,7 @@ public class BuildDisk
 
 			if (!firstPass) {
 				game.romT2.curPage++;
+				game.romT2.updateEndPage();
 				
 				if (game.romT2.isOutOfMemory()) {
 					throw new Exception("C'est un peu trop ambitieux ... 2Mo pour la T.2 et pas un octet de plus !");
@@ -1476,6 +1477,7 @@ public class BuildDisk
 
 			if (!firstPass) {
 				game.romT2.curPage++;
+				game.romT2.updateEndPage();				
 				
 				if (game.romT2.isOutOfMemory()) {
 					throw new Exception("C'est un peu trop ambitieux ... 2Mo pour la T.2 et pas un octet de plus !");
@@ -1774,7 +1776,9 @@ public class BuildDisk
 		t2L.write(bootLoader.encodeBootLoader(getBINFileName(tmpFile)));
 		logger.info("Write Megarom T.2 Boot to output file ...");
 
-		tmpFile = duplicateFile(game.engineAsmT2Loader);
+		String prepend = "Builder_End_Page equ "+(game.romT2.endPage+1)+"\n";
+		prepend += "Builder_Progress_Step equ "+((Game.T2_NB_PAGES/(game.romT2.endPage+1))*256+(int)(256*(((double)Game.T2_NB_PAGES/(game.romT2.endPage+1))-(Game.T2_NB_PAGES/(game.romT2.endPage+1)))))+"\n";
+		tmpFile = duplicateFilePrepend(game.engineAsmT2Loader, "", prepend);
 		compileRAW(tmpFile, MEGAROM_T2);
 		bin = Files.readAllBytes(Paths.get(getBINFileName(tmpFile)));
 		
@@ -1782,8 +1786,7 @@ public class BuildDisk
 		t2L.write(bin);
 		logger.info("Write Megarom T.2 Loader to output file ...");
 		
-		t2L.setIndex(0, 1, 1);		
-		t2L.write(t2.t2Bytes);		
+		t2L.writeRom(t2.t2Bytes);		
 		logger.info("Write Megarom T.2 Data to output file ...");		
 		
 		t2L.save(game.outputDiskName);
@@ -2257,7 +2260,7 @@ public class BuildDisk
 					line[3] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_endAddress >> 8);
 					line[4] = String.format("$%1$02X", sb.dataIndex.get(gm).t2_ram_endAddress & 0x00FF);					
 				} else if (mode == MEGAROM_T2 && !sb.inRAM) {
-					line[0] = String.format("$%1$02X", sb.t2_page + 0x60);
+					line[0] = String.format("$%1$02X", sb.t2_page + 0x80);
 					line[1] = String.format("$%1$02X", sb.t2_address >> 8);
 					line[2] = String.format("$%1$02X", sb.t2_address & 0x00FF);
 					line[3] = String.format("$%1$02X", sb.t2_endAddress >> 8);

@@ -57,6 +57,25 @@ public class SdUtil
 	}
 	
 	/**
+	 * Eciture des données à partir d'une image ROM,
+	 * répartit 16 pages sur chacune des 2 faces des 4 disquettes dans les pistes 16 à 79.
+	 * 
+	 * @param bytes données à copier
+	 */
+	public void writeRom(byte[] bytes) {
+		logger.debug("Ecriture ROM sur disquette.");
+		int end, i=0;
+
+		for (int unite = 0; unite < 8; unite++) {
+			setIndex(unite,16,1);
+			end = index + 0x40000;
+			while (index<end) {
+				lbytes[index++] = bytes[i++];
+			}
+		}
+	}
+	
+	/**
 	 * Eciture (et remplacement) du fichier sd
 	 * 
 	 * @param outputFileName nom du fichier a écrire

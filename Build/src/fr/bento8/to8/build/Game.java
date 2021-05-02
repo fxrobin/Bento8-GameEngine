@@ -25,7 +25,7 @@ public class Game {
 	public String engineAsmRAMLoaderT2;	
 	public static int loadManagerSizeT2 = 0;
 	public static int bootSizeT2 = 0;
-	
+	public static int T2_NB_PAGES = 128;
 	public String engineAsmBootT2Loader;
 	public String engineAsmT2Loader;
 	
@@ -52,7 +52,7 @@ public class Game {
 	// Storage
 	public FdUtil fd = new FdUtil();
 	public T2Util t2 = new T2Util();	
-	public RamImage romT2 = new RamImage(128);
+	public RamImage romT2 = new RamImage(T2_NB_PAGES);
 	
 	public AsmSourceCode glb;
 	

@@ -11,7 +11,7 @@
 * 2x64 pistes par disquette = 32 pages chargees
 * il faut donc 4 disquettes pour 128 pages
 * 16 pistes par face inutiles sur chacune des 4 disquettes
-* lecture des pistes de 1 a 64 face 0 puis 1 a 64 face 1
+* lecture des pistes de 16 a 79 face 0 puis 16 a 79 face 1
 * la piste 0 contient le boot et ce code de chargement
 * pour chaque page lecture des secteurs de 1 a 16
 * pas d'entrelacement car les donnees sont chargees depuis SDDRIVE
@@ -35,13 +35,7 @@ dk_destination                equ $604F
         
         ldx   #$0000
         jsr   ClearDataMem
-        
-Vsync_1                                
-        tst   $E7E7                    * le faisceau n'est pas dans l'ecran utile
-        bpl   Vsync_1                  * tant que le bit est a 0 on boucle
-Vsync_2                                 
-        tst   $E7E7                    * le faisceau est dans l'ecran utile
-        bmi   Vsync_2                  * tant que le bit est a 1 on boucle
+        jsr   WaitOffScreen
         
         ; Couleur de la progress bar
         
@@ -69,6 +63,7 @@ Vsync_2
         
         jsr   ENM7                     ; rend la MEGAROM T.2 visible
         jsr   ERASE                    ; effacement complet de la MEGAROM T.2
+        jsr   WaitOffScreen
         
         ; Couleur du fond de la progress bar
         
@@ -82,9 +77,10 @@ Vsync_2
         lda   #$60
         tfr   a,dp                     ; positionne la direct page a 60
 
-        ldd   #$0001                   ; init positionnement lecture disquette
+        ldd   #$0010                   ; init positionnement lecture disquette
         sta   <dk_lecteur
         std   <dk_piste
+        ldb   #$01
         stb   <dk_secteur              ; secteur (1-16)        
 
 RL_Continue
@@ -112,9 +108,9 @@ RL_Page
         stb   <dk_secteur 
 
         lda   <dk_pisteL
-        cmpa  #$0029
+        cmpa  #$0050
         bne   RL_Copy
-        ldd   #$0001
+        ldd   #$0010
         std   <dk_piste
         inc   <dk_lecteur
         lda   <dk_lecteur
@@ -134,9 +130,8 @@ RL_Copy
         inc   cur_ROMPage              ; page ROM suivante
         lda   cur_ROMPage
         
-        * cmpa  #$03                     ; TODO a rendre dynamique en fonction des pages ROM generees par le builder
-        * bne   RL_Continue
-        bpl   RL_Continue
+        cmpa  #Builder_End_Page
+        bne   RL_Continue
         
         bra   RL_END                   ; on a depasse la page 127 => fin   
         
@@ -145,6 +140,7 @@ cur_ROMPage fcb   $00
 RL_END
         lda   #$00
         jsr   SETPAG                   * ROM page a 0 pour la voir apres reboot
+        jsr   WaitOffScreen        
         lda   #$02
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
         ldd   #$0080
@@ -342,17 +338,25 @@ ClearDataMem_3
         
 ********************************************************************************
 * Display progress bar
-* a: value btw 0-127
+* a: value btw 0-127 (start)
 ********************************************************************************        
         
 DisplayProgress
         ldb   #2                       ; page video
         stb   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)        
         
+        ldd   end_value
+        std   progress_value
+        addd  #Builder_Progress_Step
+        std   end_value
+        ldd   progress_value
+        
+DP_Loop
         adda  #$40
         sta   DP_RestoreA+1
         ldb   #$7F
         jsr   DRS_XYToAddress
+        
 DP_RestoreA                            ; (dynamic)
         lda   #$00
         lsra
@@ -366,11 +370,24 @@ DP_Odd
         anda  #$F0
         ora   #$01
 DP_Continue
-        sta   ,x     
+        sta   ,x   
+        
+        lda   progress_value
+        inca
+        sta   progress_value
+        cmpa  end_value
+        bne   DP_Loop     
         
         lda   #4                       ; page video
         sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)            
         rts
+        
+end_value fdb $0000   
+
+********************************************************************************
+* Init progress bar
+* write all 128 values
+********************************************************************************    
 
 InitProgress
         ldb   #2                       ; page video
@@ -405,10 +422,13 @@ IP_Continue
         bpl   IP_Loop     
         
         lda   #4                       ; page de travail
-        sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)            
+        sta   $E7E5                    ; selection de la page en RAM Donnees (A000-DFFF)     
+        
+        lda   #$00
+        sta   progress_value       
         rts
         
-progress_value fcb $00        
+progress_value fdb $0000        
 
 ********************************************************************************
 * x_pixel and y_pixel coordinate system
@@ -445,3 +465,24 @@ DRS_dyn2
         addd  #$A000                        ; (dynamic)
         tfr   d,x
         rts
+
+********************************************************************************
+* Temporisation permettant d'avoir le faisceau hors ecran
+* et de realiser le changement de palette sans artefact 
+********************************************************************************
+
+WaitOffScreen        
+Vsync_1                                
+        tst   $E7E7                    * le faisceau n'est pas dans l'ecran utile
+        bpl   Vsync_1                  * tant que le bit est a 0 on boucle
+Vsync_2                                 
+        tst   $E7E7                    * le faisceau est dans l'ecran utile
+        bmi   Vsync_2                  * tant que le bit est a 1 on boucle
+        
+        ldy   #0320                    * 40 lignes * 8 cycles
+Tempo        
+        leay  -1,y
+        bne   Tempo                    * tempo pour etre dans la bordure invisible   
+								       * lors du changement de palette
+        rts
+        

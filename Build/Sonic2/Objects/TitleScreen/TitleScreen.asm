@@ -1371,8 +1371,8 @@ PressStart_Init
         ldd   Vint_runcount
         std   w_TitleScr_time_frame_count,u
 
-        ldx   #Psg_MarbleZone
-        jmp   PSGPlay
+        * ldx   #Psg_MarbleZone
+        * jmp   PSGPlay
 
         jmp   DisplaySprite
 
