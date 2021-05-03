@@ -332,10 +332,11 @@ public class BuildDisk
 			
 			Sound sound = new Sound(soundsProperties.getKey());
 			sound.soundFile = soundsProperties.getValue()[0];
-			if (soundsProperties.getValue().length > 1 && soundsProperties.getValue()[1].equalsIgnoreCase(BuildDisk.RAM))
+			boolean inRAM = soundsProperties.getValue().length > 1 && soundsProperties.getValue()[1].equalsIgnoreCase(BuildDisk.RAM);
+			if (inRAM)
 				sound.inRAM = true;			
 			
-			sound.setAllBinaries(sound.soundFile, (soundsProperties.getValue().length > 1 && soundsProperties.getValue()[1].equalsIgnoreCase(BuildDisk.RAM)));
+			sound.setAllBinaries(sound.soundFile, inRAM);
 			object.sounds.add(sound);
 		}
 	}
