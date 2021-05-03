@@ -27,6 +27,8 @@ _SetCartPageA MACRO
         anda  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
         sta   $E7E6                    ; TODO eventuellement a remplacer par un clr au lieu des trois instr.
         
+        lda   #$F0                     ; sortie du mode commande T.2
+        sta   $0555                    ; dans le cas ou l'irq intervient en cours de changement de page        
         lda   #$AA                     ; sequence pour commutation de page T.2
         sta   $0555
         lda   #$55
@@ -36,8 +38,8 @@ _SetCartPageA MACRO
         lda   Glb_Page
         sta   $0555                    ; selection de la page T.2 en zone cartouche
         bra   End@
-RAMPg@  sta   $E7E6                    ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)
-        sta   Glb_Page
+RAMPg@  sta   Glb_Page                 ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)
+        sta   $E7E6 
 End@    equ   *
  ELSE
         sta   $E7E6                    ; selection de la page RAM en zone cartouche
