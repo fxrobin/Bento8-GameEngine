@@ -78,7 +78,7 @@ nb_objects                    equ 43 * max 64 total
 * Object Status Table offsets
 * ---------------------------------------------------------------------------
 
-object_size                   equ 100 ; the size of an object - DEPENDENCY ClearObj routine
+object_size                   equ 103 ; the size of an object - DEPENDENCY ClearObj routine
 next_object                   equ object_size
 
 id                            equ 0           ; reference to object model id (ObjID_) (0: free slot)
@@ -132,6 +132,8 @@ status_jumpingafterrolling    equ   $10 ; (bit 4) Set if jumping after rolling
 status_pushing                equ   $20 ; (bit 5) Set if pushing something
 status_underwater             equ   $40 ; (bit 6) Set if underwater
 
+angle                         equ 102; angle about the z axis (360 degrees = 256)
+inertia                       equ 100; and 101; directionless representation of speed... not updated in the air
 ext_variables                 equ 27 ; to 40  ; reserved space for additionnal variables
 
 * ---------------------------------------------------------------------------

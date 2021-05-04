@@ -25,7 +25,7 @@ ClearObj
         pshs  d,x,y,u
         pshs  d,x,y,u
         pshs  d,x,y,u
-        pshs  d
+        pshs  d,x,y         ; 1 en trop
         leau  ,s
 CLO_1        
         lds   #$0000        ; start of object should not be written with S as an index because of IRQ        
