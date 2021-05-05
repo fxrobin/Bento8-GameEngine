@@ -86,7 +86,7 @@ public class SimpleAssemblyGenerator{
 
 			//logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())
-			//	logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
+				//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 			
 			PatternFinder cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 0));
 			cs.buildCode(REARWARD);
@@ -104,7 +104,7 @@ public class SimpleAssemblyGenerator{
 
 			//logger.debug("\t\t\tRAM 1 (val hex 0  à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())
-			//	logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
+				//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
 			cs = new PatternFinder(spriteSheet.getSubImagePixels(imageNum, 1));
 			cs.buildCode(REARWARD);

@@ -178,17 +178,17 @@ public class PatternCluster{
 		for (Pattern snippet : solution.patterns) {
 			currentNode = it2.next();
 			if (oldNode != currentNode) {
-				logger.debug("");
-				logger.debug("Noeud: "+currentNode);
-				logger.debug("(index:position:offset:pattern)");
+				//logger.debug("");
+				//logger.debug("Noeud: "+currentNode);
+				//logger.debug("(index:position:offset:pattern)");
 				oldNode = currentNode;
 			}
 
-			logger.debug("("+i+":"+it1.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
+			//logger.debug("("+i+":"+it1.next()+":"+it3.next()+":"+snippet.getClass().getSimpleName()+")");
 			i++;
 		}
-		logger.debug("");
-		logger.debug("LEAS: (noeud=offset) "+solution.computedLeau);
-		logger.debug("");
+		//logger.debug("");
+		//logger.debug("LEAS: (noeud=offset) "+solution.computedLeau);
+		//logger.debug("");
 	}
 }

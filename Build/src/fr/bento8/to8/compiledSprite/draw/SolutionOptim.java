@@ -545,14 +545,18 @@ public class SolutionOptim{
 						//patterns.get(n).add(new Integer[] {i, null}); On ne renseigne plus le pattern background backup pour les dissociables
 
 						if (solution.patterns.get(i).getNbBytes() == 1) {
-							value1 = (int)data[(solution.positions.get(i)*2)-1];
+							if ((solution.positions.get(i)*2)-1 >= 0)
+								value1 = (int)data[(solution.positions.get(i)*2)-1];
 							value2 = (int)data[(solution.positions.get(i)*2)];
 							value3 = null;
 							value4 = null;
 						} else {
-							value1 = (int)data[(solution.positions.get(i)*2)-3];
-							value2 = (int)data[(solution.positions.get(i)*2)-2];
-							value3 = (int)data[(solution.positions.get(i)*2)-1];
+							if ((solution.positions.get(i)*2)-3 >= 0)
+								value1 = (int)data[(solution.positions.get(i)*2)-3];
+							if ((solution.positions.get(i)*2)-2 >= 0)							
+								value2 = (int)data[(solution.positions.get(i)*2)-2];
+							if ((solution.positions.get(i)*2)-1 >= 0)							
+								value3 = (int)data[(solution.positions.get(i)*2)-1];
 							value4 = (int)data[(solution.positions.get(i)*2)];
 						}
 
@@ -607,7 +611,7 @@ public class SolutionOptim{
 				//asmECodeCycles += Pattern.getEraseCodeBufCycles(bestSolution, regEBest, offsetEBest);
 				//asmECodeSize += Pattern.getEraseCodeBufSize(bestSolution, regEBest, offsetEBest);
 
-				////logger.debug("CyclesE: "+asmECodeCycles);
+				//logger.debug("CyclesE: "+asmECodeCycles);
 			}
 
 			saveS = false;
