@@ -6,10 +6,14 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.ColorModel;
 import java.awt.geom.AffineTransform;
 import java.io.File;
+import java.nio.file.Paths;
+
 import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import fr.bento8.to8.util.FileUtil;
 
 public class SpriteSheet {
 	// Convertion d'une planche de sprites en tableaux de données RAMA et RAMB pour chaque Sprite
@@ -38,7 +42,7 @@ public class SpriteSheet {
 	public int center; // position du centre de l'image (dans le référentiel pixels)
 	public int center_offset; // est ce que le centre est pair (0) ou impair (1)
 
-	public SpriteSheet(String tag, String file, int nbImages, String variant) {
+	public SpriteSheet(String tag, String file, int nbImages, String variant, String... fileRef) {
 		try {
 			this.variant = variant;
 			subImageNb = nbImages;
@@ -48,6 +52,26 @@ public class SpriteSheet {
 			height = image.getHeight();
 			colorModel = image.getColorModel();
 			int pixelSize = colorModel.getPixelSize();
+			
+			if (fileRef.length > 0 && fileRef[0] != null) {
+				BufferedImage imageRef = ImageIO.read(new File(fileRef[0]));
+				if (image.getWidth() != imageRef.getWidth() || image.getHeight() != imageRef.getHeight() || pixelSize != imageRef.getColorModel().getPixelSize()) {
+					throw new Exception("Image and Image Ref should be of same dimensions and pixelSize ! ("+tag+")");
+				}
+				
+				// Efface le pixel de l'image si celui-ci est identique à l'image de référence
+	            for (int x = 0; x < image.getWidth(); x++) {
+	                for (int y = 0; y < image.getHeight(); y++) {
+	                	if ((y % 2 != 0) || (image.getRGB(x, y) == imageRef.getRGB(x, y))) {
+	                		((DataBufferByte) image.getRaster().getDataBuffer()).setElem(x+(y*image.getWidth()), colorModel.getRGB(0));
+	                		image.setRGB(x, y, colorModel.getRGB(0));
+	                	}
+	                }
+	            }
+	            
+	            File outputfile = new File(file+"_"+FileUtil.removeExtension(Paths.get(fileRef[0]).getFileName().toString())+"_diff.png");
+	            ImageIO.write(image, "png", outputfile);
+			}
 
 			if (width % nbImages == 0) { // Est-ce que la division de la largeur par le nombre d'images donne un entier ?
 

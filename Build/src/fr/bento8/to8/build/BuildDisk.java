@@ -37,6 +37,7 @@ import fr.bento8.to8.image.Animation;
 import fr.bento8.to8.image.AnimationBin;
 import fr.bento8.to8.image.ImageSetBin;
 import fr.bento8.to8.image.PaletteTO8;
+import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
@@ -112,6 +113,7 @@ public class BuildDisk
 			generateObjectIDs();
 			generateGameModeIDs();
 			processSounds();			
+			processBackgroundImages();
 			generateSprites();
 			compileMainEngines(false);						
 			compileObjects();
@@ -342,6 +344,38 @@ public class BuildDisk
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	 
+	private static void processBackgroundImages() throws Exception {
+		logger.info("Process Background Images ...");
+
+		// Parcours de tous les objets de chaque Game Mode
+		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+			logger.debug("\tGame Mode: "+gameMode.getKey());
+			processBackgroundImages(gameMode.getValue());
+		}
+	}
+	
+	private static void processBackgroundImages(GameMode gameMode) throws Exception {
+		Act act = gameMode.acts.get(gameMode.actBoot);
+		logger.debug("\t\tBackground Image: "+act.bgFileName);
+
+		if (act.bgFileName != null) {
+			String[] data = act.bgFileName.split(",");		
+			if (!Game.allBackgroundImages.containsKey(data[0])) {
+				PngToBottomUpB16Bin img = new PngToBottomUpB16Bin(data[0], act);
+				
+				if ((data.length > 1 && data[1].equalsIgnoreCase(BuildDisk.RAM)?true:false))
+					img.inRAM = true;			
+			
+				gameMode.backgroundImages.put(act, img);
+				Game.allBackgroundImages.put(img.file, img);
+			} else {
+				gameMode.backgroundImages.put(act, Game.allBackgroundImages.get(data[0]));
+			}
+		}
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static void generateSprites() throws Exception {
 		logger.info("Generate Sprites ...");
@@ -367,7 +401,8 @@ public class BuildDisk
 		for (Entry<String, String[]> spriteProperties : object.spritesProperties.entrySet()) {
 
 			Sprite sprite = new Sprite(spriteProperties.getKey());
-			sprite.spriteFile = spriteProperties.getValue()[0];
+			sprite.spriteFile = spriteProperties.getValue()[0].split(",")[0];
+			String spriteFileRef = (spriteProperties.getValue()[0].split(",").length==2?spriteProperties.getValue()[0].split(",")[1]:null);
 			String[] spriteVariants = spriteProperties.getValue()[1].split(",");
 			if (spriteProperties.getValue().length > 2 && spriteProperties.getValue()[2].equalsIgnoreCase(BuildDisk.RAM))
 				sprite.inRAM = true;					
@@ -412,7 +447,7 @@ public class BuildDisk
 
 				if (cur_variant.contains("D")) {
 					logger.debug("\t\t- Draw");
-					SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant);
+					SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant, spriteFileRef);
 					sasm = new SimpleAssemblyGenerator(ss, Game.generatedCodeDirName + object.name, 0);
 					sasm.compileCode("A000");
 					curSubSprite.nb_cell = 0;
@@ -468,6 +503,7 @@ public class BuildDisk
 			writeSndIndex(asmBuilder, gameMode.getValue(), mode);
 			writeImgPgIndex(asmBuilder, gameMode.getValue(), mode);
 			writeAniPgIndex(asmBuilder, gameMode.getValue(), mode);
+			writeBackgroundImageIndex(asmBuilder, gameMode.getValue(), mode);			
 			writeLoadActIndex(asmBuilder, gameMode.getValue());
 			
 			Files.write(Paths.get(mainEngineTmpFile), ("\tINCLUDE \"" + Game.generatedCodeDirName + gameMode.getKey() + "/" + FileNames.MAIN_GENCODE + "\"\n").getBytes(), StandardOpenOption.APPEND);
@@ -532,12 +568,21 @@ public class BuildDisk
 			Act act = gameMode.acts.get(gameMode.actBoot);
 
 			if (act != null) {
-				if (act.bgColorIndex != null) {
-					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
+				
+				if (act.bgColorIndex != null || act.bgFileName != null) {
 					asmBuilder.add("        ldb   #$02                     * load page 2");						
 					asmBuilder.add("        stb   $E7E5                    * in data space ($A000-$DFFF)");
+				}
+				
+				if (act.bgColorIndex != null) {
+					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 					asmBuilder.add("        jsr   ClearDataMem");
 				}					
+				
+				if (act.bgFileName != null) {
+					asmBuilder.add("        ldx   #Bgi_"+act.name);
+					asmBuilder.add("        jsr   DrawFullscreenImage");
+				}				
 
 				if (act.screenBorder != null) {
 					asmBuilder.add("        lda   $E7DD                    * set border color");
@@ -549,17 +594,20 @@ public class BuildDisk
 					asmBuilder.add("        sta   screen_border_color+1    * maj WaitVBL");
 				}
 
-				if (act.bgColorIndex != null) {
+				if (act.bgColorIndex != null || act.bgFileName != null) {
 					asmBuilder.add("        jsr   WaitVBL");						
-					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");
 					asmBuilder.add("        ldb   #$03                     * load page 3");						
 					asmBuilder.add("        stb   $E7E5                    * data space ($A000-$DFFF)");
+				}
+				
+				if (act.bgColorIndex != null) {
+					asmBuilder.add("        ldx   #"+String.format("$%1$01X%1$01X%1$01X%1$01X", Integer.parseInt(act.bgColorIndex))+"                   * set Background solid color");					
 					asmBuilder.add("        jsr   ClearDataMem");						
 				}
 
 				if (act.bgFileName != null) {
-					asmBuilder.add("        ldu   #$0000");
-					asmBuilder.add("        jsr   CopyImageToCart");
+					asmBuilder.add("        ldx   #Bgi_"+act.name);
+					asmBuilder.add("        jsr   DrawFullscreenImage");
 				}
 				
 				if (act.paletteName != null) {
@@ -815,6 +863,12 @@ public class BuildDisk
 
 		// Compte le nombre d'objets a traiter
 		int nbGameModeItems = 0;
+		
+		for (Entry<Act, PngToBottomUpB16Bin> bi : gm.backgroundImages.entrySet()) { 
+			if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && bi.getValue().inRAM))
+				nbGameModeItems++;
+		}
+		
 		for (Entry<String, Object> object : objects.entrySet()) {
 
 			// Sprites
@@ -836,7 +890,7 @@ public class BuildDisk
 			for (Sound sound : object.getValue().sounds)
 				for (SoundBin soundBIN : sound.sb)
 					if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && soundBIN.inRAM))
-						nbGameModeItems += 1;
+						nbGameModeItems++;
 
 			// Object Code
 			if (!isCommon)
@@ -847,6 +901,11 @@ public class BuildDisk
 		Item[] items = new Item[nbGameModeItems];
 		int itemIdx = 0;
 
+		for (Entry<Act, PngToBottomUpB16Bin> bi : gm.backgroundImages.entrySet()) { 
+			if (mode == FLOPPY_DISK || (mode == MEGAROM_T2 && bi.getValue().inRAM))
+				items[itemIdx++] = new Item(bi.getValue(), 1);
+		}		
+		
 		// Initialisation des items
 		for (Entry<String, Object> object : objects.entrySet()) {
 
@@ -1074,6 +1133,11 @@ public class BuildDisk
 		// Compte le nombre d'objets a traiter
 		int nbItems = 0;
 		
+		for (Entry<String, PngToBottomUpB16Bin> bi : Game.allBackgroundImages.entrySet()) {		
+			if (!bi.getValue().inRAM)
+				nbItems++;
+		}
+		
 		// Parcours unique de tous les objets
 		for (Entry<String, Object> object : Game.allObjects.entrySet()) {
 
@@ -1101,6 +1165,11 @@ public class BuildDisk
 		Item[] items = new Item[nbItems];
 		int itemIdx = 0;
 
+		for (Entry<String, PngToBottomUpB16Bin> bi : Game.allBackgroundImages.entrySet()) {		
+			if (!bi.getValue().inRAM)
+				items[itemIdx++] = new Item(bi.getValue(), 1);
+		}		
+		
 		for (Entry<String, Object> object : Game.allObjects.entrySet()) {
 
 			// Sprites
@@ -2271,6 +2340,31 @@ public class BuildDisk
 			asmSndIndex.addFcb(line);
 		}
 		asmSndIndex.addFcb(new String[] { "$00" });
+	}	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	private static void writeBackgroundImageIndex(AsmSourceCode asmSndIndex, GameMode gm, int mode) {
+		
+		for (Entry<Act, PngToBottomUpB16Bin> img : gm.backgroundImages.entrySet()) {
+			asmSndIndex.addLabel("Bgi_"+img.getValue().act.name + " ");
+			String[] line = new String[]{"0","0","0"};
+			if (img.getValue().dataIndex.get(gm) != null) {
+				if (mode == FLOPPY_DISK) {
+					line[0] = String.format("$%1$02X", img.getValue().dataIndex.get(gm).fd_ram_page + 0x60);
+					line[1] = String.format("$%1$02X", img.getValue().dataIndex.get(gm).fd_ram_address >> 8);
+					line[2] = String.format("$%1$02X", img.getValue().dataIndex.get(gm).fd_ram_address & 0x00FF);
+				} else if (mode == MEGAROM_T2 && img.getValue().inRAM) {
+					line[0] = String.format("$%1$02X", img.getValue().dataIndex.get(gm).t2_ram_page + 0x60);
+					line[1] = String.format("$%1$02X", img.getValue().dataIndex.get(gm).t2_ram_address >> 8);
+					line[2] = String.format("$%1$02X", img.getValue().dataIndex.get(gm).t2_ram_address & 0x00FF);
+				} else if (mode == MEGAROM_T2 && !img.getValue().inRAM) {
+					line[0] = String.format("$%1$02X", img.getValue().t2_page + 0x80);
+					line[1] = String.format("$%1$02X", img.getValue().t2_address >> 8);
+					line[2] = String.format("$%1$02X", img.getValue().t2_address & 0x00FF);
+				}
+			}
+			asmSndIndex.addFcb(line);
+		}
 	}	
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	

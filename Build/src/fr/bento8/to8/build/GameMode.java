@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.RAMLoaderIndex;
 import fr.bento8.to8.util.knapsack.Item;
@@ -24,6 +25,7 @@ public class GameMode {
 	public HashMap<Object, Integer> objectsId = new HashMap<Object, Integer>();
 	public HashMap<String, Palette> palettes = new HashMap<String, Palette>();
 	public HashMap<String, Act> acts = new HashMap<String, Act>(); 
+	public HashMap<Act, PngToBottomUpB16Bin> backgroundImages = new HashMap<Act, PngToBottomUpB16Bin>();
 	public String actBoot;
 	public AsmSourceCode glb;
 	

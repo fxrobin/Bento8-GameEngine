@@ -59,7 +59,7 @@ Glb_Page                      fcb   $00
 * ---------------------------------------------------------------------------
 
 Glb_Cur_Game_Mode             fcb   GmID_TITLE_SCREEN
-Glb_Next_Game_Mode            fcb   GmID_01_EHZ
+Glb_Next_Game_Mode            fcb   GmID_SPECIAL_STAGE
 
 * ---------------------------------------------------------------------------
 * Display
@@ -172,7 +172,6 @@ Glb_MainCharacter_Is_Dead     fcb   $00
         INCLUDE "./Engine/DrawSprites.asm"
         INCLUDE "./Engine/BgBufferAlloc.asm"
         INCLUDE "./Engine/ClearDataMemory.asm"
-        INCLUDE "./Engine/CopyImageToCart.asm"
 		INCLUDE "./Engine/UpdatePalette.asm"
         INCLUDE "./Engine/PlayPCM.asm"
         INCLUDE "./Engine/PSGlib.asm"

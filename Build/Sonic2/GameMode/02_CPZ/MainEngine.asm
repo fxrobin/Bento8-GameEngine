@@ -174,6 +174,5 @@ Glb_MainCharacter_Is_Dead     fcb   $00
         INCLUDE "./Engine/DrawSprites.asm"
         INCLUDE "./Engine/BgBufferAlloc.asm"
         INCLUDE "./Engine/ClearDataMemory.asm"
-        INCLUDE "./Engine/CopyImageToCart.asm"
 		INCLUDE "./Engine/UpdatePalette.asm"
         INCLUDE "./Engine/PSGlib.asm"

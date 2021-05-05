@@ -3,9 +3,11 @@ package fr.bento8.to8.build;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.FdUtil;
 import fr.bento8.to8.storage.T2Util;
@@ -34,6 +36,7 @@ public class Game {
 	public HashMap<String, GameMode> gameModes = new HashMap<String, GameMode>();
 	public static HashMap<String, GameModeCommon> allGameModeCommons = new HashMap<String, GameModeCommon>();	
 	public static HashMap<String, Object> allObjects = new HashMap<String, Object>();
+	public static HashMap<String, PngToBottomUpB16Bin> allBackgroundImages = new HashMap<String, PngToBottomUpB16Bin>();
 
 	// Build
 	public String lwasm;
