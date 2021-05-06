@@ -5,6 +5,35 @@
 ; ---------
 ;
 ; ---------------------------------------------------------------------------
+;
+; Level Layout
+; ------------
+; Offset to each level data (7 word offsets for the 7 levels)
+;
+; Track
+; -----
+; $x0 Turn the rise
+; $x1 Turn then drop
+; $x2 Turn then straight
+; $x3 straight
+; $x4 Straight then turn
+;
+; Orientation
+; -----------
+; $0x Towards right
+; $8x Towards left
+;
+; ----------------------------------
+;
+; Segment type
+; ------------
+; 0 Regular segment
+; 1 Rings message
+; 2 Checkpoint
+; 3 Choas Emerald
+;
+; 0,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0
+
 HalfPipe
         lda   routine,u
         asla
@@ -16,7 +45,7 @@ HalfPipe_Routines
         fdb   HalfPipe_Display
 
 HalfPipe_Init
-        ldd   #Ani_halfPipe_straight
+        ldd   #Ani_Straight
         std   anim,u
         ldb   #$05
         stb   priority,u
@@ -30,5 +59,15 @@ HalfPipe_Init
         
 HalfPipe_Display
         jsr   AnimateSprite
-        jmp   DisplaySprite        
+        jmp   DisplaySprite
+        
+Ani_SpecialStageTrack
+        fcb   Ani_TurnThenRise
+        fcb   Ani_TurnThenDrop
+        fcb   Ani_TurnThenStraight
+        fcb   Ani_Straight
+        fcb   Ani_StraightThenTurn        
+
+SpecialStageLevelLayout
+        INCLUDEBIN "./Special stage level layouts.bin"
                                                       
