@@ -53,7 +53,7 @@ HalfPipe_Init
         addb  subtype,u
         std   xy_pixel,u
         lda   render_flags,u
-        ora   #render_overlay_mask
+        ora   #render_overlay_mask ; ajout motionless
         sta   render_flags,u        
         inc   routine,u
         
