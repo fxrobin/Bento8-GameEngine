@@ -108,7 +108,7 @@ RL_Page
         stb   <dk_secteur 
 
         lda   <dk_pisteL
-        cmpa  #$0050
+        cmpa  #$50
         bne   RL_Copy
         ldd   #$0010
         std   <dk_piste

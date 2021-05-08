@@ -43,6 +43,7 @@ HalfPipe
 HalfPipe_Routines
         fdb   HalfPipe_Init
         fdb   HalfPipe_Display
+        fdb   HalfPipe_End
 
 HalfPipe_Init
         ldb   #$05
@@ -53,7 +54,7 @@ HalfPipe_Init
         std   xy_pixel,u
  
         lda   render_flags,u
-        ora   #render_overlay_mask|render_motionless_mask
+        ora   #render_overlay_mask
         sta   render_flags,u
         
         ; load start and end of sequences par this level
@@ -91,7 +92,11 @@ HalfPipe_Display
         beq   @a
         ldx   #Dynamic_Object_RAM
         ldd   image_set,x                        ; clone image_set when secondary HalfPipe sprite is running
-        std   image_set,u     
+        std   image_set,u
+        lda   render_flags,x
+        sta   render_flags,u
+        lda   routine,x
+        sta   routine,u        
         jmp   DisplaySprite
 @a      jsr   AnimateSprite
         
@@ -111,8 +116,9 @@ HalfPipe_LoadNewSequence
         ldx   HalfPipe_Seq_Position
         leax  1,x
         cmpx  HalfPipe_Seq_End
-        beq   HalfPipe_SelfDestruction   
-        stx   HalfPipe_Seq_Position
+        bne   @a
+        inc   routine,u   
+@a      stx   HalfPipe_Seq_Position
 
         lda   HalfPipe_Seq
         anda  #$7F
@@ -130,6 +136,8 @@ HalfPipe_LoadNewSequence
         ldd   ,x
         std   anim,u
 @b      clr   routine_secondary,u
+        clr   prev_anim,u                        ; force loading of new animation
+        jsr   AnimateSprite
 
 HalfPipe_Continue
 
@@ -139,38 +147,33 @@ HalfPipe_Continue
         lda   HalfPipe_Seq_UpdFlip
         beq   @a
         ldb   HalfPipe_Seq_UpdFlip+1
-        bpl   @b   
-        lda   render_flags,x
-        anda   #^render_xmirror_mask        ; unset flip - right orientation
-        sta   render_flags,x
+        bmi   @b   
+        lda   status,x
+        anda   #^status_x_orientation       ; unset flip - right orientation
+        sta   status,x
         bra   @c
-@b      lda   render_flags,u
-        ora   #render_xmirror_mask          ; set flip - left orientation
-        sta   render_flags,u
+@b      lda   status,u
+        ora   #status_x_orientation         ; set flip - left orientation
+        sta   status,u
 @c      com   HalfPipe_Seq_UpdFlip
 @a      ldd   image_set,u                   ; orientation can only change on specific frames
-        ; cmpd  #Img_tk_036
-        ; bne   @d
-        ; cmpd  #Img_tk_044
-        ; bne   @d       
-        cmpd  #Img_tk_004
+        cmpd  #Img_tk_036
+        bne   @d
+        cmpd  #Img_tk_044
+        bne   @d       
+        cmpd  #Img_tk_002
         bne   @d
         com   HalfPipe_Seq_UpdFlip
         ldb   HalfPipe_Seq
         stb   HalfPipe_Seq_UpdFlip+1
-@d
-        jmp   DisplaySprite
+@d      jmp   DisplaySprite
         
-HalfPipe_SelfDestruction
-        lda   #00
-        sta   ,u
+HalfPipe_End
         rts
         
 Ani_SpecialStageTrack
-        ; fdb   Ani_TurnThenRise
-        ; fdb   Ani_TurnThenDrop
-        fdb   Ani_Straight
-        fdb   Ani_Straight
+        fdb   Ani_TurnThenRise
+        fdb   Ani_TurnThenDrop
         fdb   Ani_TurnThenStraight
         fdb   Ani_Straight
         fdb   Ani_StraightThenTurn        
