@@ -60,6 +60,7 @@ Glb_Page                      fcb   $00
 
 Glb_Cur_Game_Mode             fcb   GmID_SPECIAL_STAGE
 Glb_Next_Game_Mode            fcb   GmID_SPECIAL_STAGE
+Glb_Cur_Act                   fcb   $00
 
 * ---------------------------------------------------------------------------
 * Display

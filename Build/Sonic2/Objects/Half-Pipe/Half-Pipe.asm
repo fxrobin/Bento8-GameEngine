@@ -45,29 +45,141 @@ HalfPipe_Routines
         fdb   HalfPipe_Display
 
 HalfPipe_Init
-        ldd   #Ani_Straight
-        std   anim,u
         ldb   #$05
         stb   priority,u
+        
         ldd   #$807F
         addb  subtype,u
         std   xy_pixel,u
+ 
         lda   render_flags,u
-        ora   #render_overlay_mask ; ajout motionless
-        sta   render_flags,u        
+        ora   #render_overlay_mask|render_motionless_mask
+        sta   render_flags,u
+        
+        ; load start and end of sequences par this level
+        ; ----------------------------------------------
+        
+        ldb   Glb_Cur_Act
+        aslb
+        ldx   #SpecialStageLevelLayout
+        abx
+        ldd   ,x
+        leay  d,x
+        sty   HalfPipe_Seq_Position
+        ldd   2,x
+        leay  d,x
+        sty   HalfPipe_Seq_End        
+
+        ; load first animation id
+        ; -----------------------
+        
+        ldx   HalfPipe_Seq_Position
+        ldb   ,x                
+        stb   HalfPipe_Seq
+        andb  #$7F
+        ldx   #Ani_SpecialStageTrack
+        aslb        
+        abx
+        ldd   ,x
+        std   anim,u
+                        
         inc   routine,u
         
 HalfPipe_Display
-        jsr   AnimateSprite
+
+        cmpu  #Dynamic_Object_RAM
+        beq   @a
+        ldx   #Dynamic_Object_RAM
+        ldd   image_set,x                        ; clone image_set when secondary HalfPipe sprite is running
+        std   image_set,u     
+        jmp   DisplaySprite
+@a      jsr   AnimateSprite
+        
+        ; chain animations (AnimateSprite will inc routine_secondary after each animation ends)
+        ; -------------------------------------------------------------------------------------
+        
+        lda   routine_secondary,u
+        asla
+        ldx   #HalfPipe_SubRoutines
+        jmp   [a,x]
+
+HalfPipe_SubRoutines
+        fdb   HalfPipe_Continue
+        fdb   HalfPipe_LoadNewSequence
+        
+HalfPipe_LoadNewSequence
+        ldx   HalfPipe_Seq_Position
+        leax  1,x
+        cmpx  HalfPipe_Seq_End
+        beq   HalfPipe_SelfDestruction   
+        stx   HalfPipe_Seq_Position
+
+        lda   HalfPipe_Seq
+        anda  #$7F
+        ldb   ,x        
+        stb   HalfPipe_Seq
+        andb  #$7F
+        cmpd  #$0303
+        bne   @a
+        ldd   #Ani_StraightAfterStraight
+        std   anim,u
+        bra   @b
+@a      ldx   #Ani_SpecialStageTrack
+        aslb
+        abx
+        ldd   ,x
+        std   anim,u
+@b      clr   routine_secondary,u
+
+HalfPipe_Continue
+
+        ; set orirentation of track
+        ; -------------------------
+        
+        lda   HalfPipe_Seq_UpdFlip
+        beq   @a
+        ldb   HalfPipe_Seq_UpdFlip+1
+        bpl   @b   
+        lda   render_flags,x
+        anda   #^render_xmirror_mask        ; unset flip - right orientation
+        sta   render_flags,x
+        bra   @c
+@b      lda   render_flags,u
+        ora   #render_xmirror_mask          ; set flip - left orientation
+        sta   render_flags,u
+@c      com   HalfPipe_Seq_UpdFlip
+@a      ldd   image_set,u                   ; orientation can only change on specific frames
+        ; cmpd  #Img_tk_036
+        ; bne   @d
+        ; cmpd  #Img_tk_044
+        ; bne   @d       
+        cmpd  #Img_tk_004
+        bne   @d
+        com   HalfPipe_Seq_UpdFlip
+        ldb   HalfPipe_Seq
+        stb   HalfPipe_Seq_UpdFlip+1
+@d
         jmp   DisplaySprite
         
+HalfPipe_SelfDestruction
+        lda   #00
+        sta   ,u
+        rts
+        
 Ani_SpecialStageTrack
-        fcb   Ani_TurnThenRise
-        fcb   Ani_TurnThenDrop
-        fcb   Ani_TurnThenStraight
-        fcb   Ani_Straight
-        fcb   Ani_StraightThenTurn        
+        ; fdb   Ani_TurnThenRise
+        ; fdb   Ani_TurnThenDrop
+        fdb   Ani_Straight
+        fdb   Ani_Straight
+        fdb   Ani_TurnThenStraight
+        fdb   Ani_Straight
+        fdb   Ani_StraightThenTurn        
+
+HalfPipe_Seq_Position fdb $0000
+HalfPipe_Seq_End      fdb $0000
+HalfPipe_Seq          fcb $00
+HalfPipe_Seq_UpdFlip  fdb $0000
 
 SpecialStageLevelLayout
-        INCLUDEBIN "./Special stage level layouts.bin"
+        INCLUDEBIN "./Objects/Half-Pipe/Special stage level layouts.bin"
                                                       

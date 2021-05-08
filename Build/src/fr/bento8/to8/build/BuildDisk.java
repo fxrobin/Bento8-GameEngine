@@ -357,9 +357,9 @@ public class BuildDisk
 	
 	private static void processBackgroundImages(GameMode gameMode) throws Exception {
 		Act act = gameMode.acts.get(gameMode.actBoot);
-		logger.debug("\t\tBackground Image: "+act.bgFileName);
 
 		if (act.bgFileName != null) {
+			logger.debug("\t\tBackground Image: "+act.bgFileName);			
 			String[] data = act.bgFileName.split(",");		
 			if (!Game.allBackgroundImages.containsKey(data[0])) {
 				PngToBottomUpB16Bin img = new PngToBottomUpB16Bin(data[0], act);
@@ -483,7 +483,9 @@ public class BuildDisk
 	
 	private static void compileMainEngines(boolean writeIdx) throws Throwable {
 		logger.info("Compile Main Engines ...");
-		compileMainEngines(FLOPPY_DISK, writeIdx);
+		if (!abortFloppyDisk) {	
+			compileMainEngines(FLOPPY_DISK, writeIdx);
+		}
 		compileMainEngines(MEGAROM_T2, writeIdx);
 	}
 	
@@ -1295,40 +1297,43 @@ public class BuildDisk
 		int objCodePage, objCodeAddress;
 		int imgSetPage, imgSetAddress;
 		int aniPage, aniAddress;
+		AsmSourceCode asmAniIndex;
 		
-		// Génération de l'index ImageSet pour FD	
-		asmImgIndexFd = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirFd));
-		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
-			writeImgIndex(asmImgIndexFd, gm, sprite.getValue(), FLOPPY_DISK);
+		if (!abortFloppyDisk) {
+			// Génération de l'index ImageSet pour FD	
+			asmImgIndexFd = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirFd));
+			for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
+				writeImgIndex(asmImgIndexFd, gm, sprite.getValue(), FLOPPY_DISK);
+			}
+			
+			// Génération de l'index Animation pour FD				
+			asmAniIndex = new AsmSourceCode(createFile(obj.animation.fileName, aniDirFd));
+			writeAniIndex(asmAniIndex, obj);
+			
+			codeData = gm.ramFD;
+			imgSetData = gm.ramFD;
+			aniData = gm.ramFD;
+			objCodePage = obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_page;
+			objCodeAddress = obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address;
+			
+			if (obj.imageSet.dataIndex.get(gm) == null) {
+				obj.imageSet.dataIndex.put(gm, new DataIndex());
+			}
+			
+			imgSetPage = obj.imageSet.dataIndex.get(gm).fd_ram_page;
+			imgSetAddress = obj.imageSet.dataIndex.get(gm).fd_ram_address;
+			
+			if (obj.animation.dataIndex.get(gm) == null) {
+				obj.animation.dataIndex.put(gm, new DataIndex());
+			}		
+			
+			aniPage = obj.animation.dataIndex.get(gm).fd_ram_page;
+			aniAddress = obj.animation.dataIndex.get(gm).fd_ram_address;		
+			
+			// Compilation de ImageSet, Animation, Object pour FD
+			compileObjectWithImageRef(gm, obj, imgSetDirFd, aniDirFd, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress, FLOPPY_DISK);
 		}
 		
-		// Génération de l'index Animation pour FD				
-		AsmSourceCode asmAniIndex = new AsmSourceCode(createFile(obj.animation.fileName, aniDirFd));
-		writeAniIndex(asmAniIndex, obj);
-		
-		codeData = gm.ramFD;
-		imgSetData = gm.ramFD;
-		aniData = gm.ramFD;
-		objCodePage = obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_page;
-		objCodeAddress = obj.gmCode.get(gm).code.dataIndex.get(gm).fd_ram_address;
-		
-		if (obj.imageSet.dataIndex.get(gm) == null) {
-			obj.imageSet.dataIndex.put(gm, new DataIndex());
-		}
-		
-		imgSetPage = obj.imageSet.dataIndex.get(gm).fd_ram_page;
-		imgSetAddress = obj.imageSet.dataIndex.get(gm).fd_ram_address;
-		
-		if (obj.animation.dataIndex.get(gm) == null) {
-			obj.animation.dataIndex.put(gm, new DataIndex());
-		}		
-		
-		aniPage = obj.animation.dataIndex.get(gm).fd_ram_page;
-		aniAddress = obj.animation.dataIndex.get(gm).fd_ram_address;		
-		
-		// Compilation de ImageSet, Animation, Object pour FD
-		compileObjectWithImageRef(gm, obj, imgSetDirFd, aniDirFd, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress, FLOPPY_DISK);
-
 		// Génération de l'index ImageSet pour T2
 		asmImgIndexT2 = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirT2));
 		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
@@ -1420,48 +1425,50 @@ public class BuildDisk
 		logger.info("Write Objects to FLOPPY_DISK image ...");
 		int index;
 		
-		fd.setIndex(0, 0, 2);
-		fd.setIndex(fd.getIndex() + Game.loadManagerSizeFd);
-		
-		HashMap<GameModeCommon, List<RAMLoaderIndex>> commons = new HashMap<GameModeCommon, List<RAMLoaderIndex>>();
-
-		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
-			Enumeration<RAMLoaderIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
-			while (enumFd.hasMoreElements()) {
-				RAMLoaderIndex di = enumFd.nextElement();
-
-				// Gestion des communs, on n'écrit qu'une seule fois les communs sur disquette
-				RAMLoaderIndex fdic = null;
-				if (commons.containsKey(di.gmc)) {
-					for (RAMLoaderIndex dic : commons.get(di.gmc)) {
-						if (dic.ram_page == di.ram_page && dic.ram_address == di.ram_address && dic.ram_endAddress == di.ram_endAddress && Arrays.equals(di.exoBin, dic.exoBin)) {
-							fdic = dic;
-							break;
+		if (!abortFloppyDisk) {	
+			fd.setIndex(0, 0, 2);
+			fd.setIndex(fd.getIndex() + Game.loadManagerSizeFd);
+			
+			HashMap<GameModeCommon, List<RAMLoaderIndex>> commons = new HashMap<GameModeCommon, List<RAMLoaderIndex>>();
+	
+			for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
+				Enumeration<RAMLoaderIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
+				while (enumFd.hasMoreElements()) {
+					RAMLoaderIndex di = enumFd.nextElement();
+	
+					// Gestion des communs, on n'écrit qu'une seule fois les communs sur disquette
+					RAMLoaderIndex fdic = null;
+					if (commons.containsKey(di.gmc)) {
+						for (RAMLoaderIndex dic : commons.get(di.gmc)) {
+							if (dic.ram_page == di.ram_page && dic.ram_address == di.ram_address && dic.ram_endAddress == di.ram_endAddress && Arrays.equals(di.exoBin, dic.exoBin)) {
+								fdic = dic;
+								break;
+							}
 						}
 					}
-				}
-				
-				if (fdic != null) {
-					di.fd_drive = fdic.fd_drive;
-					di.fd_track = fdic.fd_track;
-					di.fd_sector = fdic.fd_sector;
-					di.fd_nbSector = fdic.fd_nbSector;
-					di.fd_endOffset = fdic.fd_endOffset;					
-				} else {
-					di.fd_drive = fd.getUnit();
-					di.fd_track = fd.getTrack();
-					di.fd_sector = fd.getSector();
-	
-					index = (fd.getIndex() / 256) * 256; // round to start sector
-					fd.write(di.exoBin);
-					di.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
-					di.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
 					
-					if (di.gmc != null) {
-						if (!commons.containsKey(di.gmc)) {
-							commons.put(di.gmc, new ArrayList<RAMLoaderIndex>());
+					if (fdic != null) {
+						di.fd_drive = fdic.fd_drive;
+						di.fd_track = fdic.fd_track;
+						di.fd_sector = fdic.fd_sector;
+						di.fd_nbSector = fdic.fd_nbSector;
+						di.fd_endOffset = fdic.fd_endOffset;					
+					} else {
+						di.fd_drive = fd.getUnit();
+						di.fd_track = fd.getTrack();
+						di.fd_sector = fd.getSector();
+		
+						index = (fd.getIndex() / 256) * 256; // round to start sector
+						fd.write(di.exoBin);
+						di.fd_nbSector = (int) Math.ceil((fd.getIndex() - index) / 256.0); // round to end sector
+						di.fd_endOffset = ((int) Math.ceil(fd.getIndex() / 256.0) * 256) - fd.getIndex();
+						
+						if (di.gmc != null) {
+							if (!commons.containsKey(di.gmc)) {
+								commons.put(di.gmc, new ArrayList<RAMLoaderIndex>());
+							}
+							commons.get(di.gmc).add(di);
 						}
-						commons.get(di.gmc).add(di);
 					}
 				}
 			}
@@ -1654,7 +1661,9 @@ public class BuildDisk
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
 	private static void compileRAMLoaderManager() throws Exception {
-		compileAndWriteRAMLoaderManager(FLOPPY_DISK);
+		if (!abortFloppyDisk) {	
+			compileAndWriteRAMLoaderManager(FLOPPY_DISK);
+		}
 		compileAndWriteRAMLoaderManager(MEGAROM_T2);
 	}	
 	
@@ -1787,28 +1796,31 @@ public class BuildDisk
 	
 	private static void compileAndWriteBootFd() throws Exception {
 		logger.info("Compile boot for FLOPPY_DISK ...");
-				
-		String RAMLoaderManagerGlobals = FileUtil.removeExtension(Paths.get(game.engineAsmRAMLoaderManagerFd).getFileName().toString())+".glb";
-		String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
-		prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + RAMLoaderManagerGlobals + "\"\n";
-		String bootTmpFile = duplicateFilePrepend(game.engineAsmBootFd, "", prepend);
-		game.glb.addConstant("Build_BootLastBlock", String.format("$%1$02X", (0x0000 + game.engineRAMLoaderManagerBytesFd.length) >> 8)+"00"); // On tronque l'octet de poids faible
-		game.glb.flush();
-		compileRAW(bootTmpFile, FLOPPY_DISK);
-
-		// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
-		Bootloader bootLoader = new Bootloader();
-		
-		// Ecriture disquette du boot
-		fd.setIndex(0, 0, 1);
-		fd.write(bootLoader.encodeBootLoader(getBINFileName(bootTmpFile)));
-		
-		logger.info("Write Floppy Disk Image to output file ...");
-		
-		fd.save(game.outputDiskName);
-		fd.saveToSd(game.outputDiskName);
-		
-		logger.info("Build done !");		
+		if (!abortFloppyDisk) {		
+			String RAMLoaderManagerGlobals = FileUtil.removeExtension(Paths.get(game.engineAsmRAMLoaderManagerFd).getFileName().toString())+".glb";
+			String prepend = "\tINCLUDE \"" + Game.generatedCodeDirName + FileNames.GAME_GLOBALS + "\"\n";
+			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + RAMLoaderManagerGlobals + "\"\n";
+			String bootTmpFile = duplicateFilePrepend(game.engineAsmBootFd, "", prepend);
+			game.glb.addConstant("Build_BootLastBlock", String.format("$%1$02X", (0x0000 + game.engineRAMLoaderManagerBytesFd.length) >> 8)+"00"); // On tronque l'octet de poids faible
+			game.glb.flush();
+			compileRAW(bootTmpFile, FLOPPY_DISK);
+	
+			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
+			Bootloader bootLoader = new Bootloader();
+			
+			// Ecriture disquette du boot
+			fd.setIndex(0, 0, 1);
+			fd.write(bootLoader.encodeBootLoader(getBINFileName(bootTmpFile)));
+			
+			logger.info("Write Floppy Disk Image to output file ...");
+			
+			fd.save(game.outputDiskName);
+			fd.saveToSd(game.outputDiskName);
+			
+			logger.info("Build done !");
+		} else {
+			logger.info("***** No way to produce a FD version ! *****");
+		}
 	}
 	
 	private static void compileAndWriteBootT2() throws Exception {
@@ -2449,7 +2461,9 @@ public class BuildDisk
 		
 		for(Entry<String, GameMode> gm : game.gameModes.entrySet()) {
 			logger.info("\t"+gm.getValue().name);
-			exomizeData(FLOPPY_DISK, gm.getValue().ramFD, gm.getValue().fdIdx, gm.getValue().name);
+			if (!abortFloppyDisk) {	
+				exomizeData(FLOPPY_DISK, gm.getValue().ramFD, gm.getValue().fdIdx, gm.getValue().name);
+			}
 			exomizeData(MEGAROM_T2, gm.getValue().ramT2, gm.getValue().t2Idx, gm.getValue().name);
 		}
 	}
@@ -2653,10 +2667,3 @@ public class BuildDisk
 		return Paths.get(newFileName);
 	}		
 }
-
-// Traitement d'une image plein écran
-// **********************************
-
-//				PngToBottomUpBinB16 initVideo = new PngToBottomUpBinB16(initVideoFile);
-//				byte[] initVideoBIN = initVideo.getBIN();
-
