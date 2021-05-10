@@ -46,6 +46,9 @@ HalfPipe_Routines
         fdb   HalfPipe_End
 
 HalfPipe_Init
+        ldd   Vint_runcount
+        std   HalfPipe_Vint_runcount
+
         ldb   #$05
         stb   priority,u
         
@@ -68,6 +71,7 @@ HalfPipe_Init
         leay  d,x
         sty   HalfPipe_Seq_Position
         ldd   2,x
+        subd  #$01                               ; in original game last byte seems not used, skip it
         leay  d,x
         sty   HalfPipe_Seq_End        
 
@@ -87,7 +91,6 @@ HalfPipe_Init
         inc   routine,u
         
 HalfPipe_Display
-
         cmpu  #Dynamic_Object_RAM
         beq   @a
         ldx   #Dynamic_Object_RAM
@@ -98,7 +101,16 @@ HalfPipe_Display
         lda   routine,x
         sta   routine,u        
         jmp   DisplaySprite
-@a      jsr   AnimateSprite
+@a
+
+        ldd   Vint_runcount
+        subd  HalfPipe_Vint_runcount
+        cmpb  #$02                               ; ensure track is not refreshed more than 8fps 
+        bgt   @a
+        jmp   DisplaySprite        
+@a      ldd   Vint_runcount
+        std   HalfPipe_Vint_runcount
+        jsr   AnimateSprite
         
         ; chain animations (AnimateSprite will inc routine_secondary after each animation ends)
         ; -------------------------------------------------------------------------------------
@@ -118,6 +130,7 @@ HalfPipe_LoadNewSequence
         cmpx  HalfPipe_Seq_End
         bne   @a
         inc   routine,u   
+        bra   HalfPipe_End
 @a      stx   HalfPipe_Seq_Position
 
         lda   HalfPipe_Seq
@@ -147,29 +160,30 @@ HalfPipe_Continue
         lda   HalfPipe_Seq_UpdFlip
         beq   @a
         ldb   HalfPipe_Seq_UpdFlip+1
-        bmi   @b   
-        lda   status,x
-        anda   #^status_x_orientation       ; unset flip - right orientation
-        sta   status,x
+        bpl   @b   
+        lda   status,u
+        ora   #status_x_orientation         ; set flip - left orientation
+        sta   status,u
         bra   @c
 @b      lda   status,u
-        ora   #status_x_orientation         ; set flip - left orientation
+        anda   #^status_x_orientation       ; unset flip - right orientation
         sta   status,u
 @c      com   HalfPipe_Seq_UpdFlip
 @a      ldd   image_set,u                   ; orientation can only change on specific frames
         cmpd  #Img_tk_036
-        bne   @d
+        beq   @d
         cmpd  #Img_tk_044
-        bne   @d       
+        beq   @d       
         cmpd  #Img_tk_002
-        bne   @d
-        com   HalfPipe_Seq_UpdFlip
+        beq   @d
+        jmp   DisplaySprite
+@d      com   HalfPipe_Seq_UpdFlip
         ldb   HalfPipe_Seq
         stb   HalfPipe_Seq_UpdFlip+1
-@d      jmp   DisplaySprite
+        jmp   DisplaySprite
         
 HalfPipe_End
-        rts
+        jmp   DisplaySprite
         
 Ani_SpecialStageTrack
         fdb   Ani_TurnThenRise
@@ -178,10 +192,11 @@ Ani_SpecialStageTrack
         fdb   Ani_Straight
         fdb   Ani_StraightThenTurn        
 
-HalfPipe_Seq_Position fdb $0000
-HalfPipe_Seq_End      fdb $0000
-HalfPipe_Seq          fcb $00
-HalfPipe_Seq_UpdFlip  fdb $0000
+HalfPipe_Seq_Position  fdb $0000
+HalfPipe_Seq_End       fdb $0000
+HalfPipe_Seq           fcb $00
+HalfPipe_Seq_UpdFlip   fdb $0000
+HalfPipe_Vint_runcount fdb $0000
 
 SpecialStageLevelLayout
         INCLUDEBIN "./Objects/Half-Pipe/Special stage level layouts.bin"

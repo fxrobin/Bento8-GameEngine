@@ -18,6 +18,16 @@ irq_timer_ctrl    equ $E7C5
 irq_timer         equ $E7C6
 irq_one_frame     equ 312*64-1               ; one frame timer (lines*cycles_per_lines-1), timer launch at -1
        
+IrqSet50Hz
+        ldb   #$42
+        stb   irq_timer_ctrl                     ; timer precision x8
+        ldd   #IrqPsg
+        std   irq_routine
+        ldx   #irq_one_frame                     ; on every frame
+        stx   irq_timer
+        jsr   IrqOn   
+        rts
+       
 IrqOn         
         lda   $6019                           
         ora   #$20

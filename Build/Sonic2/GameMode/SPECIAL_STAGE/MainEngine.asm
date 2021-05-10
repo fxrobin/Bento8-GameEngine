@@ -12,6 +12,7 @@
         org   $6100
 
         jsr   LoadAct
+        jsr   IrqSet50Hz     
 
 * ==============================================================================
 * Main Loop
@@ -131,8 +132,9 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         
 Object_RAM 
 Reserved_Object_RAM
-Obj_MainCharacter             fcb   ObjID_SpecialSonic
-                              fill  0,object_size-1
+* Obj_MainCharacter             fcb   ObjID_SpecialSonic
+*                               fill  0,object_size-1
+Obj_MainCharacter             fill  0,object_size
 Obj_Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
@@ -182,4 +184,4 @@ Glb_MainCharacter_Is_Dead     fcb   $00
 		INCLUDE "./Engine/UpdatePalette.asm"
         INCLUDE "./Engine/PSGlib.asm"
         INCLUDE "./Engine/DrawFullscreenImage.asm"
-        
+        INCLUDE "./Engine/IrqPsg.asm"

@@ -14,7 +14,7 @@ Init
         std   anim,u
         ldb   #$04
         stb   priority,u
-        ldd   #$80AF
+        ldd   #$80B9
         std   xy_pixel,u
         inc   routine,u
 Move
