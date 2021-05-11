@@ -174,6 +174,9 @@ ESP_UnsetOnScreenFlagB0
         lda   rsv_prev_render_flags_0,u
         anda  #^rsv_prev_render_onscreen_mask ; sprite is no longer on screen
         sta   rsv_prev_render_flags_0,u
+        lda   rsv_render_flags,u
+        anda  #^rsv_render_onscreen_mask      ; sprite is no longer on screen
+        sta   rsv_render_flags,u
 
 ESP_NextObjectB0
         ldu   rsv_priority_prev_obj_0,u
@@ -234,8 +237,11 @@ ESP_FreeEraseBufferB1
         
 ESP_UnsetOnScreenFlagB1
         lda   rsv_prev_render_flags_1,u
-        anda  #^rsv_prev_render_onscreen_mask ; sprite is no longer on screen
+        anda  #^rsv_prev_render_onscreen_mask ; sprite is no longer on screen 
         sta   rsv_prev_render_flags_1,u
+        lda   rsv_render_flags,u
+        anda  #^rsv_render_onscreen_mask      ; sprite is no longer on screen
+        sta   rsv_render_flags,u
         
 ESP_NextObjectB1
         ldu   rsv_priority_prev_obj_1,u

@@ -133,7 +133,12 @@ status_pushing                equ   $20 ; (bit 5) Set if pushing something
 status_underwater             equ   $40 ; (bit 6) Set if underwater
 
 angle                         equ 102 ; angle about the z axis (360 degrees = 256)
-dummy                         equ 103 ; *** LIBRE ***
+collision_flags               equ 103 ; Collision response bitfield, tells what the object will do if hit by the character
+* --- collision bitfield variables for objects ---
+; format TTSS SSSS
+; TT is the type of collision - 00 is enemy, 01 sets the routine counter to $4, 10 is harm, and 11 seems to be a special thing for the starpole.
+; SSSSSS is the size, lifted from a lookup table in the collision response routine.
+
 inertia                       equ 100 ; and 101 ; directionless representation of speed... not updated in the air
 ext_variables                 equ 27  ; to 40   ; reserved space for additionnal variables
 
@@ -147,6 +152,7 @@ rsv_render_checkrefresh_mask  equ $01 ; (bit 0) if erasesprite and display sprit
 rsv_render_erasesprite_mask   equ $02 ; (bit 1) if a sprite need to be cleared on screen
 rsv_render_displaysprite_mask equ $04 ; (bit 2) if a sprite need to be rendered on screen
 rsv_render_outofrange_mask    equ $08 ; (bit 3) if a sprite is out of range for full rendering in screen
+rsv_render_onscreen_mask      equ $80 ; (bit 7) DEPENDENCY should be bit 7 - has been rendered on last screen buffer (may be 0 or 1)
 
 rsv_prev_anim                 equ 42 ; and 43 ; reference to previous animation (Ani_) w * UTILE ?
 rsv_image_center_offset       equ 44 ; 0 or 1 offset that indicate if image center is even or odd (DRS_XYToAddress)
