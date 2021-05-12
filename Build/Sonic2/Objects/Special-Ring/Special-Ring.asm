@@ -477,7 +477,7 @@ loc_3529C                                             *loc_3529C:
                                                       *
                                                       *return_353E8:
                                                       *    rts
-Ani_SpecialStageRing
+Ani_SSRing
         fdb   Ani_SSRing_0
         fdb   Ani_SSRing_1
         fdb   Ani_SSRing_2
@@ -488,5 +488,5 @@ Ani_SpecialStageRing
         fdb   Ani_SSRing_7
         fdb   Ani_SSRing_8
         fdb   Ani_SSRing_9
-        fdb   Ani_SSRing_10
+        fdb   Ani_SSRing_Stars
                                                         
