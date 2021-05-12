@@ -127,39 +127,10 @@ Tbl_Sub_Object_Erase          fill  0,nb_objects*2             ; entries of obje
 Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of objects that have draw flag in the order back to front
 
 * ---------------------------------------------------------------------------
-* Object Status Table - OST
+* RAM variables
 * ---------------------------------------------------------------------------
         
-Object_RAM 
-Reserved_Object_RAM
-* Obj_MainCharacter             fcb   ObjID_SpecialSonic
-*                               fill  0,object_size-1
-Obj_MainCharacter             fill  0,object_size
-Obj_Sidekick                  fill  0,object_size
-Reserved_Object_RAM_End
-
-Dynamic_Object_RAM            
-                              fcb   ObjID_HalfPipe
-                              fcb   $00
-                              fill  0,object_size-2
-                              fcb   ObjID_HalfPipe
-                              fcb   $01
-                              fill  0,object_size-2
-                              fill  0,(nb_dynamic_objects-2)*object_size
-Dynamic_Object_RAM_End
-
-LevelOnly_Object_RAM                              * faire comme pour Dynamic_Object_RAM
-Obj_TailsTails                fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
-Obj_SonicDust                 fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
-Obj_TailsDust                 fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
-LevelOnly_Object_RAM_End
-Object_RAM_End                fdb   *
-
-* ---------------------------------------------------------------------------
-* Lifecycle
-* ---------------------------------------------------------------------------
-
-Glb_MainCharacter_Is_Dead     fcb   $00
+        INCLUDE "./GameMode/SPECIAL_STAGE/SpecialStageVariables.asm"
 
 * ==============================================================================
 * Routines

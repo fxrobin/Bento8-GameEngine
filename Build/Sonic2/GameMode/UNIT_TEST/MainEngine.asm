@@ -30,7 +30,7 @@
         ; BgBufferFree - Cas 0
         
         lda   #$01
-        ldu   #Obj_MainCharacter
+        ldu   #MainCharacter
         sta   rsv_prev_erase_nb_cell_0,u
         ldx   #$5FC0                   ; free one cell
         ldy   #$6000
@@ -72,7 +72,7 @@ clean_data
         ; @618C 01 4000 4040 618C
         
         lda   #$05
-        ldu   #Obj_MainCharacter
+        ldu   #MainCharacter
         sta   rsv_prev_erase_nb_cell_0,u
         ldx   #$5EC0                   ; free one cell
         ldy   #$6000
@@ -181,8 +181,8 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         
 Object_RAM 
 Reserved_Object_RAM
-Obj_MainCharacter             fill  0,object_size
-Obj_Sidekick                  fill  0,object_size
+MainCharacter             fill  0,object_size
+Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
 Dynamic_Object_RAM            fill  0,(nb_dynamic_objects)*object_size

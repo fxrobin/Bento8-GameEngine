@@ -131,9 +131,9 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         
 Object_RAM 
 Reserved_Object_RAM
-Obj_MainCharacter             fcb   ObjID_SpecialSonic
+MainCharacter             fcb   ObjID_SpecialSonic
                               fill  0,object_size-1
-Obj_Sidekick                  fill  0,object_size
+Sidekick                  fill  0,object_size
 Reserved_Object_RAM_End
 
 Dynamic_Object_RAM            
