@@ -60,13 +60,10 @@ HalfPipe_Init
         ora   #render_overlay_mask
         sta   render_flags,u
         
-        ; load start and end of sequences par this level
+        ; load start and end of sequences for this level
         ; ----------------------------------------------
         
-        ldb   Glb_Cur_Act
-        aslb
-        ldx   #SpecialStageLevelLayout
-        abx
+        ldx   SS_CurrentLevelLayout
         ldd   ,x
         leay  d,x
         sty   HalfPipe_Seq_Position
@@ -107,9 +104,11 @@ HalfPipe_Display
         subd  HalfPipe_Vint_runcount
         cmpb  #$02                               ; ensure track is not refreshed more than 8fps 
         bgt   @a
+        stb   SSTrack_drawing_index        
         jmp   DisplaySprite        
 @a      ldd   Vint_runcount
         std   HalfPipe_Vint_runcount
+        clr   SSTrack_drawing_index
         jsr   AnimateSprite
         
         ; chain animations (AnimateSprite will inc routine_secondary after each animation ends)
@@ -197,7 +196,4 @@ HalfPipe_Seq_End       fdb $0000
 HalfPipe_Seq           fcb $00
 HalfPipe_Seq_UpdFlip   fdb $0000
 HalfPipe_Vint_runcount fdb $0000
-
-SpecialStageLevelLayout
-        INCLUDEBIN "./Objects/Half-Pipe/Special stage level layouts.bin"
                                                       

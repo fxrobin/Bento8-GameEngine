@@ -11,23 +11,21 @@
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
-        jsr   LoadAct
+        jsr   SpecialStage ; on n'est pas obligé d'utiliser le load act généré 
         jsr   IrqSet50Hz     
 
 * ==============================================================================
 * Main Loop
 * ==============================================================================
 LevelMainLoop
-        jsr   WaitVBL    
-        jsr   UpdatePalette
-        jsr   ReadJoypads
-        jsr   LoadGameMode                
-        jsr   RunObjects
-        jsr   CheckSpritesRefresh
-        jsr   EraseSprites
-        jsr   UnsetDisplayPriority
-        jsr   DrawSprites        
+        jsr   XXX ; TODO inclure main loop de SpecialStage       
         bra   LevelMainLoop
+        
+* ---------------------------------------------------------------------------
+* Game Mode RAM variables
+* ---------------------------------------------------------------------------
+        
+        INCLUDE "./GameMode/SPECIAL_STAGE/SpecialStageVariables.asm"        
         
 * ==============================================================================
 * Global Data
@@ -52,8 +50,8 @@ LevelMainLoop
 * ---------------------------------------------------------------------------
 * Engine
 * ---------------------------------------------------------------------------
-Glb_Page                      fcb   $00
 
+Glb_Page                      fcb   $00
 
 * ---------------------------------------------------------------------------
 * Level (Game Mode)
@@ -66,10 +64,8 @@ Glb_Cur_Act                   fcb   $00
 * ---------------------------------------------------------------------------
 * Display
 * ---------------------------------------------------------------------------
-                             
+
 Glb_Cur_Wrk_Screen_Id         fcb   $00   ; screen buffer set to write operations (0 or 1)
-Glb_Camera_X_Pos              fdb   $0000 ; camera x position in palyfield coordinates
-Glb_Camera_Y_Pos              fdb   $0000 ; camera y position in palyfield coordinates
 
 * ---------------------------------------------------------------------------
 * Background Backup Cells - BBC
@@ -125,12 +121,6 @@ buf_Lst_Priority_Unset        equ   Lst_Priority_Unset_0-DPS_buffer_0
 
 Tbl_Sub_Object_Erase          fill  0,nb_objects*2             ; entries of objects that have erase flag in the order back to front
 Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of objects that have draw flag in the order back to front
-
-* ---------------------------------------------------------------------------
-* RAM variables
-* ---------------------------------------------------------------------------
-        
-        INCLUDE "./GameMode/SPECIAL_STAGE/SpecialStageVariables.asm"
 
 * ==============================================================================
 * Routines
