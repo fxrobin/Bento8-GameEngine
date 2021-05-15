@@ -7,7 +7,7 @@
 *
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./GameMode/UNIT_TEST/Constants.asm"
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 

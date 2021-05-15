@@ -7,7 +7,7 @@
 *
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./GameMode/TITLE_SCREEN/Constants.asm"
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 

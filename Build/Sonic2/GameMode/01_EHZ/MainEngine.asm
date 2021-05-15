@@ -7,7 +7,7 @@
 *
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./GameMode/01_EHZ/Constants.asm"
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 

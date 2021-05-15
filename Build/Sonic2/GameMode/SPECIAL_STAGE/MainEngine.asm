@@ -7,12 +7,11 @@
 *
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "./GameMode/SPECIAL_STAGE/Constants.asm"
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
         jsr   SpecialStage ; on n'est pas obligé d'utiliser le load act généré 
-        jsr   IrqSet50Hz     
 
 * ==============================================================================
 * Main Loop

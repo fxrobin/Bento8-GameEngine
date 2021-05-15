@@ -108,38 +108,64 @@ SpecialStage                                          *SpecialStage:
         ldu   #SpecialStageNumberOfRings
         lda   #ObjID_SSNumberOfRings
         sta   id,u                                    *    move.b  #ObjID_SSNumberOfRings,(SpecialStageNumberOfRings+id).w ; load Obj87 (special stage ring count)
-        ldd   #$80
-        std   SS_Offset_X                             *    move.w  #$80,(SS_Offset_X).w
-        ldd   #$36
-        std   SS_Offset_Y                             *    move.w  #$36,(SS_Offset_Y).w
+        lda   #$00
+        sta   SS_Offset_X                             *    move.w  #$80,(SS_Offset_X).w
+        sta   SS_Offset_Y                             *    move.w  #$36,(SS_Offset_Y).w
                                                       *    bsr.w   SSPlaneB_Background
                                                       *    bsr.w   SSDecompressPlayerArt
         jsr   SSInitPalAndData                        *    bsr.w   SSInitPalAndData
+        
+        ; Set Key Frame
+        ; --------------------------------------------
+        
+        ldb   #$02                     ; load page 2
+        stb   $E7E5                    ; in data space ($A000-$DFFF)
+        ldx   #Bgi_specialStage
+        jsr   DrawFullscreenImage
+        lda   $E7DD                    ; set border color
+        anda  #$F0
+        adda  #$03                     ; color ref
+        sta   $E7DD
+        anda  #$0F
+        adda  #$80
+        sta   screen_border_color+1    ; maj WaitVBL
+        jsr   WaitVBL
+        ldb   #$03                     ; load page 3
+        stb   $E7E5                    ; data space ($A000-$DFFF)
+        ldx   #Bgi_specialStage
+        jsr   DrawFullscreenImage
+        ldd   #Pal_HalfPipe
+        std   Cur_palette
+        clr   Refresh_palette        
+        
                                                       *    move.l  #$C0000,(SS_New_Speed_Factor).w
                                                       *    clr.w   (Ctrl_1_Logical).w
                                                       *    clr.w   (Ctrl_2_Logical).w
                                                       *
                                                       *-   move.b  #VintID_S2SS,(Vint_routine).w
-                                                      *    bsr.w   WaitForVint
+        jsr   WaitVBL                                 *    bsr.w   WaitForVint
+        jsr   IrqSet50Hz                              
                                                       *    move.b  (SSTrack_drawing_index).w,d0
                                                       *    bne.s   -
                                                       *
                                                       *    bsr.w   SSTrack_Draw
-                                                      
- ; here load first track frame ?                                                      
-                              fcb   ObjID_HalfPipe
-                              fcb   $00
-                              fill  0,object_size-2
-                              fcb   ObjID_HalfPipe
-                              fcb   $01
-                              fill  0,object_size-2
-                              fill  0,(nb_dynamic_objects-2)*object_size                                                      
+        ; Init Track_Draw
+        ; --------------------------------------------
+
+        lda   #ObjID_HalfPipe
+        ldb   #$00
+        ldx   #HalfPipeOdd                                    
+        std   ,x
+        
+        ldb   #$01
+        ldx   #HalfPipeEven
+        std   ,x        
                                                       *
                                                       *-   move.b  #VintID_S2SS,(Vint_routine).w
-        jsr   WaitVBL                                 *    bsr.w   WaitForVint
+                                                      *    bsr.w   WaitForVint
                                                       *    bsr.w   SSTrack_Draw
-        jsr   SSLoadCurrentPerspective                *    bsr.w   SSLoadCurrentPerspective
-        jsr   SSObjectsManager                        *    bsr.w   SSObjectsManager
+                                                      *    bsr.w   SSLoadCurrentPerspective
+                                                      *    bsr.w   SSObjectsManager
                                                       *    move.b  (SSTrack_duration_timer).w,d0
                                                       *    subq.w  #1,d0
                                                       *    bne.s   -
@@ -150,31 +176,28 @@ SpecialStage                                          *SpecialStage:
                                                       *    jsr (BuildSprites).l
                                                       *    bsr.w   RunPLC_RAM
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
-        jsr   WaitVBL                                 *    bsr.w   WaitForVint
+                                                      *    bsr.w   WaitForVint
                                                       *    move.w  #MusID_SpecStage,d0
-                                                      *    bsr.w   PlayMusic
+        ; start music                                 *    bsr.w   PlayMusic
                                                       *    move.w  (VDP_Reg1_val).w,d0
                                                       *    ori.b   #$40,d0
                                                       *    move.w  d0,(VDP_control_port).l
-                                                      *    bsr.w   Pal_FadeFromWhite
+        ; Pal fade in                                 *    bsr.w   Pal_FadeFromWhite
                                                       *
                                                       *-   bsr.w   PauseGame
                                                       *    move.w  (Ctrl_1).w,(Ctrl_1_Logical).w
-        jsr   ReadJoypads                             *    move.w  (Ctrl_2).w,(Ctrl_2_Logical).w
+                                                      *    move.w  (Ctrl_2).w,(Ctrl_2_Logical).w
                                                       *    cmpi.b  #GameModeID_SpecialStage,(Game_Mode).w ; special stage mode?
-        jsr   LoadGameMode                            *    bne.w   SpecialStage_Unpause        ; if not, branch
+                                                      *    bne.w   SpecialStage_Unpause        ; if not, branch
                                                       *    move.b  #VintID_S2SS,(Vint_routine).w
-        jsr   WaitVBL                                 *    bsr.w   WaitForVint
+                                                      *    bsr.w   WaitForVint
                                                       *    bsr.w   SSTrack_Draw
                                                       *    bsr.w   SSSetGeometryOffsets
-        jsr   SSLoadCurrentPerspective                *    bsr.w   SSLoadCurrentPerspective
-        jsr   SSObjectsManager                        *    bsr.w   SSObjectsManager
+                                                      *    bsr.w   SSLoadCurrentPerspective
+                                                      *    bsr.w   SSObjectsManager
                                                       *    bsr.w   SS_ScrollBG
-        jsr   RunObjects                              *    jsr (RunObjects).l
-        jsr   CheckSpritesRefresh                     *    jsr (BuildSprites).l
-        jsr   EraseSprites
-        jsr   UnsetDisplayPriority
-        jsr   DrawSprites                                                         
+                                                      *    jsr (RunObjects).l
+                                                      *    jsr (BuildSprites).l
                                                       *    bsr.w   RunPLC_RAM
                                                       *    tst.b   (SpecialStage_Started).w
                                                       *    beq.s   -
@@ -182,15 +205,15 @@ SpecialStage                                          *SpecialStage:
                                                       *    moveq   #PLCID_SpecStageBombs,d0
                                                       *    bsr.w   LoadPLC
                                                       *
-                                                      *-   bsr.w   PauseGame
+SSMainLoop                                            *-   bsr.w   PauseGame
                                                       *    cmpi.b  #GameModeID_SpecialStage,(Game_Mode).w ; special stage mode?
                                                       *    bne.w   SpecialStage_Unpause        ; if not, branch
                                                       *    move.b  #VintID_S2SS,(Vint_routine).w
         jsr   WaitVBL                                 *    bsr.w   WaitForVint
-                                                      *    bsr.w   SSTrack_Draw
-                                                      *    bsr.w   SSSetGeometryOffsets
-                                                      *    bsr.w   SSLoadCurrentPerspective
-                                                      *    bsr.w   SSObjectsManager
+        jsr   SSTrack_Draw                            *    bsr.w   SSTrack_Draw
+        jsr   SSSetGeometryOffsets                    *    bsr.w   SSSetGeometryOffsets
+        jsr   SSLoadCurrentPerspective                *    bsr.w   SSLoadCurrentPerspective
+        jsr   SSObjectsManager                        *    bsr.w   SSObjectsManager
                                                       *    bsr.w   SS_ScrollBG
                                                       *    bsr.w   PalCycle_SS
                                                       *    tst.b   (SS_Pause_Only_flag).w
@@ -207,12 +230,16 @@ SpecialStage                                          *SpecialStage:
                                                       *    move.w  (Ctrl_1).w,(Ctrl_1_Logical).w
                                                       *    move.w  (Ctrl_2).w,(Ctrl_2_Logical).w
                                                       *+
-                                                      *    jsr (RunObjects).l
+        jsr   RunObjects                              *    jsr (RunObjects).l
                                                       *    tst.b   (SS_Check_Rings_flag).w
                                                       *    bne.s   +
                                                       *    jsr (BuildSprites).l
+        jsr   CheckSpritesRefresh                                              
+        jsr   EraseSprites
+        jsr   UnsetDisplayPriority
+        jsr   DrawSprites                                              
                                                       *    bsr.w   RunPLC_RAM
-                                                      *    bra.s   -
+        bra   SSMainLoop                              *    bra.s   -
                                                       *; ===========================================================================
                                                       *+
                                                       *    andi.b  #7,(Emerald_count).w
@@ -287,7 +314,7 @@ SpecialStage                                          *SpecialStage:
                                                       *    move.b  #ObjID_SSResults,(SpecialStageResults+id).w ; load Obj6F (special stage results) at $FFFFB800
                                                       *-
                                                       *    move.b  #VintID_Level,(Vint_routine).w
-        jsr   WaitVBL                                 *    bsr.w   WaitForVint
+                                                      *    bsr.w   WaitForVint
                                                       *    jsr (RunObjects).l
                                                       *    jsr (BuildSprites).l
                                                       *    bsr.w   RunPLC_RAM
@@ -307,14 +334,14 @@ SpecialStage                                          *SpecialStage:
                                                       *loc_540C:
                                                       *    move.w  #VsRSID_SS,(Results_Screen_2P).w
                                                       *    move.b  #GameModeID_2PResults,(Game_Mode).w ; => TwoPlayerResults
-        rts                                           *    rts
+                                                      *    rts
                                                       *; ===========================================================================
                                                       *
                                                       *; loc_541A:
                                                       *SpecialStage_Unpause:
                                                       *    move.b  #MusID_Unpause,(Music_to_play).w
                                                       *    move.b  #VintID_Level,(Vint_routine).w
-        jmp   WaitVBL                                 *    bra.w   WaitForVint
+                                                      *    bra.w   WaitForVint
 
                                                       *;|||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                                       *
@@ -337,74 +364,179 @@ SSLoadCurrentPerspective                              *SSLoadCurrentPerspective:
                                                       *
                                                       *
                                                       *;sub_5534
+        ; word : offset to data                                                      
+        ; byte : bit6 (0:ring,1:bomb) bit5-0 ($00-$17 : 0-23 position in frame $00:near, $17 far, 24 frames is maximum for a segment in original game)
+        ; byte : (angle : $00 right, $40 center, $80 left, $c0 top)
+        ; byte : $ff (end of regular segment), $fe (end of checkpoint segment), $fd (end of choas emerald segment), $fc (end of rings message segment)
+        
 SSObjectsManager                                      *SSObjectsManager:
-                                                      *    cmpi.b  #4,(SSTrack_drawing_index).w
-                                                      *    bne.w   return_55DC
+
+        ; Frame should be fully rendered
+        ; TODO : trash
+
+        lda   SSTrack_drawing_index
+        cmpa  #4                                      *    cmpi.b  #4,(SSTrack_drawing_index).w
+        bne   SSObjectsManager_return                 *    bne.w   return_55DC
+
+        ; Run only each time a new segment is loaded
                                                       *    moveq   #0,d0
-                                                      *    move.b  (SpecialStage_CurrentSegment).w,d0
-                                                      *    cmp.b   (SpecialStage_LastSegment2).w,d0
-                                                      *    beq.w   return_55DC
-                                                      *    move.b  d0,(SpecialStage_LastSegment2).w
-                                                      *    movea.l (SS_CurrentLevelLayout).w,a1
-                                                      *    move.b  (a1,d0.w),d3
-                                                      *    andi.w  #$7F,d3
-                                                      *    lea (Ani_SSTrack_Len).l,a0
-                                                      *    move.b  (a0,d3.w),d3
-                                                      *    add.w   d3,d3
-                                                      *    add.w   d3,d3
-                                                      *    movea.l (SS_CurrentLevelObjectLocations).w,a0
-                                                      *-
-                                                      *    bsr.w   SSSingleObjLoad
-                                                      *    bne.s   return_55DC
+        ldb   SpecialStage_CurrentSegment             *    move.b  (SpecialStage_CurrentSegment).w,d0
+        cmpb  SpecialStage_LastSegment2               *    cmp.b   (SpecialStage_LastSegment2).w,d0
+        beq   SSObjectsManager_return                 *    beq.w   return_55DC
+        stb   SpecialStage_LastSegment2               *    move.b  d0,(SpecialStage_LastSegment2).w
+        
+        ; Get current segment length
+        ; TODO : replace by already loaded variable
+        ; TODO : store directy the len_x4 value instead of len : WTF !
+        
+        ldx   #SS_CurrentLevelLayout                  *    movea.l (SS_CurrentLevelLayout).w,a1
+        abx    ; allow offset of +255 instead of +127         
+        lda   ,x                                      *    move.b  (a1,d0.w),d3
+        anda  #$7F              ; ignore orientation  *    andi.w  #$7F,d3
+        ldx   #Ani_SSTrack_Len                        *    lea (Ani_SSTrack_Len).l,a0
+        ldb   a,x                                     *    move.b  (a0,d3.w),d3
+        lda   #$00        
+        aslb                                          *    add.w   d3,d3
+        rola
+        aslb                                          *    add.w   d3,d3
+        rola
+        std   SS_Seg_Len_x4
+        
+        ; Read object locations
+        ; TODO : verifier si besoin du x4
+        
+        ldx   SS_CurrentLevelObjectLocations          *    movea.l (SS_CurrentLevelObjectLocations).w,a0
+SSObjectsManager_LoadObject                           *-
+        bsr   SSSingleObjLoad                         *    bsr.w   SSSingleObjLoad
+        bne   SSObjectsManager_return                 *    bne.s   return_55DC
                                                       *    moveq   #0,d0
-                                                      *    move.b  (a0)+,d0
-                                                      *    bmi.s   ++
-                                                      *    move.b  d0,d1
-                                                      *    andi.b  #$40,d1
-                                                      *    bne.s   +
+        ldb   ,x+                                     *    move.b  (a0)+,d0
+        bmi   SSObjectsManager_LoadSegmentType        *    bmi.s   ++
+        tfr   b,a                                     *    move.b  d0,d1
+        anda  #$40                                    *    andi.b  #$40,d1
+        bne   SSObjectsManager_Bomb                   *    bne.s   +
                                                       *    addq.w  #1,(SS_Perfect_rings_left).w
-                                                      *    move.b  #ObjID_SSRing,id(a1)
-                                                      *    add.w   d0,d0
-                                                      *    add.w   d0,d0
-                                                      *    add.w   d3,d0
-                                                      *    move.w  d0,objoff_30(a1)
-                                                      *    move.b  (a0)+,angle(a1)
-                                                      *    bra.s   -
+        lda   #ObjID_SSRing                                                      
+        sta   id,u                                    *    move.b  #ObjID_SSRing,id(a1)
+        lda   #$00        
+        aslb                                          *    add.w   d0,d0
+        aslb                                          *    add.w   d0,d0
+        addd  SS_Seg_Len_x4                           *    add.w   d3,d0
+        std   z_pos,u                                 *    move.w  d0,objoff_30(a1)
+        lda   ,x+
+        sta   angle,u                                 *    move.b  (a0)+,angle(a1)
+        bra   SSObjectsManager_LoadObject             *    bra.s   -
                                                       *; ===========================================================================
-                                                      *+
-                                                      *    andi.w  #$3F,d0
-                                                      *    move.b  #ObjID_SSBomb,id(a1)
-                                                      *    add.w   d0,d0
-                                                      *    add.w   d0,d0
-                                                      *    add.w   d3,d0
-                                                      *    move.w  d0,objoff_30(a1)
-                                                      *    move.b  (a0)+,angle(a1)
-                                                      *    bra.s   -
+SSObjectsManager_Bomb                                 *+
+        andb  #$3F                                    *    andi.w  #$3F,d0
+        lda   #ObjID_SSBomb                                                      
+        sta   id,u                                    *    move.b  #ObjID_SSBomb,id(a1)
+        lda   #$00
+        aslb                                          *    add.w   d0,d0
+        aslb                                          *    add.w   d0,d0
+        addd  SS_Seg_Len_x4                           *    add.w   d3,d0
+        std   z_pos,u                                 *    move.w  d0,objoff_30(a1)
+        lda   ,x+
+        sta   angle,u                                 *    move.b  (a0)+,angle(a1)
+        bra   SSObjectsManager_LoadObject             *    bra.s   -
                                                       *; ===========================================================================
-                                                      *+
-                                                      *    move.l  a0,(SS_CurrentLevelObjectLocations).w
-                                                      *    addq.b  #1,d0
-                                                      *    beq.s   return_55DC
-                                                      *    addq.b  #1,d0
-                                                      *    beq.s   ++
-                                                      *    addq.b  #1,d0
-                                                      *    beq.s   +
-                                                      *    st.b    (SS_NoCheckpoint_flag).w
-                                                      *    sf.b    (SS_NoCheckpointMsg_flag).w
-                                                      *    bra.s   ++
+SSObjectsManager_LoadSegmentType                      *+
+        stx   SS_CurrentLevelObjectLocations          *    move.l  a0,(SS_CurrentLevelObjectLocations).w
+        incb                                          *    addq.b  #1,d0
+        beq   SSObjectsManager_return ;$FF            *    beq.s   return_55DC
+        incb                                          *    addq.b  #1,d0
+        beq   SSObjectsManager_LoadCheckpoint ;$FE    *    beq.s   ++
+        incb                                          *    addq.b  #1,d0
+        beq   SSObjectsManager_Emerald                *    beq.s   +
+        ldd   #$FF00
+        sta   SS_NoCheckpoint_flag                    *    st.b    (SS_NoCheckpoint_flag).w
+        stb   SS_NoCheckpointMsg_flag                 *    sf.b    (SS_NoCheckpointMsg_flag).w
+        bra   SSObjectsManager_Message                *    bra.s   ++
                                                       *; ===========================================================================
-                                                      *+
+SSObjectsManager_Emerald                              *+
                                                       *    tst.b   (SS_2p_Flag).w
                                                       *    bne.s   +
-                                                      *    move.b  #ObjID_SSEmerald,id(a1)
-                                                      *    rts
+        ;lda   #ObjID_SSEmerald                        *    move.b  #ObjID_SSEmerald,id(a1)
+        ;sta   id,u
+        rts                                           *    rts
                                                       *; ===========================================================================
-                                                      *+
-                                                      *    move.b  #ObjID_SSMessage,id(a1)
+SSObjectsManager_Message                              *+
+        ;lda   #ObjID_SSMessage                        *    move.b  #ObjID_SSMessage,id(a1)
+        ;sta   id,u                                                      
                                                       *
-                                                      *return_55DC:
+SSObjectsManager_return                               *return_55DC:
         rts                                           *    rts
                                                       *; End of function SSObjectsManager
+                                                      
+                                                      *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+                                                      *
+                                                      *;sub_7650
+SSSetGeometryOffsets                                  *SSSetGeometryOffsets:
+        lda   SSTrack_drawing_index                   *    move.b  (SSTrack_drawing_index).w,d0                    ; Get drawing position
+        cmpa  SS_player_anim_frame_timer              *    cmp.b   (SS_player_anim_frame_timer).w,d0               ; Compare to player frame duration
+        beq   @a                                      *    beq.s   +                                               ; If both are equal, branch
+        rts                                           *    rts
+                                                      *; ===========================================================================
+                                                      *+
+                                                      *    moveq   #0,d0
+@a      ldx   SSCurveOffsets
+        ldb   SSTrack_mapping_frame                   *    move.b  (SSTrack_mapping_frame).w,d0                    ; Get current track mapping frame
+        aslb                                          *    add.w   d0,d0                                           ; Convert to index
+        abx                                           *    lea SSCurveOffsets(pc,d0.w),a2                          ; Load current curve offsets into a2
+        lda   ,x+                                     *    move.b  (a2)+,d0                                        ; Get x offset
+        tst   SSTrack_Orientation                     *    tst.b   (SSTrack_Orientation).w                         ; Is track flipped?
+        beq   @b                                      *    beq.s   +                                               ; Branch if not
+        nega                                          *    neg.b   d0                                              ; Change sign of offset
+@b                                                    *+
+                                                      *    ext.w   d0                                              ; Extend to word
+                                                      *    addi.w  #$80,d0                                         ; Add 128 (why?)
+        sta   SS_Offset_X                             *    move.w  d0,(SS_Offset_X).w                              ; Set X geometry offset
+        lda   ,x                                      *    move.b  (a2),d0                                         ; Get y offset
+                                                      *    ext.w   d0                                              ; Extend to word
+                                                      *    addi.w  #$36,d0                                         ; Add $36 (why?)
+        sta   SS_Offset_Y                             *    move.w  d0,(SS_Offset_Y).w                              ; Set Y geometry offset
+        rts                                           *    rts
+                                                      *; End of function SSSetGeometryOffsets
+                                                      *
+                                                      *; ===========================================================================
+                                                      *; Position offsets to sort-of rotate the plane sonic/tails are in
+                                                      *; when the special stage track is curving, so they follow it better.
+                                                      *; Each word seems to be (x_offset, y_offset)
+                                                      *; See also Ani_SpecialStageTrack.
+SSCurveOffsets                                        *SSCurveOffsets: ; word_768A:
+        fcb   $13,0,$13,0,$13,0,$13,0                 *    dc.b $13,   0,   $13,   0,   $13,   0,   $13,   0   ; $00
+        fcb   9,-$A,0,-$1C,0,-$1C,0,-$20              *    dc.b   9, -$A,     0,-$1C,     0,-$1C,     0,-$20   ; $04
+        fcb   0,-$24,0,-$2A,0,-$10,0,6                *    dc.b   0,-$24,     0,-$2A,     0,-$10,     0,   6   ; $08
+        fcb   0,$E,0,$10,0,$12,0,$12                  *    dc.b   0,  $E,     0, $10,     0, $12,     0, $12   ; $0C
+        fcb   9,$12                                   *    dc.b   9, $12                                       ; $10; upward curve
+        fcb   0,0,0,0,0,0,0,0                         *    dc.b   0,   0,     0,   0,     0,   0,     0,   0   ; $11; straight
+        fcb   $13,0,$13,0,$13,0,$13,0                 *    dc.b $13,   0,   $13,   0,   $13,   0,   $13,   0   ; $15
+        fcb   $B,$C,0,$C,0,$12,0,$A                   *    dc.b  $B,  $C,     0,  $C,     0, $12,     0,  $A   ; $19
+        fcb   0,8,0,2,0,$10,0,-$20                    *    dc.b   0,   8,     0,   2,     0, $10,     0,-$20   ; $1D
+        fcb   0,-$1F,0,-$1E,0,-$1B,0,-$18             *    dc.b   0,-$1F,     0,-$1E,     0,-$1B,     0,-$18   ; $21
+        fcb   0,-$E                                   *    dc.b   0, -$E                                       ; $25; downward curve
+        fcb   $13,0,$13,0,$13,0,$13,0                 *    dc.b $13,   0,   $13,   0,   $13,   0,   $13,   0   ; $26
+        fcb   $13,0,$13,0                             *    dc.b $13,   0,   $13,   0                           ; $2B; turning
+        fcb   $13,0,$13,0,$13,0,$13,0                 *    dc.b $13,   0,   $13,   0,   $13,   0,   $13,   0   ; $2C
+        fcb   $B,0                                    *    dc.b  $B,   0                                       ; $30; exit turn
+        fcb   0,0,0,0,0,0,0,0                         *    dc.b   0,   0,     0,   0,     0,   0,     0,   0   ; $31
+        fcb   0,0,0,0,3,0                             *    dc.b   0,   0,     0,   0,     3,   0               ; $35; straight    		                                                  
+                                                      
+                                                      *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+                                                      
+                                                      *; sub_6F8E:
+SSSingleObjLoad                                       *SSSingleObjLoad:
+        ldu   #SS_Dynamic_Object_RAM                  *    lea (SS_Dynamic_Object_RAM).w,a1
+                                                      *    move.w  #(SS_Dynamic_Object_RAM_End-SS_Dynamic_Object_RAM)/object_size-1,d5
+                                                      *
+@b      tst   id,u                                    *-   tst.b   id(a1)
+        beq   @a                                      *    beq.s   +   ; rts
+        leau  next_object,u                           *    lea next_object(a1),a1 ; a1=object
+        cmpu  #SS_Dynamic_Object_RAM_End              *    dbf d5,-
+        bne   @b                                      *+
+        lda   #$FF
+@a      rts                                           *    rts
+                                                      *; End of function sub_6F8E                                                                                                            
                                                       
                                                       *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||                                                      
                                                       
@@ -451,7 +583,206 @@ SSInitPalAndData                                      *SSInitPalAndData:
         rts                                           *    rts
                                                       *; End of function SSInitPalAndData     
                                                       
-                                                         
+; ---------------------------------------------------------------------------
+; Object - Half Pipe for Special Stage
+;
+; input REG : [u] pointer to Object Status Table (OST)
+; ---------
+;
+; ---------------------------------------------------------------------------
+;
+; Level Layout
+; ------------
+; Offset to each level data (7 word offsets for the 7 levels)
+;
+; Track
+; -----
+; $x0 Turn the rise
+; $x1 Turn then drop
+; $x2 Turn then straight
+; $x3 straight
+; $x4 Straight then turn
+;
+; Orientation
+; -----------
+; $0x Towards right
+; $8x Towards left
+;
+; ----------------------------------
+;
+; Segment type
+; ------------
+; 0 Regular segment
+; 1 Rings message
+; 2 Checkpoint
+; 3 Choas Emerald
+;
+; 0,0,0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,3,0,0,0
+
+HalfPipe
+        lda   routine,u
+        asla
+        ldx   #HalfPipe_Routines
+        jmp   [a,x]
+
+HalfPipe_Routines
+        fdb   HalfPipe_Init
+        fdb   HalfPipe_Display
+        fdb   HalfPipe_End
+
+HalfPipe_Init
+        ldd   Vint_runcount
+        std   HalfPipe_Vint_runcount
+
+        ldb   #$05
+        stb   priority,u
+        
+        ldd   #$807F
+        addb  subtype,u
+        std   xy_pixel,u
+ 
+        lda   render_flags,u
+        ora   #render_overlay_mask
+        sta   render_flags,u
+        
+        ; load start and end of sequences for this level
+        ; ----------------------------------------------
+        
+        ldx   SS_CurrentLevelLayout
+        ldd   ,x
+        leay  d,x
+        sty   HalfPipe_Seq_Position
+        ldd   2,x
+        subd  #$01                               ; in original game last byte seems not used, skip it
+        leay  d,x
+        sty   HalfPipe_Seq_End        
+
+        ; load first animation id
+        ; -----------------------
+        
+        ldx   HalfPipe_Seq_Position
+        ldb   ,x                
+        stb   HalfPipe_Seq
+        andb  #$7F
+        ldx   #Ani_SpecialStageTrack
+        aslb        
+        abx
+        ldd   ,x
+        std   anim,u
+                        
+        inc   routine,u
+        
+HalfPipe_Display
+        cmpu  #Dynamic_Object_RAM
+        beq   @a
+        ldx   #Dynamic_Object_RAM
+        ldd   image_set,x                        ; clone image_set when secondary HalfPipe sprite is running
+        std   image_set,u
+        lda   render_flags,x
+        sta   render_flags,u
+        lda   routine,x
+        sta   routine,u        
+        jmp   DisplaySprite
+@a
+
+        ldd   Vint_runcount
+        subd  HalfPipe_Vint_runcount
+        cmpb  #$02                               ; ensure track is not refreshed more than 8fps 
+        bgt   @a
+        stb   SSTrack_drawing_index        
+        jmp   DisplaySprite        
+@a      ldd   Vint_runcount
+        std   HalfPipe_Vint_runcount
+        clr   SSTrack_drawing_index
+        jsr   AnimateSprite
+        
+        ; chain animations (AnimateSprite will inc routine_secondary after each animation ends)
+        ; -------------------------------------------------------------------------------------
+        
+        lda   routine_secondary,u
+        asla
+        ldx   #HalfPipe_SubRoutines
+        jmp   [a,x]
+
+HalfPipe_SubRoutines
+        fdb   HalfPipe_Continue
+        fdb   HalfPipe_LoadNewSequence
+        
+HalfPipe_LoadNewSequence
+        ldx   HalfPipe_Seq_Position
+        leax  1,x
+        cmpx  HalfPipe_Seq_End
+        bne   @a
+        inc   routine,u   
+        bra   HalfPipe_End
+@a      stx   HalfPipe_Seq_Position
+
+        lda   HalfPipe_Seq
+        anda  #$7F
+        ldb   ,x        
+        stb   HalfPipe_Seq
+        andb  #$7F
+        cmpd  #$0303
+        bne   @a
+        ldd   #Ani_StraightAfterStraight
+        std   anim,u
+        bra   @b
+@a      ldx   #Ani_SpecialStageTrack
+        aslb
+        abx
+        ldd   ,x
+        std   anim,u
+@b      clr   routine_secondary,u
+        clr   prev_anim,u                        ; force loading of new animation
+        jsr   AnimateSprite
+
+HalfPipe_Continue
+
+        ; set orirentation of track
+        ; -------------------------
+        
+        lda   HalfPipe_Seq_UpdFlip
+        beq   @a
+        ldb   HalfPipe_Seq_UpdFlip+1
+        bpl   @b   
+        lda   status,u
+        ora   #status_x_orientation         ; set flip - left orientation
+        sta   status,u
+        bra   @c
+@b      lda   status,u
+        anda   #^status_x_orientation       ; unset flip - right orientation
+        sta   status,u
+@c      com   HalfPipe_Seq_UpdFlip
+@a      ldd   image_set,u                   ; orientation can only change on specific frames
+        cmpd  #Img_tk_036
+        beq   @d
+        cmpd  #Img_tk_044
+        beq   @d       
+        cmpd  #Img_tk_002
+        beq   @d
+        jmp   DisplaySprite
+@d      com   HalfPipe_Seq_UpdFlip
+        ldb   HalfPipe_Seq
+        stb   HalfPipe_Seq_UpdFlip+1
+        jmp   DisplaySprite
+        
+HalfPipe_End
+        jmp   DisplaySprite
+        
+Ani_SpecialStageTrack
+        fdb   Ani_TurnThenRise
+        fdb   Ani_TurnThenDrop
+        fdb   Ani_TurnThenStraight
+        fdb   Ani_Straight
+        fdb   Ani_StraightThenTurn
+        
+Ani_SSTrack_Len
+        fcb   25 ; 0 TurnThenRise
+        fcb   25 ; 1 TurnThenDrop
+        fcb   12 ; 2 TurnThenStraight
+        fcb   15 ; 3 Straight ou 16 si enchainement   
+        fcb   12 ; 4 StraightThenTurn
+        fcb   0  ; 5
                                                       
 SpecialLevelLayout
         INCLUDEBIN "./GameMode/SPECIAL_STAGE/Special stage level layouts.bin"

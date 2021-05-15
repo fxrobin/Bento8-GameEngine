@@ -4,6 +4,8 @@ Object_RAM
 SS_Object_RAM
 MainCharacter                     fill  0,object_size
 ;Sidekick                         fill  0,object_size
+HalfPipeOdd                       fill  0,object_size
+HalfPipeEven                      fill  0,object_size
 SpecialStageHUD                   fill  0,object_size
 SpecialStageStartBanner           fill  0,object_size
 SpecialStageNumberOfRings         fill  0,object_size
@@ -65,13 +67,13 @@ SS_CurrentLevelObjectLocations    fill  0,4
 SS_Ring_Requirement               fdb   $0000
 SS_CurrentLevelLayout             fill  0,5
 SS_2P_BCD_Score                   fdb   $0000
-SS_NoCheckpoint_flag              fill  0,3
+SS_NoCheckpoint_flag              fcb   $00
 SS_Checkpoint_Rainbow_flag        fcb   $00
 SS_Rainbow_palette                fcb   $00
 SS_Perfect_rings_left             fill  0,4
 SS_Star_color_1                   fcb   $00
 SS_Star_color_2                   fcb   $00
-SS_NoCheckpointMsg_flag           fdb   $0000
+SS_NoCheckpointMsg_flag           fcb   $00
 SS_NoRingsTogoLifetime            fdb   $0000
 SS_RingsToGoBCD                   fdb   $0000
 SS_HideRingsToGo                  fcb   $00
@@ -79,8 +81,16 @@ SS_TriggerRingsToGo               fcb   $00
 SS_Misc_Variables_End
 SS_Horiz_Scroll_Buf_1             fill  0,$400
 SS_Horiz_Scroll_Buf_1_End
-SS_Offset_X                       fdb   $0000
-SS_Offset_Y                       fdb   $0000
+SS_Offset_X                       fcb   $00
+SS_Offset_Y                       fcb   $00
 SS_Swap_Positions_Flag            fcb   $00
 SS_Sprite_Table                   fill  0,$280    ; Sprite attribute table buffer
 SS_Sprite_Table_End               fill  0,$80     ; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
+
+HalfPipe_Seq_Position  fdb $0000
+HalfPipe_Seq_End       fdb $0000
+HalfPipe_Seq           fcb $00
+HalfPipe_Seq_UpdFlip   fdb $0000
+HalfPipe_Vint_runcount fdb $0000
+
+SS_Seg_Len_x4          fdb $0000

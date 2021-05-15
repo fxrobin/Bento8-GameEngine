@@ -34,7 +34,7 @@ SSRing_Init                                           *Obj60_Init:
         std   xy_pixel,u                              *    move.w  #$58,y_pos(a0)
                                                       *    move.l  #Obj5A_Obj5B_Obj60_MapUnc_3632A,mappings(a0)
                                                       *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialRings,3,0),art_tile(a0)
-                                                      *    move.b  #4,render_flags(a0)
+        ; coordinates system                          *    move.b  #4,render_flags(a0)
         ldd   #$0301                                                      
         sta   priority,u                              *    move.b  #3,priority(a0)
         stb   collision_flags,u                       *    move.b  #1,collision_flags(a0)

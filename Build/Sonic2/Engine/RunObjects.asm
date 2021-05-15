@@ -28,8 +28,8 @@ RunObjects_01                               *+
                                             *    tst.w   (Two_player_mode).w
                                             *    bne.s   RunObject ; if in 2 player competition mode, branch to RunObject
                                             *
-        tst   Glb_MainCharacter_Is_Dead     *    cmpi.b  #6,(MainCharacter+routine).w
-        bne   RunObjectsWhenPlayerIsDead    *    bhs.s   RunObjectsWhenPlayerIsDead ; if dead, branch
+        ;tst   Glb_MainCharacter_Is_Dead     *    cmpi.b  #6,(MainCharacter+routine).w
+        ;bne   RunObjectsWhenPlayerIsDead    *    bhs.s   RunObjectsWhenPlayerIsDead ; if dead, branch
                                             *    ; continue straight to RunObject
                                             *; ---------------------------------------------------------------------------
                                             *
@@ -41,18 +41,18 @@ RunObjects_01                               *+
                                             *
                                             *; sub_15FCC:
 RunObject                                   *RunObject:
-        lda   #$00                          
         ldb   id,u                          *    move.b  id(a0),d0   ; get the object's ID
         beq   RunNextObject                 *    beq.s   RunNextObject ; if it's obj00, skip it
 
-        ldy   #Obj_Index_Page
-        lda   d,y                           ; page memoire
+        ldx   #Obj_Index_Page
+        abx
+        lda   ,x                            ; page memoire
         _SetCartPageA                       ; selection de la page en RAM (0000-3FFF)
-        lda   #$00
         aslb                                *    add.w   d0,d0
-        rola                                *    add.w   d0,d0   ; d0 = object ID * 4
-        ldy   #Obj_Index_Address            *    movea.l Obj_Index-4(pc,d0.w),a1 ; load the address of the object's code
-        jsr   [d,y]                         *    jsr (a1)    ; dynamic call! to one of the the entries in Obj_Index
+                                            *    add.w   d0,d0   ; d0 = object ID * 4
+        ldx   #Obj_Index_Address            *    movea.l Obj_Index-4(pc,d0.w),a1 ; load the address of the object's code
+        abx
+        jsr   [,x]                          *    jsr (a1)    ; dynamic call! to one of the the entries in Obj_Index
                                             *    moveq   #0,d0
                                             *
                                             *; loc_15FDC:
@@ -68,20 +68,20 @@ RunObjects_End                              *RunObjects_End:
                                             *; this skips certain objects to make enemies and things pause when Sonic dies
                                             *; loc_15FE6:
 RunObjectsWhenPlayerIsDead                  *RunObjectsWhenPlayerIsDead:
-        ldu   #Reserved_Object_RAM
-        ldx   #Reserved_Object_RAM_End
-        stx   am_RunNextObject+2            *    moveq   #(Reserved_Object_RAM_End-Reserved_Object_RAM)/object_size-1,d7
-        bsr   RunObject                     *    bsr.s   RunObject   ; run the first $10 objects normally
+        ;ldu   #Reserved_Object_RAM
+        ;ldx   #Reserved_Object_RAM_End
+        ;stx   am_RunNextObject+2            *    moveq   #(Reserved_Object_RAM_End-Reserved_Object_RAM)/object_size-1,d7
+        ;bsr   RunObject                     *    bsr.s   RunObject   ; run the first $10 objects normally
                                             *    moveq   #(Dynamic_Object_RAM_End-Dynamic_Object_RAM)/object_size-1,d7
                                             *    bsr.s   RunObjectDisplayOnly ; all objects in this range are paused      
-        ldu   #LevelOnly_Object_RAM 
-        ldx   #LevelOnly_Object_RAM_End
-        stx   am_RunNextObject+2            *    moveq   #(LevelOnly_Object_RAM_End-LevelOnly_Object_RAM)/object_size-1,d7
-        bsr   RunObject                     *    bra.s   RunObject   ; run the last $10 objects normally
+        ;ldu   #LevelOnly_Object_RAM 
+        ;ldx   #LevelOnly_Object_RAM_End
+        ;stx   am_RunNextObject+2            *    moveq   #(LevelOnly_Object_RAM_End-LevelOnly_Object_RAM)/object_size-1,d7
+        ;bsr   RunObject                     *    bra.s   RunObject   ; run the last $10 objects normally
                                             *
-        ldx   #Object_RAM_End               * repositionne la fin du RunObject avec sa valeur par d�faut
-        stx   am_RunNextObject+2
-        rts            
+        ;ldx   #Object_RAM_End               * repositionne la fin du RunObject avec sa valeur par d�faut
+        ;stx   am_RunNextObject+2
+        ;rts            
                                             *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                             *
                                             *; sub_15FF2:
