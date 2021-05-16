@@ -131,9 +131,11 @@ collision_flags               equ 103 ; Collision response bitfield, tells what 
 
 inertia                       equ 100 ; and 101 ; directionless representation of speed... not updated in the air
 ext_variables                 equ 27  ; to 40   ; reserved space for additionnal variables
-z_pos                         equ 27  ; and 28 ; distance from camera to half-pipe segment end (0: front)
+ss_z_pos                      equ 27  ; and 28  ; distance from camera to half-pipe segment end (0: front)
+ss_parent                     equ 29  ; and 30  ; distance from camera to half-pipe segment end (0: front)
+ss_shadow_tilt                equ 31  ; 0:flat 1:diagonal 2:side
 
-; Special Stage object properties: (Not shure !!!)
+; Special Stage object properties: decalage +4 par rapport au code
 ;ss_dplc_timer = $23
 ;ss_x_pos = objoff_2A
 ;ss_x_sub = objoff_2C

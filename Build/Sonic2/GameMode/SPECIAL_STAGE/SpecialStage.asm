@@ -83,7 +83,8 @@ SpecialStage                                          *SpecialStage:
                                                       *    move.w  #$8F02,(a6)     ; VRAM pointer increment: $0002
                                                       *    bsr.w   ssInitTableBuffers
                                                       *    bsr.w   ssLdComprsdData
-                                                      *    move.w  #0,(SpecialStage_CurrentSegment).w
+       ldd   #$0000
+       std   SpecialStage_CurrentSegment              *    move.w  #0,(SpecialStage_CurrentSegment).w
                                                       *    moveq   #PLCID_SpecialStage,d0
                                                       *    bsr.w   RunPLC_ROM
                                                       *    clr.b   (Level_started_flag).w
@@ -372,10 +373,8 @@ SSLoadCurrentPerspective                              *SSLoadCurrentPerspective:
 SSObjectsManager                                      *SSObjectsManager:
 
         ; Frame should be fully rendered
-        ; TODO : trash
 
-        lda   SSTrack_drawing_index
-        cmpa  #4                                      *    cmpi.b  #4,(SSTrack_drawing_index).w
+        lda   SSTrack_drawing_index                   *    cmpi.b  #4,(SSTrack_drawing_index).w
         bne   SSObjectsManager_return                 *    bne.w   return_55DC
 
         ; Run only each time a new segment is loaded
@@ -386,28 +385,20 @@ SSObjectsManager                                      *SSObjectsManager:
         stb   SpecialStage_LastSegment2               *    move.b  d0,(SpecialStage_LastSegment2).w
         
         ; Get current segment length
-        ; TODO : replace by already loaded variable
-        ; TODO : store directy the len_x4 value instead of len : WTF !
-        
-        ldx   #SS_CurrentLevelLayout                  *    movea.l (SS_CurrentLevelLayout).w,a1
-        abx    ; allow offset of +255 instead of +127         
-        lda   ,x                                      *    move.b  (a1,d0.w),d3
+                                                      *    movea.l (SS_CurrentLevelLayout).w,a1
+        lda   HalfPipe_Seq                            *    move.b  (a1,d0.w),d3
         anda  #$7F              ; ignore orientation  *    andi.w  #$7F,d3
         ldx   #Ani_SSTrack_Len                        *    lea (Ani_SSTrack_Len).l,a0
-        ldb   a,x                                     *    move.b  (a0,d3.w),d3
-        lda   #$00        
-        aslb                                          *    add.w   d3,d3
-        rola
-        aslb                                          *    add.w   d3,d3
-        rola
+        ldd   a,x                                     *    move.b  (a0,d3.w),d3
+                                                      *    add.w   d3,d3
+                                                      *    add.w   d3,d3
         std   SS_Seg_Len_x4
         
         ; Read object locations
-        ; TODO : verifier si besoin du x4
         
         ldx   SS_CurrentLevelObjectLocations          *    movea.l (SS_CurrentLevelObjectLocations).w,a0
 SSObjectsManager_LoadObject                           *-
-        bsr   SSSingleObjLoad                         *    bsr.w   SSSingleObjLoad
+        jsr   SSSingleObjLoad                         *    bsr.w   SSSingleObjLoad
         bne   SSObjectsManager_return                 *    bne.s   return_55DC
                                                       *    moveq   #0,d0
         ldb   ,x+                                     *    move.b  (a0)+,d0
@@ -420,9 +411,11 @@ SSObjectsManager_LoadObject                           *-
         sta   id,u                                    *    move.b  #ObjID_SSRing,id(a1)
         lda   #$00        
         aslb                                          *    add.w   d0,d0
+        rola
         aslb                                          *    add.w   d0,d0
+        rola
         addd  SS_Seg_Len_x4                           *    add.w   d3,d0
-        std   z_pos,u                                 *    move.w  d0,objoff_30(a1)
+        std   ss_z_pos,u                              *    move.w  d0,objoff_30(a1)
         lda   ,x+
         sta   angle,u                                 *    move.b  (a0)+,angle(a1)
         bra   SSObjectsManager_LoadObject             *    bra.s   -
@@ -433,9 +426,11 @@ SSObjectsManager_Bomb                                 *+
         sta   id,u                                    *    move.b  #ObjID_SSBomb,id(a1)
         lda   #$00
         aslb                                          *    add.w   d0,d0
+        rola        
         aslb                                          *    add.w   d0,d0
+        rola
         addd  SS_Seg_Len_x4                           *    add.w   d3,d0
-        std   z_pos,u                                 *    move.w  d0,objoff_30(a1)
+        std   ss_z_pos,u                              *    move.w  d0,objoff_30(a1)
         lda   ,x+
         sta   angle,u                                 *    move.b  (a0)+,angle(a1)
         bra   SSObjectsManager_LoadObject             *    bra.s   -
@@ -473,7 +468,7 @@ SSObjectsManager_return                               *return_55DC:
                                                       *;sub_7650
 SSSetGeometryOffsets                                  *SSSetGeometryOffsets:
         lda   SSTrack_drawing_index                   *    move.b  (SSTrack_drawing_index).w,d0                    ; Get drawing position
-        cmpa  SS_player_anim_frame_timer              *    cmp.b   (SS_player_anim_frame_timer).w,d0               ; Compare to player frame duration
+        ;cmpa  SS_player_anim_frame_timer              *    cmp.b   (SS_player_anim_frame_timer).w,d0               ; Compare to player frame duration
         beq   @a                                      *    beq.s   +                                               ; If both are equal, branch
         rts                                           *    rts
                                                       *; ===========================================================================
@@ -523,7 +518,11 @@ SSCurveOffsets                                        *SSCurveOffsets: ; word_76
         fcb   0,0,0,0,3,0                             *    dc.b   0,   0,     0,   0,     3,   0               ; $35; straight    		                                                  
                                                       
                                                       *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-                                                      
+         
+; search for a free object slot
+; OUT
+; [u]: object slot
+; [cc|z]: 1=found 0=not found                                                       
                                                       *; sub_6F8E:
 SSSingleObjLoad                                       *SSSingleObjLoad:
         ldu   #SS_Dynamic_Object_RAM                  *    lea (SS_Dynamic_Object_RAM).w,a1
@@ -537,6 +536,55 @@ SSSingleObjLoad                                       *SSSingleObjLoad:
         lda   #$FF
 @a      rts                                           *    rts
                                                       *; End of function sub_6F8E                                                                                                            
+
+; search for a free object slot after the current one
+; IN
+; [u]: object slot
+; OUT
+; [x]: object slot
+; [cc|z]: 1=found 0=not found  
+                                                      *;loc_6FA4:
+SSSingleObjLoad2                                      *SSSingleObjLoad2:
+        leax  ,u                                      *    movea.l a0,a1
+                                                      *    move.w  #SS_Dynamic_Object_RAM_End,d5
+                                                      *    sub.w   a0,d5
+                                                      *
+                                                      *    if object_size=$40
+                                                      *    lsr.w   #6,d5
+                                                      *    subq.w  #1,d5
+                                                      *    bcs.s   +   ; rts
+                                                      *    else
+                                                      *    lsr.w   #6,d5           ; divide by $40
+                                                      *    move.b  ++(pc,d5.w),d5      ; load the right number of objects from table
+                                                      *    bmi.s   +           ; if negative, we have failed!
+                                                      *    endif
+                                                      *
+@b      tst   id,x                                    *-   tst.b   id(a1)
+        beq   @a                                      *    beq.s   +   ; rts
+        leau  next_object,x                           *    lea next_object(a1),a1
+        cmpu  #SS_Dynamic_Object_RAM_End              *    dbf d5,-
+        bne   @b                                      *
+        lda   #$FF
+@a      rts                                           *+   rts
+                                                      *
+                                                      *
+                                                      *    if object_size<>$40
+                                                      *+   dc.b -1
+                                                      *.a :=   1       ; .a is the object slot we are currently processing
+                                                      *.b :=   1       ; .b is used to calculate when there will be a conversion error due to object_size being > $40
+                                                      *
+                                                      *    rept (SS_Dynamic_Object_RAM_End-SS_Object_RAM)/object_size-1
+                                                      *        if (object_size * (.a-1)) / $40 > .b+1  ; this line checks, if there would be a conversion error
+                                                      *            dc.b .a-1, .a-1         ; and if is, it generates 2 entries to correct for the error
+                                                      *        else
+                                                      *            dc.b .a-1
+                                                      *        endif
+                                                      *
+                                                      *.b :=       (object_size * (.a-1)) / $40        ; this line adjusts .b based on the iteration count to check
+                                                      *.a :=       .a+1                    ; run interation counter
+                                                      *    endm
+                                                      *    even
+                                                      *    endif
                                                       
                                                       *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||                                                      
                                                       
@@ -645,22 +693,18 @@ HalfPipe_Init
         ora   #render_overlay_mask
         sta   render_flags,u
         
-        ; load start and end of sequences for this level
-        ; ----------------------------------------------
+        ; load start for this level
+        ; -------------------------
         
         ldx   SS_CurrentLevelLayout
         ldd   ,x
         leay  d,x
-        sty   HalfPipe_Seq_Position
-        ldd   2,x
-        subd  #$01                               ; in original game last byte seems not used, skip it
-        leay  d,x
-        sty   HalfPipe_Seq_End        
+        sty   SpecialStage_CurrentSegment
 
         ; load first animation id
         ; -----------------------
         
-        ldx   HalfPipe_Seq_Position
+        ldx   SpecialStage_CurrentSegment
         ldb   ,x                
         stb   HalfPipe_Seq
         andb  #$7F
@@ -709,13 +753,9 @@ HalfPipe_SubRoutines
         fdb   HalfPipe_LoadNewSequence
         
 HalfPipe_LoadNewSequence
-        ldx   HalfPipe_Seq_Position
+        ldx   SpecialStage_CurrentSegment
         leax  1,x
-        cmpx  HalfPipe_Seq_End
-        bne   @a
-        inc   routine,u   
-        bra   HalfPipe_End
-@a      stx   HalfPipe_Seq_Position
+        stx   SpecialStage_CurrentSegment
 
         lda   HalfPipe_Seq
         anda  #$7F
@@ -777,12 +817,12 @@ Ani_SpecialStageTrack
         fdb   Ani_StraightThenTurn
         
 Ani_SSTrack_Len
-        fcb   25 ; 0 TurnThenRise
-        fcb   25 ; 1 TurnThenDrop
-        fcb   12 ; 2 TurnThenStraight
-        fcb   15 ; 3 Straight ou 16 si enchainement   
-        fcb   12 ; 4 StraightThenTurn
-        fcb   0  ; 5
+        fdb   25*4 ; 0 TurnThenRise
+        fdb   25*4 ; 1 TurnThenDrop
+        fdb   12*4 ; 2 TurnThenStraight
+        fdb   15*4 ; 3 Straight ou 16 si enchainement   
+        fdb   12*4 ; 4 StraightThenTurn
+        fdb   0*4  ; 5
                                                       
 SpecialLevelLayout
         INCLUDEBIN "./GameMode/SPECIAL_STAGE/Special stage level layouts.bin"

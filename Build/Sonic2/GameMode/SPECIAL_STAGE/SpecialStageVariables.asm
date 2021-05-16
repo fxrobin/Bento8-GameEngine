@@ -37,7 +37,7 @@ SSTrack_last_anim_frame           fcb   $00
 SpecialStage_CurrentSegment       fcb   $00
 SSTrack_anim_frame                fcb   $00
 SS_Alternate_PNT                  fcb   $00
-SSTrack_drawing_index             fcb   $00
+SSTrack_drawing_index             fcb   $00 ; 0:new half-pipe frame is displayed in this loop, >0:no refresh of half-pipe in this loop
 SSTrack_Orientation               fcb   $00
 SS_Alternate_HorizScroll_Buf      fcb   $00
 SSTrack_mapping_frame             fcb   $00
@@ -87,10 +87,7 @@ SS_Swap_Positions_Flag            fcb   $00
 SS_Sprite_Table                   fill  0,$280    ; Sprite attribute table buffer
 SS_Sprite_Table_End               fill  0,$80     ; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
 
-HalfPipe_Seq_Position  fdb $0000
-HalfPipe_Seq_End       fdb $0000
 HalfPipe_Seq           fcb $00
 HalfPipe_Seq_UpdFlip   fdb $0000
 HalfPipe_Vint_runcount fdb $0000
-
 SS_Seg_Len_x4          fdb $0000
