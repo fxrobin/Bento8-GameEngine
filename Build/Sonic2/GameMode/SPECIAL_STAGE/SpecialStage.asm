@@ -354,8 +354,9 @@ SSLoadCurrentPerspective                              *SSLoadCurrentPerspective:
         ldx   #SpecialPerspective                     *    movea.l #SSRAM_MiscKoz_SpecialPerspective,a0
                                                       *    moveq   #0,d0
         ldb   SSTrack_mapping_frame                   *    move.b  (SSTrack_mapping_frame).w,d0
-        aslb                                          *    add.w   d0,d0
-        abx                                           *    adda.w  (a0,d0.w),a0
+        asla                                          *    add.w   d0,d0
+        ldd   a,x                                     *    adda.w  (a0,d0.w),a0
+        leax  d,x
         stx   SS_CurrentPerspective                   *    move.l  a0,(SS_CurrentPerspective).w
 @a      rts                                           *+   rts
                                                       *; End of function SSLoadCurrentPerspective

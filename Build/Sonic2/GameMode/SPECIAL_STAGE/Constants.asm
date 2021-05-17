@@ -122,7 +122,7 @@ status_jumpingafterrolling    equ   $10 ; (bit 4) Set if jumping after rolling
 status_pushing                equ   $20 ; (bit 5) Set if pushing something
 status_underwater             equ   $40 ; (bit 6) Set if underwater
 
-angle                         equ 102 ; angle about the z axis (360 degrees = 256)
+angle                         equ 102 ; angle (z axis) 360 degrees = 256, from camera view: $00 right, $40 bottom, $80 left, $c0 top
 collision_flags               equ 103 ; Collision response bitfield, tells what the object will do if hit by the character
 * --- collision bitfield variables for objects ---
 ; format TTSS SSSS

@@ -119,18 +119,18 @@ loc_35322                                             *loc_35322:
                                                       
 SSB_ScaleAnim                                         *loc_3512A:
         tst   status,u ; ??? a quoi correspond ce flag, collision ? *    btst    #7,status(a0)
-        bmi   SSB_DeleteObj                           *    bne.s   loc_3516C
+        bmi   SSB_DeleteObject                        *    bne.s   loc_3516C
         lda   SSTrack_drawing_index                   *    cmpi.b  #4,(SSTrack_drawing_index).w
         bne   loc_35146                               *    bne.s   loc_35146
         ldd   ss_z_pos,u                              *    subi.l  #$CCCC,objoff_30(a0)
         subd  #$CCCC ; ??? si ss_z_pos <= $CCCC on le delete, mais pourquoi ?
-        ble   SSB_DeleteObj                           *    ble.s   loc_3516C
+        ble   SSB_DeleteObject                        *    ble.s   loc_3516C
         bra   loc_35150                               *    bra.s   loc_35150
                                                       *
 loc_35146                                             *loc_35146:
         ldd   ss_z_pos,u                              *    subi.l  #$CCCD,objoff_30(a0)
         subd  #$CCCD ; ??? si ss_z_pos <= $CCCD on le delete, mais pourquoi ?
-        ble   SSB_DeleteObj                           *    ble.s   loc_3516C
+        ble   SSB_DeleteObject                        *    ble.s   loc_3516C
                                                       *
 loc_35150                                             *loc_35150:
         ldd   anim,u                                  *    cmpi.b  #$A,anim(a0)
@@ -192,7 +192,7 @@ SSB_ComputeCoordinates                                *loc_351A0:
                                                       *    moveq   #0,d7
         ldx   #SS_CurrentPerspective                  *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u                              *    move.w  objoff_30(a0),d0
-                                                      *    beq.w   loc_35258
+        beq   SSB_HideSprite                          *    beq.w   loc_35258
                                                       *    cmp.w   (a1)+,d0
                                                       *    bgt.w   loc_35258
                                                       *    subq.w  #1,d0
@@ -225,8 +225,21 @@ SSB_ComputeCoordinates                                *loc_351A0:
                                                       *    ext.w   d3
                                                       *
                                                       *loc_35202:
-                                                      *    move.b  angle(a0),d0
+        ldb   angle,u                                 *    move.b  angle(a0),d0
                                                       *    jsrto   (CalcSine).l, JmpTo14_CalcSine
+                                                      
+                                                      * ------------------------------------------
+                                                      *CalcSine:
+        lda   #$00                                    *        andi.w  #$FF,d0
+        aslb                                          *        add.w   d0,d0
+	    rola
+                                                      *        addi.w  #$80,d0
+        ldx   #Sine_Data
+	    ldy   d,x                                     *        move.w  Sine_Data(pc,d0.w),d1 ; cos
+        addd  #$80                                    *        subi.w  #$80,d0
+        ldx   d,x                                     *        move.w  Sine_Data(pc,d0.w),d0 ; sin                                                      
+                                                      * ------------------------------------------                                                      
+                                                      
                                                       *    muls.w  d4,d1
                                                       *    muls.w  d5,d0
                                                       *    asr.l   #8,d0
@@ -265,9 +278,9 @@ d5      ldd   #$00FF ; (dynamic)                      *    move.w  d5,d7
         rts                                           *    rts                                                      
                                                       *; ===========================================================================
 
-                                                      *loc_35258:
+SSB_HideSprite                                        *loc_35258:
                                                       *    andi.b  #$7F,render_flags(a0)
-                                                      *    bra.s   loc_35254
+        rts                                           *    bra.s   loc_35254
                                                       *; ===========================================================================                                                 
                                                       
 
@@ -310,18 +323,21 @@ return_34F9E                                          *return_34F9E:
 ; TODO : dupliquer ce code pour eviter son appel en tant que sous routine
 ; TODO : reutiliser les obj pour ne pas avoir a faire de delete (tester performance)
                                                       
-SSB_DeleteObj                                         *loc_3516C:
-        puls  d ; DeleteObject will return to caller  *    move.l  (sp)+,d0
-        ldx   #$ss_parent                             *    move.l  objoff_34(a0),d0
-        beq   JmpTo_DeleteObject ; branch if no child *    beq.w   JmpTo63_DeleteObject
+SSB_DeleteObject                                      *loc_3516C:
+                                                      *    move.l  (sp)+,d0
+        ldx   ss_parent,u                             *    move.l  objoff_34(a0),d0
+        beq   SSB_SetDeleteFlag ; branch if no child  *    beq.w   JmpTo63_DeleteObject
                                                       *    movea.l d0,a1 ; a1=object
         com   ss_self_delete,x ; shadow to delete     *    st  objoff_2A(a1)
                                                       *
                                                       *    if removeJmpTos
                                                       *JmpTo63_DeleteObject ; JmpTo
                                                       *    endif
-JmpTo_DeleteObject                                    *
-        jmp   DeleteObject                            *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
+SSB_SetDeleteFlag                                     *
+        lda   render_flags,u
+        ora   #render_todelete_mask                   *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
+        lda   render_flags,u
+        rts
                                                       *; =========================================================================== 
 SSB_CheckCollisionContinue                            *loc_350A0:
         ldd   anim,u
@@ -360,7 +376,7 @@ return_350E0                                          *return_350E0:
                                                       
 SSB_Main                                              *loc_3533A:
         tst                                           *    tst.b   objoff_2A(a0)
-                                                      *    bne.w   BranchTo_JmpTo63_DeleteObject
+        bne   SSB_SetDeleteFlag                       *    bne.w   BranchTo_JmpTo63_DeleteObject
                                                       *    movea.l objoff_34(a0),a1 ; a1=object
                                                       *    tst.b   render_flags(a1)
                                                       *    bmi.s   loc_3534E
@@ -403,6 +419,34 @@ SSB_Main                                              *loc_3533A:
                                                       *    move.b  d0,mapping_frame(a0)
         jmp   DisplaySprite                           *    bra.w   JmpTo44_DisplaySprite
                                                       *; ===========================================================================                                                      
+
+                                                      *; ---------------------------------------------------------------------------
+                                                      *; Subroutine to calculate sine and cosine of an angle
+                                                      *; d0 = input byte = angle (360 degrees == 256)
+                                                      *; d0 = output word = 255 * sine(angle)
+                                                      *; d1 = output word = 255 * cosine(angle)
+                                                      *; ---------------------------------------------------------------------------
+                                                      *
+                                                      *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+                                                      *
+                                                      *; sub_33B6:
+CalcSine                                              *CalcSine:
+        lda   #$00                                    *        andi.w  #$FF,d0
+        aslb                                          *        add.w   d0,d0
+	    rola
+                                                      *        addi.w  #$80,d0
+        ldx   #Sine_Data
+	    ldy   d,x                                     *        move.w  Sine_Data(pc,d0.w),d1 ; cos
+        addd  #$80                                    *        subi.w  #$80,d0
+        ldx   d,x                                     *        move.w  Sine_Data(pc,d0.w),d0 ; sin
+        rts                                           *        rts
+                                                      *; End of function CalcSine
+                                                      *
+                                                      *; ===========================================================================
+                                                      *; word_33CE:
+Sine_Data                                             *Sine_Data:      BINCLUDE        "misc/sinewave.bin"
+        INCLUDEBIN "./Engine/sinewave.bin"
+
                                                       *; ===========================================================================
                                                       *byte_35180:
                                                       *    dc.b   9,  9,  9,  8,  8,  7,  7,  6,  6,  5,  5,  4,  4,  3,  3,  3
