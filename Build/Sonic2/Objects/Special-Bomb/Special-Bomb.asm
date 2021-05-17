@@ -118,18 +118,18 @@ loc_35322                                             *loc_35322:
         rts                                           *    rts
                                                       
 SSB_ScaleAnim                                         *loc_3512A:
-        tst   status,u           ; ???                *    btst    #7,status(a0)
+        tst   status,u ; ??? a quoi correspond ce flag, collision ? *    btst    #7,status(a0)
         bmi   SSB_DeleteObj                           *    bne.s   loc_3516C
         lda   SSTrack_drawing_index                   *    cmpi.b  #4,(SSTrack_drawing_index).w
         bne   loc_35146                               *    bne.s   loc_35146
         ldd   ss_z_pos,u                              *    subi.l  #$CCCC,objoff_30(a0)
-        subd  #$CCCC             ; ???
+        subd  #$CCCC ; ??? si ss_z_pos <= $CCCC on le delete, mais pourquoi ?
         ble   SSB_DeleteObj                           *    ble.s   loc_3516C
         bra   loc_35150                               *    bra.s   loc_35150
                                                       *
 loc_35146                                             *loc_35146:
         ldd   ss_z_pos,u                              *    subi.l  #$CCCD,objoff_30(a0)
-        subd  #$CCCD             ; ???
+        subd  #$CCCD ; ??? si ss_z_pos <= $CCCD on le delete, mais pourquoi ?
         ble   SSB_DeleteObj                           *    ble.s   loc_3516C
                                                       *
 loc_35150                                             *loc_35150:
@@ -165,7 +165,7 @@ SSB_CheckCollision                                    *loc_34F28:
                                                       *        beq.s   return_34F68
                                                       *        move.l  #0,objoff_34(a0)
                                                       *        movea.l d0,a1 ; a1=object
-                                                      *        st      objoff_2A(a1)
+                         ; tell shadow to self delete *        st      objoff_2A(a1)
                                                       *
 return_34F68                                          *return_34F68:
         rts                                           *        rts
@@ -186,11 +186,11 @@ SSB_ComputeCoordinates                                *loc_351A0:
                                                       *    move.w  d7,-(sp)
                                                       *    moveq   #0,d2
                                                       *    moveq   #0,d3
-                                                      *    moveq   #0,d4
-                                                      *    moveq   #0,d5
+        ; no need to init                             *    moveq   #0,d4
+        ; no need to init                             *    moveq   #0,d5
                                                       *    moveq   #0,d6
                                                       *    moveq   #0,d7
-                                                      *    movea.l (SS_CurrentPerspective).w,a1
+        ldx   #SS_CurrentPerspective                  *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u                              *    move.w  objoff_30(a0),d0
                                                       *    beq.w   loc_35258
                                                       *    cmp.w   (a1)+,d0
@@ -213,9 +213,10 @@ SSB_ComputeCoordinates                                *loc_351A0:
                                                       *
                                                       *loc_351E8:
                                                       *    move.b  (a1,d0.w),d2
-                                                      *    move.b  2(a1,d0.w),d4
-                                                      *    move.b  3(a1,d0.w),d5
-                                                      *    move.b  1(a1,d0.w),d3
+        ldd   2,x                                     *    move.b  2(a1,d0.w),d4
+        std   d4+2 ; store to LSB                                                     
+        std   d5+2 ; store to LSB                     *    move.b  3(a1,d0.w),d5
+                                                      *    move.b  1(a1,d0.w),d3                                                              
                                                       *
                                                       *loc_351F8:
                                                       *    bpl.s   loc_35202
@@ -239,12 +240,14 @@ SSB_ComputeCoordinates                                *loc_351A0:
                                                       *    movea.l d0,a1 ; a1=object
                                                       *    move.b  angle(a0),d0
                                                       *    jsrto   (CalcSine).l, JmpTo14_CalcSine
-                                                      *    move.w  d4,d7
-                                                      *    lsr.w   #2,d7
+d4      ldd   #$00FF ; (dynamic)                      *    move.w  d4,d7
+        lsrb ; d4 is one byte no need to lsra/rorb    *    lsr.w   #2,d7
+        lsrb
                                                       *    add.w   d7,d4
                                                       *    muls.w  d4,d1
-                                                      *    move.w  d5,d7
-                                                      *    asr.w   #2,d7
+d5      ldd   #$00FF ; (dynamic)                      *    move.w  d5,d7
+        lsrb ; d5 is one byte no need to lsra/rorb    *    asr.w   #2,d7
+        lsrb ; asr.w is useless since d5 is a byte padded with 0
                                                       *    add.w   d7,d5
                                                       *    muls.w  d5,d0
                                                       *    asr.l   #8,d0
@@ -261,6 +264,38 @@ SSB_ComputeCoordinates                                *loc_351A0:
                                                       *    move.w  (sp)+,d7
         rts                                           *    rts                                                      
                                                       *; ===========================================================================
+
+                                                      *loc_35258:
+                                                      *    andi.b  #$7F,render_flags(a0)
+                                                      *    bra.s   loc_35254
+                                                      *; ===========================================================================                                                 
+                                                      
+
+                                                      *loc_35260:
+                                                      *    move.b  #$80,d1
+                                                      *    move.b  4(a1,d0.w),d6
+                                                      *    move.b  5(a1,d0.w),d7
+                                                      *    beq.s   loc_35282
+                                                      *    sub.w   d1,d6
+                                                      *    sub.w   d1,d7
+                                                      *    neg.w   d6
+                                                      *    neg.w   d7
+                                                      *    move.b  angle(a0),d1
+                                                      *    cmp.b   d7,d1
+                                                      *    blo.s   loc_35282
+                                                      *    cmp.b   d6,d1
+                                                      *    blo.s   loc_35258
+                                                      *
+                                                      *loc_35282:
+                                                      *    move.b  (a1,d0.w),d2
+                                                      *    move.b  2(a1,d0.w),d4
+                                                      *    move.b  3(a1,d0.w),d5
+                                                      *    subi.w  #$100,d2
+                                                      *    neg.w   d2
+                                                      *    move.b  1(a1,d0.w),d3
+                                                      *    bra.w   loc_351F8
+                                                      *; ===========================================================================
+                                                      
 SSB_CheckIfForeground                                 *loc_34F90:
         ldd   ss_z_pos,u
         cmpd  #4                                      *        cmpi.w  #4,objoff_30(a0)
@@ -271,17 +306,21 @@ SSB_CheckIfForeground                                 *loc_34F90:
 return_34F9E                                          *return_34F9E:
         rts                                           *        rts
                                                       *; ===========================================================================
+
+; TODO : dupliquer ce code pour eviter son appel en tant que sous routine
+; TODO : reutiliser les obj pour ne pas avoir a faire de delete (tester performance)
+                                                      
 SSB_DeleteObj                                         *loc_3516C:
-                                                      *    move.l  (sp)+,d0
-                                                      *    move.l  objoff_34(a0),d0
-                                                      *    beq.w   JmpTo63_DeleteObject
+        puls  d ; DeleteObject will return to caller  *    move.l  (sp)+,d0
+        ldx   #$ss_parent                             *    move.l  objoff_34(a0),d0
+        beq   JmpTo_DeleteObject ; branch if no child *    beq.w   JmpTo63_DeleteObject
                                                       *    movea.l d0,a1 ; a1=object
-                                                      *    st  objoff_2A(a1)
+        com   ss_self_delete,x ; shadow to delete     *    st  objoff_2A(a1)
                                                       *
                                                       *    if removeJmpTos
                                                       *JmpTo63_DeleteObject ; JmpTo
                                                       *    endif
-                                                      *
+JmpTo_DeleteObject                                    *
         jmp   DeleteObject                            *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
                                                       *; =========================================================================== 
 SSB_CheckCollisionContinue                            *loc_350A0:
@@ -320,7 +359,7 @@ return_350E0                                          *return_350E0:
         ... il manque des routines ...
                                                       
 SSB_Main                                              *loc_3533A:
-                                                      *    tst.b   objoff_2A(a0)
+        tst                                           *    tst.b   objoff_2A(a0)
                                                       *    bne.w   BranchTo_JmpTo63_DeleteObject
                                                       *    movea.l objoff_34(a0),a1 ; a1=object
                                                       *    tst.b   render_flags(a1)

@@ -134,6 +134,7 @@ ext_variables                 equ 27  ; to 40   ; reserved space for additionnal
 ss_z_pos                      equ 27  ; and 28  ; distance from camera to half-pipe segment end (0: front)
 ss_parent                     equ 29  ; and 30  ; distance from camera to half-pipe segment end (0: front)
 ss_shadow_tilt                equ 31  ; 0:flat 1:diagonal 2:side
+ss_self_delete                equ 32  ; flag usually set by parent to tell to child to self delete
 
 ; Special Stage object properties: decalage +4 par rapport au code
 ;ss_dplc_timer = $23
