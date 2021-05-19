@@ -117,22 +117,7 @@ loc_35322                                                                 *loc_3
                                                                           *return_3532C:
         rts                                                               *    rts
                                                                           
-SSB_ScaleAnim                                                             *loc_3512A:
-        tst   status,u ; ??? a quoi correspond ce flag, collision ?       *    btst    #7,status(a0)
-        bmi   SSB_DeleteObject                                            *    bne.s   loc_3516C
-        lda   SSTrack_drawing_index                                       *    cmpi.b  #4,(SSTrack_drawing_index).w
-        bne   loc_35146                                                   *    bne.s   loc_35146
-        ldd   ss_z_pos,u                                                  *    subi.l  #$CCCC,objoff_30(a0)
-        subd  #$CCCC ; ??? si ss_z_pos <= $CCCC on le delete, mais pourquoi ?
-        ble   SSB_DeleteObject                                            *    ble.s   loc_3516C
-        bra   loc_35150                                                   *    bra.s   loc_35150
-                                                                          *
-loc_35146                                                                 *loc_35146:
-        ldd   ss_z_pos,u                                                  *    subi.l  #$CCCD,objoff_30(a0)
-        subd  #$CCCD ; ??? si ss_z_pos <= $CCCD on le delete, mais pourquoi ?
-        ble   SSB_DeleteObject                                            *    ble.s   loc_3516C
-                                                                          *
-loc_35150                                                                 *loc_35150:
+SSB_ScaleAnim                                                             *loc_35150:
         ldd   anim,u                                                      *    cmpi.b  #$A,anim(a0)
         cmpd  #Ani_SSBomb_explode                                         
         beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
@@ -152,7 +137,7 @@ SSB_ScaleAnim_return                                                      *retur
                                                                           *; ===========================================================================
 SSB_CheckCollision                                                        *loc_34F28:
                                                                           *        move.w  #8,d6
-        jsr   SSB_CheckCollisionContinue                                  *        bsr.w   loc_350A0
+        jsr   CheckCollision                                              *        bsr.w   loc_350A0
         bcc   return_34F68                                                *        bcc.s   return_34F68
                                                                           *        move.b  #1,collision_property(a1)
                                                                           *        move.w  #SndID_SlowSmash,d0
@@ -165,7 +150,7 @@ SSB_CheckCollision                                                        *loc_3
                                                                           *        beq.s   return_34F68
                                                                           *        move.l  #0,objoff_34(a0)
                                                                           *        movea.l d0,a1 ; a1=object
-                         ; tell shadow to self delete                     *        st      objoff_2A(a1)
+        com   ss_self_delete,x ; tell shadow to self delete               *        st      objoff_2A(a1)
                                                                           *
 return_34F68                                                              *return_34F68:
         rts                                                               *        rts
@@ -464,27 +449,8 @@ SSB_CheckIfForeground                                                     *loc_3
 return_34F9E                                                              *return_34F9E:
         rts                                                               *        rts
                                                                           *; ===========================================================================
-
-; TODO : dupliquer ce code pour eviter son appel en tant que sous routine
-; TODO : reutiliser les obj pour ne pas avoir a faire de delete (tester performance)
-                                                      
-SSB_DeleteObject                                                          *loc_3516C:
-                                                                          *    move.l  (sp)+,d0
-        ldx   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
-        beq   SSB_SetDeleteFlag ; branch if no child                      *    beq.w   JmpTo63_DeleteObject
-                                                                          *    movea.l d0,a1 ; a1=object
-        com   ss_self_delete,x ; shadow to delete                         *    st  objoff_2A(a1)
-                                                                          *
-                                                                          *    if removeJmpTos
-                                                                          *JmpTo63_DeleteObject ; JmpTo
-                                                                          *    endif
-SSB_SetDeleteFlag                                                         *
-        lda   render_flags,u                                              
-        ora   #render_todelete_mask                                       *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
-        lda   render_flags,u                                              
-        rts                                                               
-                                                                          *; =========================================================================== 
-SSB_CheckCollisionContinue                                                *loc_350A0:
+ 
+CheckCollision                                                            *loc_350A0:
         ldd   anim,u                                                      
         cmpd  #Ani_SSBomb_8                                               *    cmpi.b  #8,anim(a0)
         bne   loc_350DC                                                   *    bne.s   loc_350DC
@@ -517,8 +483,55 @@ return_350E0                                                              *retur
         rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           
+                                                                          *loc_350E2:
+                                                                          *    tst.b   id(a1)
+                                                                          *    beq.s   loc_3511A
+                                                                          *    cmpi.b  #2,routine(a1)
+                                                                          *    bne.s   loc_3511A
+                                                                          *    tst.b   routine_secondary(a1)
+                                                                          *    bne.s   loc_3511A
+                                                                          *    move.b  angle(a1),d0
+                                                                          *    move.b  angle(a0),d1
+                                                                          *    move.b  d1,d2
+                                                                          *    add.b   d6,d1
+                                                                          *    bcs.s   loc_35110
+                                                                          *    sub.b   d6,d2
+                                                                          *    bcs.s   loc_35112
+                                                                          *    cmp.b   d1,d0
+                                                                          *    bhs.s   loc_3511A
+                                                                          *    cmp.b   d2,d0
+                                                                          *    bhs.s   loc_35120
+                                                                          *    bra.s   loc_3511A
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_35110:
+                                                                          *    sub.b   d6,d2
+                                                                          *
+                                                                          *loc_35112:
+                                                                          *    cmp.b   d1,d0
+                                                                          *    blo.s   loc_35120
+                                                                          *    cmp.b   d2,d0
+                                                                          *    bhs.s   loc_35120
+                                                                          *
+                                                                          *loc_3511A:
+                                                                          *    move    #0,ccr
+                                                                          *    rts
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_35120:
+                                                                          *    clr.b   collision_flags(a0)
+                                                                          *    move    #1,ccr
+                                                                          *    rts
+                                                                          *; ===========================================================================
+             
+SSB_SetDeleteFlag
+        lda   render_flags,u                                              
+        ora   #render_todelete_mask                                       *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
+        lda   render_flags,u                                              
+        rts             
+                                                                          
 SSB_Main                                                                  *loc_3533A:
-        tst                                                               *    tst.b   objoff_2A(a0)
+        tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
         bne   SSB_SetDeleteFlag                                           *    bne.w   BranchTo_JmpTo63_DeleteObject
                                                                           *    movea.l objoff_34(a0),a1 ; a1=object
                                                                           *    tst.b   render_flags(a1)
@@ -562,13 +575,6 @@ SSB_Main                                                                  *loc_3
                                                                           *    move.b  d0,mapping_frame(a0)
         jmp   DisplaySprite                                               *    bra.w   JmpTo44_DisplaySprite
                                                                           *; ===========================================================================                                                      
-													                      
-                                                                          *; ---------------------------------------------------------------------------
-                                                                          *; Subroutine to calculate sine and cosine of an angle
-                                                                          *; d0 = input byte = angle (360 degrees == 256)
-                                                                          *; d0 = output word = 255 * sine(angle)
-                                                                          *; d1 = output word = 255 * cosine(angle)
-                                                                          *; ---------------------------------------------------------------------------
 													                      
                                                                           *; ===========================================================================
                                                                           *byte_35180:
