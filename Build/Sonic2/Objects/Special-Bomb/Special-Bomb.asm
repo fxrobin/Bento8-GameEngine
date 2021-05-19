@@ -192,9 +192,9 @@ SSB_ComputeCoordinates                                                    *loc_3
                                                                           *    moveq   #0,d7
         ldx   #SS_CurrentPerspective                                      *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u               ; load sprite z position           *    move.w  objoff_30(a0),d0
-        beq   SSB_CC_HideSprite        ; if z=0 sprite is behind camera   *    beq.w   loc_35258
+        beq   return_34F68             ; if z=0 sprite is behind camera   *    beq.w   loc_35258
         cmpd  ,x++                     ; read nb of ellipses for this img *    cmp.w   (a1)+,d0
-        bgt   SSB_CC_HideSprite        ; sprite is too far, no ellipse    *    bgt.w   loc_35258
+        bgt   return_34F68             ; sprite is too far, no ellipse    *    bgt.w   loc_35258
         subd  #1                       ; each perspective data for an img *    subq.w  #1,d0
         aslb                           ; is stored in groups of 6 bytes
         rola                           ; one group defines an ellipse     *    add.w   d0,d0
@@ -213,12 +213,12 @@ d1      addd  #$0000                   ; (dynamic) d = (ss_z_pos-1)*6     *    a
 d6      cmpa  #$00                     ; (dynamic) angle max (incl.)      *    cmp.b   d6,d1
         blo   SSB_CC_VisibleArea       ; of visible area                  *    blo.s   loc_351E8
 d7      cmpa  #$00                     ; (dynamic) angle min (excl.)      *    cmp.b   d7,d1
-        blo   SSB_CC_HideSprite        ; of visible area                  *    blo.s   loc_35258
+        blo   return_34F68             ; of visible area                  *    blo.s   loc_35258
                                                                           *
 SSB_CC_VisibleArea                                                        *loc_351E8:
         ldd   ,x                                                          *    move.b  (a1,d0.w),d2
         sta   xCenter+2
-        sta   sxCenter+2
+        sta   sxCenter+1
                                                                           *    move.b  2(a1,d0.w),d4
                                                                           *    move.b  3(a1,d0.w),d5
                                                                           *    move.b  1(a1,d0.w),d3                                                              
@@ -337,7 +337,7 @@ yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ; Process shadow coordinates
         ; --------------------------
 
-        ldx   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
+        ldy   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
         beq   SSB_CC_NoShadow                                             *    beq.s   loc_3524E
                                                                           *    movea.l d0,a1 ; a1=object
                                                                           *    move.b  angle(a0),d0
@@ -357,19 +357,37 @@ yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ; we will appy 1,25 factor on already calculated ellipse          *
         ; instead of process muls one more time                                                                  
 sx      ldd   #$0000                   ; (dynamic)
-        tfr   d,x
+        ldx   *-2
+        lsra
+        rorb
+        lsra
+        rorb        
+        abx
+
          
 sxCenter
-        addd  #$0000                   ; (dynamic) add x center of ellipse        
-        std   x_pos,x                                                                                  
+        ldb   #$00                     ; (dynamic) add x center of ellipse
+        abx        
+        stx   x_pos,y                                                                                  
                                                                           *    move.w  d4,d7
                                                                           *    lsr.w   #2,d7
                                                                           *    add.w   d7,d4
                                                                           *    muls.w  d4,d1
-sy      ldd   #$0000                   ; (dynamic)       
+        ; we will appy 1,25 factor on already calculated ellipse          *
+        ; instead of process muls one more time                                                                  
+sy      ldd   #$0000                   ; (dynamic)
+        ldx   *-2
+        lsra
+        rorb
+        lsra
+        rorb        
+        abx
+
+         
 syCenter
-        addd  #$0000                   ; (dynamic) add y center of ellipse
-        std   y_pos,x                                                                    
+        ldd   #$0000                   ; (dynamic) add y center of ellipse
+        leax  d,x        
+        stx   y_pos,y                                                                       
                                                                           *    move.w  d5,d7
                                                                           *    asr.w   #2,d7
                                                                           *    add.w   d7,d5
@@ -390,9 +408,9 @@ SSB_CC_NoShadow                                                           *loc_3
         rts                                                               *    rts                                                      
                                                                           *; ===========================================================================
 													                      
-SSB_CC_HideSprite                                                         *loc_35258:
+                                                                          *loc_35258:
                                                                           *    andi.b  #$7F,render_flags(a0)
-        rts                                                               *    bra.s   loc_35254
+                                                                          *    bra.s   loc_35254
                                                                           *; ===========================================================================  
         
 SSB_CC_Flipped                                                            *loc_35260:
@@ -423,7 +441,7 @@ SSB_CC_Flipped                                                            *loc_3
 SSB_CheckIfForeground                                                     *loc_34F90:
         ldd   ss_z_pos,u                                                  
         cmpd  #4                                                          *        cmpi.w  #4,objoff_30(a0)
-        bhs                                                               *        bhs.s   return_34F9E
+        bhs   return_34F9E                                                *        bhs.s   return_34F9E
         lda   #1                                                          
         sta   priority,u                                                  *        move.b  #1,priority(a0)
                                                                           *
