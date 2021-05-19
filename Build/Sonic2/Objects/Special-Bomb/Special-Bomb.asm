@@ -136,21 +136,23 @@ SSB_ScaleAnim_return                                                      *retur
         rts                                                               *    rts                                                      
                                                                           *; ===========================================================================
 SSB_CheckCollision                                                        *loc_34F28:
-                                                                          *        move.w  #8,d6
+        ; collision width, now hardcoded in collision routine             *        move.w  #8,d6
         jsr   CheckCollision                                              *        bsr.w   loc_350A0
         bcc   return_34F68                                                *        bcc.s   return_34F68
-                                                                          *        move.b  #1,collision_property(a1)
+        lda   #1
+        sta   collision_property,x                                        *        move.b  #1,collision_property(a1)
                                                                           *        move.w  #SndID_SlowSmash,d0
                                                                           *        jsr     (PlaySoundStereo).l
-        lda   #6                                                          
-        sta   routine,u                                                   *        move.b  #6,routine(a0)
-                                                                          *        move.b  #0,anim_frame(a0)
-                                                                          *        move.b  #0,anim_frame_duration(a0)
-                                                                          *        move.l  objoff_34(a0),d0
-                                                                          *        beq.s   return_34F68
-                                                                          *        move.l  #0,objoff_34(a0)
+        ldd   #$0300                                                          
+        sta   routine,u                ; explode                          *        move.b  #6,routine(a0)
+        stb   anim_frame,u                                                *        move.b  #0,anim_frame(a0)
+        stb   anim_frame_duration,u                                       *        move.b  #0,anim_frame_duration(a0)
+        ldx   ss_parent,u                                                 *        move.l  objoff_34(a0),d0
+        beq   return_34F68                                                *        beq.s   return_34F68
+        lda   #0
+        std   ss_parent,u                                                 *        move.l  #0,objoff_34(a0)
                                                                           *        movea.l d0,a1 ; a1=object
-        com   ss_self_delete,x ; tell shadow to self delete               *        st      objoff_2A(a1)
+        com   ss_self_delete,x         ; tell shadow to self delete       *        st      objoff_2A(a1)
                                                                           *
 return_34F68                                                              *return_34F68:
         rts                                                               *        rts
@@ -456,16 +458,16 @@ CheckCollision                                                            *loc_3
         bne   loc_350DC                                                   *    bne.s   loc_350DC
         tst   collision_flags,u                                           *    tst.b   collision_flags(a0)
         beq   loc_350DC                                                   *    beq.s   loc_350DC
-                                                                          *    lea (MainCharacter).w,a2 ; a2=object (special stage sonic)
+        ldx   #MainCharacter                                              *    lea (MainCharacter).w,a2 ; a2=object (special stage sonic)
                                                                           *    lea (Sidekick).w,a3 ; a3=object (special stage tails)
                                                                           *    move.w  objoff_34(a2),d0
                                                                           *    cmp.w   objoff_34(a3),d0
                                                                           *    blo.s   loc_350CE
                                                                           *    movea.l a3,a1
                                                                           *    bsr.w   loc_350E2
-        bcs   return_350E0                                                *    bcs.s   return_350E0
+                                                                          *    bcs.s   return_350E0
                                                                           *    movea.l a2,a1
-                                                                          *    bra.w   loc_350E2
+        bra   loc_350E2                                                   *    bra.w   loc_350E2
                                                                           *; ===========================================================================
                                                                           *
                                                                           *loc_350CE:
@@ -483,45 +485,47 @@ return_350E0                                                              *retur
         rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           
-                                                                          *loc_350E2:
+loc_350E2                                                                 *loc_350E2:
                                                                           *    tst.b   id(a1)
                                                                           *    beq.s   loc_3511A
-                                                                          *    cmpi.b  #2,routine(a1)
-                                                                          *    bne.s   loc_3511A
-                                                                          *    tst.b   routine_secondary(a1)
-                                                                          *    bne.s   loc_3511A
+        lda   routine,x
+        cmpa  #$1                      ; sonic is in MdNormal             *    cmpi.b  #2,routine(a1)
+        bne   loc_3511A                                                   *    bne.s   loc_3511A
+        tst   routine_secondary,x                                         *    tst.b   routine_secondary(a1)
+        bne   loc_3511A                ; branch if sonic in hurt state    *    bne.s   loc_3511A
                                                                           *    move.b  angle(a1),d0
-                                                                          *    move.b  angle(a0),d1
+        lda   angle,u                  ; bomb angle                       *    move.b  angle(a0),d1
+        ldb   angle,u                                                                          
                                                                           *    move.b  d1,d2
-                                                                          *    add.b   d6,d1
-                                                                          *    bcs.s   loc_35110
-                                                                          *    sub.b   d6,d2
-                                                                          *    bcs.s   loc_35112
-                                                                          *    cmp.b   d1,d0
-                                                                          *    bhs.s   loc_3511A
-                                                                          *    cmp.b   d2,d0
-                                                                          *    bhs.s   loc_35120
-                                                                          *    bra.s   loc_3511A
+        adda  #8                                                          *    add.b   d6,d1
+        bcs   loc_35110                                                   *    bcs.s   loc_35110
+        subb  #8                                                          *    sub.b   d6,d2
+        bcs   loc_35112                                                   *    bcs.s   loc_35112
+        cmpa  angle,x                                                     *    cmp.b   d1,d0
+        blo   loc_3511A                                                   *    bhs.s   loc_3511A
+        cmpb  angle,x                                                     *    cmp.b   d2,d0
+        blo   loc_35120                                                   *    bhs.s   loc_35120
+        bra   loc_3511A                                                   *    bra.s   loc_3511A
                                                                           *; ===========================================================================
                                                                           *
-                                                                          *loc_35110:
-                                                                          *    sub.b   d6,d2
+loc_35110                                                                 *loc_35110:
+        subb  #8                                                          *    sub.b   d6,d2
                                                                           *
-                                                                          *loc_35112:
-                                                                          *    cmp.b   d1,d0
-                                                                          *    blo.s   loc_35120
-                                                                          *    cmp.b   d2,d0
-                                                                          *    bhs.s   loc_35120
+loc_35112                                                                 *loc_35112:
+        cmpa  angle,x                                                     *    cmp.b   d1,d0
+        bhs   loc_35120                                                   *    blo.s   loc_35120
+        cmpb  angle,x                                                     *    cmp.b   d2,d0
+        bhs   loc_35120                                                   *    bhs.s   loc_35120
                                                                           *
-                                                                          *loc_3511A:
-                                                                          *    move    #0,ccr
-                                                                          *    rts
+loc_3511A                                                                 *loc_3511A:
+        andcc #$FE                                                        *    move    #0,ccr
+        rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
-                                                                          *loc_35120:
-                                                                          *    clr.b   collision_flags(a0)
-                                                                          *    move    #1,ccr
-                                                                          *    rts
+loc_35120                                                                 *loc_35120:
+        clr   collision_flags,u                                           *    clr.b   collision_flags(a0)
+        orcc  #$01                                                        *    move    #1,ccr
+        rts                                                               *    rts
                                                                           *; ===========================================================================
              
 SSB_SetDeleteFlag

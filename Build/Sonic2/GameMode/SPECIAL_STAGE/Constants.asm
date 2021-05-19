@@ -132,7 +132,7 @@ collision_flags               equ 103 ; Collision response bitfield, tells what 
 inertia                       equ 100 ; and 101 ; directionless representation of speed... not updated in the air
 ext_variables                 equ 27  ; to 40   ; reserved space for additionnal variables
 ss_z_pos                      equ 27  ; and 28  ; distance from camera to half-pipe segment end (0: front)
-ss_parent                     equ 29  ; and 30  ; distance from camera to half-pipe segment end (0: front)
+ss_parent                     equ 29  ; and 30  ; object ptr to child or parent (0: front)
 ss_shadow_tilt                equ 31  ; 0:flat 1:diagonal 2:side
 ss_self_delete                equ 32  ; flag usually set by parent to tell to child to self delete
 
