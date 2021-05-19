@@ -20,15 +20,13 @@ SSBomb                                                                    *Obj61
                                                                           *; off_34EBE:
 SSB_Routines                                                              *Obj61_Index:    offsetTable
         fdb   SSB_Init                                                    *                offsetTableEntry.w Obj61_Init   ; 0
-        fdb   SSB_InTheAir                                                *                offsetTableEntry.w loc_34F06    ; 2
-        fdb   SSB_Main                                                    *                offsetTableEntry.w loc_3533A    ; 4
+        fdb   SSB_Bomb                                                    *                offsetTableEntry.w loc_34F06    ; 2
+        fdb   SSB_Shadow                                                  *                offsetTableEntry.w loc_3533A    ; 4
         fdb   SSB_Explode                                                 *                offsetTableEntry.w loc_34F6A    ; 6
                                                                           *; ===========================================================================
                                                                           *; loc_34EC6:
 SSB_Init                                                                  *Obj61_Init:
-        lda   routine,u                                                   
-        adda  #2                                                          
-        sta   routine,u                                                   *        addq.b  #2,routine(a0)
+        inc   routine,u                                                   *        addq.b  #2,routine(a0)
         ldd   #$0000                                                      *        move.w  #$7F,x_pos(a0)
         std   xy_pixel,u                                                  *        move.w  #$58,y_pos(a0)
                                                                           *        move.l  #Obj61_MapUnc_36508,mappings(a0)
@@ -39,10 +37,10 @@ SSB_Init                                                                  *Obj61
         stb   collision_flags,u                                           *        move.b  #2,collision_flags(a0)
                                                                           *        move.b  #-1,(SS_unk_DB4D).w
         tst   angle,u                                                     *        tst.b   angle(a0)
-        bmi   SSB_InTheAir                                                *        bmi.s   loc_34F06
+        bmi   SSB_Main                                                    *        bmi.s   loc_34F06
         jsr   SSB_InitShadow                                              *        bsr.w   loc_3529C
                                                                           *
-SSB_InTheAir                                                              *loc_34F06:
+SSB_Bomb                                                                  *loc_34F06:
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
         ldd   Ani_SSBomb_0                                                *        lea     (Ani_obj61).l,a1
@@ -63,7 +61,7 @@ SSB_InitShadow                                                            *loc_3
         stx   ss_parent,u                                                 
         lda   id,u                                                        
         sta   id,x                                                        *    move.b  id(a0),id(a1)
-        lda   #$0405                                                      
+        lda   #$0205                                                      
         sta   routine,x                                                   *    move.b  #4,routine(a1)
                                                                           *    move.l  #Obj63_MapUnc_34492,mappings(a1)
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialFlatShadow,3,0),art_tile(a1)
@@ -534,16 +532,16 @@ SSB_SetDeleteFlag
         lda   render_flags,u                                              
         rts             
                                                                           
-SSB_Main                                                                  *loc_3533A:
+SSB_Shadow                                                                *loc_3533A:
         tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
         bne   SSB_SetDeleteFlag                                           *    bne.w   BranchTo_JmpTo63_DeleteObject
-                                                                          *    movea.l objoff_34(a0),a1 ; a1=object
-                                                                          *    tst.b   render_flags(a1)
-                                                                          *    bmi.s   loc_3534E
+        ldx   ss_parent,u                                                 *    movea.l objoff_34(a0),a1 ; a1=object
+        tst   rsv_render_flags,x                                          *    tst.b   render_flags(a1)
+        bmi   loc_3534E                                                   *    bmi.s   loc_3534E
         rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
-                                                                          *loc_3534E:
+loc_3534E                                                                 *loc_3534E:
                                                                           *    moveq   #9,d0
                                                                           *    sub.b   anim(a1),d0
                                                                           *    addi_.b #1,d0
@@ -556,30 +554,83 @@ SSB_Main                                                                  *loc_3
                                                                           *    add.w   d0,d0
                                                                           *    add.w   d1,d0
                                                                           *    moveq   #0,d1
-                                                                          *    move.b  objoff_2B(a0),d1
-                                                                          *    beq.s   loc_3538A
-                                                                          *    cmpi.b  #1,d1
-                                                                          *    beq.s   loc_35380
+        lda   ss_shadow_tilt,u                                            *    move.b  objoff_2B(a0),d1
+        beq   loc_3538A                                                   *    beq.s   loc_3538A
+        cmpa  #1                                                          *    cmpi.b  #1,d1
+        beq   loc_35380                                                   *    beq.s   loc_35380
                                                                           *    add.w   d1,d0
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialSideShadow,3,0),art_tile(a0)
+        ldx   image_set,x
+        lda   -1,x
+        ldx   #Tbl_SSShadow_Side
+        ldd   a,x
+        std   image_set,u
+        jmp   DisplaySprite                                                                               
                                                                           *    bra.s   loc_35392
                                                                           *; ===========================================================================
                                                                           *
-                                                                          *loc_35380:
+loc_35380                                                                 *loc_35380:
                                                                           *    add.w   d1,d0
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialDiagShadow,3,0),art_tile(a0)
+        ldx   image_set,x
+        lda   -1,x
+        ldx   #Tbl_SSShadow_Diag
+        ldd   a,x
+        std   image_set,u
+        jmp   DisplaySprite                                                                                          
                                                                           *    bra.s   loc_35392
                                                                           *; ===========================================================================
                                                                           *
-                                                                          *loc_3538A:
+loc_3538A                                                                 *loc_3538A:
                                                                           *    add.w   d1,d0
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialFlatShadow,3,0),art_tile(a0)
+        ldx   image_set,x
+        lda   -1,x
+        ldx   #Tbl_SSShadow_Flat
+        ldd   a,x
+        std   image_set,u  
+        jmp   DisplaySprite                                                                                        
                                                                           *
-                                                                          *loc_35392:
+loc_35392                                                                 *loc_35392:
                                                                           *    move.b  d0,mapping_frame(a0)
-        jmp   DisplaySprite                                               *    bra.w   JmpTo44_DisplaySprite
-                                                                          *; ===========================================================================                                                      
-													                      
+                                                                          *    bra.w   JmpTo44_DisplaySprite
+        
+Tbl_SSShadow_Flat
+        fdb   Img_SSShadow_000
+        fdb   Img_SSShadow_003
+        fdb   Img_SSShadow_006
+        fdb   Img_SSShadow_009
+        fdb   Img_SSShadow_012
+        fdb   Img_SSShadow_015
+        fdb   Img_SSShadow_018
+        fdb   Img_SSShadow_021
+        fdb   Img_SSShadow_024
+        fdb   Img_SSShadow_027
+
+Tbl_SSShadow_Diag
+        fdb   Img_SSShadow_001
+        fdb   Img_SSShadow_004
+        fdb   Img_SSShadow_007
+        fdb   Img_SSShadow_010
+        fdb   Img_SSShadow_013
+        fdb   Img_SSShadow_016
+        fdb   Img_SSShadow_019
+        fdb   Img_SSShadow_022
+        fdb   Img_SSShadow_025
+        fdb   Img_SSShadow_028
+
+Tbl_SSShadow_Side
+        fdb   Img_SSShadow_002
+        fdb   Img_SSShadow_005
+        fdb   Img_SSShadow_008
+        fdb   Img_SSShadow_011
+        fdb   Img_SSShadow_014
+        fdb   Img_SSShadow_017
+        fdb   Img_SSShadow_020
+        fdb   Img_SSShadow_023
+        fdb   Img_SSShadow_026
+        fdb   Img_SSShadow_029        
+        
                                                                           *; ===========================================================================
                                                                           *byte_35180:
                                                                           *    dc.b   9,  9,  9,  8,  8,  7,  7,  6,  6,  5,  5,  4,  4,  3,  3,  3

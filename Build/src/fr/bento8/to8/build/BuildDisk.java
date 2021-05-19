@@ -402,7 +402,8 @@ public class BuildDisk
 
 			Sprite sprite = new Sprite(spriteProperties.getKey());
 			sprite.spriteFile = spriteProperties.getValue()[0].split(",")[0];
-			String spriteFileRef = (spriteProperties.getValue()[0].split(",").length==2?spriteProperties.getValue()[0].split(",")[1]:null);
+			String spriteFileRef = (spriteProperties.getValue()[0].split(",").length>1?spriteProperties.getValue()[0].split(",")[1]:null);
+			sprite.associatedIdx = (spriteProperties.getValue()[0].split(",").length>2?spriteProperties.getValue()[0].split(",")[2]:null);
 			String[] spriteVariants = spriteProperties.getValue()[1].split(",");
 			if (spriteProperties.getValue().length > 2 && spriteProperties.getValue()[2].equalsIgnoreCase(BuildDisk.RAM))
 				sprite.inRAM = true;					
@@ -1965,8 +1966,11 @@ public class BuildDisk
 		int xyb1_offset = 0;
 		int xyd1_offset = 0;		
 		
-		if (asm != null)
-			asm.addLabel(sprite.name+" ");		
+		if (asm != null) {
+			if (sprite.associatedIdx != null)
+				asm.addFcb(new String[]{sprite.associatedIdx});
+			asm.addLabel(sprite.name+" ");
+		}
 		
 		if (sprite.subSprites.containsKey("NB0") || sprite.subSprites.containsKey("ND0") || sprite.subSprites.containsKey("NB1") || sprite.subSprites.containsKey("ND1")) {
 			n_offset = imageSet_header;			
@@ -2219,7 +2223,7 @@ public class BuildDisk
 			asm.addFcb(result);
 			asm.flush();
 		}
-		return line.size();
+		return line.size()+(sprite.associatedIdx != null?1:0);
 	}
 	
 	private static void getImgSubSpriteIndex(GameMode gm, SubSprite s, List<String> line, int mode) {
