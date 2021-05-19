@@ -216,15 +216,17 @@ d7      cmpa  #$00                     ; (dynamic) angle min (excl.)      *    c
         blo   return_34F68             ; of visible area                  *    blo.s   loc_35258
                                                                           *
 SSB_CC_VisibleArea                                                        *loc_351E8:
-        ldd   ,x                                                          *    move.b  (a1,d0.w),d2
-        sta   xCenter+2
-        sta   sxCenter+1
+        clra
+        ldb   ,x                                                          *    move.b  (a1,d0.w),d2
+        std   xCenter+1
+        std   sxCenter+1
                                                                           *    move.b  2(a1,d0.w),d4
                                                                           *    move.b  3(a1,d0.w),d5
-                                                                          *    move.b  1(a1,d0.w),d3                                                              
+                                                                          *    move.b  1(a1,d0.w),d3
                                                                           *
 SSB_CC_ProcessYCenter                                                     *loc_351F8:
         clra
+        ldb   1,x
         tstb
         bpl   @a                                                          *    bpl.s   loc_35202
         cmpb  #$48                                                        *    cmpi.b  #$48,d3
@@ -366,8 +368,8 @@ sx      ldd   #$0000                   ; (dynamic)
 
          
 sxCenter
-        ldb   #$00                     ; (dynamic) add x center of ellipse
-        abx        
+        ldd   #$0000                   ; (dynamic) add x center of ellipse
+        leax  d,x        
         stx   x_pos,y                                                                                  
                                                                           *    move.w  d4,d7
                                                                           *    lsr.w   #2,d7
@@ -416,24 +418,38 @@ SSB_CC_NoShadow                                                           *loc_3
 SSB_CC_Flipped                                                            *loc_35260:
                                                                           *    move.b  #$80,d1
                                                                           *    move.b  4(a1,d0.w),d6
-                                                                          *    move.b  5(a1,d0.w),d7
-                                                                          *    beq.s   loc_35282
+        ldb   5,x                      ; branch if angle min              *    move.b  5(a1,d0.w),d7
+        beq   SSB_CC_FVisibleArea      ; of visible area is 0             *    beq.s   loc_35282
+        clra
+        subd  #$0080
+        negb
+        stb   fd7+1
+        clra
+        ldb   4,x
+        subd  #$0080
+        negb
+        stb   fd6+1        
                                                                           *    sub.w   d1,d6
                                                                           *    sub.w   d1,d7
                                                                           *    neg.w   d6
                                                                           *    neg.w   d7
-                                                                          *    move.b  angle(a0),d1
-                                                                          *    cmp.b   d7,d1
-                                                                          *    blo.s   loc_35282
-                                                                          *    cmp.b   d6,d1
-                                                                          *    blo.s   loc_35258
+        lda   angle,u                  ; load sprite angle                *    move.b  angle(a0),d1
+fd7     cmpa  #$00                     ; (dynamic) angle min (excl.)      *    cmp.b   d7,d1
+        blo   SSB_CC_FVisibleArea                                         *    blo.s   loc_35282
+fd6     cmpa  #$00                     ; (dynamic) angle max (incl.)      *    cmp.b   d6,d1
+        blo   return_34F9E                                                *    blo.s   loc_35258
                                                                           *
-                                                                          *loc_35282:
-                                                                          *    move.b  (a1,d0.w),d2
+SSB_CC_FVisibleArea                                                       *loc_35282:
+        clra
+        ldb   ,x                                                          *    move.b  (a1,d0.w),d2
                                                                           *    move.b  2(a1,d0.w),d4
                                                                           *    move.b  3(a1,d0.w),d5
-                                                                          *    subi.w  #$100,d2
-                                                                          *    neg.w   d2
+        subd  #$100                                                       *    subi.w  #$100,d2
+        nega                                                              *    neg.w   d2
+        negb
+        sbca  #0
+        std   xCenter+1
+        std   sxCenter+1
                                                                           *    move.b  1(a1,d0.w),d3
         bra   SSB_CC_ProcessYCenter                                       *    bra.w   loc_351F8
                                                                           *; ===========================================================================
