@@ -670,7 +670,7 @@ Ani_SSBomb
         fdb   Ani_SSBomb_0 ; $3C removed one index ($3E) from original code, since every index > $3A is capped to index $3C													                      
 													                      
 Sine_Data                                                                 *Sine_Data:      BINCLUDE        "misc/sinewave.bin"
-        INCLUDEBIN "./Engine/sinewave.bin"                                 
+        INCLUDEBIN "./Engine/Math/sinewave.bin"                                 
         
         ; -------------------------------------------------------------------------------------------------------------             
         ;
