@@ -12,7 +12,15 @@
 #    param2 option: binary will be loaded and executed in RAM (RAM)
 #
 # sprite:
-#    param1: image PNG de type couleurs indexées 8Bits, Index de palette : Transparence=0, couleurs=1-16
+#    param1: valeurs séparée par des virgules, plusieurs valeurs possibles
+#            image PNG de type couleurs indexées 8Bits, Index de palette : Transparence=0, couleurs=1-16
+#                Cette image est convertie en sprite compilé.
+#            (optionel) image PNG de type couleurs indexées 8Bits, Index de palette : Transparence=0, couleurs=1-16
+#                Si cette seconde image est présente, seules les différences entre les deux images sont dessinées.
+#            (optionel) index sur 1 octet (format $00), cet index est accessible dans le code pour identifier une image non pas
+#                par l'adresse de la routine d'affichage mais par un identifiant. Celui-ci sert en général comme index pour
+#                accéder a une donnée stockée dans un tableau.
+#
 #    param2: valeurs séparée par des virgules, plusieurs valeurs possibles
 #            NB0  : no flip, background backup / draw / erase compilated sprite, no x offset
 #            ND0  : no flip, draw compilated sprite, no x offset
@@ -30,6 +38,7 @@
 #            XYD0 : xy flip, draw compilated sprite, no x offset 
 #            XYB1 : xy flip, background backup / draw / erase compilated sprite, 1px x offset 
 #            XYD1 : xy flip, draw compilated sprite, 1px x offset 
+#
 #    param3 option: binary will be loaded and executed in RAM (RAM)
 #
 # animation:

@@ -1967,8 +1967,10 @@ public class BuildDisk
 		int xyd1_offset = 0;		
 		
 		if (asm != null) {
-			if (sprite.associatedIdx != null)
+			if (sprite.associatedIdx != null) {
+				asm.addLabel("Id"+sprite.name);
 				asm.addFcb(new String[]{sprite.associatedIdx});
+			}
 			asm.addLabel(sprite.name+" ");
 		}
 		
