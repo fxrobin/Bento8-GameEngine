@@ -671,7 +671,9 @@ Ani_SSBomb
 													                      
 Sine_Data                                                                 *Sine_Data:      BINCLUDE        "misc/sinewave.bin"
         INCLUDEBIN "./Engine/Math/sinewave.bin"                                 
-        
+
+        ; -------------------------------------------------------------------------------------------------------------        
+        ; Sinus/Cosinus
         ; -------------------------------------------------------------------------------------------------------------             
         ;
         ; 0000 0006 000c ... 00ff 0100 00ff ... 0006 0000 fffa ... ff01 ff00 ff01 ... fffa 0000 0006 ... 00ff
@@ -686,11 +688,17 @@ SpecialPerspective
         INCLUDEBIN "./GameMode/SpecialStage/Special stage object perspective data.bin" 
 
         ; -------------------------------------------------------------------------------------------------------------
+        ; Perspective data
+        ; -------------------------------------------------------------------------------------------------------------
+        ;        
+        ; Index (words)
+        ; -----
+        ; Offset to each halfpipe image perspective data (56 word offsets for the 56 images)
         ;
-        ; 56 words of index offset to each halfpipe images
-        ; for each image:
-        ;  1 word : n number of z_pos defined for this frame from 1 (camera fron) to n (far away)
-        ;  n groups of 6 words : 7b dd b8 e6 00 00   that defines an elipse arc
+        ; Image perspective data
+        ; ----------------------      
+        ;  1 word : n number of z_pos defined for this frame from 1 (camera front) to n (far away)
+        ;  n groups of 6 bytes : 7b dd b8 e6 00 00   that defines an elipse arc
         ;                        |  |  |  |  |  |___ angle min (excl.) of visible area (0: no invisible area)
         ;                        |  |  |  |  |______ angle max (incl.) of visible area
         ;                        |  |  |  |_________ y radius

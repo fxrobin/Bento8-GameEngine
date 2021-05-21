@@ -89,3 +89,37 @@ _GetCartPageB MACRO
         ldb   $E7E6
  ENDC
  ENDM     
+
+_RunPgSubRoutine MACRO
+        ; param 1 : ObjID_
+        ; param 2 : Object data RAM address
+        ; manual launch of an object from a different dynamic memory page and not from the resident page 1
+        
+        ldx   #Obj_Index_Page
+        ldb   \1   
+        abx
+        lda   ,x                       ; page memoire routine
+        
+        ldx   #Obj_Index_Address
+        aslb
+        abx        
+        ldu   ,x                       ; adresse routine
+        stu   Glb_Address        
+        
+        ldu   #\2              
+        jsr   RunPgSubRoutine
+ ENDM           
+ 
+_RunObject MACRO 
+        ldx   #Obj_Index_Page
+        ldb   \1   
+        abx
+        lda   ,x                       ; page memoire routine
+        _SetCartPageA                  ; set data page for sub routine to call
+                
+        ldx   #Obj_Index_Address
+        aslb
+        abx
+        ldu   #\2        
+        jsr   [,x]
+ ENDM                   

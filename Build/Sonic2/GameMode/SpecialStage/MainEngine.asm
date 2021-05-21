@@ -11,14 +11,14 @@
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
-        jsr   SpecialStage 
+        _RunObject ObjID_HalfPipe,SpecialStageHalfPipe
 
 * ==============================================================================
 * Main Loop
 * ==============================================================================
 LevelMainLoop
         jsr   WaitVBL
-        jsr   SpecialStageMain
+        _RunObject ObjID_HalfPipe,SpecialStageHalfPipe
         jsr   RunObjects
         jsr   CheckSpritesRefresh                                              
         jsr   EraseSprites

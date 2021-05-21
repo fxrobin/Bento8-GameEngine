@@ -2,7 +2,14 @@
 ; TODO : split entre variables qui doivent etre globales (restent ici)
 ; et celles specifiques a l'objet (vont avec le code objet)
 
-; Two objects that will be runned from Special Stage Main routine
+* ---------------------------------------------------------------------------
+* Subtypes
+* ---------------------------------------------------------------------------
+Sub_SpecialStage_Init equ 0
+Sub_SpecialStage_Main equ 1
+
+; Objects that will be runned manually from Special Stage
+SpecialStageHalfPipe              fill  0,object_size
 HalfPipeOdd                       fill  0,object_size
 HalfPipeEven                      fill  0,object_size
 
