@@ -8,10 +8,12 @@
 ;
 ; ---------------------------------------------------------------------------
 
+        INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
+
 SpecialStage
         lda   routine,u
         asla
-        ldx   #HalfPipe_Routines
+        ldx   #SpecialStage_Routines
         jmp   [a,x]
 
 SpecialStage_Routines
@@ -115,9 +117,9 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.l  #0,(Camera_Y_pos_copy).w
                                                       *    cmpi.w  #1,(Player_mode).w  ; is this a Tails alone game?
                                                       *    bgt.s   +           ; if yes, branch
-        ldu   #MainCharacter
-        lda   #ObjID_SonicSS
-        sta   id,u                                    *    move.b  #ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
+        ;ldu   #MainCharacter
+        ;lda   #ObjID_SonicSS
+        ;sta   id,u                                    *    move.b  #ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
                                                       *    tst.w   (Player_mode).w     ; is this a Sonic and Tails game?
                                                       *    bne.s   ++          ; if not, branch
                                                       *+   move.b  #ObjID_TailsSS,(Sidekick+id).w ; load Obj10 (special stage Tails)
@@ -156,7 +158,7 @@ SpecialStage_Init                                     *SpecialStage:
         stb   $E7E5                    ; data space ($A000-$DFFF)
         ldx   #Bgi_specialStage
         jsr   DrawFullscreenImage
-        lda   #IdImg_tk_key_004        ; store original image id for access
+        lda   IdImg_tk_key_004         ; store original image id for access
         sta   SSTrack_mapping_frame    ; of perspective data
         
         ldd   #Pal_HalfPipe
@@ -460,7 +462,7 @@ SSObjectsManager_LoadSegmentType                      *+
         ldd   #$FF00
         sta   SS_NoCheckpoint_flag                    *    st.b    (SS_NoCheckpoint_flag).w
         stb   SS_NoCheckpointMsg_flag                 *    sf.b    (SS_NoCheckpointMsg_flag).w
-        bra   SSObjectsManager_Message                *    bra.s   ++
+        bra   SSObjectsManager_LoadCheckpoint         *    bra.s   ++
                                                       *; ===========================================================================
 SSObjectsManager_Emerald                              *+
                                                       *    tst.b   (SS_2p_Flag).w
@@ -469,7 +471,7 @@ SSObjectsManager_Emerald                              *+
         ;sta   id,u
         rts                                           *    rts
                                                       *; ===========================================================================
-SSObjectsManager_Message                              *+
+SSObjectsManager_LoadCheckpoint                       *+
         ;lda   #ObjID_SSMessage                        *    move.b  #ObjID_SSMessage,id(a1)
         ;sta   id,u                                                      
                                                       *
@@ -490,8 +492,9 @@ SSSetGeometryOffsets                                  *SSSetGeometryOffsets:
                                                       *    moveq   #0,d0
 @a      lda   SSTrack_mapping_frame                   *    move.b  (SSTrack_mapping_frame).w,d0                    ; Get current track mapping frame
         asla                                          *    add.w   d0,d0                                           ; Convert to index
-        ldx   #SSCurveOffsets                         *    lea SSCurveOffsets(pc,d0.w),a2                          ; Load current curve offsets into a2
-        lda   a,x+                                    *    move.b  (a2)+,d0                                        ; Get x offset
+        ldx   #SSCurveOffsets
+        leax  a,x                                     *    lea SSCurveOffsets(pc,d0.w),a2                          ; Load current curve offsets into a2
+        lda   ,x+                                     *    move.b  (a2)+,d0                                        ; Get x offset
         tst   SSTrack_Orientation                     *    tst.b   (SSTrack_Orientation).w                         ; Is track flipped?
         beq   @b                                      *    beq.s   +                                               ; Branch if not
         nega                                          *    neg.b   d0                                              ; Change sign of offset
@@ -550,57 +553,6 @@ SSSingleObjLoad                                       *SSSingleObjLoad:
 @a      rts                                           *    rts
                                                       *; End of function sub_6F8E                                                                                                            
 
-; search for a free object slot after the current one
-; IN
-; [u]: object slot
-; OUT
-; [x]: object slot
-; [cc|z]: 1=found 0=not found  
-                                                      *;loc_6FA4:
-SSSingleObjLoad2                                      *SSSingleObjLoad2:
-        leax  ,u                                      *    movea.l a0,a1
-                                                      *    move.w  #SS_Dynamic_Object_RAM_End,d5
-                                                      *    sub.w   a0,d5
-                                                      *
-                                                      *    if object_size=$40
-                                                      *    lsr.w   #6,d5
-                                                      *    subq.w  #1,d5
-                                                      *    bcs.s   +   ; rts
-                                                      *    else
-                                                      *    lsr.w   #6,d5           ; divide by $40
-                                                      *    move.b  ++(pc,d5.w),d5      ; load the right number of objects from table
-                                                      *    bmi.s   +           ; if negative, we have failed!
-                                                      *    endif
-                                                      *
-@b      tst   id,x                                    *-   tst.b   id(a1)
-        beq   @a                                      *    beq.s   +   ; rts
-        leau  next_object,x                           *    lea next_object(a1),a1
-        cmpu  #SS_Dynamic_Object_RAM_End              *    dbf d5,-
-        bne   @b                                      *
-        lda   #$FF
-@a      rts                                           *+   rts
-                                                      *
-                                                      *
-                                                      *    if object_size<>$40
-                                                      *+   dc.b -1
-                                                      *.a :=   1       ; .a is the object slot we are currently processing
-                                                      *.b :=   1       ; .b is used to calculate when there will be a conversion error due to object_size being > $40
-                                                      *
-                                                      *    rept (SS_Dynamic_Object_RAM_End-SS_Object_RAM)/object_size-1
-                                                      *        if (object_size * (.a-1)) / $40 > .b+1  ; this line checks, if there would be a conversion error
-                                                      *            dc.b .a-1, .a-1         ; and if is, it generates 2 entries to correct for the error
-                                                      *        else
-                                                      *            dc.b .a-1
-                                                      *        endif
-                                                      *
-                                                      *.b :=       (object_size * (.a-1)) / $40        ; this line adjusts .b based on the iteration count to check
-                                                      *.a :=       .a+1                    ; run interation counter
-                                                      *    endm
-                                                      *    even
-                                                      *    endif
-                                                      
-                                                      *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||                                                      
-                                                      
                                                       *;sub_77A2
 SSInitPalAndData                                      *SSInitPalAndData:
                                                       *    clr.b   (Current_Special_Act).w
@@ -644,6 +596,14 @@ SSInitPalAndData                                      *SSInitPalAndData:
         rts                                           *    rts
                                                       *; End of function SSInitPalAndData     
 
+Ani_SSTrack_Len
+	fcb 24 ; 0
+	fcb 24 ; 1
+	fcb 12 ; 2
+	fcb 16 ; 3
+	fcb 11 ; 4
+	fcb 0  ; 5
+
 SpecialLevelLayout
         INCLUDEBIN "./GameMode/SpecialStage/Special stage level layouts.bin"
         
@@ -685,6 +645,30 @@ SpecialObjectLocations
         ;
         ; -------------------------------------------------------------------------------------------------------------        
 
+SpecialPerspective
+        INCLUDEBIN "./GameMode/SpecialStage/Special stage object perspective data.bin" 
+
+        ; -------------------------------------------------------------------------------------------------------------
+        ; Perspective data
+        ; -------------------------------------------------------------------------------------------------------------
+        ;        
+        ; Index (words)
+        ; -----
+        ; Offset to each halfpipe image perspective data (56 word offsets for the 56 images)
+        ;
+        ; Image perspective data
+        ; ----------------------      
+        ;  1 word : n number of z_pos defined for this frame from 1 (camera front) to n (far away)
+        ;  n groups of 6 bytes : 7b dd b8 e6 00 00   that defines an elipse arc
+        ;                        |  |  |  |  |  |___ angle min (excl.) of visible area (0: no invisible area)
+        ;                        |  |  |  |  |______ angle max (incl.) of visible area
+        ;                        |  |  |  |_________ y radius
+        ;                        |  |  |____________ x radius
+        ;                        |  |_______________ y origin
+        ;                        |__________________ x origin
+        ;
+        ; -------------------------------------------------------------------------------------------------------------  
+        
 ; ---------------------------------------------------------------------------
 ; Object - Half Pipe for Special Stage
 ;
@@ -774,11 +758,7 @@ HalfPipe_SubRoutines
 HalfPipe_LoadNewSequence
         ldx   HalfPipe_Seq_Position
         leax  1,x
-        cmpx  HalfPipe_Seq_End
-        bne   @a
-        inc   routine,u   
-        bra   HalfPipe_End
-@a      stx   HalfPipe_Seq_Position
+        stx   HalfPipe_Seq_Position
 
         lda   HalfPipe_Seq
         anda  #$7F
@@ -829,18 +809,10 @@ HalfPipe_Continue
         stb   HalfPipe_Seq_UpdFlip+1
         jmp   DisplaySprite
         
-HalfPipe_End
-        jmp   DisplaySprite
-        
 Ani_SpecialStageTrack
         fdb   Ani_TurnThenRise
         fdb   Ani_TurnThenDrop
         fdb   Ani_TurnThenStraight
         fdb   Ani_Straight
         fdb   Ani_StraightThenTurn        
-
-HalfPipe_Seq_Position  fdb $0000
-HalfPipe_Seq           fcb $00
-HalfPipe_Seq_UpdFlip   fdb $0000
-HalfPipe_Vint_runcount fdb $0000
                                                       

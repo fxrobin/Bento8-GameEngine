@@ -54,7 +54,7 @@ _GetCartPageA MACRO
  ENDC
  ENDM
 
- _SetCartPageB MACRO
+_SetCartPageB MACRO
  IFDEF T2
         bpl   RAMPg@
         stb   Glb_Page

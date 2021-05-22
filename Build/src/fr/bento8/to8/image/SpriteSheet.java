@@ -64,7 +64,7 @@ public class SpriteSheet {
 	                for (int y = 0; y < image.getHeight(); y++) {
 	                	if ((y % 2 != 0) || ((byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(x+(y*image.getWidth()))) ==
 	                			             (byte) (((DataBufferByte) imageRef.getRaster().getDataBuffer()).getElem(x+(y*imageRef.getWidth()))))
-	                			         || y<50 || y>149 ) {
+	                			         || y<60 || y>139 ) {
 	                		((DataBufferByte) image.getRaster().getDataBuffer()).setElem(x+(y*image.getWidth()), colorModel.getRGB(0));
 	                		image.setRGB(x, y, colorModel.getRGB(0));
 	                	}

@@ -6,6 +6,8 @@
 ;
 ; ---------------------------------------------------------------------------
 
+        INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
+
                                                                           *; ===========================================================================
                                                                           *; ----------------------------------------------------------------------------
                                                                           *; Object 61 - Bombs from Special Stage
@@ -37,7 +39,7 @@ SSB_Init                                                                  *Obj61
         stb   collision_flags,u                                           *        move.b  #2,collision_flags(a0)
                                                                           *        move.b  #-1,(SS_unk_DB4D).w
         tst   angle,u                                                     *        tst.b   angle(a0)
-        bmi   SSB_Main                                                    *        bmi.s   loc_34F06
+        bmi   SSB_Bomb                                                    *        bmi.s   loc_34F06
         jsr   SSB_InitShadow                                              *        bsr.w   loc_3529C
                                                                           *
 SSB_Bomb                                                                  *loc_34F06:
@@ -61,7 +63,7 @@ SSB_InitShadow                                                            *loc_3
         stx   ss_parent,u                                                 
         lda   id,u                                                        
         sta   id,x                                                        *    move.b  id(a0),id(a1)
-        lda   #$0205                                                      
+        ldd   #$0205                                                      
         sta   routine,x                                                   *    move.b  #4,routine(a1)
                                                                           *    move.l  #Obj63_MapUnc_34492,mappings(a1)
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialFlatShadow,3,0),art_tile(a1)
@@ -189,7 +191,7 @@ SSB_ComputeCoordinates                                                    *loc_3
 d1      addd  #$0000                   ; (dynamic) d = (ss_z_pos-1)*6     *    add.w   d1,d0
         tfr   d,x
         tst   SSTrack_Orientation                                         *    tst.b   (SSTrack_Orientation).w
-        bne   SSB_CC_Flipped           ; branch if image is h flipped     *    bne.w   loc_35260
+        lbne   SSB_CC_Flipped          ; branch if image is h flipped     *    bne.w   loc_35260
         ldd   4,x                                                         *    move.b  4(a1,d0.w),d6
         sta   d6+1                                                        *    move.b  5(a1,d0.w),d7
         stb   d7+1                     ; branch if angle min
@@ -228,7 +230,7 @@ SSB_CC_ProcessYCenter                                                     *loc_3
         aslb                                                              *    add.w   d0,d0
 	    rola
 	    leay  d,y
-	    ldd   y
+	    ldd   ,y
 	    std   ysin+1
         leay  $80,y                                                       *    addi.w  #$80,d0
 	    ldd   ,y                                                          *    move.w  Sine_Data(pc,d0.w),d1 ; cos
@@ -436,7 +438,7 @@ SSB_CC_FVisibleArea                                                       *loc_3
         std   xCenter+1
         std   sxCenter+1
                                                                           *    move.b  1(a1,d0.w),d3
-        bra   SSB_CC_ProcessYCenter                                       *    bra.w   loc_351F8
+        lbra   SSB_CC_ProcessYCenter                                      *    bra.w   loc_351F8
                                                                           *; ===========================================================================
                                                                           
 SSB_CheckIfForeground                                                     *loc_34F90:
@@ -594,6 +596,57 @@ loc_3538A                                                                 *loc_3
 loc_35392                                                                 *loc_35392:
                                                                           *    move.b  d0,mapping_frame(a0)
                                                                           *    bra.w   JmpTo44_DisplaySprite
+        
+; search for a free object slot after the current one
+; IN
+; [u]: object slot
+; OUT
+; [x]: object slot
+; [cc|z]: 1=found 0=not found  
+                                                                          *;loc_6FA4:
+SSSingleObjLoad2                                                          *SSSingleObjLoad2:
+        leax  ,u                                                          *    movea.l a0,a1
+                                                                          *    move.w  #SS_Dynamic_Object_RAM_End,d5
+                                                                          *    sub.w   a0,d5
+                                                                          *
+                                                                          *    if object_size=$40
+                                                                          *    lsr.w   #6,d5
+                                                                          *    subq.w  #1,d5
+                                                                          *    bcs.s   +   ; rts
+                                                                          *    else
+                                                                          *    lsr.w   #6,d5           ; divide by $40
+                                                                          *    move.b  ++(pc,d5.w),d5      ; load the right number of objects from table
+                                                                          *    bmi.s   +           ; if negative, we have failed!
+                                                                          *    endif
+                                                                          *
+@b      tst   id,x                                                        *-   tst.b   id(a1)
+        beq   @a                                                          *    beq.s   +   ; rts
+        leau  next_object,x                                               *    lea next_object(a1),a1
+        cmpu  #SS_Dynamic_Object_RAM_End                                  *    dbf d5,-
+        bne   @b                                                          *
+        lda   #$FF                                                        
+@a      rts                                                               *+   rts
+                                                                          *
+                                                                          *
+                                                                          *    if object_size<>$40
+                                                                          *+   dc.b -1
+                                                                          *.a :=   1       ; .a is the object slot we are currently processing
+                                                                          *.b :=   1       ; .b is used to calculate when there will be a conversion error due to object_size being > $40
+                                                                          *
+                                                                          *    rept (SS_Dynamic_Object_RAM_End-SS_Object_RAM)/object_size-1
+                                                                          *        if (object_size * (.a-1)) / $40 > .b+1  ; this line checks, if there would be a conversion error
+                                                                          *            dc.b .a-1, .a-1         ; and if is, it generates 2 entries to correct for the error
+                                                                          *        else
+                                                                          *            dc.b .a-1
+                                                                          *        endif
+                                                                          *
+                                                                          *.b :=       (object_size * (.a-1)) / $40        ; this line adjusts .b based on the iteration count to check
+                                                                          *.a :=       .a+1                    ; run interation counter
+                                                                          *    endm
+                                                                          *    even
+                                                                          *    endif
+                                                                          
+                                                                          *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
         
 Tbl_SSShadow_Flat
         fdb   Img_SSShadow_000

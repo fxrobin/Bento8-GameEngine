@@ -139,7 +139,7 @@ ESP_UnsetCheckRefreshB0
         
 ESP_CheckEraseB0
         anda  #rsv_render_erasesprite_mask
-        beq   ESP_NextObjectB0
+        lbeq   ESP_NextObjectB0
         ldb   rsv_prev_render_flags_0,u
         andb  #rsv_prev_render_overlay_mask
         bne   ESP_UnsetOnScreenFlagB0
@@ -204,7 +204,7 @@ ESP_UnsetCheckRefreshB1
         
 ESP_CheckEraseB1
         anda  #rsv_render_erasesprite_mask
-        beq   ESP_NextObjectB1
+        lbeq   ESP_NextObjectB1
         ldb   rsv_prev_render_flags_1,u
         andb  #rsv_prev_render_overlay_mask
         bne   ESP_UnsetOnScreenFlagB1        

@@ -21,7 +21,7 @@
         org   $4000
         opt   c,ct
         setdp $40                      ; dp for exomizer
-        INCLUDE "./Engine/Exomizer.asm"  
+        INCLUDE "./Engine/Compression/Exomizer.asm"  
 
 RAMLoader
         ldx   #RL_RAM_index          

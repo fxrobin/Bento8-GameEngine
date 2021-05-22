@@ -7,7 +7,7 @@
 *
 ********************************************************************************
 
-        INCLUDE "./GameMode/SpecialStage/Constants.asm"
+        INCLUDE "./Engine/Constants.asm"
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
@@ -30,7 +30,7 @@ LevelMainLoop
 * Game Mode RAM variables
 * ---------------------------------------------------------------------------
         
-        INCLUDE "./Objects/SpecialStage/SpecialStageVariables.asm"        
+        INCLUDE "./GameMode/SpecialStage/SpecialStageRamData.asm"        
         
 * ==============================================================================
 * Global Data
