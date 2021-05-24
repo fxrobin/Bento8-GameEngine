@@ -141,9 +141,9 @@ DRS_NoOverlayB0
 
 DRS_UpdateRenderFlagB0        
         sta   rsv_prev_render_flags_0,x     ; set the onscreen flag and save overlay flag
-        lda   rsv_render_flags,u
+        lda   rsv_render_flags,x
         ora   #rsv_render_onscreen_mask     ; sprite is on screen
-        sta   rsv_render_flags,u
+        sta   rsv_render_flags,x
         
 DRS_NextObjectB0        
         ldx   rsv_priority_next_obj_0,x
@@ -249,9 +249,9 @@ DRS_NoOverlayB1
 
 DRS_UpdateRenderFlagB1
         sta   rsv_prev_render_flags_1,x     ; set the onscreen flag and save overlay flag
-        lda   rsv_render_flags,u
+        lda   rsv_render_flags,x
         ora   #rsv_render_onscreen_mask     ; sprite is on screen
-        sta   rsv_render_flags,u        
+        sta   rsv_render_flags,x        
                 
 DRS_NextObjectB1        
         ldx   rsv_priority_next_obj_1,x

@@ -177,7 +177,31 @@ SSB_ComputeCoordinates                                                    *loc_3
                                                                           *    moveq   #0,d5
                                                                           *    moveq   #0,d6
                                                                           *    moveq   #0,d7
-        ldx   #SS_CurrentPerspective                                      *    movea.l (SS_CurrentPerspective).w,a1
+                                                                          
+        ; this call was initially from loc_4F64
+        ; need to mutualize: only 1 call for all objects
+        ; has been moved because of SpecialPerspective data location
+        ; mutualize does not cost more that running this code for all objects
+        ; ex: page switch, so have to check cycle count
+        
+                                                                          *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+                                                                          *;sub_5514
+                                                                          *SSLoadCurrentPerspective:
+        lda   SSTrack_drawing_index                                       *    cmpi.b  #4,(SSTrack_drawing_index).w
+        bne   @a                                                          *    bne.s   +   ; rts
+        ldx   #SpecialPerspective                                         *    movea.l #SSRAM_MiscKoz_SpecialPerspective,a0
+                                                                          *    moveq   #0,d0
+        lda   SSTrack_mapping_frame                                       *    move.b  (SSTrack_mapping_frame).w,d0
+        asla                                                              *    add.w   d0,d0
+        ldd   a,x                                                         *    adda.w  (a0,d0.w),a0
+        leax  d,x                                                         
+@a      ;stx   SS_CurrentPerspective                                      *    move.l  a0,(SS_CurrentPerspective).w
+                                                                          *+   rts
+        ; end of code to mutualize                                        *; End of function SSLoadCurrentPerspective
+                                                                          *
+                                                                          *                                                                          
+                                                                          
+        ;ldx   #SS_CurrentPerspective                                     *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u               ; load sprite z position           *    move.w  objoff_30(a0),d0
         beq   return_34F68             ; if z=0 sprite is behind camera   *    beq.w   loc_35258
         cmpd  ,x++                     ; read nb of ellipses for this img *    cmp.w   (a1)+,d0
@@ -282,7 +306,8 @@ xneg    lda   2,x
         
 xEnd    std   sx+1
 xCenter addd  #$0000                   ; (dynamic) add x center of ellipse
-        std   x_pos,u
+        ;std   x_pos,u
+        std   x_pixel,u
           
         ; Compute Y coordinate
         ; --------------------          
@@ -321,7 +346,8 @@ yneg    lda   3,x
         
 yEnd    std   sy+1
 yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
-        std   y_pos,u
+        ;std   y_pos,u
+        std   y_pixel,u
 
         ; Process shadow coordinates
         ; --------------------------
@@ -357,7 +383,8 @@ sx      ldd   #$0000                   ; (dynamic)
 sxCenter
         ldd   #$0000                   ; (dynamic) add x center of ellipse
         leax  d,x        
-        stx   x_pos,y                                                                                  
+        ;stx   x_pos,y                                                                                  
+        stx   x_pixel,y
                                                                           *    move.w  d4,d7
                                                                           *    lsr.w   #2,d7
                                                                           *    add.w   d7,d4
@@ -376,7 +403,8 @@ sy      ldd   #$0000                   ; (dynamic)
 syCenter
         ldd   #$0000                   ; (dynamic) add y center of ellipse
         leax  d,x        
-        stx   y_pos,y                                                                       
+        ;stx   y_pos,y                                                                       
+        stx   y_pixel,y
                                                                           *    move.w  d5,d7
                                                                           *    asr.w   #2,d7
                                                                           *    add.w   d7,d5
@@ -621,8 +649,8 @@ SSSingleObjLoad2                                                          *SSSin
                                                                           *
 @b      tst   id,x                                                        *-   tst.b   id(a1)
         beq   @a                                                          *    beq.s   +   ; rts
-        leau  next_object,x                                               *    lea next_object(a1),a1
-        cmpu  #SS_Dynamic_Object_RAM_End                                  *    dbf d5,-
+        leax  next_object,x                                               *    lea next_object(a1),a1
+        cmpx  #SS_Dynamic_Object_RAM_End                                  *    dbf d5,-
         bne   @b                                                          *
         lda   #$FF                                                        
 @a      rts                                                               *+   rts
@@ -645,8 +673,6 @@ SSSingleObjLoad2                                                          *SSSin
                                                                           *    endm
                                                                           *    even
                                                                           *    endif
-                                                                          
-                                                                          *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
         
 Tbl_SSShadow_Flat
         fdb   Img_SSShadow_000

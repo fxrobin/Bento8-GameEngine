@@ -96,7 +96,7 @@ _RunPgSubRoutine MACRO
         ; manual launch of an object from a different dynamic memory page and not from the resident page 1
         
         ldx   #Obj_Index_Page
-        ldb   \1   
+        ldb   #\1   
         abx
         lda   ,x                       ; page memoire routine
         
@@ -112,7 +112,7 @@ _RunPgSubRoutine MACRO
  
 _RunObject MACRO 
         ldx   #Obj_Index_Page
-        ldb   \1   
+        ldb   #\1   
         abx
         lda   ,x                       ; page memoire routine
         _SetCartPageA                  ; set data page for sub routine to call

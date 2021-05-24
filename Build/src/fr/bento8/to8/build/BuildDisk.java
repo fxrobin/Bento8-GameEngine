@@ -1968,7 +1968,7 @@ public class BuildDisk
 		
 		if (asm != null) {
 			if (sprite.associatedIdx != null) {
-				asm.addLabel("Id"+sprite.name);
+				asm.addConstant("Id"+sprite.name, sprite.associatedIdx);
 				asm.addFcb(new String[]{sprite.associatedIdx});
 			}
 			asm.addLabel(sprite.name+" ");

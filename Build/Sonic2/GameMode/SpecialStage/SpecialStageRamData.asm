@@ -47,9 +47,9 @@ Ring_count                        fdb   $0000
 SS2p_RingBuffer                   fill  0,12
 
 SS_Misc_Variables
-PNT_Buffer                        fill  0,$700
-PNT_Buffer_End
-SS_Horiz_Scroll_Buf_2             fill  0,$400
+;PNT_Buffer                        fill  0,$700
+;PNT_Buffer_End
+;SS_Horiz_Scroll_Buf_2             fill  0,$400
 SSTrack_mappings_bitflags         fill  0,4
 SSTrack_mappings_uncompressed     fill  0,4
 SSTrack_anim                      fcb   $00
@@ -80,7 +80,7 @@ SS_unk_DB4D                       fill  0,$15
 SS_Ctrl_Record_Buf                fill  0,30
 SS_Last_Ctrl_Record               fdb   $0000
 SS_Ctrl_Record_Buf_End
-SS_CurrentPerspective             fdb   $0000
+;SS_CurrentPerspective             fdb   $0000
 SS_Check_Rings_flag               fcb   $00
 SS_Pause_Only_flag                fcb   $00
 SS_CurrentLevelObjectLocations    fill  0,4
@@ -99,13 +99,13 @@ SS_RingsToGoBCD                   fdb   $0000
 SS_HideRingsToGo                  fcb   $00
 SS_TriggerRingsToGo               fcb   $00
 SS_Misc_Variables_End
-SS_Horiz_Scroll_Buf_1             fill  0,$400
-SS_Horiz_Scroll_Buf_1_End
+;SS_Horiz_Scroll_Buf_1             fill  0,$400
+;SS_Horiz_Scroll_Buf_1_End
 SS_Offset_X                       fcb   $00
 SS_Offset_Y                       fcb   $00
 SS_Swap_Positions_Flag            fcb   $00
-SS_Sprite_Table                   fill  0,$280    ; Sprite attribute table buffer
-SS_Sprite_Table_End               fill  0,$80     ; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
+;SS_Sprite_Table                   fill  0,$280    ; Sprite attribute table buffer
+;SS_Sprite_Table_End               fill  0,$80     ; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
 
 HalfPipe_Seq           fcb $00
 HalfPipe_Seq_Position  fdb $0000

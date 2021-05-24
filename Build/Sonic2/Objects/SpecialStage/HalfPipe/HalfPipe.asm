@@ -158,7 +158,7 @@ SpecialStage_Init                                     *SpecialStage:
         stb   $E7E5                    ; data space ($A000-$DFFF)
         ldx   #Bgi_specialStage
         jsr   DrawFullscreenImage
-        lda   IdImg_tk_key_004         ; store original image id for access
+        lda   #IdImg_tk_key_004        ; store original image id for access
         sta   SSTrack_mapping_frame    ; of perspective data
         
         ldd   #Pal_HalfPipe
@@ -177,9 +177,13 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *
         ; Init Track_Draw
         ; --------------------------------------------
-        ldu   #HalfPipeOdd              
+        ldu   #HalfPipeOdd
+        lda   #ObjID_HalfPipe                                                      
+        sta   id,u                              
         jsr   HalfPipe_Init
-        ldu   #HalfPipeEven              
+        ldu   #HalfPipeEven
+        lda   #ObjID_HalfPipe                                                      
+        sta   id,u                              
         jsr   HalfPipe_Init                           *    bsr.w   SSTrack_Draw           
                                                       *
                                                       *-   move.b  #VintID_S2SS,(Vint_routine).w
@@ -236,7 +240,7 @@ SpecialStage_Main                                     *-   bsr.w   PauseGame
         ldu   #HalfPipeEven
         jsr   HalfPipe_Display                        *    bsr.w   SSTrack_Draw
         jsr   SSSetGeometryOffsets                    *    bsr.w   SSSetGeometryOffsets
-        jsr   SSLoadCurrentPerspective                *    bsr.w   SSLoadCurrentPerspective
+        ; moved to SSBomb                             *    bsr.w   SSLoadCurrentPerspective
         jsr   SSObjectsManager                        *    bsr.w   SSObjectsManager
                                                       *    bsr.w   SS_ScrollBG
                                                       *    bsr.w   PalCycle_SS
@@ -363,24 +367,6 @@ SpecialStage_Main                                     *-   bsr.w   PauseGame
                                                       *    move.b  #VintID_Level,(Vint_routine).w
                                                       *    bra.w   WaitForVint
 
-                                                      *;|||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-                                                      *
-                                                      *
-                                                      *;sub_5514
-SSLoadCurrentPerspective                              *SSLoadCurrentPerspective:
-        lda   SSTrack_drawing_index                   *    cmpi.b  #4,(SSTrack_drawing_index).w
-        bne   @a                                      *    bne.s   +   ; rts
-        ldx   #SpecialPerspective                     *    movea.l #SSRAM_MiscKoz_SpecialPerspective,a0
-                                                      *    moveq   #0,d0
-        lda   SSTrack_mapping_frame                   *    move.b  (SSTrack_mapping_frame).w,d0
-        asla                                          *    add.w   d0,d0
-        ldd   a,x                                     *    adda.w  (a0,d0.w),a0
-        leax  d,x
-        stx   SS_CurrentPerspective                   *    move.l  a0,(SS_CurrentPerspective).w
-@a      rts                                           *+   rts
-                                                      *; End of function SSLoadCurrentPerspective
-                                                      *
-                                                      *
                                                       *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                                       *
                                                       *
@@ -587,22 +573,26 @@ SSInitPalAndData                                      *SSInitPalAndData:
                                                       *+
                                                       *    move.w  (a1,d0.w),d0
                                                       *    bsr.w   PalLoad_ForFade
-        ldx   #SpecialLevelLayout                     *    lea (SSRAM_MiscKoz_SpecialObjectLocations).w,a0
+        ldx   #SpecialObjectLocations                 *    lea (SSRAM_MiscKoz_SpecialObjectLocations).w,a0
         abx                                           *    adda.w  (a0,d1.w),a0
+        ldd   ,x
+        leax  d,x
         stx   SS_CurrentLevelObjectLocations          *    move.l  a0,(SS_CurrentLevelObjectLocations).w
         ldx   #SpecialLevelLayout                     *    lea (SSRAM_MiscNem_SpecialLevelLayout).w,a0
         abx                                           *    adda.w  (a0,d1.w),a0
+        ldd   ,x
+        leax  d,x        
         stx   SS_CurrentLevelLayout                   *    move.l  a0,(SS_CurrentLevelLayout).w
         rts                                           *    rts
                                                       *; End of function SSInitPalAndData     
 
 Ani_SSTrack_Len
-	fcb 24 ; 0
-	fcb 24 ; 1
-	fcb 12 ; 2
-	fcb 16 ; 3
-	fcb 11 ; 4
-	fcb 0  ; 5
+        fcb 24 ; 0
+        fcb 24 ; 1
+        fcb 12 ; 2
+        fcb 16 ; 3
+        fcb 11 ; 4
+        fcb 0  ; 5
 
 SpecialLevelLayout
         INCLUDEBIN "./GameMode/SpecialStage/Special stage level layouts.bin"
@@ -701,14 +691,11 @@ HalfPipe_Init
         ; ----------------------------------------------
         
         ldx   SS_CurrentLevelLayout
-        ldd   ,x
-        leay  d,x
-        sty   HalfPipe_Seq_Position   
+        stx   HalfPipe_Seq_Position   
 
         ; load first animation id
         ; -----------------------
         
-        ldx   HalfPipe_Seq_Position
         ldb   ,x                
         stb   HalfPipe_Seq
         andb  #$7F
@@ -717,7 +704,6 @@ HalfPipe_Init
         abx
         ldd   ,x
         std   anim,u
-        rts
         
 HalfPipe_Display
         cmpu  #HalfPipeOdd
@@ -729,7 +715,7 @@ HalfPipe_Display
         sta   render_flags,u
         lda   routine,x
         sta   routine,u        
-        jmp   DisplaySprite
+        jmp   DisplaySprite                      ; return
 @a
 
         ldd   Vint_runcount
@@ -737,11 +723,13 @@ HalfPipe_Display
         cmpb  #$02                               ; ensure track is not refreshed more than 8fps 
         bgt   @a
         stb   SSTrack_drawing_index        
-        jmp   DisplaySprite        
+        jmp   DisplaySprite                      ; return
 @a      ldd   Vint_runcount
         std   HalfPipe_Vint_runcount
         clr   SSTrack_drawing_index
         jsr   AnimateSprite
+        jsr   GetImgIdA
+        sta   SSTrack_mapping_frame
         
         ; chain animations (AnimateSprite will inc routine_secondary after each animation ends)
         ; -------------------------------------------------------------------------------------
@@ -778,6 +766,8 @@ HalfPipe_LoadNewSequence
 @b      clr   routine_secondary,u
         clr   prev_anim,u                        ; force loading of new animation
         jsr   AnimateSprite
+        jsr   GetImgIdA
+        sta   SSTrack_mapping_frame
 
 HalfPipe_Continue
 

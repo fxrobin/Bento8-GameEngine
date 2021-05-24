@@ -1,0 +1,6 @@
+rm "Special stage level layouts.bin"
+rm "Special stage object location lists.bin"
+rm "Special stage object perspective data.bin"
+nemcmp -x "Special stage level layouts (Nemesis compression).bin" "Special stage level layouts.bin"
+koscmp -x "Special stage object location lists (Kosinski compression).bin" "Special stage object location lists.bin"
+koscmp -x "Special stage object perspective data (Kosinski compression).bin" "Special stage object perspective data.bin"
