@@ -182,29 +182,26 @@ SSB_ComputeCoordinates                                                    *loc_3
                                                                           *    moveq   #0,d7
                                                                           
         ; this call was initially from loc_4F64
-        ; need to mutualize: only 1 call for all objects
         ; has been moved because of SpecialPerspective data location
-        ; mutualize does not cost more that running this code for all objects
-        ; ex: page switch, so have to check cycle count
         
                                                                           *; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
                                                                           *;sub_5514
                                                                           *SSLoadCurrentPerspective:
-        lda   SSTrack_drawing_index                                       *    cmpi.b  #4,(SSTrack_drawing_index).w
-        bne   @a                                                          *    bne.s   +   ; rts
+                                                                          *    cmpi.b  #4,(SSTrack_drawing_index).w
+                                                                          *    bne.s   +   ; rts
         ldx   #SpecialPerspective                                         *    movea.l #SSRAM_MiscKoz_SpecialPerspective,a0
                                                                           *    moveq   #0,d0
         lda   SSTrack_mapping_frame                                       *    move.b  (SSTrack_mapping_frame).w,d0
         asla                                                              *    add.w   d0,d0
         ldd   a,x                                                         *    adda.w  (a0,d0.w),a0
         leax  d,x                                                         
-@a      ;stx   SS_CurrentPerspective                                      *    move.l  a0,(SS_CurrentPerspective).w
+                                                                          *    move.l  a0,(SS_CurrentPerspective).w
                                                                           *+   rts
-        ; end of code to mutualize                                        *; End of function SSLoadCurrentPerspective
+                                                                          *; End of function SSLoadCurrentPerspective
                                                                           *
                                                                           *                                                                          
                                                                           
-        ;ldx   #SS_CurrentPerspective                                     *    movea.l (SS_CurrentPerspective).w,a1
+                                                                          *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u               ; load sprite z position           *    move.w  objoff_30(a0),d0
         beq   return_34F68             ; if z=0 sprite is behind camera   *    beq.w   loc_35258
         cmpd  ,x++                     ; read nb of ellipses for this img *    cmp.w   (a1)+,d0

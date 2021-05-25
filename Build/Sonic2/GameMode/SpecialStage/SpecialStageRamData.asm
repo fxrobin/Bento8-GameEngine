@@ -54,7 +54,7 @@ SSTrack_mappings_bitflags         fill  0,4
 SSTrack_mappings_uncompressed     fill  0,4
 SSTrack_anim                      fcb   $00
 SSTrack_last_anim_frame           fcb   $00
-SpecialStage_CurrentSegment       fdb   $00
+SpecialStage_CurrentSegment       fdb   $0000
 SSTrack_anim_frame                fcb   $00
 SS_Alternate_PNT                  fcb   $00
 SSTrack_drawing_index             fcb   $00 ; 0:new half-pipe frame is displayed in this loop, >0:no refresh of half-pipe in this loop

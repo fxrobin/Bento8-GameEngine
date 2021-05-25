@@ -5,6 +5,7 @@ GetImgIdA
         ldx   #Img_Page_Index               ; call page that store imageset for this object
         ldb   id,u
 		abx
+		lda   ,x
         _SetCartPageA
 		
 		ldx   image_set,u

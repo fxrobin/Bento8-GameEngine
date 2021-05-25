@@ -457,6 +457,7 @@ SSObjectsManager_Emerald                              *+
                                                       *    bne.s   +
         ;lda   #ObjID_SSEmerald                        *    move.b  #ObjID_SSEmerald,id(a1)
         ;sta   id,u
+        bra   *
         rts                                           *    rts
                                                       *; ===========================================================================
 SSObjectsManager_LoadCheckpoint                       *+
@@ -771,8 +772,9 @@ HalfPipe_LoadNewSequence
         abx
         ldd   ,x
         std   anim,u
-@b      clr   routine_secondary,u
-        clr   prev_anim,u                        ; force loading of new animation
+@b      ldd   #0
+        sta   routine_secondary,u
+        std   prev_anim,u                        ; force loading of new animation
         jsr   AnimateSprite
         jsr   GetImgIdA
         sta   SSTrack_mapping_frame
