@@ -106,8 +106,7 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.w  #$8F02,(a6)     ; VRAM pointer increment: $0002
                                                       *    bsr.w   ssInitTableBuffers
                                                       *    bsr.w   ssLdComprsdData
-       ldd   #$0000
-       std   SpecialStage_CurrentSegment              *    move.w  #0,(SpecialStage_CurrentSegment).w
+        ; moved to HalfPipe_Init                      *    move.w  #0,(SpecialStage_CurrentSegment).w
                                                       *    moveq   #PLCID_SpecialStage,d0
                                                       *    bsr.w   RunPLC_ROM
                                                       *    clr.b   (Level_started_flag).w
@@ -132,7 +131,7 @@ SpecialStage_Init                                     *SpecialStage:
         ;ldu   #SpecialStageNumberOfRings
         ;lda   #ObjID_SSNumberOfRings
         ;sta   id,u                                    *    move.b  #ObjID_SSNumberOfRings,(SpecialStageNumberOfRings+id).w ; load Obj87 (special stage ring count)
-        lda   #$00
+        ;lda   #$00
         sta   SS_Offset_X                             *    move.w  #$80,(SS_Offset_X).w
         sta   SS_Offset_Y                             *    move.w  #$36,(SS_Offset_Y).w
                                                       *    bsr.w   SSPlaneB_Background
@@ -171,7 +170,6 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *
                                                       *-   move.b  #VintID_S2SS,(Vint_routine).w
         jsr   WaitVBL                                 *    bsr.w   WaitForVint
-        jsr   IrqSet50Hz                              
                                                       *    move.b  (SSTrack_drawing_index).w,d0
                                                       *    bne.s   -
                                                       *
@@ -202,6 +200,8 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    bsr.w   RunPLC_RAM
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
+        jsr   WaitVBL                                                       
+        jsr   IrqSet50Hz                                                      
                                                       *    move.w  #MusID_SpecStage,d0
         ; start music                                 *    bsr.w   PlayMusic
                                                       *    move.w  (VDP_Reg1_val).w,d0
@@ -379,16 +379,18 @@ SSObjectsManager                                      *SSObjectsManager:
         bne   SSObjectsManager_return                 *    bne.w   return_55DC
 
         ; Run only each time a new segment is loaded
+        ; testing LSB is ok 
                                                       *    moveq   #0,d0
-        ldb   SpecialStage_CurrentSegment             *    move.b  (SpecialStage_CurrentSegment).w,d0
-        cmpb  SpecialStage_LastSegment2               *    cmp.b   (SpecialStage_LastSegment2).w,d0
+        ldb   SpecialStage_CurrentSegment+1           *    move.b  (SpecialStage_CurrentSegment).w,d0
+        cmpb  SpecialStage_LastSegment2+1             *    cmp.b   (SpecialStage_LastSegment2).w,d0
         beq   SSObjectsManager_return                 *    beq.w   return_55DC
-        stb   SpecialStage_LastSegment2               *    move.b  d0,(SpecialStage_LastSegment2).w
+        stb   SpecialStage_LastSegment2+1             *    move.b  d0,(SpecialStage_LastSegment2).w
         
         ; Get current segment length
                                                       *    movea.l (SS_CurrentLevelLayout).w,a1
         lda   HalfPipe_Seq                            *    move.b  (a1,d0.w),d3
         anda  #$7F              ; ignore orientation  *    andi.w  #$7F,d3
+        asla
         ldx   #Ani_SSTrack_Len                        *    lea (Ani_SSTrack_Len).l,a0
         ldd   a,x                                     *    move.b  (a0,d3.w),d3
                                                       *    add.w   d3,d3
@@ -542,8 +544,7 @@ SSSingleObjLoad                                       *SSSingleObjLoad:
                                                       *;sub_77A2
 SSInitPalAndData                                      *SSInitPalAndData:
                                                       *    clr.b   (Current_Special_Act).w
-        lda   #-1
-        sta   SpecialStage_LastSegment2               *    move.b  #-1,(SpecialStage_LastSegment2).w
+        ; moved to HalfPipe_Init                      *    move.b  #-1,(SpecialStage_LastSegment2).w
         ldd   #0
         std   Ring_count                              *    move.w  #0,(Ring_count).w
                                                       *    move.w  #0,(Ring_count_2P).w
@@ -578,6 +579,9 @@ SSInitPalAndData                                      *SSInitPalAndData:
         ldd   ,x
         leax  d,x
         stx   SS_CurrentLevelObjectLocations          *    move.l  a0,(SS_CurrentLevelObjectLocations).w
+        
+        ldb   Current_Special_Stage
+        aslb        
         ldx   #SpecialLevelLayout                     *    lea (SSRAM_MiscNem_SpecialLevelLayout).w,a0
         abx                                           *    adda.w  (a0,d1.w),a0
         ldd   ,x
@@ -587,12 +591,12 @@ SSInitPalAndData                                      *SSInitPalAndData:
                                                       *; End of function SSInitPalAndData     
 
 Ani_SSTrack_Len
-        fcb 24 ; 0
-        fcb 24 ; 1
-        fcb 12 ; 2
-        fcb 16 ; 3
-        fcb 11 ; 4
-        fcb 0  ; 5
+        fdb 24*4 ; 0
+        fdb 24*4 ; 1
+        fdb 12*4 ; 2
+        fdb 16*4 ; 3
+        fdb 11*4 ; 4
+        fdb 0    ; 5
 
 SpecialLevelLayout
         INCLUDEBIN "./GameMode/SpecialStage/Special stage level layouts.bin"
@@ -691,7 +695,7 @@ HalfPipe_Init
         ; ----------------------------------------------
         
         ldx   SS_CurrentLevelLayout
-        stx   HalfPipe_Seq_Position   
+        stx   SpecialStage_CurrentSegment
 
         ; load first animation id
         ; -----------------------
@@ -699,11 +703,15 @@ HalfPipe_Init
         ldb   ,x                
         stb   HalfPipe_Seq
         andb  #$7F
+        leax  -1,x
+        stx   SpecialStage_LastSegment2          ; init last segment to another value to run ObjectManager
+        
         ldx   #Ani_SpecialStageTrack
         aslb        
         abx
         ldd   ,x
         std   anim,u
+        rts
         
 HalfPipe_Display
         cmpu  #HalfPipeOdd
@@ -744,9 +752,9 @@ HalfPipe_SubRoutines
         fdb   HalfPipe_LoadNewSequence
         
 HalfPipe_LoadNewSequence
-        ldx   HalfPipe_Seq_Position
+        ldx   SpecialStage_CurrentSegment
         leax  1,x
-        stx   HalfPipe_Seq_Position
+        stx   SpecialStage_CurrentSegment
 
         lda   HalfPipe_Seq
         anda  #$7F

@@ -118,18 +118,21 @@ loc_35322                                                                 *loc_3
         rts                                                               *    rts
                                                                           
 SSB_ScaleAnim                                                             *loc_35150:
-        ldd   anim,u                                                      *    cmpi.b  #$A,anim(a0)
-        cmpd  #Ani_SSBomb_explode                                         
+        ldd   ss_z_pos,u
+        subd  #1                       ; decrement moved from loc_3512A   
+        std   ss_z_pos,u
+        ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
+        cmpx  #Ani_SSBomb_explode                                         
         beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
-        ldd   ss_z_pos,u                                                  *    move.w  objoff_30(a0),d0
-        cmpa  #$1D                                                        *    cmpi.w  #$1D,d0
+                                                                          *    move.w  objoff_30(a0),d0
+        cmpd  #$001D                                                      *    cmpi.w  #$1D,d0
         ble   SSB_ScaleAnim_LoadAnim                                      *    ble.s   loc_35164
-        lda   #$1E                                                        *    moveq   #$1E,d0
+        ldb   #$1E                                                        *    moveq   #$1E,d0
                                                                           *
 SSB_ScaleAnim_LoadAnim                                                    *loc_35164:
         ldx   #Ani_SSBomb                                                 *    move.b  byte_35180(pc,d0.w),anim(a0)
-        asla
-        ldd   a,x
+        aslb
+        ldd   b,x
         std   anim,u
                                                                           *
 SSB_ScaleAnim_return                                                      *return_3516A:

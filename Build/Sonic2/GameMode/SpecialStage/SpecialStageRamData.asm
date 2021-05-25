@@ -54,7 +54,7 @@ SSTrack_mappings_bitflags         fill  0,4
 SSTrack_mappings_uncompressed     fill  0,4
 SSTrack_anim                      fcb   $00
 SSTrack_last_anim_frame           fcb   $00
-SpecialStage_CurrentSegment       fcb   $00
+SpecialStage_CurrentSegment       fdb   $00
 SSTrack_anim_frame                fcb   $00
 SS_Alternate_PNT                  fcb   $00
 SSTrack_drawing_index             fcb   $00 ; 0:new half-pipe frame is displayed in this loop, >0:no refresh of half-pipe in this loop
@@ -66,7 +66,7 @@ SS_New_Speed_Factor               fill  0,4
 SS_Cur_Speed_Factor               fill  0,9
 SSTrack_duration_timer            fdb   $0000
 SS_player_anim_frame_timer        fcb   $00
-SpecialStage_LastSegment          fcb   $00
+;SpecialStage_LastSegment          fcb   $00
 SpecialStage_Started              fill  0,5
 SSTrack_last_mappings_copy        fill  0,4
 SSTrack_last_mappings             fill  0,8
@@ -75,7 +75,7 @@ SSTrack_last_mapping_frame        fcb   $00
 SSTrack_mappings_RLE              fill  0,4
 SSDrawRegBuffer                   fill  0,12
 SSDrawRegBuffer_End               fdb   $0000
-SpecialStage_LastSegment2         fcb   $00
+SpecialStage_LastSegment2         fdb   $0000
 SS_unk_DB4D                       fill  0,$15
 SS_Ctrl_Record_Buf                fill  0,30
 SS_Last_Ctrl_Record               fdb   $0000
@@ -108,7 +108,6 @@ SS_Swap_Positions_Flag            fcb   $00
 ;SS_Sprite_Table_End               fill  0,$80     ; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
 
 HalfPipe_Seq           fcb $00
-HalfPipe_Seq_Position  fdb $0000
 HalfPipe_Seq_UpdFlip   fdb $0000
 HalfPipe_Vint_runcount fdb $0000
 SS_Seg_Len_x4          fdb $0000
