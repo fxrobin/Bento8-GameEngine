@@ -45,12 +45,14 @@ SSB_Init                                                                  *Obj61
 SSB_Bomb                                                                  *loc_34F06:
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
-        ldd   Ani_SSBomb_0                                                *        lea     (Ani_obj61).l,a1
-        std   anim,u         ; anim is defaulted to 0                     
+        ;ldd   #Ani_SSBomb_0                                               *        lea     (Ani_obj61).l,a1
+        ;std   anim,u         ; anim is defaulted to 0                     
         jsr   AnimateSprite                                               *        bsr.w   loc_3539E
-        tst   rsv_render_flags,u                                          *        tst.b   render_flags(a0)
-        bpl   SSB_Init_return     ; already on screen                     *        bpl.s   return_34F26
-        bsr   SSB_CheckCollision                                          *        bsr.w   loc_34F28
+        jsr   GetImgIdA
+        sta   mapping_frame,u        
+        ;tst   rsv_render_flags,u                                          *        tst.b   render_flags(a0)
+        ;bpl   SSB_Init_return     ; already on screen                     *        bpl.s   return_34F26
+        ;jsr   SSB_CheckCollision                                          *        bsr.w   loc_34F28
         jmp   DisplaySprite                                               *        bra.w   JmpTo44_DisplaySprite
                                                                           *
 SSB_Init_return                                                           *return_34F26:
@@ -170,6 +172,8 @@ SSB_Explode                                                               *loc_3
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
                                                                           *        lea     (Ani_obj61).l,a1
         jsr   AnimateSprite                                               *        jsrto   (AnimateSprite).l, JmpTo24_AnimateSprite
+        jsr   GetImgIdA
+        sta   mapping_frame,u        
         jmp   DisplaySprite                                               *        bra.w   JmpTo44_DisplaySprite
                                                                           *; ===========================================================================
 SSB_ComputeCoordinates                                                    *loc_351A0:
@@ -213,9 +217,9 @@ SSB_ComputeCoordinates                                                    *loc_3
         aslb                           ; camera, first group is
         rola                           ; for ss_z_pos = 1                 *    add.w   d0,d0
 d1      addd  #$0000                   ; (dynamic) d = (ss_z_pos-1)*6     *    add.w   d1,d0
-        tfr   d,x
+        leax  d,x
         tst   SSTrack_Orientation                                         *    tst.b   (SSTrack_Orientation).w
-        lbne   SSB_CC_Flipped          ; branch if image is h flipped     *    bne.w   loc_35260
+        lbne  SSB_CC_Flipped           ; branch if image is h flipped     *    bne.w   loc_35260
         ldd   4,x                                                         *    move.b  4(a1,d0.w),d6
         sta   d6+1                                                        *    move.b  5(a1,d0.w),d7
         stb   d7+1                     ; branch if angle min
@@ -307,7 +311,11 @@ xneg    lda   2,x
 xEnd    std   sx+1
 xCenter addd  #$0000                   ; (dynamic) add x center of ellipse
         ;std   x_pos,u
-        std   x_pixel,u
+        
+        lsra                           ; megadrive coordinates conversion
+        rorb    
+        addd  #$40
+        stb   x_pixel,u
           
         ; Compute Y coordinate
         ; --------------------          
@@ -347,7 +355,8 @@ yneg    lda   3,x
 yEnd    std   sy+1
 yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ;std   y_pos,u
-        std   y_pixel,u
+        addb  #$0C
+        stb   y_pixel,u
 
         ; Process shadow coordinates
         ; --------------------------
@@ -372,7 +381,7 @@ yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ; we will appy 1,25 factor on already calculated ellipse          *
         ; instead of process muls one more time                                                                  
 sx      ldd   #$0000                   ; (dynamic)
-        ldx   *-2
+        ldx   >*-2
         lsra
         rorb
         lsra
@@ -383,8 +392,13 @@ sx      ldd   #$0000                   ; (dynamic)
 sxCenter
         ldd   #$0000                   ; (dynamic) add x center of ellipse
         leax  d,x        
-        ;stx   x_pos,y                                                                                  
-        stx   x_pixel,y
+        ;stx   x_pos,y 
+        
+        tfr   x,d        
+        lsra                           ; megadrive coordinates conversion
+        rorb    
+        addd  #$40
+        stb   x_pixel,y
                                                                           *    move.w  d4,d7
                                                                           *    lsr.w   #2,d7
                                                                           *    add.w   d7,d4
@@ -392,7 +406,7 @@ sxCenter
         ; we will appy 1,25 factor on already calculated ellipse          *
         ; instead of process muls one more time                                                                  
 sy      ldd   #$0000                   ; (dynamic)
-        ldx   *-2
+        ldx   >*-2
         lsra
         rorb
         lsra
@@ -403,8 +417,11 @@ sy      ldd   #$0000                   ; (dynamic)
 syCenter
         ldd   #$0000                   ; (dynamic) add y center of ellipse
         leax  d,x        
-        ;stx   y_pos,y                                                                       
-        stx   y_pixel,y
+        ;stx   y_pos,y  
+        
+        tfr   x,d
+        addb  #$0C
+        stb   y_pixel,y
                                                                           *    move.w  d5,d7
                                                                           *    asr.w   #2,d7
                                                                           *    add.w   d7,d5
@@ -566,9 +583,9 @@ SSB_Shadow                                                                *loc_3
         tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
         bne   SSB_SetDeleteFlag                                           *    bne.w   BranchTo_JmpTo63_DeleteObject
         ldx   ss_parent,u                                                 *    movea.l objoff_34(a0),a1 ; a1=object
-        tst   rsv_render_flags,x                                          *    tst.b   render_flags(a1)
-        bmi   loc_3534E                                                   *    bmi.s   loc_3534E
-        rts                                                               *    rts
+        ;tst   rsv_render_flags,x                                          *    tst.b   render_flags(a1)
+        ;bmi   loc_3534E                                                   *    bmi.s   loc_3534E
+        ;rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
 loc_3534E                                                                 *loc_3534E:
@@ -590,8 +607,7 @@ loc_3534E                                                                 *loc_3
         beq   loc_35380                                                   *    beq.s   loc_35380
                                                                           *    add.w   d1,d0
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialSideShadow,3,0),art_tile(a0)
-        ldx   image_set,x
-        lda   -1,x
+        lda   mapping_frame,x
         ldx   #Tbl_SSShadow_Side
         ldd   a,x
         std   image_set,u
@@ -602,8 +618,7 @@ loc_3534E                                                                 *loc_3
 loc_35380                                                                 *loc_35380:
                                                                           *    add.w   d1,d0
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialDiagShadow,3,0),art_tile(a0)
-        ldx   image_set,x
-        lda   -1,x
+        lda   mapping_frame,x
         ldx   #Tbl_SSShadow_Diag
         ldd   a,x
         std   image_set,u
@@ -614,8 +629,7 @@ loc_35380                                                                 *loc_3
 loc_3538A                                                                 *loc_3538A:
                                                                           *    add.w   d1,d0
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialFlatShadow,3,0),art_tile(a0)
-        ldx   image_set,x
-        lda   -1,x
+        lda   mapping_frame,x
         ldx   #Tbl_SSShadow_Flat
         ldd   a,x
         std   image_set,u  
