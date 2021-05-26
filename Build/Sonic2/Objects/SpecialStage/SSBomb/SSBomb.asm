@@ -76,6 +76,7 @@ SSB_InitShadow                                                            *loc_3
         bgt   loc_352E6                                                   *    bgt.s   loc_352E6
         lda   render_flags,x                                              
         ora   #render_xmirror_mask                                        *    bset    #0,render_flags(a1)
+        sta   render_flags,x
         lda   #2                                                          
         sta   ss_shadow_tilt,x                                            *    move.b  #2,objoff_2B(a1)
                                                                           *    move.l  a1,objoff_34(a0)
@@ -87,6 +88,7 @@ loc_352E6                                                                 *loc_3
         bgt   loc_352FE                                                   *    bgt.s   loc_352FE
         lda   render_flags,x                                              
         ora   #render_xmirror_mask                                        *    bset    #0,render_flags(a1)
+        sta   render_flags,x
         lda   #1                                                          
         sta   ss_shadow_tilt,x                                            *    move.b  #1,objoff_2B(a1)
                                                                           *    move.l  a1,objoff_34(a0)
@@ -118,10 +120,16 @@ loc_35322                                                                 *loc_3
                                                                           *
                                                                           *return_3532C:
         rts                                                               *    rts
+               
+SSB_DeleteBomb
+        ldx   ss_parent,u
+        com   ss_self_delete,x         ; tell shadow to self delete             
+        jmp   DeleteObject               
                                                                           
 SSB_ScaleAnim                                                             *loc_35150:
         ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A   
+        subd  #1                       ; decrement moved from loc_3512A
+        beq  SSB_DeleteBomb   
         std   ss_z_pos,u
         ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
         cmpx  #Ani_SSBomb_explode                                         
@@ -314,7 +322,7 @@ xCenter addd  #$0000                   ; (dynamic) add x center of ellipse
         
         lsra                           ; megadrive coordinates conversion
         rorb    
-        addd  #$40
+        addb  #$40
         stb   x_pixel,u
           
         ; Compute Y coordinate
@@ -355,7 +363,7 @@ yneg    lda   3,x
 yEnd    std   sy+1
 yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ;std   y_pos,u
-        addb  #$0C
+        addb  #$10
         stb   y_pixel,u
 
         ; Process shadow coordinates
@@ -382,11 +390,11 @@ yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ; instead of process muls one more time                                                                  
 sx      ldd   #$0000                   ; (dynamic)
         ldx   >*-2
-        lsra
+        asra
         rorb
-        lsra
+        asra
         rorb        
-        abx
+        leax  d,x
 
          
 sxCenter
@@ -397,7 +405,7 @@ sxCenter
         tfr   x,d        
         lsra                           ; megadrive coordinates conversion
         rorb    
-        addd  #$40
+        addb  #$40
         stb   x_pixel,y
                                                                           *    move.w  d4,d7
                                                                           *    lsr.w   #2,d7
@@ -407,11 +415,11 @@ sxCenter
         ; instead of process muls one more time                                                                  
 sy      ldd   #$0000                   ; (dynamic)
         ldx   >*-2
-        lsra
+        asra
         rorb
-        lsra
+        asra
         rorb        
-        abx
+        leax  d,x
 
          
 syCenter
@@ -420,7 +428,7 @@ syCenter
         ;stx   y_pos,y  
         
         tfr   x,d
-        addb  #$0C
+        addb  #$10
         stb   y_pixel,y
                                                                           *    move.w  d5,d7
                                                                           *    asr.w   #2,d7
@@ -572,16 +580,13 @@ loc_35120                                                                 *loc_3
         orcc  #$01                                                        *    move    #1,ccr
         rts                                                               *    rts
                                                                           *; ===========================================================================
-             
-SSB_SetDeleteFlag
-        lda   render_flags,u                                              
-        ora   #render_todelete_mask                                       *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
-        lda   render_flags,u                                              
-        rts             
+       
+SSB_DeleteShadow
+        jmp   DeleteObject                                                *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
                                                                           
 SSB_Shadow                                                                *loc_3533A:
         tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
-        bne   SSB_SetDeleteFlag                                           *    bne.w   BranchTo_JmpTo63_DeleteObject
+        bne   SSB_DeleteShadow                                            *    bne.w   BranchTo_JmpTo63_DeleteObject
         ldx   ss_parent,u                                                 *    movea.l objoff_34(a0),a1 ; a1=object
         ;tst   rsv_render_flags,x                                          *    tst.b   render_flags(a1)
         ;bmi   loc_3534E                                                   *    bmi.s   loc_3534E
