@@ -9,6 +9,7 @@
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
+        INCLUDE "./Engine/Macros.asm"   
 
 SpecialStage
         lda   routine,u
@@ -410,8 +411,9 @@ SSObjectsManager_LoadObject                           *-
         anda  #$40                                    *    andi.b  #$40,d1
         bne   SSObjectsManager_Bomb                   *    bne.s   +
                                                       *    addq.w  #1,(SS_Perfect_rings_left).w
-        ;lda   #ObjID_SSRing !!! TODO implement Ring !!!
-        lda   #ObjID_SSBomb                                                      
+        lda   #$01
+@a      sta   subtype,u                                
+        lda   #ObjID_SSBomb
         sta   id,u                                    *    move.b  #ObjID_SSRing,id(a1)
         lda   #$00        
         aslb                                          *    add.w   d0,d0
@@ -426,18 +428,15 @@ SSObjectsManager_LoadObject                           *-
                                                       *; ===========================================================================
 SSObjectsManager_Bomb                                 *+
         andb  #$3F                                    *    andi.w  #$3F,d0
-        lda   #ObjID_SSBomb                                                      
-        sta   id,u                                    *    move.b  #ObjID_SSBomb,id(a1)
         lda   #$00
-        aslb                                          *    add.w   d0,d0
-        rola        
-        aslb                                          *    add.w   d0,d0
-        rola
-        addd  SS_Seg_Len_x4                           *    add.w   d3,d0
-        std   ss_z_pos,u                              *    move.w  d0,objoff_30(a1)
-        lda   ,x+
-        sta   angle,u                                 *    move.b  (a0)+,angle(a1)
-        bra   SSObjectsManager_LoadObject             *    bra.s   -
+        bra   @a                                                     
+                                                      *    move.b  #ObjID_SSBomb,id(a1)
+                                                      *    add.w   d0,d0
+                                                      *    add.w   d0,d0
+                                                      *    add.w   d3,d0
+                                                      *    move.w  d0,objoff_30(a1)
+                                                      *    move.b  (a0)+,angle(a1)
+                                                      *    bra.s   -
                                                       *; ===========================================================================
 SSObjectsManager_LoadSegmentType                      *+
         stx   SS_CurrentLevelObjectLocations          *    move.l  a0,(SS_CurrentLevelObjectLocations).w

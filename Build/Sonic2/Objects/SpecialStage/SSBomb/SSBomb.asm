@@ -8,6 +8,16 @@
 
         INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
 
+SSObject
+        clr   is_out_of_screen
+        lda   subtype,u
+        asla           
+        ldx   #SSObject_Routines
+        jmp   [a,x]
+
+SSObject_Routines
+        fdb   SSBomb
+        fdb   SSRing
                                                                           *; ===========================================================================
                                                                           *; ----------------------------------------------------------------------------
                                                                           *; Object 61 - Bombs from Special Stage
@@ -26,6 +36,19 @@ SSB_Routines                                                              *Obj61
         fdb   SSB_Shadow                                                  *                offsetTableEntry.w loc_3533A    ; 4
         fdb   SSB_Explode                                                 *                offsetTableEntry.w loc_34F6A    ; 6
                                                                           *; ===========================================================================
+                                                                          
+SSRing
+        lda   routine,u
+        asla           
+        ldx   #SSR_Routines
+        jmp   [a,x]        
+
+SSR_Routines
+        fdb   SSR_Init
+        fdb   SSR_Ring
+        fdb   SSB_Shadow
+        fdb   SSR_Stars                                                                             
+                                                                          
                                                                           *; loc_34EC6:
 SSB_Init                                                                  *Obj61_Init:
         inc   routine,u                                                   *        addq.b  #2,routine(a0)
@@ -45,18 +68,60 @@ SSB_Init                                                                  *Obj61
 SSB_Bomb                                                                  *loc_34F06:
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
-        ;ldd   #Ani_SSBomb_0                                               *        lea     (Ani_obj61).l,a1
-        ;std   anim,u         ; anim is defaulted to 0                     
+                                                                          *        lea     (Ani_obj61).l,a1
         jsr   AnimateSprite                                               *        bsr.w   loc_3539E
         jsr   GetImgIdA
         sta   mapping_frame,u        
-        ;tst   rsv_render_flags,u                                          *        tst.b   render_flags(a0)
-        ;bpl   SSB_Init_return     ; already on screen                     *        bpl.s   return_34F26
-        ;jsr   SSB_CheckCollision                                          *        bsr.w   loc_34F28
+        tst   is_out_of_screen
+        bne   SSB_Init_hide_and_return
+        ; tst   rsv_render_flags,u                                        *        tst.b   render_flags(a0)
+        ; bpl   SSB_Init_return        ; not on screen last frame         *        bpl.s   return_34F26
+        ; jsr   SSB_CheckCollision     ; so no collision test             *        bsr.w   loc_34F28
         jmp   DisplaySprite                                               *        bra.w   JmpTo44_DisplaySprite
                                                                           *
+SSB_Init_hide_and_return
+        lda   render_flags,u
+        ora   #render_hide_mask        ; set hide flag
+        sta   render_flags,u
 SSB_Init_return                                                           *return_34F26:
         rts                                                               *        rts
+        
+SSR_Init
+        inc   routine,u
+        ldd   #$0000
+        std   xy_pixel,u
+
+        ldd   #$0302
+        sta   priority,u
+        stb   collision_flags,u
+
+        lda   #1
+        sta   anim_link,u
+
+        tst   angle,u
+        bmi   SSR_Ring
+        jsr   SSB_InitShadow
+
+SSR_Ring
+        jsr   SSR_ScaleAnim
+        jsr   SSB_ComputeCoordinates
+        jsr   AnimateSprite
+        jsr   GetImgIdA
+        sta   mapping_frame,u
+        tst   is_out_of_screen
+        bne   SSR_Init_hide_and_return
+        ; tst   rsv_render_flags,u
+        ; bpl   SSB_Init_return        ; not on screen last frame
+        ; jsr   SSB_CheckCollision     ; so no collision test
+        jmp   DisplaySprite
+
+SSR_Init_hide_and_return
+        lda   render_flags,u
+        ora   #render_hide_mask        ; set hide flag
+        sta   render_flags,u
+SSR_Init_return
+        rts        
+        
                                                                           *; ===========================================================================
 SSB_InitShadow                                                            *loc_3529C:
         jsr   SSSingleObjLoad2                                            *    jsrto   (SSSingleObjLoad2).l, JmpTo_SSSingleObjLoad2
@@ -121,15 +186,17 @@ loc_35322                                                                 *loc_3
                                                                           *return_3532C:
         rts                                                               *    rts
                
-SSB_DeleteBomb
+SSB_DeleteObject
         ldx   ss_parent,u
-        com   ss_self_delete,x         ; tell shadow to self delete             
+        beq   SSB_DeleteObject_End       ; no shadow for this Bomb
+        com   ss_self_delete,x         ; tell shadow to self delete
+SSB_DeleteObject_End                     
         jmp   DeleteObject               
                                                                           
 SSB_ScaleAnim                                                             *loc_35150:
         ldd   ss_z_pos,u
         subd  #1                       ; decrement moved from loc_3512A
-        beq  SSB_DeleteBomb   
+        beq   SSB_DeleteObject   
         std   ss_z_pos,u
         ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
         cmpx  #Ani_SSBomb_explode                                         
@@ -146,7 +213,30 @@ SSB_ScaleAnim_LoadAnim                                                    *loc_3
         std   anim,u
                                                                           *
 SSB_ScaleAnim_return                                                      *return_3516A:
-        rts                                                               *    rts                                                      
+        rts                                                               *    rts
+        
+SSR_ScaleAnim                                                             *loc_35150:
+        ldd   ss_z_pos,u
+        subd  #1                       ; decrement moved from loc_3512A
+        beq   SSB_DeleteObject   
+        std   ss_z_pos,u
+        ldx   anim,u
+        cmpx  #Ani_SSRing_stars                                         
+        beq   SSR_ScaleAnim_return
+
+        cmpd  #$001D
+        ble   SSR_ScaleAnim_LoadAnim
+        ldb   #$1E
+
+SSR_ScaleAnim_LoadAnim
+        ldx   #Ani_SSRing
+        aslb
+        ldd   b,x
+        std   anim,u
+                                                                          
+SSR_ScaleAnim_return
+        rts        
+                                                              
                                                                           *; ===========================================================================
 SSB_CheckCollision                                                        *loc_34F28:
         ; collision width, now hardcoded in collision routine             *        move.w  #8,d6
@@ -161,8 +251,8 @@ SSB_CheckCollision                                                        *loc_3
         stb   anim_frame,u                                                *        move.b  #0,anim_frame(a0)
         stb   anim_frame_duration,u                                       *        move.b  #0,anim_frame_duration(a0)
         ldx   ss_parent,u                                                 *        move.l  objoff_34(a0),d0
-        beq   return_34F68                                                *        beq.s   return_34F68
-        lda   #0
+        beq   return_34F68             ; no shadow for this Bomb          *        beq.s   return_34F68
+        ldd   #0
         std   ss_parent,u                                                 *        move.l  #0,objoff_34(a0)
                                                                           *        movea.l d0,a1 ; a1=object
         com   ss_self_delete,x         ; tell shadow to self delete       *        st      objoff_2A(a1)
@@ -181,8 +271,40 @@ SSB_Explode                                                               *loc_3
                                                                           *        lea     (Ani_obj61).l,a1
         jsr   AnimateSprite                                               *        jsrto   (AnimateSprite).l, JmpTo24_AnimateSprite
         jsr   GetImgIdA
-        sta   mapping_frame,u        
+        sta   mapping_frame,u
+        tst   is_out_of_screen
+        bne   SSB_Explode_hide_and_return                
         jmp   DisplaySprite                                               *        bra.w   JmpTo44_DisplaySprite
+SSB_Explode_hide_and_return
+        lda   render_flags,u
+        ora   #render_hide_mask        ; set hide flag
+        sta   render_flags,u
+        rts        
+    
+SSR_Stars
+        ldd   #Ani_SSRing_stars
+        std   anim,u
+
+        jsr   SSB_CheckIfForeground
+        jsr   SSB_ScaleAnim
+        jsr   SSB_ComputeCoordinates
+
+        jsr   AnimateSprite
+        jsr   GetImgIdA
+        sta   mapping_frame,u
+        tst   is_out_of_screen
+        bne   SSR_Stars_hide_and_return
+        jmp   DisplaySprite
+SSR_Stars_hide_and_return
+        lda   render_flags,u
+        ora   #render_hide_mask        ; set hide flag
+        sta   render_flags,u
+        rts    
+    
+SSB_CC_OutOfScreen             
+        lda   #$01
+        sta   is_out_of_screen
+        rts
                                                                           *; ===========================================================================
 SSB_ComputeCoordinates                                                    *loc_351A0:
                                                                           *    move.w  d7,-(sp)
@@ -236,7 +358,7 @@ d1      addd  #$0000                   ; (dynamic) d = (ss_z_pos-1)*6     *    a
 d6      cmpa  #$00                     ; (dynamic) angle max (incl.)      *    cmp.b   d6,d1
         blo   SSB_CC_VisibleArea       ; of visible area                  *    blo.s   loc_351E8
 d7      cmpa  #$00                     ; (dynamic) angle min (excl.)      *    cmp.b   d7,d1
-        blo   return_34F68             ; of visible area                  *    blo.s   loc_35258
+        blo   SSB_CC_OutOfScreen       ; of visible area                  *    blo.s   loc_35258
                                                                           *
 SSB_CC_VisibleArea                                                        *loc_351E8:
         clra
@@ -322,8 +444,11 @@ xCenter addd  #$0000                   ; (dynamic) add x center of ellipse
         
         lsra                           ; megadrive coordinates conversion
         rorb    
-        addb  #$40
+        addd  #$40
         stb   x_pixel,u
+        tsta
+        beq   ysin
+        sta   is_out_of_screen
           
         ; Compute Y coordinate
         ; --------------------          
@@ -363,13 +488,16 @@ yneg    lda   3,x
 yEnd    std   sy+1
 yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ;std   y_pos,u
-        addb  #$10
+        addd  #$10
         stb   y_pixel,u
+        tsta
+        beq   scoord
+        sta   is_out_of_screen        
 
         ; Process shadow coordinates
         ; --------------------------
 
-        ldy   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
+scoord  ldy   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
         beq   SSB_CC_NoShadow                                             *    beq.s   loc_3524E
                                                                           *    movea.l d0,a1 ; a1=object
                                                                           *    move.b  angle(a0),d0
@@ -405,8 +533,11 @@ sxCenter
         tfr   x,d        
         lsra                           ; megadrive coordinates conversion
         rorb    
-        addb  #$40
+        addd  #$40
         stb   x_pixel,y
+        tsta
+        beq   sy
+        sta   is_out_of_screen            
                                                                           *    move.w  d4,d7
                                                                           *    lsr.w   #2,d7
                                                                           *    add.w   d7,d4
@@ -428,8 +559,11 @@ syCenter
         ;stx   y_pos,y  
         
         tfr   x,d
-        addb  #$10
+        addd  #$10
         stb   y_pixel,y
+        tsta
+        beq   SSB_CC_NoShadow
+        sta   is_out_of_screen          
                                                                           *    move.w  d5,d7
                                                                           *    asr.w   #2,d7
                                                                           *    add.w   d7,d5
@@ -588,9 +722,11 @@ SSB_Shadow                                                                *loc_3
         tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
         bne   SSB_DeleteShadow                                            *    bne.w   BranchTo_JmpTo63_DeleteObject
         ldx   ss_parent,u                                                 *    movea.l objoff_34(a0),a1 ; a1=object
-        ;tst   rsv_render_flags,x                                          *    tst.b   render_flags(a1)
-        ;bmi   loc_3534E                                                   *    bmi.s   loc_3534E
-        ;rts                                                               *    rts
+        bne   @a
+        rts
+@a      tst   rsv_render_flags,x       ; only render shadow if parent     *    tst.b   render_flags(a1)
+        bmi   loc_3534E                ; is on screen                     *    bmi.s   loc_3534E
+        rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
 loc_3534E                                                                 *loc_3534E:
@@ -692,6 +828,9 @@ SSSingleObjLoad2                                                          *SSSin
                                                                           *    endm
                                                                           *    even
                                                                           *    endif
+
+is_out_of_screen
+        fcb   $00
         
 Tbl_SSShadow_Flat
         fdb   Img_SSShadow_000
@@ -765,7 +904,40 @@ Ani_SSBomb
         fdb   Ani_SSBomb_1 ; $36
         fdb   Ani_SSBomb_1 ; $38
         fdb   Ani_SSBomb_1 ; $3A
-        fdb   Ani_SSBomb_0 ; $3C removed one index ($3E) from original code, since every index > $3A is capped to index $3C													                      
+        fdb   Ani_SSBomb_0 ; $3C removed one index ($3E) from original code, since every index > $3A is capped to index $3C		
+        
+Ani_SSRing
+        fdb   Ani_SSRing_9 ; 0
+        fdb   Ani_SSRing_9 ; 2
+        fdb   Ani_SSRing_9 ; 4
+        fdb   Ani_SSRing_8 ; 6
+        fdb   Ani_SSRing_8 ; 8
+        fdb   Ani_SSRing_7 ; $A
+        fdb   Ani_SSRing_7 ; $C
+        fdb   Ani_SSRing_6 ; $E
+        fdb   Ani_SSRing_6 ; $10
+        fdb   Ani_SSRing_5 ; $12
+        fdb   Ani_SSRing_5 ; $14
+        fdb   Ani_SSRing_4 ; $16
+        fdb   Ani_SSRing_4 ; $18                                                
+        fdb   Ani_SSRing_3 ; $1A
+        fdb   Ani_SSRing_3 ; $1C
+        fdb   Ani_SSRing_3 ; $1E
+        fdb   Ani_SSRing_2 ; $20                               
+		fdb   Ani_SSRing_2 ; $22
+        fdb   Ani_SSRing_2 ; $24
+        fdb   Ani_SSRing_1 ; $26
+        fdb   Ani_SSRing_1 ; $28
+        fdb   Ani_SSRing_1 ; $2A
+        fdb   Ani_SSRing_1 ; $2C
+        fdb   Ani_SSRing_1 ; $2E
+        fdb   Ani_SSRing_1 ; $30
+        fdb   Ani_SSRing_1 ; $32
+        fdb   Ani_SSRing_1 ; $34
+        fdb   Ani_SSRing_1 ; $36
+        fdb   Ani_SSRing_1 ; $38
+        fdb   Ani_SSRing_1 ; $3A
+        fdb   Ani_SSRing_0 ; $3C removed one index ($3E) from original code, since every index > $3A is capped to index $3C		
 													                      
 Sine_Data                                                                 *Sine_Data:      BINCLUDE        "misc/sinewave.bin"
         INCLUDEBIN "./Engine/Math/sinewave.bin"                                 

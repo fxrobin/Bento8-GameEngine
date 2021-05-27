@@ -29,7 +29,16 @@ AnimateSprite                               *AnimateSprite:
         cmpx  prev_anim,u                   *    cmp.b   prev_anim(a0),d0 ; is animation set to change?
         beq   Anim_Run                      *    beq.s   Anim_Run         ; if not, branch
         stx   prev_anim,u                   *    move.b  d0,prev_anim(a0) ; set prev anim to current animation
-		ldb   #0                            
+        
+        tst   anim_link,u                   ; this is an animation link 
+        beq   @a                            ; that will not reset anim_frame
+        ldb   anim_frame,u                  ; when swaping animation
+        aslb
+        leay  b,x
+        ldd   ,y
+        std   image_set,u
+        bra   Anim_Run
+@a		ldb   #0                            
         stb   anim_frame,u                  *    move.b  #0,anim_frame(a0)          ; reset animation
         stb   anim_frame_duration,u         *    move.b  #0,anim_frame_duration(a0) ; reset frame duration
                                             *; loc_16560:

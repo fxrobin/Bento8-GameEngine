@@ -74,8 +74,10 @@ pcm_meta_size   equ 5
 * Object Constants
 * ===========================================================================
 
-object_size                   equ 104 ; the size of an object - DEPENDENCY ClearObj routine
+object_size                   equ 106 ; the size of an object - DEPENDENCY ClearObj routine
 next_object                   equ object_size
+
+; 105 is FREE
 
 id                            equ 0           ; reference to object model id (ObjID_) (0: free slot)
 subtype                       equ 1           ; reference to object subtype (Sub_)
@@ -96,6 +98,7 @@ anim                          equ 4  ; and 5  ; reference to current animation (
 prev_anim                     equ 6  ; and 7  ; reference to previous animation (Ani_)
 anim_frame                    equ 8           ; index of current frame in animation
 anim_frame_duration           equ 9           ; number of frames for each image in animation, range: 00-7F (0-127), 0 means display only during one frame
+anim_link                     equ 104         ; allow animation swap without reseting anim_frame and duration
 image_set                     equ 10 ; and 11 ;reference to current image (Img_) (0000 if no image)
 x_pos                         equ 12 ; and 13 ; x playfield coordinate
 x_sub                         equ 14          ; x subpixel (1/256 of a pixel), must follow x_pos in data structure
