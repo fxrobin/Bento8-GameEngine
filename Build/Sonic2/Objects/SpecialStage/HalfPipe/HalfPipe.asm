@@ -529,13 +529,13 @@ SSCurveOffsets                                        *SSCurveOffsets: ; word_76
 ; [cc|z]: 1=found 0=not found                                                       
                                                       *; sub_6F8E:
 SSSingleObjLoad                                       *SSSingleObjLoad:
-        ldu   #SS_Dynamic_Object_RAM                  *    lea (SS_Dynamic_Object_RAM).w,a1
+        ldu   #Dynamic_Object_RAM                     *    lea (SS_Dynamic_Object_RAM).w,a1
                                                       *    move.w  #(SS_Dynamic_Object_RAM_End-SS_Dynamic_Object_RAM)/object_size-1,d5
                                                       *
 @b      tst   id,u                                    *-   tst.b   id(a1)
         beq   @a                                      *    beq.s   +   ; rts
         leau  next_object,u                           *    lea next_object(a1),a1 ; a1=object
-        cmpu  #SS_Dynamic_Object_RAM_End              *    dbf d5,-
+        cmpu  #Dynamic_Object_RAM_End                 *    dbf d5,-
         bne   @b                                      *+
         lda   #$FF
 @a      rts                                           *    rts

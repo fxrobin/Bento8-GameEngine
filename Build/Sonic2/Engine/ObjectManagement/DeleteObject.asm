@@ -23,9 +23,15 @@ DeleteObject_x                *DeleteObject:
         pshs  d,x,u                    *    movea.l a0,a1
         leau  ,x                       *; sub_164E8:
         bra   DOB_Start
+DeleteObject_return
+        puls  d,x,u,pc                      ; rts
         
 DeleteObject                  *DeleteObject2:
         pshs  d,x,u
+        
+        lda   render_flags,u
+        anda  #render_todelete_mask
+        bne   DeleteObject_return           ; branch if already registred for deletion        
         
 DOB_Start
         lda   rsv_prev_render_flags_0,u

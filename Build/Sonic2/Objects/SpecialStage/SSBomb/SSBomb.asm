@@ -1,5 +1,5 @@
 ; ---------------------------------------------------------------------------
-; Object - Bombs from Special Stage
+; Object - Bombs and Rings from Special Stage
 ;
 ; input REG : [u] pointer to Object Status Table (OST)
 ; ---------
@@ -18,37 +18,26 @@ SSObject
 SSObject_Routines
         fdb   SSBomb
         fdb   SSRing
+
                                                                           *; ===========================================================================
                                                                           *; ----------------------------------------------------------------------------
                                                                           *; Object 61 - Bombs from Special Stage
                                                                           *; ----------------------------------------------------------------------------
                                                                           *; Sprite_34EB0:
 SSBomb                                                                    *Obj61:
-        lda   routine,u                                                   *        moveq   #0,d0
-        asla                                                              *        move.b  routine(a0),d0
-        ldx   #SSB_Routines                                               *        move.w  Obj61_Index(pc,d0.w),d1
-        jmp   [a,x]                                                       *        jmp     Obj61_Index(pc,d1.w)
+        lda   routine,u                                                   *    moveq   #0,d0
+        asla                                                              *    move.b  routine(a0),d0
+        ldx   #SSB_Routines                                               *    move.w  Obj61_Index(pc,d0.w),d1
+        jmp   [a,x]                                                       *    jmp Obj61_Index(pc,d1.w)
                                                                           *; ===========================================================================
                                                                           *; off_34EBE:
 SSB_Routines                                                              *Obj61_Index:    offsetTable
-        fdb   SSB_Init                                                    *                offsetTableEntry.w Obj61_Init   ; 0
-        fdb   SSB_Bomb                                                    *                offsetTableEntry.w loc_34F06    ; 2
-        fdb   SSB_Shadow                                                  *                offsetTableEntry.w loc_3533A    ; 4
-        fdb   SSB_Explode                                                 *                offsetTableEntry.w loc_34F6A    ; 6
+        fdb   SSB_Init                                                    *        offsetTableEntry.w Obj61_Init   ; 0
+        fdb   SSB_Bomb                                                    *        offsetTableEntry.w loc_34F06    ; 2
+        fdb   SSB_Shadow                                                  *        offsetTableEntry.w loc_3533A    ; 4
+        fdb   SSB_Explode                                                 *        offsetTableEntry.w loc_34F6A    ; 6
                                                                           *; ===========================================================================
-                                                                          
-SSRing
-        lda   routine,u
-        asla           
-        ldx   #SSR_Routines
-        jmp   [a,x]        
-
-SSR_Routines
-        fdb   SSR_Init
-        fdb   SSR_Ring
-        fdb   SSB_Shadow
-        fdb   SSR_Stars                                                                             
-                                                                          
+																		  
                                                                           *; loc_34EC6:
 SSB_Init                                                                  *Obj61_Init:
         inc   routine,u                                                   *        addq.b  #2,routine(a0)
@@ -85,159 +74,10 @@ SSB_Init_hide_and_return
         sta   render_flags,u
 SSB_Init_return                                                           *return_34F26:
         rts                                                               *        rts
-        
-SSR_Init
-        inc   routine,u
-        ldd   #$0000
-        std   xy_pixel,u
-
-        ldd   #$0302
-        sta   priority,u
-        stb   collision_flags,u
-
-        lda   #1
-        sta   anim_link,u
-
-        tst   angle,u
-        bmi   SSR_Ring
-        jsr   SSB_InitShadow
-
-SSR_Ring
-        jsr   SSR_ScaleAnim
-        jsr   SSB_ComputeCoordinates
-        jsr   AnimateSprite
-        jsr   GetImgIdA
-        sta   mapping_frame,u
-        tst   is_out_of_screen
-        bne   SSR_Init_hide_and_return
-        ; tst   rsv_render_flags,u
-        ; bpl   SSB_Init_return        ; not on screen last frame
-        ; jsr   SSB_CheckCollision     ; so no collision test
-        jmp   DisplaySprite
-
-SSR_Init_hide_and_return
-        lda   render_flags,u
-        ora   #render_hide_mask        ; set hide flag
-        sta   render_flags,u
-SSR_Init_return
-        rts        
-        
-                                                                          *; ===========================================================================
-SSB_InitShadow                                                            *loc_3529C:
-        jsr   SSSingleObjLoad2                                            *    jsrto   (SSSingleObjLoad2).l, JmpTo_SSSingleObjLoad2
-        bne   SSB_Init_return                                             *    bne.w   return_3532C
-        stu   ss_parent,x                                                 *    move.l  a0,objoff_34(a1)
-        stx   ss_parent,u                                                 
-        lda   id,u                                                        
-        sta   id,x                                                        *    move.b  id(a0),id(a1)
-        ldd   #$0205                                                      
-        sta   routine,x                                                   *    move.b  #4,routine(a1)
-                                                                          *    move.l  #Obj63_MapUnc_34492,mappings(a1)
-                                                                          *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialFlatShadow,3,0),art_tile(a1)
-                                                                          *    move.b  #4,render_flags(a1)
-        stb   priority,x                                                  *    move.b  #5,priority(a1)
-        lda   angle,u                                                     *    move.b  angle(a0),d0
-        cmpa  #$10                                                        *    cmpi.b  #$10,d0
-        bgt   loc_352E6                                                   *    bgt.s   loc_352E6
-        lda   render_flags,x                                              
-        ora   #render_xmirror_mask                                        *    bset    #0,render_flags(a1)
-        sta   render_flags,x
-        lda   #2                                                          
-        sta   ss_shadow_tilt,x                                            *    move.b  #2,objoff_2B(a1)
-                                                                          *    move.l  a1,objoff_34(a0)
-        rts                                                               *    rts
+		
                                                                           *; ===========================================================================
                                                                           *
-loc_352E6                                                                 *loc_352E6:
-        cmpa  #$30                                                        *    cmpi.b  #$30,d0
-        bgt   loc_352FE                                                   *    bgt.s   loc_352FE
-        lda   render_flags,x                                              
-        ora   #render_xmirror_mask                                        *    bset    #0,render_flags(a1)
-        sta   render_flags,x
-        lda   #1                                                          
-        sta   ss_shadow_tilt,x                                            *    move.b  #1,objoff_2B(a1)
-                                                                          *    move.l  a1,objoff_34(a0)
-        rts                                                               *    rts
-                                                                          *; ===========================================================================
-                                                                          *
-loc_352FE                                                                 *loc_352FE:
-        cmpa  #$50                                                        *    cmpi.b  #$50,d0
-        bgt   loc_35310                                                   *    bgt.s   loc_35310
-        lda   #0                                                          
-        sta   ss_shadow_tilt,x                                            *    move.b  #0,objoff_2B(a1)
-                                                                          *    move.l  a1,objoff_34(a0)
-        rts                                                               *    rts
-                                                                          *; ===========================================================================
-                                                                          *
-loc_35310                                                                 *loc_35310:
-        cmpa  #$70                                                        *    cmpi.b  #$70,d0
-        bgt   loc_35322                                                   *    bgt.s   loc_35322
-        lda   #1                                                          
-        sta   ss_shadow_tilt,x                                            *    move.b  #1,objoff_2B(a1)
-                                                                          *    move.l  a1,objoff_34(a0)
-        rts                                                               *    rts
-                                                                          *; ===========================================================================
-                                                                          *
-loc_35322                                                                 *loc_35322:
-        lda   #2                                                          
-        sta   ss_shadow_tilt,x                                            *    move.b  #2,objoff_2B(a1)
-                                                                          *    move.l  a1,objoff_34(a0)
-                                                                          *
-                                                                          *return_3532C:
-        rts                                                               *    rts
-               
-SSB_DeleteObject
-        ldx   ss_parent,u
-        beq   SSB_DeleteObject_End       ; no shadow for this Bomb
-        com   ss_self_delete,x         ; tell shadow to self delete
-SSB_DeleteObject_End                     
-        jmp   DeleteObject               
-                                                                          
-SSB_ScaleAnim                                                             *loc_35150:
-        ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A
-        beq   SSB_DeleteObject   
-        std   ss_z_pos,u
-        ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
-        cmpx  #Ani_SSBomb_explode                                         
-        beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
-                                                                          *    move.w  objoff_30(a0),d0
-        cmpd  #$001D                                                      *    cmpi.w  #$1D,d0
-        ble   SSB_ScaleAnim_LoadAnim                                      *    ble.s   loc_35164
-        ldb   #$1E                                                        *    moveq   #$1E,d0
-                                                                          *
-SSB_ScaleAnim_LoadAnim                                                    *loc_35164:
-        ldx   #Ani_SSBomb                                                 *    move.b  byte_35180(pc,d0.w),anim(a0)
-        aslb
-        ldd   b,x
-        std   anim,u
-                                                                          *
-SSB_ScaleAnim_return                                                      *return_3516A:
-        rts                                                               *    rts
-        
-SSR_ScaleAnim                                                             *loc_35150:
-        ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A
-        beq   SSB_DeleteObject   
-        std   ss_z_pos,u
-        ldx   anim,u
-        cmpx  #Ani_SSRing_stars                                         
-        beq   SSR_ScaleAnim_return
 
-        cmpd  #$001D
-        ble   SSR_ScaleAnim_LoadAnim
-        ldb   #$1E
-
-SSR_ScaleAnim_LoadAnim
-        ldx   #Ani_SSRing
-        aslb
-        ldd   b,x
-        std   anim,u
-                                                                          
-SSR_ScaleAnim_return
-        rts        
-                                                              
-                                                                          *; ===========================================================================
 SSB_CheckCollision                                                        *loc_34F28:
         ; collision width, now hardcoded in collision routine             *        move.w  #8,d6
         jsr   CheckCollision                                              *        bsr.w   loc_350A0
@@ -259,8 +99,10 @@ SSB_CheckCollision                                                        *loc_3
                                                                           *
 return_34F68                                                              *return_34F68:
         rts                                                               *        rts
+
                                                                           *; ===========================================================================
                                                                           *
+																		  
 SSB_Explode                                                               *loc_34F6A:
         ldd   #Ani_SSBomb_explode                                         *        move.b  #$A,anim(a0)
         std   anim,u                                                      
@@ -279,33 +121,381 @@ SSB_Explode_hide_and_return
         lda   render_flags,u
         ora   #render_hide_mask        ; set hide flag
         sta   render_flags,u
-        rts        
-    
-SSR_Stars
-        ldd   #Ani_SSRing_stars
+        rts  
+		
+                                                                          *; ===========================================================================
+
+SSB_CheckIfForeground                                                     *loc_34F90:
+        ldd   ss_z_pos,u                                                  
+        cmpd  #4                                                          *        cmpi.w  #4,objoff_30(a0)
+        bhs   @a                                                          *        bhs.s   return_34F9E
+        lda   #1                                                          
+        sta   priority,u                                                  *        move.b  #1,priority(a0)
+                                                                          *
+@a                                                                        *return_34F9E:
+        rts                                                               *        rts
+
+                                                                          *; ===========================================================================
+                                                                          *; ----------------------------------------------------------------------------
+                                                                          *; Object 60 - Rings from Special Stage
+                                                                          *; ----------------------------------------------------------------------------
+                                                                          *; Sprite_34FA0:
+SSRing                                                                    *Obj60:
+        lda   routine,u                                                   *    moveq   #0,d0
+        asla                                                              *    move.b  routine(a0),d0
+        ldx   #SSR_Routines                                               *    move.w  Obj60_Index(pc,d0.w),d1
+        jmp   [a,x]                                                       *    jmp Obj60_Index(pc,d1.w)
+                                                                          *; ===========================================================================
+                                                                          *; off_34FAE:
+SSR_Routines                                                              *Obj60_Index:    offsetTable
+        fdb   SSR_Init                                                    *        offsetTableEntry.w Obj60_Init   ; 0
+        fdb   SSR_Ring                                                    *        offsetTableEntry.w loc_34FF0    ; 1
+        fdb   SSB_Shadow                                                  *        offsetTableEntry.w loc_3533A    ; 2
+        fdb   SSR_Stars                                                   *        offsetTableEntry.w loc_35010    ; 3
+                                                                          *; ===========================================================================
+																		  
+                                                                          *; loc_34FB6:
+SSR_Init                                                                  *Obj60_Init:
+        inc   routine,u                                                   *    addq.b  #2,routine(a0)
+        ldd   #$0000                                                      *    move.w  #$7F,x_pos(a0)
+        std   xy_pixel,u                                                  *    move.w  #$58,y_pos(a0)
+                                                                          *    move.l  #Obj5A_Obj5B_Obj60_MapUnc_3632A,mappings(a0)
+                                                                          *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialRings,3,0),art_tile(a0)
+                                                                          *    move.b  #4,render_flags(a0)
+        ldd   #$0301
+        sta   priority,u                                                  *    move.b  #3,priority(a0)
+        stb   collision_flags,u                                           *    move.b  #1,collision_flags(a0)
+		
+        lda   #1
+        sta   anim_link,u
+		
+        tst   angle,u                                                     *    tst.b   angle(a0)
+        bmi   SSR_Ring                                                    *    bmi.s   loc_34FF0
+        jsr   SSB_InitShadow                                              *    bsr.w   loc_3529C
+                                                                          *
+SSR_Ring                                                                  *loc_34FF0:
+                                                                          *
+        jsr   SSR_ScaleAnim                                               *    bsr.w   loc_3512A
+        jsr   SSB_ComputeCoordinates                                      *    bsr.w   loc_351A0
+        jsr   SSR_RingCounter                                             *    bsr.w   loc_35036
+                                                                          *    lea (Ani_obj5B_obj60).l,a1
+        jsr   AnimateSprite                                               *    bsr.w   loc_3539E
+        jsr   GetImgIdA
+        sta   mapping_frame,u        
+        tst   is_out_of_screen
+        bne   SSR_Init_hide_and_return		
+                                                                          *    tst.b   render_flags(a0)
+        jmp   DisplaySprite                                               *    bmi.w   JmpTo44_DisplaySprite
+           
+SSR_Init_hide_and_return
+        lda   render_flags,u
+        ora   #render_hide_mask        ; set hide flag
+        sta   render_flags,u
+SSR_Init_return
+        rts                                                               *    rts
+																		  
+                                                                          *; ===========================================================================
+                                                                          *
+																		  
+SSR_Stars                                                                 *loc_35010:
+        ldd   #Ani_SSRing_stars                                           *    move.b  #$A,anim(a0)
         std   anim,u
-
-        jsr   SSB_CheckIfForeground
-        jsr   SSB_ScaleAnim
-        jsr   SSB_ComputeCoordinates
-
-        jsr   AnimateSprite
+                                                                          *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialStars,2,0),art_tile(a0)
+        jsr   SSB_CheckIfForeground                                       *    bsr.w   loc_34F90
+        jsr   SSB_ScaleAnim                                               *    bsr.w   loc_3512A
+        jsr   SSB_ComputeCoordinates                                      *    bsr.w   loc_351A0
+                                                                          *    lea (Ani_obj5B_obj60).l,a1
+        jsr   AnimateSprite                                               *    jsrto   (AnimateSprite).l, JmpTo24_AnimateSprite
         jsr   GetImgIdA
         sta   mapping_frame,u
         tst   is_out_of_screen
-        bne   SSR_Stars_hide_and_return
-        jmp   DisplaySprite
+        bne   SSR_Stars_hide_and_return		
+        jmp   DisplaySprite                                               *    bra.w   JmpTo44_DisplaySprite
 SSR_Stars_hide_and_return
         lda   render_flags,u
         ora   #render_hide_mask        ; set hide flag
         sta   render_flags,u
-        rts    
-    
+        rts 
+																		  
+                                                                          *; ===========================================================================
+                                                                          *
+SSR_RingCounter                                                           *loc_35036:
+                                                                          *    move.w  #$A,d6
+                                                                          *    bsr.w   loc_350A0
+                                                                          *    bcc.s   return_3509E
+                                                                          *    cmpa.l  #MainCharacter,a1
+                                                                          *    bne.s   loc_3504E
+                                                                          *    addq.w  #1,(Ring_count).w
+                                                                          *    bra.s   loc_35052
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_3504E:
+                                                                          *    addq.w  #1,(Ring_count_2P).w
+                                                                          *
+                                                                          *loc_35052:
+                                                                          *    addq.b  #1,ss_rings_units(a1)
+                                                                          *    cmpi.b  #$A,ss_rings_units(a1)
+                                                                          *    blt.s   loc_3507A
+                                                                          *    addq.b  #1,ss_rings_tens(a1)
+                                                                          *    move.b  #0,ss_rings_units(a1)
+                                                                          *    cmpi.b  #$A,ss_rings_tens(a1)
+                                                                          *    blt.s   loc_3507A
+                                                                          *    addq.b  #1,ss_rings_hundreds(a1)
+                                                                          *    move.b  #0,ss_rings_tens(a1)
+                                                                          *
+                                                                          *loc_3507A:
+                                                                          *    move.b  #6,routine(a0)
+                                                                          *    move.l  objoff_34(a0),d0
+                                                                          *    beq.s   loc_35094
+                                                                          *    move.l  #0,objoff_34(a0)
+                                                                          *    movea.l d0,a1 ; a1=object
+                                                                          *    st  objoff_2A(a1)
+                                                                          *
+                                                                          *loc_35094:
+                                                                          *    move.w  #SndID_Ring,d0
+                                                                          *    jsr (PlaySoundStereo).l
+                                                                          *
+                                                                          *return_3509E:
+        rts                                                               *    rts
+                                                                          *; ===========================================================================
+
+CheckCollision                                                            *loc_350A0:
+        ldd   anim,u                                                      
+        cmpd  #Ani_SSBomb_8                                               *    cmpi.b  #8,anim(a0)
+        bne   @a                                                          *    bne.s   loc_350DC
+        tst   collision_flags,u                                           *    tst.b   collision_flags(a0)
+        beq   @a                                                          *    beq.s   loc_350DC
+        ldx   #MainCharacter                                              *    lea (MainCharacter).w,a2 ; a2=object (special stage sonic)
+                                                                          *    lea (Sidekick).w,a3 ; a3=object (special stage tails)
+                                                                          *    move.w  objoff_34(a2),d0
+                                                                          *    cmp.w   objoff_34(a3),d0
+                                                                          *    blo.s   loc_350CE
+                                                                          *    movea.l a3,a1
+                                                                          *    bsr.w   loc_350E2
+                                                                          *    bcs.s   return_350E0
+                                                                          *    movea.l a2,a1
+        bra   @b                                                          *    bra.w   loc_350E2
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_350CE:
+                                                                          *    movea.l a2,a1
+                                                                          *    bsr.w   loc_350E2
+                                                                          *    bcs.s   return_350E0
+                                                                          *    movea.l a3,a1
+                                                                          *    bra.w   loc_350E2
+                                                                          *; ===========================================================================
+                                                                          *
+@a                                                                        *loc_350DC:
+        andcc #$FE                                                        *    move    #0,ccr
+                                                                          *
+@c                                                                        *return_350E0:
+        rts                                                               *    rts
+                                                                          *; ===========================================================================
+@b                                                                        *loc_350E2:
+                                                                          *    tst.b   id(a1)
+                                                                          *    beq.s   loc_3511A
+        lda   routine,x
+        cmpa  #$1                      ; sonic is in MdNormal             *    cmpi.b  #2,routine(a1)
+        bne   @d                                                          *    bne.s   loc_3511A
+        tst   routine_secondary,x                                         *    tst.b   routine_secondary(a1)
+        bne   @d                       ; branch if sonic in hurt state    *    bne.s   loc_3511A
+                                                                          *    move.b  angle(a1),d0
+        lda   angle,u                  ; bomb angle                       *    move.b  angle(a0),d1
+        ldb   angle,u                                                                          
+                                                                          *    move.b  d1,d2
+        adda  #8                                                          *    add.b   d6,d1
+        bcs   @e                                                          *    bcs.s   loc_35110
+        subb  #8                                                          *    sub.b   d6,d2
+        bcs   @f                                                          *    bcs.s   loc_35112
+        cmpa  angle,x                                                     *    cmp.b   d1,d0
+        blo   @d                                                          *    bhs.s   loc_3511A
+        cmpb  angle,x                                                     *    cmp.b   d2,d0
+        blo   @g                                                          *    bhs.s   loc_35120
+        bra   @d                                                          *    bra.s   loc_3511A
+                                                                          *; ===========================================================================
+                                                                          *
+@e                                                                        *loc_35110:
+        subb  #8                                                          *    sub.b   d6,d2
+                                                                          *
+@f                                                                        *loc_35112:
+        cmpa  angle,x                                                     *    cmp.b   d1,d0
+        bhs   @g                                                          *    blo.s   loc_35120
+        cmpb  angle,x                                                     *    cmp.b   d2,d0
+        bhs   @g                                                          *    bhs.s   loc_35120
+                                                                          *
+@d                                                                        *loc_3511A:
+        andcc #$FE                                                        *    move    #0,ccr
+        rts                                                               *    rts
+                                                                          *; ===========================================================================
+                                                                          *
+@g                                                                        *loc_35120:
+        clr   collision_flags,u                                           *    clr.b   collision_flags(a0)
+        orcc  #$01                                                        *    move    #1,ccr
+        rts                                                               *    rts
+
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_3512A:
+                                                                          *    btst    #7,status(a0)
+                                                                          *    bne.s   loc_3516C
+                                                                          *    cmpi.b  #4,(SSTrack_drawing_index).w
+                                                                          *    bne.s   loc_35146
+                                                                          *    subi.l  #$CCCC,objoff_30(a0)
+                                                                          *    ble.s   loc_3516C
+                                                                          *    bra.s   loc_35150
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_35146:
+                                                                          *    subi.l  #$CCCD,objoff_30(a0)
+                                                                          *    ble.s   loc_3516C
+                                                                          *
+																		  
+SSB_DeleteObject
+        ldx   ss_parent,u
+        beq   SSB_DeleteObject_End     ; no shadow for this Bomb
+        com   ss_self_delete,x         ; tell shadow to self delete
+SSB_DeleteObject_End                     
+        jmp   DeleteObject																		  
+																		  
+SSB_ScaleAnim                                                             *loc_35150:
+        ldd   ss_z_pos,u
+        subd  #1                       ; decrement moved from loc_3512A
+        beq   SSB_DeleteObject   
+        std   ss_z_pos,u
+        ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
+        cmpx  #Ani_SSBomb_explode                                         
+        beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
+                                                                          *    move.w  objoff_30(a0),d0
+        cmpd  #$001D                                                      *    cmpi.w  #$1D,d0
+        ble   SSB_ScaleAnim_LoadAnim                                      *    ble.s   loc_35164
+        ldb   #$1E                                                        *    moveq   #$1E,d0
+                                                                          *
+SSB_ScaleAnim_LoadAnim                                                    *loc_35164:
+        ldx   #Ani_SSBomb                                                 *    move.b  byte_35180(pc,d0.w),anim(a0)
+        aslb
+        ldd   b,x
+        std   anim,u
+                                                                          *
+SSB_ScaleAnim_return                                                      *return_3516A:
+        rts                                                               *    rts
+		
+SSR_ScaleAnim
+        ldd   ss_z_pos,u
+        subd  #1                       ; decrement moved from loc_3512A
+        beq   SSB_DeleteObject   
+        std   ss_z_pos,u
+        ldx   anim,u
+        cmpx  #Ani_SSRing_stars                                         
+        beq   SSR_ScaleAnim_return
+
+        cmpd  #$001D
+        ble   SSR_ScaleAnim_LoadAnim
+        ldb   #$1E
+
+SSR_ScaleAnim_LoadAnim
+        ldx   #Ani_SSRing
+        aslb
+        ldd   b,x
+        std   anim,u
+                                                                          
+SSR_ScaleAnim_return
+        rts    		
+		
+                                                                          *; ===========================================================================
+                                                                          *
+                                                                          *loc_3516C:
+                                                                          *    move.l  (sp)+,d0
+                                                                          *    move.l  objoff_34(a0),d0
+                                                                          *    beq.w   JmpTo63_DeleteObject
+                                                                          *    movea.l d0,a1 ; a1=object
+                                                                          *    st  objoff_2A(a1)
+                                                                          *
+                                                                          *    if removeJmpTos
+                                                                          *JmpTo63_DeleteObject ; JmpTo
+                                                                          *    endif
+                                                                          *
+                                                                          *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
+                                                                          *; ===========================================================================
+                                                                          *byte_35180:
+                                                                          *    dc.b   9,  9,  9,  8,  8,  7,  7,  6,  6,  5,  5,  4,  4,  3,  3,  3
+                                                                          *    dc.b   2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0; 16
+                                                                          *; ===========================================================================
+Ani_SSBomb
+        fdb   Ani_SSBomb_9 ; 0
+        fdb   Ani_SSBomb_9 ; 2
+        fdb   Ani_SSBomb_9 ; 4
+        fdb   Ani_SSBomb_8 ; 6
+        fdb   Ani_SSBomb_8 ; 8
+        fdb   Ani_SSBomb_7 ; $A
+        fdb   Ani_SSBomb_7 ; $C
+        fdb   Ani_SSBomb_6 ; $E
+        fdb   Ani_SSBomb_6 ; $10
+        fdb   Ani_SSBomb_5 ; $12
+        fdb   Ani_SSBomb_5 ; $14
+        fdb   Ani_SSBomb_4 ; $16
+        fdb   Ani_SSBomb_4 ; $18                                                
+        fdb   Ani_SSBomb_3 ; $1A
+        fdb   Ani_SSBomb_3 ; $1C
+        fdb   Ani_SSBomb_3 ; $1E
+        fdb   Ani_SSBomb_2 ; $20                               
+		fdb   Ani_SSBomb_2 ; $22
+        fdb   Ani_SSBomb_2 ; $24
+        fdb   Ani_SSBomb_1 ; $26
+        fdb   Ani_SSBomb_1 ; $28
+        fdb   Ani_SSBomb_1 ; $2A
+        fdb   Ani_SSBomb_1 ; $2C
+        fdb   Ani_SSBomb_1 ; $2E
+        fdb   Ani_SSBomb_1 ; $30
+        fdb   Ani_SSBomb_1 ; $32
+        fdb   Ani_SSBomb_1 ; $34
+        fdb   Ani_SSBomb_1 ; $36
+        fdb   Ani_SSBomb_1 ; $38
+        fdb   Ani_SSBomb_1 ; $3A
+        fdb   Ani_SSBomb_0 ; $3C removed one index ($3E) from original
+                           ; code, since every index > $3A is capped
+                           ; to index $3C		
+        
+Ani_SSRing
+        fdb   Ani_SSRing_9 ; 0
+        fdb   Ani_SSRing_9 ; 2
+        fdb   Ani_SSRing_9 ; 4
+        fdb   Ani_SSRing_8 ; 6
+        fdb   Ani_SSRing_8 ; 8
+        fdb   Ani_SSRing_7 ; $A
+        fdb   Ani_SSRing_7 ; $C
+        fdb   Ani_SSRing_6 ; $E
+        fdb   Ani_SSRing_6 ; $10
+        fdb   Ani_SSRing_5 ; $12
+        fdb   Ani_SSRing_5 ; $14
+        fdb   Ani_SSRing_4 ; $16
+        fdb   Ani_SSRing_4 ; $18                                                
+        fdb   Ani_SSRing_3 ; $1A
+        fdb   Ani_SSRing_3 ; $1C
+        fdb   Ani_SSRing_3 ; $1E
+        fdb   Ani_SSRing_2 ; $20                               
+		fdb   Ani_SSRing_2 ; $22
+        fdb   Ani_SSRing_2 ; $24
+        fdb   Ani_SSRing_1 ; $26
+        fdb   Ani_SSRing_1 ; $28
+        fdb   Ani_SSRing_1 ; $2A
+        fdb   Ani_SSRing_1 ; $2C
+        fdb   Ani_SSRing_1 ; $2E
+        fdb   Ani_SSRing_1 ; $30
+        fdb   Ani_SSRing_1 ; $32
+        fdb   Ani_SSRing_1 ; $34
+        fdb   Ani_SSRing_1 ; $36
+        fdb   Ani_SSRing_1 ; $38
+        fdb   Ani_SSRing_1 ; $3A
+        fdb   Ani_SSRing_0 ; $3C removed one index ($3E) from original
+                           ; code, since every index > $3A is capped
+                           ; to index $3C	
+										
 SSB_CC_OutOfScreen             
         lda   #$01
         sta   is_out_of_screen
+SSB_CC_Return_1        
         rts
-                                                                          *; ===========================================================================
+										
 SSB_ComputeCoordinates                                                    *loc_351A0:
                                                                           *    move.w  d7,-(sp)
                                                                           *    moveq   #0,d2
@@ -337,9 +527,9 @@ SSB_ComputeCoordinates                                                    *loc_3
                                                                           
                                                                           *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u               ; load sprite z position           *    move.w  objoff_30(a0),d0
-        beq   return_34F68             ; if z=0 sprite is behind camera   *    beq.w   loc_35258
+        beq   SSB_CC_Return_1          ; if z=0 sprite is behind camera   *    beq.w   loc_35258
         cmpd  ,x++                     ; read nb of ellipses for this img *    cmp.w   (a1)+,d0
-        bgt   return_34F68             ; sprite is too far, no ellipse    *    bgt.w   loc_35258
+        bgt   SSB_CC_Return_1          ; sprite is too far, no ellipse    *    bgt.w   loc_35258
         subd  #1                       ; each perspective data for an img *    subq.w  #1,d0
         aslb                           ; is stored in groups of 6 bytes
         rola                           ; one group defines an ellipse     *    add.w   d0,d0
@@ -498,7 +688,7 @@ yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
         ; --------------------------
 
 scoord  ldy   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
-        beq   SSB_CC_NoShadow                                             *    beq.s   loc_3524E
+        beq   SSB_CC_Return_2                                             *    beq.s   loc_3524E
                                                                           *    movea.l d0,a1 ; a1=object
                                                                           *    move.b  angle(a0),d0
                                                                           *
@@ -562,13 +752,12 @@ syCenter
         addd  #$10
         stb   y_pixel,y
         tsta
-        beq   SSB_CC_NoShadow
+        beq   SSB_CC_Return_2
         sta   is_out_of_screen          
                                                                           *    move.w  d5,d7
                                                                           *    asr.w   #2,d7
                                                                           *    add.w   d7,d5
                                                                           *    muls.w  d5,d0
-                                                                          
                                                                           *    asr.l   #8,d0
                                                                           *    asr.l   #8,d1
                                                                           *    add.w   d2,d1
@@ -576,19 +765,17 @@ syCenter
                                                                           *    add.w   d3,d0
                                                                           *    move.w  d0,y_pos(a1)
                                                                           *
-SSB_CC_NoShadow                                                           *loc_3524E:
+SSB_CC_Return_2                                                           *loc_3524E:
                                                                           *    ori.b   #$80,render_flags(a0)
                                                                           *
                                                                           *loc_35254:
                                                                           *    move.w  (sp)+,d7
         rts                                                               *    rts                                                      
                                                                           *; ===========================================================================
-													                      
                                                                           *loc_35258:
                                                                           *    andi.b  #$7F,render_flags(a0)
                                                                           *    bra.s   loc_35254
                                                                           *; ===========================================================================  
-        
 SSB_CC_Flipped                                                            *loc_35260:
                                                                           *    move.b  #$80,d1
                                                                           *    move.b  4(a1,d0.w),d6
@@ -611,7 +798,7 @@ SSB_CC_Flipped                                                            *loc_3
 fd7     cmpa  #$00                     ; (dynamic) angle min (excl.)      *    cmp.b   d7,d1
         blo   SSB_CC_FVisibleArea                                         *    blo.s   loc_35282
 fd6     cmpa  #$00                     ; (dynamic) angle max (incl.)      *    cmp.b   d6,d1
-        blo   return_34F9E                                                *    blo.s   loc_35258
+        blo   SSB_CC_Return_2                                             *    blo.s   loc_35258
                                                                           *
 SSB_CC_FVisibleArea                                                       *loc_35282:
         clra
@@ -625,99 +812,91 @@ SSB_CC_FVisibleArea                                                       *loc_3
         std   xCenter+1
         std   sxCenter+1
                                                                           *    move.b  1(a1,d0.w),d3
-        lbra   SSB_CC_ProcessYCenter                                      *    bra.w   loc_351F8
+        jmp   SSB_CC_ProcessYCenter                                       *    bra.w   loc_351F8
+                                                                          																		  
                                                                           *; ===========================================================================
-                                                                          
-SSB_CheckIfForeground                                                     *loc_34F90:
-        ldd   ss_z_pos,u                                                  
-        cmpd  #4                                                          *        cmpi.w  #4,objoff_30(a0)
-        bhs   return_34F9E                                                *        bhs.s   return_34F9E
+                                                                          *
+																		  
+SSB_InitShadow                                                            *loc_3529C:
+        jsr   SSSingleObjLoad2                                            *    jsrto   (SSSingleObjLoad2).l, JmpTo_SSSingleObjLoad2
+        bne   SSB_InitShadow_return                                       *    bne.w   return_3532C
+        stu   ss_parent,x                                                 *    move.l  a0,objoff_34(a1)
+        stx   ss_parent,u                                                 
+        lda   id,u                                                        
+        sta   id,x                                                        *    move.b  id(a0),id(a1)
+        ldd   #$0205                                                      
+        sta   routine,x                                                   *    move.b  #4,routine(a1)
+                                                                          *    move.l  #Obj63_MapUnc_34492,mappings(a1)
+                                                                          *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialFlatShadow,3,0),art_tile(a1)
+                                                                          *    move.b  #4,render_flags(a1)
+        stb   priority,x                                                  *    move.b  #5,priority(a1)
+        lda   angle,u                                                     *    move.b  angle(a0),d0
+        cmpa  #$10                                                        *    cmpi.b  #$10,d0
+        bgt   loc_352E6                                                   *    bgt.s   loc_352E6
+        lda   render_flags,x                                              
+        ora   #render_xmirror_mask                                        *    bset    #0,render_flags(a1)
+        sta   render_flags,x
+        lda   #2                                                          
+        sta   ss_shadow_tilt,x                                            *    move.b  #2,objoff_2B(a1)
+                                                                          *    move.l  a1,objoff_34(a0)
+SSB_InitShadow_return
+        rts                                                               *    rts
+                                                                          *; ===========================================================================
+                                                                          *
+loc_352E6                                                                 *loc_352E6:
+        cmpa  #$30                                                        *    cmpi.b  #$30,d0
+        bgt   loc_352FE                                                   *    bgt.s   loc_352FE
+        lda   render_flags,x                                              
+        ora   #render_xmirror_mask                                        *    bset    #0,render_flags(a1)
+        sta   render_flags,x
         lda   #1                                                          
-        sta   priority,u                                                  *        move.b  #1,priority(a0)
-                                                                          *
-return_34F9E                                                              *return_34F9E:
-        rts                                                               *        rts
-                                                                          *; ===========================================================================
- 
-CheckCollision                                                            *loc_350A0:
-        ldd   anim,u                                                      
-        cmpd  #Ani_SSBomb_8                                               *    cmpi.b  #8,anim(a0)
-        bne   loc_350DC                                                   *    bne.s   loc_350DC
-        tst   collision_flags,u                                           *    tst.b   collision_flags(a0)
-        beq   loc_350DC                                                   *    beq.s   loc_350DC
-        ldx   #MainCharacter                                              *    lea (MainCharacter).w,a2 ; a2=object (special stage sonic)
-                                                                          *    lea (Sidekick).w,a3 ; a3=object (special stage tails)
-                                                                          *    move.w  objoff_34(a2),d0
-                                                                          *    cmp.w   objoff_34(a3),d0
-                                                                          *    blo.s   loc_350CE
-                                                                          *    movea.l a3,a1
-                                                                          *    bsr.w   loc_350E2
-                                                                          *    bcs.s   return_350E0
-                                                                          *    movea.l a2,a1
-        bra   loc_350E2                                                   *    bra.w   loc_350E2
-                                                                          *; ===========================================================================
-                                                                          *
-                                                                          *loc_350CE:
-                                                                          *    movea.l a2,a1
-                                                                          *    bsr.w   loc_350E2
-                                                                          *    bcs.s   return_350E0
-                                                                          *    movea.l a3,a1
-                                                                          *    bra.w   loc_350E2
-                                                                          *; ===========================================================================
-                                                                          *
-loc_350DC                                                                 *loc_350DC:
-        andcc #$FE                                                        *    move    #0,ccr
-                                                                          *
-return_350E0                                                              *return_350E0:
-        rts                                                               *    rts
-                                                                          *; ===========================================================================
-                                                                          
-loc_350E2                                                                 *loc_350E2:
-                                                                          *    tst.b   id(a1)
-                                                                          *    beq.s   loc_3511A
-        lda   routine,x
-        cmpa  #$1                      ; sonic is in MdNormal             *    cmpi.b  #2,routine(a1)
-        bne   loc_3511A                                                   *    bne.s   loc_3511A
-        tst   routine_secondary,x                                         *    tst.b   routine_secondary(a1)
-        bne   loc_3511A                ; branch if sonic in hurt state    *    bne.s   loc_3511A
-                                                                          *    move.b  angle(a1),d0
-        lda   angle,u                  ; bomb angle                       *    move.b  angle(a0),d1
-        ldb   angle,u                                                                          
-                                                                          *    move.b  d1,d2
-        adda  #8                                                          *    add.b   d6,d1
-        bcs   loc_35110                                                   *    bcs.s   loc_35110
-        subb  #8                                                          *    sub.b   d6,d2
-        bcs   loc_35112                                                   *    bcs.s   loc_35112
-        cmpa  angle,x                                                     *    cmp.b   d1,d0
-        blo   loc_3511A                                                   *    bhs.s   loc_3511A
-        cmpb  angle,x                                                     *    cmp.b   d2,d0
-        blo   loc_35120                                                   *    bhs.s   loc_35120
-        bra   loc_3511A                                                   *    bra.s   loc_3511A
-                                                                          *; ===========================================================================
-                                                                          *
-loc_35110                                                                 *loc_35110:
-        subb  #8                                                          *    sub.b   d6,d2
-                                                                          *
-loc_35112                                                                 *loc_35112:
-        cmpa  angle,x                                                     *    cmp.b   d1,d0
-        bhs   loc_35120                                                   *    blo.s   loc_35120
-        cmpb  angle,x                                                     *    cmp.b   d2,d0
-        bhs   loc_35120                                                   *    bhs.s   loc_35120
-                                                                          *
-loc_3511A                                                                 *loc_3511A:
-        andcc #$FE                                                        *    move    #0,ccr
+        sta   ss_shadow_tilt,x                                            *    move.b  #1,objoff_2B(a1)
+                                                                          *    move.l  a1,objoff_34(a0)
         rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
-loc_35120                                                                 *loc_35120:
-        clr   collision_flags,u                                           *    clr.b   collision_flags(a0)
-        orcc  #$01                                                        *    move    #1,ccr
+loc_352FE                                                                 *loc_352FE:
+        cmpa  #$50                                                        *    cmpi.b  #$50,d0
+        bgt   loc_35310                                                   *    bgt.s   loc_35310
+        lda   #0                                                          
+        sta   ss_shadow_tilt,x                                            *    move.b  #0,objoff_2B(a1)
+                                                                          *    move.l  a1,objoff_34(a0)
         rts                                                               *    rts
                                                                           *; ===========================================================================
-       
-SSB_DeleteShadow
-        jmp   DeleteObject                                                *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
-                                                                          
+                                                                          *
+loc_35310                                                                 *loc_35310:
+        cmpa  #$70                                                        *    cmpi.b  #$70,d0
+        bgt   loc_35322                                                   *    bgt.s   loc_35322
+        lda   #1                                                          
+        sta   ss_shadow_tilt,x                                            *    move.b  #1,objoff_2B(a1)
+                                                                          *    move.l  a1,objoff_34(a0)
+        rts                                                               *    rts
+                                                                          *; ===========================================================================
+                                                                          *
+loc_35322                                                                 *loc_35322:
+        lda   #2                                                          
+        sta   ss_shadow_tilt,x                                            *    move.b  #2,objoff_2B(a1)
+                                                                          *    move.l  a1,objoff_34(a0)
+                                                                          *
+                                                                          *return_3532C:
+        rts                                                               *    rts
+		
+                                                                          *; ===========================================================================
+                                                                          *    dc.b   0
+                                                                          *    dc.b   0    ; 1
+                                                                          *    dc.b   0    ; 2
+                                                                          *    dc.b $18    ; 3
+                                                                          *    dc.b   0    ; 4
+                                                                          *    dc.b $14    ; 5
+                                                                          *    dc.b   0    ; 6
+                                                                          *    dc.b $14    ; 7
+                                                                          *    dc.b   0    ; 8
+                                                                          *    dc.b $14    ; 9
+                                                                          *    dc.b   0    ; 10
+                                                                          *    dc.b   0    ; 11
+                                                                          *; ===========================================================================
+                                                                          *
+																		  
 SSB_Shadow                                                                *loc_3533A:
         tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
         bne   SSB_DeleteShadow                                            *    bne.w   BranchTo_JmpTo63_DeleteObject
@@ -725,11 +904,11 @@ SSB_Shadow                                                                *loc_3
         bne   @a
         rts
 @a      tst   rsv_render_flags,x       ; only render shadow if parent     *    tst.b   render_flags(a1)
-        bmi   loc_3534E                ; is on screen                     *    bmi.s   loc_3534E
+        bmi   @b                       ; is on screen                     *    bmi.s   loc_3534E
         rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
-loc_3534E                                                                 *loc_3534E:
+@b                                                                        *loc_3534E:
                                                                           *    moveq   #9,d0
                                                                           *    sub.b   anim(a1),d0
                                                                           *    addi_.b #1,d0
@@ -779,56 +958,63 @@ loc_3538A                                                                 *loc_3
 loc_35392                                                                 *loc_35392:
                                                                           *    move.b  d0,mapping_frame(a0)
                                                                           *    bra.w   JmpTo44_DisplaySprite
-        
-; search for a free object slot after the current one
-; IN
-; [u]: object slot
-; OUT
-; [x]: object slot
-; [cc|z]: 1=found 0=not found  
-                                                                          *;loc_6FA4:
-SSSingleObjLoad2                                                          *SSSingleObjLoad2:
-        leax  ,u                                                          *    movea.l a0,a1
-                                                                          *    move.w  #SS_Dynamic_Object_RAM_End,d5
-                                                                          *    sub.w   a0,d5
                                                                           *
-                                                                          *    if object_size=$40
-                                                                          *    lsr.w   #6,d5
-                                                                          *    subq.w  #1,d5
-                                                                          *    bcs.s   +   ; rts
-                                                                          *    else
-                                                                          *    lsr.w   #6,d5           ; divide by $40
-                                                                          *    move.b  ++(pc,d5.w),d5      ; load the right number of objects from table
-                                                                          *    bmi.s   +           ; if negative, we have failed!
-                                                                          *    endif
+                                                                          *BranchTo_JmpTo63_DeleteObject ; BranchTo
+SSB_DeleteShadow
+        jmp   DeleteObject                                                *    jmpto   (DeleteObject).l, JmpTo63_DeleteObject
+		
+                                                                          *; ===========================================================================
                                                                           *
-@b      tst   id,x                                                        *-   tst.b   id(a1)
-        beq   @a                                                          *    beq.s   +   ; rts
-        leax  next_object,x                                               *    lea next_object(a1),a1
-        cmpx  #SS_Dynamic_Object_RAM_End                                  *    dbf d5,-
-        bne   @b                                                          *
-        lda   #$FF                                                        
-@a      rts                                                               *+   rts
+                                                                          *loc_3539E:
+                                                                          *    subq.b  #1,anim_frame_duration(a0)
+                                                                          *    bpl.s   return_353E8
+                                                                          *    moveq   #0,d0
+                                                                          *    move.b  anim(a0),d0
+                                                                          *    add.w   d0,d0
+                                                                          *    adda.w  (a1,d0.w),a1
+                                                                          *    move.b  (a1),anim_frame_duration(a0)
+                                                                          *    moveq   #0,d1
+                                                                          *    move.b  anim_frame(a0),d1
+                                                                          *    move.b  1(a1,d1.w),d0
+                                                                          *    bpl.s   loc_353CA
+                                                                          *    move.b  #0,anim_frame(a0)
+                                                                          *    move.b  1(a1),d0
                                                                           *
+                                                                          *loc_353CA:
+                                                                          *    andi.b  #$7F,d0
+                                                                          *    move.b  d0,mapping_frame(a0)
+                                                                          *    move.b  status(a0),d1
+                                                                          *    andi.b  #3,d1
+                                                                          *    andi.b  #$FC,render_flags(a0)
+                                                                          *    or.b    d1,render_flags(a0)
+                                                                          *    addq.b  #1,anim_frame(a0)
                                                                           *
-                                                                          *    if object_size<>$40
-                                                                          *+   dc.b -1
-                                                                          *.a :=   1       ; .a is the object slot we are currently processing
-                                                                          *.b :=   1       ; .b is used to calculate when there will be a conversion error due to object_size being > $40
-                                                                          *
-                                                                          *    rept (SS_Dynamic_Object_RAM_End-SS_Object_RAM)/object_size-1
-                                                                          *        if (object_size * (.a-1)) / $40 > .b+1  ; this line checks, if there would be a conversion error
-                                                                          *            dc.b .a-1, .a-1         ; and if is, it generates 2 entries to correct for the error
-                                                                          *        else
-                                                                          *            dc.b .a-1
-                                                                          *        endif
-                                                                          *
-                                                                          *.b :=       (object_size * (.a-1)) / $40        ; this line adjusts .b based on the iteration count to check
-                                                                          *.a :=       .a+1                    ; run interation counter
-                                                                          *    endm
-                                                                          *    even
-                                                                          *    endif
-
+                                                                          *return_353E8:
+                                                                          *    rts
+                                                                          *; ===========================================================================
+                                                                          *byte_353EA:
+                                                                          *    dc.b $38
+                                                                          *    dc.b $48    ; 1
+                                                                          *    dc.b $2A    ; 2
+                                                                          *    dc.b $56    ; 3
+                                                                          *    dc.b $1C    ; 4
+                                                                          *    dc.b $64    ; 5
+                                                                          *    dc.b  $E    ; 6
+                                                                          *    dc.b $72    ; 7
+                                                                          *    dc.b   0    ; 8
+                                                                          *    dc.b $80    ; 9
+                                                                          *byte_353F4:
+                                                                          *    dc.b $40
+                                                                          *    dc.b $30    ; 1
+                                                                          *    dc.b $50    ; 2
+                                                                          *    dc.b $20    ; 3
+                                                                          *    dc.b $60    ; 4
+                                                                          *    dc.b $10    ; 5
+                                                                          *    dc.b $70    ; 6
+                                                                          *    dc.b   0    ; 7
+                                                                          *    dc.b $80    ; 8
+                                                                          *    dc.b   0    ; 9
+													                      
 is_out_of_screen
         fcb   $00
         
@@ -866,79 +1052,8 @@ Tbl_SSShadow_Side
         fdb   Img_SSShadow_020
         fdb   Img_SSShadow_023
         fdb   Img_SSShadow_026
-        fdb   Img_SSShadow_029        
-        
-                                                                          *; ===========================================================================
-                                                                          *byte_35180:
-                                                                          *    dc.b   9,  9,  9,  8,  8,  7,  7,  6,  6,  5,  5,  4,  4,  3,  3,  3
-                                                                          *    dc.b   2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0; 16
-                                                                          *; ===========================================================================
-Ani_SSBomb
-        fdb   Ani_SSBomb_9 ; 0
-        fdb   Ani_SSBomb_9 ; 2
-        fdb   Ani_SSBomb_9 ; 4
-        fdb   Ani_SSBomb_8 ; 6
-        fdb   Ani_SSBomb_8 ; 8
-        fdb   Ani_SSBomb_7 ; $A
-        fdb   Ani_SSBomb_7 ; $C
-        fdb   Ani_SSBomb_6 ; $E
-        fdb   Ani_SSBomb_6 ; $10
-        fdb   Ani_SSBomb_5 ; $12
-        fdb   Ani_SSBomb_5 ; $14
-        fdb   Ani_SSBomb_4 ; $16
-        fdb   Ani_SSBomb_4 ; $18                                                
-        fdb   Ani_SSBomb_3 ; $1A
-        fdb   Ani_SSBomb_3 ; $1C
-        fdb   Ani_SSBomb_3 ; $1E
-        fdb   Ani_SSBomb_2 ; $20                               
-		fdb   Ani_SSBomb_2 ; $22
-        fdb   Ani_SSBomb_2 ; $24
-        fdb   Ani_SSBomb_1 ; $26
-        fdb   Ani_SSBomb_1 ; $28
-        fdb   Ani_SSBomb_1 ; $2A
-        fdb   Ani_SSBomb_1 ; $2C
-        fdb   Ani_SSBomb_1 ; $2E
-        fdb   Ani_SSBomb_1 ; $30
-        fdb   Ani_SSBomb_1 ; $32
-        fdb   Ani_SSBomb_1 ; $34
-        fdb   Ani_SSBomb_1 ; $36
-        fdb   Ani_SSBomb_1 ; $38
-        fdb   Ani_SSBomb_1 ; $3A
-        fdb   Ani_SSBomb_0 ; $3C removed one index ($3E) from original code, since every index > $3A is capped to index $3C		
-        
-Ani_SSRing
-        fdb   Ani_SSRing_9 ; 0
-        fdb   Ani_SSRing_9 ; 2
-        fdb   Ani_SSRing_9 ; 4
-        fdb   Ani_SSRing_8 ; 6
-        fdb   Ani_SSRing_8 ; 8
-        fdb   Ani_SSRing_7 ; $A
-        fdb   Ani_SSRing_7 ; $C
-        fdb   Ani_SSRing_6 ; $E
-        fdb   Ani_SSRing_6 ; $10
-        fdb   Ani_SSRing_5 ; $12
-        fdb   Ani_SSRing_5 ; $14
-        fdb   Ani_SSRing_4 ; $16
-        fdb   Ani_SSRing_4 ; $18                                                
-        fdb   Ani_SSRing_3 ; $1A
-        fdb   Ani_SSRing_3 ; $1C
-        fdb   Ani_SSRing_3 ; $1E
-        fdb   Ani_SSRing_2 ; $20                               
-		fdb   Ani_SSRing_2 ; $22
-        fdb   Ani_SSRing_2 ; $24
-        fdb   Ani_SSRing_1 ; $26
-        fdb   Ani_SSRing_1 ; $28
-        fdb   Ani_SSRing_1 ; $2A
-        fdb   Ani_SSRing_1 ; $2C
-        fdb   Ani_SSRing_1 ; $2E
-        fdb   Ani_SSRing_1 ; $30
-        fdb   Ani_SSRing_1 ; $32
-        fdb   Ani_SSRing_1 ; $34
-        fdb   Ani_SSRing_1 ; $36
-        fdb   Ani_SSRing_1 ; $38
-        fdb   Ani_SSRing_1 ; $3A
-        fdb   Ani_SSRing_0 ; $3C removed one index ($3E) from original code, since every index > $3A is capped to index $3C		
-													                      
+        fdb   Img_SSShadow_029 																		  
+																		  
 Sine_Data                                                                 *Sine_Data:      BINCLUDE        "misc/sinewave.bin"
         INCLUDEBIN "./Engine/Math/sinewave.bin"                                 
 
@@ -976,4 +1091,6 @@ SpecialPerspective
         ;                        |  |_______________ y origin
         ;                        |__________________ x origin
         ;
-        ; -------------------------------------------------------------------------------------------------------------    
+        ; -------------------------------------------------------------------------------------------------------------
+        
+        INCLUDE "./Engine/ObjectManagement/SSSingleObjLoad.asm"            																		  

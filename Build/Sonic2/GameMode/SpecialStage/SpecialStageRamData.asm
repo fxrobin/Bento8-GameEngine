@@ -32,12 +32,12 @@ MainCharacter                     fill  0,object_size
 SpecialStageShadow_Sonic          fill  0,object_size
 ;SpecialStageShadow_Tails         fill  0,object_size
 ;SpecialStageTails_Tails          fill  0,object_size
-SS_Dynamic_Object_RAM             fill  0,nb_dynamic_objects*object_size
+Dynamic_Object_RAM                fill  0,nb_dynamic_objects*object_size
 ;SpecialStageResults              fill  0,object_size
 ;                                 fill  0,$C*object_size
 ;SpecialStageResults2             fill  0,object_size
 ;                                 fill  0,$51*object_size
-SS_Dynamic_Object_RAM_End         fill  0,object_size
+Dynamic_Object_RAM_End            fill  0,object_size
 SS_Object_RAM_End
 Object_RAM_End
 
