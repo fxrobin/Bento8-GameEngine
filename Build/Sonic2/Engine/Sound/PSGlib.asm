@@ -669,7 +669,7 @@ _sendVolume2PSG1
 _sendVolume2PSG2        
         ora   #0                                      ; set attenuated volume
         sta   PSGDataPort                             ; output the byte
-        lbra   _intLoop
+        jmp   _intLoop
 
 _output_NoLatch
   * we got the last latch in A and the PSG data in B
@@ -682,13 +682,13 @@ _output_NoLatch
 
 _setLoopPoint
         stx   PSGMusicLoopPoint
-        lbra   _intLoop
+        jmp   _intLoop
 
 _musicLoop
         lda   PSGLoopFlag                             ; looping requested?
         lbeq   PSGStop                                ; No:stop it! (tail call optimization)
         ldx   PSGMusicLoopPoint
-        lbra   _intLoop
+        jmp   _intLoop
 
 _substring
         subb  #PSGSubString-4                         ; len is value - $08 + 4
@@ -698,13 +698,13 @@ _substring
         stx   PSGMusicSubstringRetAddr                ; save return address
         ldx   PSGMusicStart
         leax  d,x                                     ; make substring current
-        lbra   _intLoop
+        jmp   _intLoop
 
 _high_part_Tone
         stb   PSGChan2HighTone                        ; save channel 2 tone HIGH data
         lda   PSGChannel2SFX                          ; channel 2 free?
-        lbeq   _send2PSG
-        lbra   _intLoop
+        lbeq  _send2PSG
+        jmp   _intLoop
 
 
 * ************************************************************************************

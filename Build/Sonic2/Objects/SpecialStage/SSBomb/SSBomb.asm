@@ -55,6 +55,11 @@ SSB_Init                                                                  *Obj61
         jsr   SSB_InitShadow                                              *        bsr.w   loc_3529C
                                                                           *
 SSB_Bomb                                                                  *loc_34F06:
+        ldd   ss_z_pos,u
+        subd  #1                       ; decrement moved from loc_3512A
+        beq   SSB_DeleteObject   
+        std   ss_z_pos,u
+        
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
                                                                           *        lea     (Ani_obj61).l,a1
@@ -95,6 +100,8 @@ SSB_CheckCollision                                                        *loc_3
         ldd   #0
         std   ss_parent,u                                                 *        move.l  #0,objoff_34(a0)
                                                                           *        movea.l d0,a1 ; a1=object
+        tst   id,x
+        beq   return_34F68                                                                          
         com   ss_self_delete,x         ; tell shadow to self delete       *        st      objoff_2A(a1)
                                                                           *
 return_34F68                                                              *return_34F68:
@@ -102,7 +109,16 @@ return_34F68                                                              *retur
 
                                                                           *; ===========================================================================
                                                                           *
-																		  
+                                                                          
+SSB_DeleteObject
+        ldx   ss_parent,u
+        beq   SSB_DeleteObject_End     ; no shadow for this Bomb
+        tst   id,x
+        beq   SSB_DeleteObject_End
+        com   ss_self_delete,x         ; tell shadow to self delete
+SSB_DeleteObject_End                     
+        jmp   DeleteObject	                                                                          
+                                                                          
 SSB_Explode                                                               *loc_34F6A:
         ldd   #Ani_SSBomb_explode                                         *        move.b  #$A,anim(a0)
         std   anim,u                                                      
@@ -174,7 +190,11 @@ SSR_Init                                                                  *Obj60
         jsr   SSB_InitShadow                                              *    bsr.w   loc_3529C
                                                                           *
 SSR_Ring                                                                  *loc_34FF0:
-                                                                          *
+        ldd   ss_z_pos,u
+        subd  #1                       ; decrement moved from loc_3512A
+        beq   SSB_DeleteObject   
+        std   ss_z_pos,u
+                                                                                  *
         jsr   SSR_ScaleAnim                                               *    bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *    bsr.w   loc_351A0
         jsr   SSR_RingCounter                                             *    bsr.w   loc_35036
@@ -350,18 +370,7 @@ CheckCollision                                                            *loc_3
                                                                           *    ble.s   loc_3516C
                                                                           *
 																		  
-SSB_DeleteObject
-        ldx   ss_parent,u
-        beq   SSB_DeleteObject_End     ; no shadow for this Bomb
-        com   ss_self_delete,x         ; tell shadow to self delete
-SSB_DeleteObject_End                     
-        jmp   DeleteObject																		  
-																		  
 SSB_ScaleAnim                                                             *loc_35150:
-        ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A
-        beq   SSB_DeleteObject   
-        std   ss_z_pos,u
         ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
         cmpx  #Ani_SSBomb_explode                                         
         beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
@@ -380,10 +389,6 @@ SSB_ScaleAnim_return                                                      *retur
         rts                                                               *    rts
 		
 SSR_ScaleAnim
-        ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A
-        beq   SSB_DeleteObject   
-        std   ss_z_pos,u
         ldx   anim,u
         cmpx  #Ani_SSRing_stars                                         
         beq   SSR_ScaleAnim_return
@@ -689,6 +694,8 @@ yCenter addd  #$0000                   ; (dynamic) add y center of ellipse
 
 scoord  ldy   ss_parent,u                                                 *    move.l  objoff_34(a0),d0
         beq   SSB_CC_Return_2                                             *    beq.s   loc_3524E
+        tst   id,y
+        beq   SSB_CC_Return_2
                                                                           *    movea.l d0,a1 ; a1=object
                                                                           *    move.b  angle(a0),d0
                                                                           *
@@ -901,14 +908,15 @@ SSB_Shadow                                                                *loc_3
         tst   ss_self_delete,u                                            *    tst.b   objoff_2A(a0)
         bne   SSB_DeleteShadow                                            *    bne.w   BranchTo_JmpTo63_DeleteObject
         ldx   ss_parent,u                                                 *    movea.l objoff_34(a0),a1 ; a1=object
-        bne   @a
-        rts
-@a      tst   rsv_render_flags,x       ; only render shadow if parent     *    tst.b   render_flags(a1)
-        bmi   @b                       ; is on screen                     *    bmi.s   loc_3534E
+        beq   SSB_DeleteShadow
+        tst   id,x
+        beq   SSB_DeleteShadow
+        tst   rsv_render_flags,x       ; only render shadow if parent     *    tst.b   render_flags(a1)
+        bmi   @a                       ; is on screen                     *    bmi.s   loc_3534E
         rts                                                               *    rts
                                                                           *; ===========================================================================
                                                                           *
-@b                                                                        *loc_3534E:
+@a                                                                        *loc_3534E:
                                                                           *    moveq   #9,d0
                                                                           *    sub.b   anim(a1),d0
                                                                           *    addi_.b #1,d0

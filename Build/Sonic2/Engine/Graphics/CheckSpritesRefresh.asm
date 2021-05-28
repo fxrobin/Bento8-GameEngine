@@ -244,13 +244,16 @@ CSR_NoOverlay
 CSR_NoDefinedFrame
         anda  #$01                          ; test if there is an image without 1px shift
         ldb   a,y
-        beq   CSR_NoFrameFound              ; no defined frame, nothing will be displayed
-        leay  b,y                           ; read image subset index
+        bne   CSR_FrameFound
+        ldy   #$0000                        ; no defined frame, nothing will be displayed
         sty   rsv_mapping_frame,u
-        bra CSR_CVP_Continue        
-           
-CSR_NoFrameFound
-        ldy   #$0000        
+        lda   render_flags,u
+        ora   #render_hide_mask             ; set hide flag
+        sta   render_flags,u
+        jmp   CSR_CheckErase
+                
+CSR_FrameFound        
+        leay  b,y                           ; read image subset index
         sty   rsv_mapping_frame,u
 
 CSR_CVP_Continue
@@ -366,7 +369,7 @@ CSR_SetEraseTrue
         stu   ,y++
         sty   cur_ptr_sub_obj_erase
                 
-        lbra   CSR_CheckDraw
+        jmp   CSR_CheckDraw
         
 CSR_SubEraseSpriteSearchInit
 
@@ -442,7 +445,7 @@ CSR_SubDrawCheckCollision
         blo   CSR_SubDrawSearch
         
         ldy   cur_ptr_sub_obj_erase
-        lbra  CSR_SetEraseTrue              ; found a collision
+        jmp   CSR_SetEraseTrue              ; found a collision
 
 CSR_SetEraseFalse
         lda   rsv_render_flags,u 

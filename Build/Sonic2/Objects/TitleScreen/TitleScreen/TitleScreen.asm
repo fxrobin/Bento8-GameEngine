@@ -645,7 +645,7 @@ Tails_Move                                       *loc_13096:
         ldx   #Tails_xy_data_end-Tails_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_130B8_end-word_130B8+4,d2
         ldx   #Tails_xy_data-2                   *        lea     (word_130B8).l,a1
-        lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
+        jmp   TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
                                                  *
 Tails_CreateHand                                 *loc_130A2:
@@ -913,7 +913,7 @@ SonicHand_Move                                   *loc_13234:
         ldx   #SonicHand_xy_data_end-SonicHand_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_13240_end-word_13240+4,d2
         ldx   #SonicHand_xy_data-2               *        lea     (word_13240).l,a1
-        lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
+        jmp   TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 SonicHand_xy_data                                *word_13240:
         fcb   $91,$50                            *        dc.w  $143, $C1
@@ -965,7 +965,7 @@ TailsHand_Move                                   *loc_13280:
         ldx   #TailsHand_xy_data_end-TailsHand_xy_data+2
         stx   dyn_01+2                           *        moveq   #word_1328C_end-word_1328C+4,d2
         ldx   #TailsHand_xy_data-2               *        lea     (word_1328C).l,a1
-        lbra  TitleScreen_MoveObjects            *        bra.w   loc_12F20
+        jmp   TitleScreen_MoveObjects            *        bra.w   loc_12F20
                                                  *; ===========================================================================
 TailsHand_xy_data                                *word_1328C:
         fcb   $76,$5F                            *        dc.w  $10C, $D0
