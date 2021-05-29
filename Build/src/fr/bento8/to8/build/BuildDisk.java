@@ -662,6 +662,7 @@ public class BuildDisk
 		// Compilation de l'index image pour etiquettes 
 		if (obj.imageSet.uncompressedSize > 0) {
 			prepend = "\torg   $A000\n"; // dummy
+			prepend += "\tsetdp $FF\n";
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + obj.name + "/" + obj.imageSet.fileName, imgSetDir + "/", prepend);
 			compileRAW(objectCodeTmpFile, UNDEFINED);
 			obj.imageSet.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
@@ -673,6 +674,7 @@ public class BuildDisk
 			prepend = "\tINCLUDE \"" + Game.constAnim+"\"\n";
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + aniDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
 			prepend += "\torg   $A000\n"; // dummy
+			prepend += "\tsetdp $FF\n";
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + obj.name + "/" + obj.animation.fileName, aniDir + "/", prepend);
 			compileRAW(objectCodeTmpFile, UNDEFINED);
 			obj.animation.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
@@ -692,6 +694,7 @@ public class BuildDisk
 		}
 		
 		prepend += "\torg   " + String.format("$%1$04X", org) + "\n";
+		prepend += "\tsetdp $FF\n";
 		objectCodeTmpFile = duplicateFilePrepend(obj.codeFileName, imgSetDir, prepend);
 		compileRAW(objectCodeTmpFile, UNDEFINED);
 		obj.gmCode.get(gm).code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
@@ -1383,6 +1386,7 @@ public class BuildDisk
 		// Compilation de l'index image pour etiquettes 
 		if (obj.imageSet.uncompressedSize > 0) {
 			prepend = "\torg   $" + String.format("%1$04X", imgSetAddress) + "\n";
+			prepend += "\tsetdp $FF\n";
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + imgSetDir + "/" + obj.imageSet.fileName, imgSetDir + "/", prepend);
 			compileRAW(objectCodeTmpFile, mode);
 			obj.imageSet.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
@@ -1395,6 +1399,7 @@ public class BuildDisk
 			prepend = "\tINCLUDE \"" + Game.constAnim+"\"\n";			
 			prepend += "\tINCLUDE \"" + Game.generatedCodeDirName + aniDir + "/" + FileUtil.removeExtension(obj.imageSet.fileName)+".glb" + "\"\n";
 			prepend += "\torg   $" + String.format("%1$04X", aniAddress) + "\n";
+			prepend += "\tsetdp $FF\n";			
 			objectCodeTmpFile = duplicateFilePrepend(Game.generatedCodeDirName + aniDir + "/" + obj.animation.fileName, aniDir + "/", prepend);
 			compileRAW(objectCodeTmpFile, mode);
 			obj.animation.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
@@ -1415,6 +1420,7 @@ public class BuildDisk
 		}
 		
 		prepend += "\torg   $" + String.format("%1$04X", objCodeAddress) + "\n";
+		prepend += "\tsetdp $FF\n";
 		objectCodeTmpFile = duplicateFilePrepend(obj.codeFileName, imgSetDir, prepend);
 		compileRAW(objectCodeTmpFile, mode);
 		obj.gmCode.get(gm).code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
