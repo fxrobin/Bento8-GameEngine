@@ -51,6 +51,7 @@ public class Game {
 	public boolean useCache;
 	public int maxTries;
 	public static String pragma;
+	public static String define;
 	
 	// Storage
 	public FdUtil fd = new FdUtil();
@@ -168,10 +169,17 @@ public class Game {
 			
 			pragma = prop.getProperty("builder.lwasm.pragma");
 			if (pragma != null) {
-				pragma += "," + pragma;
+				pragma = "--pragma=" + pragma;
 			} else {
 				pragma = "";
 			}
+			
+			define = prop.getProperty("builder.lwasm.define");
+			if (define != null) {
+				define = "--define=" + define;
+			} else {
+				define = "";
+			}	
 
 			exobin = prop.getProperty("builder.exobin");
 			if (exobin == null) {

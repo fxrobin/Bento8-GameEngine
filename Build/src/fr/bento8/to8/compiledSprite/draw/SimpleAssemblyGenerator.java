@@ -180,7 +180,7 @@ public class SimpleAssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", "--pragma=undefextern"+Game.pragma, "--raw");			
+			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", Game.pragma, Game.define, "--raw");			
 			pb.redirectErrorStream(true);
 			p = pb.start();					
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));

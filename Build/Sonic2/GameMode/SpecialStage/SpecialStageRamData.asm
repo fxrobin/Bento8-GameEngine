@@ -19,8 +19,8 @@ nb_objects                        equ 64 * max 64 total
 
 ; Objects that will be runned manually from Special Stage
 SpecialStageHalfPipe              fill  0,object_size
-HalfPipeOdd                       fill  0,object_size
 HalfPipeEven                      fill  0,object_size
+HalfPipeOdd                       fill  0,object_size
 
 Object_RAM
 SS_Object_RAM
@@ -107,7 +107,10 @@ SS_Swap_Positions_Flag            fcb   $00
 ;SS_Sprite_Table                   fill  0,$280    ; Sprite attribute table buffer
 ;SS_Sprite_Table_End               fill  0,$80     ; unused, but SAT buffer can spill over into this area when there are too many sprites on-screen
 
-HalfPipe_Seq           fcb $00
-HalfPipe_Seq_UpdFlip   fdb $0000
-HalfPipe_Vint_runcount fdb $0000
-SS_Seg_Len_x4          fdb $0000
+; TO8 Version
+HalfPipe_Seq               fcb $00
+HalfPipe_Seq_UpdFlip       fdb $0000
+HalfPipe_Vint_runcount     fdb $0000
+SS_Seg_Len_x4              fdb $0000
+HalfPipe_Nb_Elpased_Frames fdb $0000
+HalfPipe_Vint_lastruncount fdb $0000

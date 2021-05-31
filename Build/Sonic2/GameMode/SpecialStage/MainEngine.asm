@@ -136,6 +136,7 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
 * ==============================================================================
         INCLUDE "./Engine/Graphics/WaitVBL.asm"
         INCLUDE "./Engine/Graphics/DrawFullscreenImage.asm"	
+        INCLUDE "./Engine/Graphics/DrawFullscreenInterlacedImage.asm"
         INCLUDE "./Engine/Graphics/AnimateSprite.asm"	
         INCLUDE "./Engine/Graphics/GetImgIdA.asm"
         INCLUDE "./Engine/Graphics/DisplaySprite.asm"	
@@ -150,7 +151,8 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         INCLUDE "./Engine/ObjectManagement/ClearObj.asm"
         INCLUDE "./Engine/ObjectManagement/RunPgSubRoutine.asm"	
         INCLUDE "./Engine/LevelManagement/LoadGameMode.asm"	
-        INCLUDE "./Engine/Ram/ClearDataMemory.asm"
+        ; INCLUDE "./Engine/Ram/ClearDataMemory.asm"
+        INCLUDE "./Engine/Graphics/ClearInterlacedDataMemory.asm"
         INCLUDE "./Engine/Palette/UpdatePalette.asm"
         INCLUDE "./Engine/Sound/PSGlib.asm"
         INCLUDE "./Engine/Irq/IrqPsg.asm"	

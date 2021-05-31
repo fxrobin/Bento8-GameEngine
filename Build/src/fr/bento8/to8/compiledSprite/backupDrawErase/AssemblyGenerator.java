@@ -244,7 +244,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", "--pragma=undefextern"+Game.pragma, "--raw");
+			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", Game.pragma, Game.define, "--raw");
 			pb.redirectErrorStream(true);
 			p = pb.start();			
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -301,7 +301,7 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binEFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", "--pragma=undefextern"+Game.pragma, "--raw");			
+			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", Game.pragma, Game.define, "--raw");			
 			pb.redirectErrorStream(true);
 			p = pb.start();					
 			br = new BufferedReader(new InputStreamReader(p.getInputStream()));

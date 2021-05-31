@@ -35,6 +35,7 @@ import fr.bento8.to8.compiledSprite.backupDrawErase.AssemblyGenerator;
 import fr.bento8.to8.compiledSprite.draw.SimpleAssemblyGenerator;
 import fr.bento8.to8.image.Animation;
 import fr.bento8.to8.image.AnimationBin;
+import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.image.ImageSetBin;
 import fr.bento8.to8.image.PaletteTO8;
 import fr.bento8.to8.image.PngToBottomUpB16Bin;
@@ -362,6 +363,7 @@ public class BuildDisk
 			logger.debug("\t\tBackground Image: "+act.bgFileName);			
 			String[] data = act.bgFileName.split(",");		
 			if (!Game.allBackgroundImages.containsKey(data[0])) {
+				//PngToBottomUpB16Bin img = new PngToBottomUpB16Bin(data[0], act);
 				PngToBottomUpB16Bin img = new PngToBottomUpB16Bin(data[0], act);
 				
 				if ((data.length > 1 && data[1].equalsIgnoreCase(BuildDisk.RAM)?true:false))
@@ -2587,7 +2589,7 @@ public class BuildDisk
 		String glbFile = asmFileName + ".glb";			
 
 		logger.debug("\t# Compile "+path.toString());
-		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern"+Game.pragma, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbFile, option).start();
+		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbFile, option).start();
 		BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
 		String line;
 
@@ -2614,7 +2616,7 @@ public class BuildDisk
 			String lstFile = asmFileName + ".lst";
 			
 			logger.debug("\t# Compile "+path.toString());
-			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", "--pragma=undefextern"+Game.pragma, "--obj").start();
+			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, "--obj").start();
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			String line;
 

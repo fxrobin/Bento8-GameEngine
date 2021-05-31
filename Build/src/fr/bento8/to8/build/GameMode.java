@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import fr.bento8.to8.image.PngToBottomUpB16Bin;
+import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.ram.RamImage;
 import fr.bento8.to8.storage.RAMLoaderIndex;
 import fr.bento8.to8.util.knapsack.Item;

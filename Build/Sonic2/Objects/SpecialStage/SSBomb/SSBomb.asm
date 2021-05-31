@@ -56,8 +56,8 @@ SSB_Init                                                                  *Obj61
                                                                           *
 SSB_Bomb                                                                  *loc_34F06:
         ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A
-        beq   SSB_DeleteObject   
+        subd  HalfPipe_Nb_Elpased_Frames ; decrement moved from loc_3512A
+        ble   SSB_DeleteObject   
         std   ss_z_pos,u
         
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
@@ -191,8 +191,8 @@ SSR_Init                                                                  *Obj60
                                                                           *
 SSR_Ring                                                                  *loc_34FF0:
         ldd   ss_z_pos,u
-        subd  #1                       ; decrement moved from loc_3512A
-        beq   SSB_DeleteObject   
+        subd  HalfPipe_Nb_Elpased_Frames ; decrement moved from loc_3512A
+        ble   SSB_DeleteObject   
         std   ss_z_pos,u
                                                                                   *
         jsr   SSR_ScaleAnim                                               *    bsr.w   loc_3512A
@@ -963,7 +963,7 @@ loc_3538A                                                                 *loc_3
         std   image_set,u  
         jmp   DisplaySprite                                                                                        
                                                                           *
-loc_35392                                                                 *loc_35392:
+                                                                          *loc_35392:
                                                                           *    move.b  d0,mapping_frame(a0)
                                                                           *    bra.w   JmpTo44_DisplaySprite
                                                                           *

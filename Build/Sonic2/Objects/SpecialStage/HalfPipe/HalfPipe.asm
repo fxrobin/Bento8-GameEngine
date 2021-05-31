@@ -146,6 +146,17 @@ SpecialStage_Init                                     *SpecialStage:
         stb   $E7E5                    ; in data space ($A000-$DFFF)
         ldx   #Bgi_specialStage
         jsr   DrawFullscreenImage
+        
+ IFDEF TRACK_INTERLACED        
+        ldx   #$3333
+        jsr   ClearInterlacedEvenDataMemory
+ ENDC
+ 
+ IFDEF TRACK_HALFLINES        
+        ldx   #$3333
+        jsr   ClearInterlacedOddDataMemory
+ ENDC
+                    
         lda   $E7DD                    ; set border color
         anda  #$F0
         adda  #$03                     ; color ref
@@ -158,6 +169,17 @@ SpecialStage_Init                                     *SpecialStage:
         stb   $E7E5                    ; data space ($A000-$DFFF)
         ldx   #Bgi_specialStage
         jsr   DrawFullscreenImage
+        
+ IFDEF TRACK_INTERLACED        
+        ldx   #$3333
+        jsr   ClearInterlacedOddDataMemory
+ ENDC
+ 
+ IFDEF TRACK_HALFLINES        
+        ldx   #$3333
+        jsr   ClearInterlacedOddDataMemory
+ ENDC    
+                        
         lda   #IdImg_tk_key_004        ; store original image id for access
         sta   SSTrack_mapping_frame    ; of perspective data
         
@@ -176,11 +198,11 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *
         ; Init Track_Draw
         ; --------------------------------------------
-        ldu   #HalfPipeOdd
+        ldu   #HalfPipeEven
         lda   #ObjID_HalfPipe                                                      
         sta   id,u                              
         jsr   HalfPipe_Init
-        ldu   #HalfPipeEven
+        ldu   #HalfPipeOdd
         lda   #ObjID_HalfPipe                                                      
         sta   id,u                              
         jsr   HalfPipe_Init                           *    bsr.w   SSTrack_Draw           
@@ -236,10 +258,29 @@ SpecialStage_Main                                     *-   bsr.w   PauseGame
                                                       *    bne.w   SpecialStage_Unpause        ; if not, branch
                                                       *    move.b  #VintID_S2SS,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
-        ldu   #HalfPipeOdd              
+                                                      
+                                                      
+                                                      
+ IFDEF TRACK_INTERLACED                                                      
+        lda   $E7E5
+        cmpa  #$02
+        beq   SSM_Odd
+ ENDC
+                    
+        ldu   #HalfPipeEven              
         jsr   HalfPipe_Display
-        ldu   #HalfPipeEven
+ 
+ IFDEF TRACK_INTERLACED        
+        bra   SSM_Skip
+SSM_Odd
+ ENDC
+ 
+ IFDEF TRACK_HALFLINES  
+ ELSE                     
+        ldu   #HalfPipeOdd
         jsr   HalfPipe_Display                        *    bsr.w   SSTrack_Draw
+ ENDC   
+SSM_Skip              
         jsr   SSSetGeometryOffsets                    *    bsr.w   SSSetGeometryOffsets
         ; moved to SSBomb                             *    bsr.w   SSLoadCurrentPerspective
         jsr   SSObjectsManager                        *    bsr.w   SSObjectsManager
@@ -681,15 +722,16 @@ HalfPipe_Init
         sta   render_flags,u        
         
         ldd   #$807F
-        cmpu  #HalfPipeOdd
+        cmpu  #HalfPipeEven
         beq   @a        
-        incb                           ; +1 for even line
+        incb                           ; +1 for odd line
         std   xy_pixel,u
         rts
 @a      std   xy_pixel,u
 
         ldd   Vint_runcount
         std   HalfPipe_Vint_runcount
+        std   HalfPipe_Vint_lastruncount
         
         ; load start of sequences for this level
         ; ----------------------------------------------
@@ -714,9 +756,9 @@ HalfPipe_Init
         rts
         
 HalfPipe_Display
-        cmpu  #HalfPipeOdd
+        cmpu  #HalfPipeEven
         beq   @a
-        ldx   #HalfPipeOdd
+        ldx   #HalfPipeEven
         ldd   image_set,x                        ; clone image_set when secondary HalfPipe sprite is running
         std   image_set,u
         lda   render_flags,x
@@ -725,10 +767,16 @@ HalfPipe_Display
         sta   routine,u        
         jmp   DisplaySprite                      ; return
 @a
-
+        
+        ldd   Vint_runcount
+        subd  HalfPipe_Vint_lastruncount
+        std   HalfPipe_Nb_Elpased_Frames
+        ldd   Vint_runcount
+        std   HalfPipe_Vint_lastruncount
+        
         ldd   Vint_runcount
         subd  HalfPipe_Vint_runcount
-        cmpb  #$02                               ; ensure track is not refreshed more than 8fps 
+        cmpb  #$02                               ; ensure track is not refreshed more than 6.25fps (3) or 8.33fps (2) 
         bgt   @a
         stb   SSTrack_drawing_index        
         jmp   DisplaySprite                      ; return
