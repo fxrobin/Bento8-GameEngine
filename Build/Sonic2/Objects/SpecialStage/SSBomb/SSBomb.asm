@@ -451,7 +451,7 @@ Ani_SSBomb
         fdb   Ani_SSBomb_1 ; $36
         fdb   Ani_SSBomb_1 ; $38
         fdb   Ani_SSBomb_1 ; $3A
-        fdb   Ani_SSBomb_0 ; $3C		
+        fdb   Ani_SSBomb_0 ; $3C	 	
        
         
 Ani_SSRing
