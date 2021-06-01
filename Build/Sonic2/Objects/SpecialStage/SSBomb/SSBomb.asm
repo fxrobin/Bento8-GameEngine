@@ -55,11 +55,6 @@ SSB_Init                                                                  *Obj61
         jsr   SSB_InitShadow                                              *        bsr.w   loc_3529C
                                                                           *
 SSB_Bomb                                                                  *loc_34F06:
-        ldd   ss_z_pos,u
-        subd  HalfPipe_Nb_Elpased_Frames ; decrement moved from loc_3512A
-        ble   SSB_DeleteObject   
-        std   ss_z_pos,u
-        
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
                                                                           *        lea     (Ani_obj61).l,a1
@@ -109,16 +104,7 @@ return_34F68                                                              *retur
 
                                                                           *; ===========================================================================
                                                                           *
-                                                                          
-SSB_DeleteObject
-        ldx   ss_parent,u
-        beq   SSB_DeleteObject_End     ; no shadow for this Bomb
-        tst   id,x
-        beq   SSB_DeleteObject_End
-        com   ss_self_delete,x         ; tell shadow to self delete
-SSB_DeleteObject_End                     
-        jmp   DeleteObject	                                                                          
-                                                                          
+
 SSB_Explode                                                               *loc_34F6A:
         ldd   #Ani_SSBomb_explode                                         *        move.b  #$A,anim(a0)
         std   anim,u                                                      
@@ -190,11 +176,6 @@ SSR_Init                                                                  *Obj60
         jsr   SSB_InitShadow                                              *    bsr.w   loc_3529C
                                                                           *
 SSR_Ring                                                                  *loc_34FF0:
-        ldd   ss_z_pos,u
-        subd  HalfPipe_Nb_Elpased_Frames ; decrement moved from loc_3512A
-        ble   SSB_DeleteObject   
-        std   ss_z_pos,u
-                                                                                  *
         jsr   SSR_ScaleAnim                                               *    bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *    bsr.w   loc_351A0
         jsr   SSR_RingCounter                                             *    bsr.w   loc_35036
@@ -355,14 +336,15 @@ CheckCollision                                                            *loc_3
 
                                                                           *; ===========================================================================
                                                                           *
-                                                                          *loc_3512A:
+SSB_ScaleAnim                                                             *loc_3512A:
                                                                           *    btst    #7,status(a0)
                                                                           *    bne.s   loc_3516C
                                                                           *    cmpi.b  #4,(SSTrack_drawing_index).w
                                                                           *    bne.s   loc_35146
-                                                                          *    subi.l  #$CCCC,objoff_30(a0)
-                                                                          *    ble.s   loc_3516C
-                                                                          *    bra.s   loc_35150
+        ldd   ss_z_pos,u                                                                          
+        subd  HalfPipe_Nb_Elapsed_Frames_w  ; see HalfPipe_Display        *    subi.l  #$CCCC,objoff_30(a0)
+        ble   SSB_DeleteObject                                            *    ble.s   loc_3516C
+        std   ss_z_pos,u                                                  *    bra.s   loc_35150
                                                                           *; ===========================================================================
                                                                           *
                                                                           *loc_35146:
@@ -370,7 +352,7 @@ CheckCollision                                                            *loc_3
                                                                           *    ble.s   loc_3516C
                                                                           *
 																		  
-SSB_ScaleAnim                                                             *loc_35150:
+                                                                          *loc_35150:
         ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
         cmpx  #Ani_SSBomb_explode                                         
         beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
@@ -384,11 +366,16 @@ SSB_ScaleAnim_LoadAnim                                                    *loc_3
         aslb
         ldd   b,x
         std   anim,u
-                                                                          *
+                                                                          *  
 SSB_ScaleAnim_return                                                      *return_3516A:
         rts                                                               *    rts
 		
 SSR_ScaleAnim
+        ldd   ss_z_pos,u
+        subd  HalfPipe_Nb_Elapsed_Frames_w
+        ble   SSB_DeleteObject   
+        std   ss_z_pos,u
+        
         ldx   anim,u
         cmpx  #Ani_SSRing_stars                                         
         beq   SSR_ScaleAnim_return
@@ -405,7 +392,15 @@ SSR_ScaleAnim_LoadAnim
                                                                           
 SSR_ScaleAnim_return
         rts    		
-		
+
+SSB_DeleteObject
+        ldx   ss_parent,u
+        beq   SSB_DeleteObject_End     ; no shadow for this Bomb
+        tst   id,x
+        beq   SSB_DeleteObject_End
+        com   ss_self_delete,x         ; tell shadow to self delete
+SSB_DeleteObject_End                     
+        jmp   DeleteObject		
                                                                           *; ===========================================================================
                                                                           *
                                                                           *loc_3516C:
@@ -426,22 +421,22 @@ SSR_ScaleAnim_return
                                                                           *    dc.b   2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0; 16
                                                                           *; ===========================================================================
 Ani_SSBomb
-        fdb   Ani_SSBomb_9 ; 0
-        fdb   Ani_SSBomb_9 ; 2
-        fdb   Ani_SSBomb_9 ; 4
-        fdb   Ani_SSBomb_8 ; 6
-        fdb   Ani_SSBomb_8 ; 8
-        fdb   Ani_SSBomb_7 ; $A
-        fdb   Ani_SSBomb_7 ; $C
-        fdb   Ani_SSBomb_6 ; $E
-        fdb   Ani_SSBomb_6 ; $10
-        fdb   Ani_SSBomb_5 ; $12
-        fdb   Ani_SSBomb_5 ; $14
+        fdb   Ani_SSBomb_7 ; 0
+        fdb   Ani_SSBomb_7 ; 2
+        fdb   Ani_SSBomb_7 ; 4
+        fdb   Ani_SSBomb_6 ; 6
+        fdb   Ani_SSBomb_6 ; 8
+        fdb   Ani_SSBomb_6 ; $A
+        fdb   Ani_SSBomb_5 ; $C
+        fdb   Ani_SSBomb_5 ; $E
+        fdb   Ani_SSBomb_5 ; $10
+        fdb   Ani_SSBomb_4 ; $12
+        fdb   Ani_SSBomb_4 ; $14
         fdb   Ani_SSBomb_4 ; $16
-        fdb   Ani_SSBomb_4 ; $18                                                
+        fdb   Ani_SSBomb_3 ; $18                                                
         fdb   Ani_SSBomb_3 ; $1A
         fdb   Ani_SSBomb_3 ; $1C
-        fdb   Ani_SSBomb_3 ; $1E
+        fdb   Ani_SSBomb_2 ; $1E
         fdb   Ani_SSBomb_2 ; $20                               
 		fdb   Ani_SSBomb_2 ; $22
         fdb   Ani_SSBomb_2 ; $24
@@ -456,27 +451,26 @@ Ani_SSBomb
         fdb   Ani_SSBomb_1 ; $36
         fdb   Ani_SSBomb_1 ; $38
         fdb   Ani_SSBomb_1 ; $3A
-        fdb   Ani_SSBomb_0 ; $3C removed one index ($3E) from original
-                           ; code, since every index > $3A is capped
-                           ; to index $3C		
+        fdb   Ani_SSBomb_0 ; $3C		
+       
         
 Ani_SSRing
-        fdb   Ani_SSRing_9 ; 0
-        fdb   Ani_SSRing_9 ; 2
-        fdb   Ani_SSRing_9 ; 4
-        fdb   Ani_SSRing_8 ; 6
-        fdb   Ani_SSRing_8 ; 8
-        fdb   Ani_SSRing_7 ; $A
-        fdb   Ani_SSRing_7 ; $C
-        fdb   Ani_SSRing_6 ; $E
-        fdb   Ani_SSRing_6 ; $10
-        fdb   Ani_SSRing_5 ; $12
-        fdb   Ani_SSRing_5 ; $14
+        fdb   Ani_SSRing_7 ; 0
+        fdb   Ani_SSRing_7 ; 2
+        fdb   Ani_SSRing_7 ; 4
+        fdb   Ani_SSRing_6 ; 6
+        fdb   Ani_SSRing_6 ; 8
+        fdb   Ani_SSRing_6 ; $A
+        fdb   Ani_SSRing_5 ; $C
+        fdb   Ani_SSRing_5 ; $E
+        fdb   Ani_SSRing_5 ; $10
+        fdb   Ani_SSRing_4 ; $12
+        fdb   Ani_SSRing_4 ; $14
         fdb   Ani_SSRing_4 ; $16
-        fdb   Ani_SSRing_4 ; $18                                                
+        fdb   Ani_SSRing_3 ; $18                                                
         fdb   Ani_SSRing_3 ; $1A
         fdb   Ani_SSRing_3 ; $1C
-        fdb   Ani_SSRing_3 ; $1E
+        fdb   Ani_SSRing_2 ; $1E
         fdb   Ani_SSRing_2 ; $20                               
 		fdb   Ani_SSRing_2 ; $22
         fdb   Ani_SSRing_2 ; $24
@@ -491,9 +485,7 @@ Ani_SSRing
         fdb   Ani_SSRing_1 ; $36
         fdb   Ani_SSRing_1 ; $38
         fdb   Ani_SSRing_1 ; $3A
-        fdb   Ani_SSRing_0 ; $3C removed one index ($3E) from original
-                           ; code, since every index > $3A is capped
-                           ; to index $3C	
+        fdb   Ani_SSRing_0 ; $3C
 										
 SSB_CC_OutOfScreen             
         lda   #$01

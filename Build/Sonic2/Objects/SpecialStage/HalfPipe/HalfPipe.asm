@@ -10,6 +10,8 @@
 
         INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
         INCLUDE "./Engine/Macros.asm"   
+        
+HalfPipe_Img_Duration equ 2 ; track refresh rate: 2=8.33fps    
 
 SpecialStage
         lda   routine,u
@@ -770,17 +772,34 @@ HalfPipe_Display
         
         ldd   Vint_runcount
         subd  HalfPipe_Vint_lastruncount
-        std   HalfPipe_Nb_Elpased_Frames
+        stb   HalfPipe_Nb_Elapsed_Frames         ; ajust object z speed
+        
         ldd   Vint_runcount
         std   HalfPipe_Vint_lastruncount
         
         ldd   Vint_runcount
         subd  HalfPipe_Vint_runcount
-        cmpb  #$02                               ; ensure track is not refreshed more than 6.25fps (3) or 8.33fps (2) 
+        cmpb  #HalfPipe_Img_Duration             ; ensure track is not refreshed more than 8.33fps 
         bgt   @a
         stb   SSTrack_drawing_index        
+        lda   HalfPipe_Nb_Elapsed_Frames
+        ldb  #$54                                ; z_pos is decremented by 1-(1/5)=0.8
+        mul
+        std   HalfPipe_Nb_Elapsed_Frames_scaled
+        ldd   HalfPipe_Nb_Elapsed_Frames
+        subd  HalfPipe_Nb_Elapsed_Frames_scaled
+        std   HalfPipe_Nb_Elapsed_Frames
         jmp   DisplaySprite                      ; return
-@a      ldd   Vint_runcount
+@a      lda   #HalfPipe_Img_Duration+1
+        suba  SSTrack_drawing_index
+        sta   HalfPipe_Nb_Elapsed_Frames         ; ajust object z speed
+        ldb  #$54                                ; z_pos is decremented by 1-(1/5)=0.8
+        mul
+        std   HalfPipe_Nb_Elapsed_Frames_scaled
+        ldd   HalfPipe_Nb_Elapsed_Frames
+        subd  HalfPipe_Nb_Elapsed_Frames_scaled
+        std   HalfPipe_Nb_Elapsed_Frames        
+        ldd   Vint_runcount
         std   HalfPipe_Vint_runcount
         clr   SSTrack_drawing_index
         jsr   AnimateSprite
@@ -809,19 +828,29 @@ HalfPipe_LoadNewSequence
         ldb   ,x        
         stb   HalfPipe_Seq
         andb  #$7F
-        cmpd  #$0303
+        cmpd  #$0203                        ; special case    
         bne   @a
-        ldd   #Ani_StraightAfterStraight
+        ldd   #Ani_Straight_From_TurnThenStraight
         std   anim,u
-        bra   @b
-@a      ldx   #Ani_SpecialStageTrack
+        bra   @d
+@a      cmpd  #$0002                        ; special case    
+        bne   @b
+        ldd   #Ani_TurnThenStraight_From_Rise
+        std   anim,u
+        bra   @d
+@b      cmpd  #$0102                        ; special case    
+        bne   @c
+        ldd   #Ani_TurnThenStraight_From_Drop
+        std   anim,u
+        bra   @d
+@c      ldx   #Ani_SpecialStageTrack        ; use lookup table
         aslb
         abx
         ldd   ,x
         std   anim,u
-@b      ldd   #0
+@d      ldd   #0
         sta   routine_secondary,u
-        std   prev_anim,u                        ; force loading of new animation
+        std   prev_anim,u                   ; force loading of new animation
         jsr   AnimateSprite
         jsr   GetImgIdA
         sta   SSTrack_mapping_frame
