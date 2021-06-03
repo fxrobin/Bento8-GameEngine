@@ -701,6 +701,7 @@ public class BuildDisk
 		compileRAW(objectCodeTmpFile, UNDEFINED);
 		obj.gmCode.get(gm).code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 		obj.gmCode.get(gm).code.uncompressedSize = obj.gmCode.get(gm).code.bin.length;
+		logger.debug("file " + objectCodeTmpFile + " intermediate size:" + obj.gmCode.get(gm).code.uncompressedSize + " bytes");
 		
 		if (obj.gmCode.get(gm).code.uncompressedSize > RamImage.PAGE_SIZE) {
 			throw new Exception("file " + objectCodeTmpFile + " is too large:" + obj.gmCode.get(gm).code.uncompressedSize + " bytes (max:" + RamImage.PAGE_SIZE + ")");
@@ -1427,6 +1428,11 @@ public class BuildDisk
 		compileRAW(objectCodeTmpFile, mode);
 		obj.gmCode.get(gm).code.bin = Files.readAllBytes(Paths.get(getBINFileName(objectCodeTmpFile)));
 		codeData.setData(objCodePage, objCodeAddress, obj.gmCode.get(gm).code.bin);		
+		logger.debug("file " + objectCodeTmpFile + " final size:" + obj.gmCode.get(gm).code.bin.length + " bytes");
+		
+		if (obj.gmCode.get(gm).code.uncompressedSize != obj.gmCode.get(gm).code.bin.length) {
+			throw new Exception("Second compilation pass for file " + objectCodeTmpFile + " gives different binary size !");
+		}		
 	}		
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		

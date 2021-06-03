@@ -8,6 +8,8 @@
 *
 * ---------------------------------------------------------------------------
 
+HalfPipe_Seg_z_steps  equ 4 ; number of z pos increment into a single image 
+
 * ===========================================================================
 * Object Constants
 * ===========================================================================
@@ -18,6 +20,7 @@ ss_shadow_tilt                equ ext_variables+4  ; 0:flat 1:diagonal 2:side
 ss_self_delete                equ ext_variables+5  ; flag usually set by parent to tell to child to self delete
 collision_property            equ ext_variables+6
 mapping_frame                 equ ext_variables+7
+ss_z_pos_img_start            equ ext_variables+8  ; and ext_variables+9  ; distance from camera to half-pipe segment end (0: front) a start of last image
 
 ;ss_dplc_timer = $23
 ;ss_x_pos = objoff_2A

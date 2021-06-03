@@ -113,7 +113,7 @@ public class PngToBottomUpB16Bin extends ItemBin{
 	@Override
 	public String getFullName() {
 		// TODO Auto-generated method stub
-		return null;
+		return name;
 	}
 
 	@Override

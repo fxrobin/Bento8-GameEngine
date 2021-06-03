@@ -50,10 +50,10 @@ IrqPsg
         addd  #1
         std   Vint_runcount
         
-        jsr   ReadJoypads        
+        *jsr   ReadJoypads        
         
-        jsr   PSGFrame
-       *jsr   PSGSFXFrame
+        *jsr   PSGFrame
+        *jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00
         _SetCartPageA                                 ; restore data page

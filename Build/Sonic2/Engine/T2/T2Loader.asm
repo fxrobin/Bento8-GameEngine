@@ -63,6 +63,8 @@ dk_destination                equ $604F
         
         jsr   ENM7                     ; rend la MEGAROM T.2 visible
         jsr   ERASE                    ; effacement complet de la MEGAROM T.2
+        bmi   EraseError
+respawn        
         jsr   WaitOffScreen
         
         ; Couleur du fond de la progress bar
@@ -136,6 +138,29 @@ RL_Copy
         bra   RL_END                   ; on a depasse la page 127 => fin   
         
 cur_ROMPage fcb   $00
+
+EraseError
+        ldd   #0
+@a      jsr   T16K
+        cmpa  #0
+        bne   EraseError_2
+        incb           
+        cmpb  #$80
+        lbeq   respawn
+        tfr   b,a
+        bra   @a
+        
+EraseError_2
+        jsr   WaitOffScreen
+        lda   #$04
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        ldd   #$0F0F
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)
+  
+        lda   #$00
+        jsr   SETPAG                   * ROM page a 0 pour la voir apres reboot
+        bra   *
 
 RL_END
         lda   #$00
@@ -301,7 +326,24 @@ ENM7   EQU    *
        LDA    $E7E6
        ANDA   #$DF
        STA    $E7E6
-       PULS   A,PC       
+       PULS   A,PC      
+       
+* T16K
+* Vérifie qu'une page est vide
+* In  : A = page entre 0 et 127
+* Out : A = 0 si la page est vide
+* Mod : A
+
+T16K   EQU    *
+       PSHS   X
+       JSR    SETPAG
+       LDX    #$0000
+TST1   LDA    ,X+
+       INCA
+       BNE    TERR
+       CMPX   #$4000
+       BLO    TST1
+TERR   PULS   X,PC        
        
 ********************************************************************************
 * Clear memory in data area

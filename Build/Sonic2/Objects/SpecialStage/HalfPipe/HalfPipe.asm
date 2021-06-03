@@ -11,7 +11,7 @@
         INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
         INCLUDE "./Engine/Macros.asm"   
         
-HalfPipe_Img_Duration equ 2 ; track refresh rate: 2=8.33fps    
+HalfPipe_Img_Duration equ 5 ; track maximum refresh rate: 50Hz/HalfPipe_Img_Duration=10fps
 
 SpecialStage
         lda   routine,u
@@ -440,7 +440,7 @@ SSObjectsManager                                      *SSObjectsManager:
                                                       *    add.w   d3,d3
                                                       *    add.w   d3,d3
         std   SS_Seg_Len_x4
-        
+
         ; Read object locations
         
         ldx   SS_CurrentLevelObjectLocations          *    movea.l (SS_CurrentLevelObjectLocations).w,a0
@@ -465,6 +465,8 @@ SSObjectsManager_LoadObject                           *-
         rola
         addd  SS_Seg_Len_x4                           *    add.w   d3,d0
         std   ss_z_pos,u                              *    move.w  d0,objoff_30(a1)
+        addd  #HalfPipe_Seg_z_steps
+        std   ss_z_pos_img_start,u
         lda   ,x+
         sta   angle,u                                 *    move.b  (a0)+,angle(a1)
         bra   SSObjectsManager_LoadObject             *    bra.s   -
@@ -732,8 +734,8 @@ HalfPipe_Init
 @a      std   xy_pixel,u
 
         ldd   Vint_runcount
-        std   HalfPipe_Vint_runcount
-        std   HalfPipe_Vint_lastruncount
+        std   HalfPipe_Vint_Track_Image          ; store number of vint between two rendered images
+        std   HalfPipe_Vint_Main_Loop            ; store number of vint between two main loops execution
         
         ; load start of sequences for this level
         ; ----------------------------------------------
@@ -764,43 +766,43 @@ HalfPipe_Display
         ldd   image_set,x                        ; clone image_set when secondary HalfPipe sprite is running
         std   image_set,u
         lda   render_flags,x
-        sta   render_flags,u
-        lda   routine,x
-        sta   routine,u        
+        sta   render_flags,u     
         jmp   DisplaySprite                      ; return
 @a
         
         ldd   Vint_runcount
-        subd  HalfPipe_Vint_lastruncount
+        subd  HalfPipe_Vint_Main_Loop
         stb   HalfPipe_Nb_Elapsed_Frames         ; ajust object z speed
-        
+
         ldd   Vint_runcount
-        std   HalfPipe_Vint_lastruncount
+        std   HalfPipe_Vint_Main_Loop
+        subd  HalfPipe_Vint_Track_Image
+        stb   SSTrack_drawing_index
         
-        ldd   Vint_runcount
-        subd  HalfPipe_Vint_runcount
-        cmpb  #HalfPipe_Img_Duration             ; ensure track is not refreshed more than 8.33fps 
-        bgt   @a
-        stb   SSTrack_drawing_index        
+        ; if n-2 image is different from n-1 image
+        ; we must call HalfPipe_KeepSameTrackImage
+        ; otherwise it would drop an intermediate image
+        ldd   rsv_prev_mapping_frame_0,u
+        cmpd  rsv_prev_mapping_frame_1,u
+        bne   HalfPipe_KeepSameTrackImage
+        
+        ldb   SSTrack_drawing_index
+        cmpb  #HalfPipe_Img_Duration             ; ensure track is not refreshed more than max fps 
+        bge   HalfPipe_LoadNewTrackImage
+        
+HalfPipe_KeepSameTrackImage
         lda   HalfPipe_Nb_Elapsed_Frames
-        ldb  #$54                                ; z_pos is decremented by 1-(1/5)=0.8
+        ldb  #$CC                                ; z_pos step decrement
         mul
         std   HalfPipe_Nb_Elapsed_Frames_scaled
         ldd   HalfPipe_Nb_Elapsed_Frames
         subd  HalfPipe_Nb_Elapsed_Frames_scaled
         std   HalfPipe_Nb_Elapsed_Frames
         jmp   DisplaySprite                      ; return
-@a      lda   #HalfPipe_Img_Duration+1
-        suba  SSTrack_drawing_index
-        sta   HalfPipe_Nb_Elapsed_Frames         ; ajust object z speed
-        ldb  #$54                                ; z_pos is decremented by 1-(1/5)=0.8
-        mul
-        std   HalfPipe_Nb_Elapsed_Frames_scaled
-        ldd   HalfPipe_Nb_Elapsed_Frames
-        subd  HalfPipe_Nb_Elapsed_Frames_scaled
-        std   HalfPipe_Nb_Elapsed_Frames        
+        
+HalfPipe_LoadNewTrackImage
         ldd   Vint_runcount
-        std   HalfPipe_Vint_runcount
+        std   HalfPipe_Vint_Track_Image
         clr   SSTrack_drawing_index
         jsr   AnimateSprite
         jsr   GetImgIdA

@@ -341,10 +341,17 @@ SSB_ScaleAnim                                                             *loc_3
                                                                           *    bne.s   loc_3516C
                                                                           *    cmpi.b  #4,(SSTrack_drawing_index).w
                                                                           *    bne.s   loc_35146
-        ldd   ss_z_pos,u                                                                          
-        subd  HalfPipe_Nb_Elapsed_Frames_w  ; see HalfPipe_Display        *    subi.l  #$CCCC,objoff_30(a0)
+        lda   SSTrack_drawing_index
+        bne   @a                  
+        ldd   ss_z_pos_img_start,u
+        subd  #HalfPipe_Seg_z_steps
+        ble   SSB_DeleteObject
+        std   ss_z_pos_img_start,u
+        bra   @b
+@a      ldd   ss_z_pos,u                                                                          
+        subd  HalfPipe_z_step                                             *    subi.l  #$CCCC,objoff_30(a0)
         ble   SSB_DeleteObject                                            *    ble.s   loc_3516C
-        std   ss_z_pos,u                                                  *    bra.s   loc_35150
+@b      std   ss_z_pos,u                                                  *    bra.s   loc_35150
                                                                           *; ===========================================================================
                                                                           *
                                                                           *loc_35146:
@@ -371,10 +378,17 @@ SSB_ScaleAnim_return                                                      *retur
         rts                                                               *    rts
 		
 SSR_ScaleAnim
-        ldd   ss_z_pos,u
-        subd  HalfPipe_Nb_Elapsed_Frames_w
-        ble   SSB_DeleteObject   
-        std   ss_z_pos,u
+        lda   SSTrack_drawing_index
+        bne   @a                  
+        ldd   ss_z_pos_img_start,u
+        subd  #HalfPipe_Seg_z_steps
+        ble   SSB_DeleteObject
+        std   ss_z_pos_img_start,u        
+        bra   @b
+@a      ldd   ss_z_pos,u                                                                          
+        subd  HalfPipe_z_step
+        ble   SSB_DeleteObject
+@b      std   ss_z_pos,u 
         
         ldx   anim,u
         cmpx  #Ani_SSRing_stars                                         
@@ -421,22 +435,22 @@ SSB_DeleteObject_End
                                                                           *    dc.b   2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0; 16
                                                                           *; ===========================================================================
 Ani_SSBomb
-        fdb   Ani_SSBomb_7 ; 0
-        fdb   Ani_SSBomb_7 ; 2
-        fdb   Ani_SSBomb_7 ; 4
-        fdb   Ani_SSBomb_6 ; 6
-        fdb   Ani_SSBomb_6 ; 8
-        fdb   Ani_SSBomb_6 ; $A
-        fdb   Ani_SSBomb_5 ; $C
-        fdb   Ani_SSBomb_5 ; $E
-        fdb   Ani_SSBomb_5 ; $10
-        fdb   Ani_SSBomb_4 ; $12
-        fdb   Ani_SSBomb_4 ; $14
+        fdb   Ani_SSBomb_9 ; 0         ; ajdusted some values here
+        fdb   Ani_SSBomb_9 ; 2         ; however in-game sprite does not
+        fdb   Ani_SSBomb_9 ; 4         ; match this table, because of
+        fdb   Ani_SSBomb_8 ; 6         ; animate method that forces
+        fdb   Ani_SSBomb_8 ; 8         ; to end an animation before
+        fdb   Ani_SSBomb_7 ; $A        ; setting the new one
+        fdb   Ani_SSBomb_7 ; $C
+        fdb   Ani_SSBomb_6 ; $E
+        fdb   Ani_SSBomb_6 ; $10
+        fdb   Ani_SSBomb_5 ; $12
+        fdb   Ani_SSBomb_5 ; $14
         fdb   Ani_SSBomb_4 ; $16
-        fdb   Ani_SSBomb_3 ; $18                                                
+        fdb   Ani_SSBomb_4 ; $18                                                
         fdb   Ani_SSBomb_3 ; $1A
         fdb   Ani_SSBomb_3 ; $1C
-        fdb   Ani_SSBomb_2 ; $1E
+        fdb   Ani_SSBomb_3 ; $1E
         fdb   Ani_SSBomb_2 ; $20                               
 		fdb   Ani_SSBomb_2 ; $22
         fdb   Ani_SSBomb_2 ; $24
@@ -455,22 +469,22 @@ Ani_SSBomb
        
         
 Ani_SSRing
-        fdb   Ani_SSRing_7 ; 0
-        fdb   Ani_SSRing_7 ; 2
-        fdb   Ani_SSRing_7 ; 4
-        fdb   Ani_SSRing_6 ; 6
-        fdb   Ani_SSRing_6 ; 8
-        fdb   Ani_SSRing_6 ; $A
-        fdb   Ani_SSRing_5 ; $C
-        fdb   Ani_SSRing_5 ; $E
-        fdb   Ani_SSRing_5 ; $10
-        fdb   Ani_SSRing_4 ; $12
-        fdb   Ani_SSRing_4 ; $14
+        fdb   Ani_SSRing_9 ; 0
+        fdb   Ani_SSRing_9 ; 2
+        fdb   Ani_SSRing_9 ; 4
+        fdb   Ani_SSRing_8 ; 6
+        fdb   Ani_SSRing_8 ; 8
+        fdb   Ani_SSRing_7 ; $A
+        fdb   Ani_SSRing_7 ; $C
+        fdb   Ani_SSRing_6 ; $E
+        fdb   Ani_SSRing_6 ; $10
+        fdb   Ani_SSRing_5 ; $12
+        fdb   Ani_SSRing_5 ; $14
         fdb   Ani_SSRing_4 ; $16
-        fdb   Ani_SSRing_3 ; $18                                                
+        fdb   Ani_SSRing_4 ; $18                                                
         fdb   Ani_SSRing_3 ; $1A
         fdb   Ani_SSRing_3 ; $1C
-        fdb   Ani_SSRing_2 ; $1E
+        fdb   Ani_SSRing_3 ; $1E
         fdb   Ani_SSRing_2 ; $20                               
 		fdb   Ani_SSRing_2 ; $22
         fdb   Ani_SSRing_2 ; $24

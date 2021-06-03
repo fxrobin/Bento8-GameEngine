@@ -110,9 +110,9 @@ SS_Swap_Positions_Flag            fcb   $00
 ; TO8 Version
 HalfPipe_Seq               fcb $00
 HalfPipe_Seq_UpdFlip       fdb $0000
-HalfPipe_Vint_runcount     fdb $0000
+HalfPipe_Vint_Track_Image  fdb $0000
 SS_Seg_Len_x4              fdb $0000
-HalfPipe_Nb_Elapsed_Frames_w      fcb $00
+HalfPipe_z_step                   fcb $00
 HalfPipe_Nb_Elapsed_Frames        fdb $0000 ; MSB is the integer value LSB is DECIMAL value
 HalfPipe_Nb_Elapsed_Frames_scaled fdb $0000 
-HalfPipe_Vint_lastruncount        fdb $0000
+HalfPipe_Vint_Main_Loop           fdb $0000
