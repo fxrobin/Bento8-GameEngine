@@ -63,7 +63,7 @@ dk_destination                equ $604F
         
         jsr   ENM7                     ; rend la MEGAROM T.2 visible
         jsr   ERASE                    ; effacement complet de la MEGAROM T.2
-        bmi   EraseError
+        lbmi  EraseError               ; verification complete de la ROM
 respawn        
         jsr   WaitOffScreen
         
@@ -125,6 +125,8 @@ RL_Copy
         lda   cur_ROMPage              ; page destination
         ldy   #$A000                   ; debut donnees a copier en ROM
         jsr   P16K                     ; recopie RAM vers ROM
+        jsr   C16K                     ; verification des donnees copiees
+        bne   WriteError
         
         lda   cur_ROMPage
         jsr   DisplayProgress
@@ -142,7 +144,6 @@ cur_ROMPage fcb   $00
 EraseError
         ldd   #0
 @a      jsr   T16K
-        cmpa  #0
         bne   EraseError_2
         incb           
         cmpb  #$80
@@ -155,6 +156,18 @@ EraseError_2
         lda   #$04
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
         ldd   #$0F0F
+        stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
+        sta   $E7DA                    * positionne la nouvelle couleur (Bleu)
+  
+        lda   #$00
+        jsr   SETPAG                   * ROM page a 0 pour la voir apres reboot
+        bra   *
+        
+WriteError
+        jsr   WaitOffScreen
+        lda   #$04
+        sta   $E7DB                    * selectionne l'indice de couleur a ecrire
+        ldd   #$0000
         stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
         sta   $E7DA                    * positionne la nouvelle couleur (Bleu)
   
@@ -344,6 +357,24 @@ TST1   LDA    ,X+
        CMPX   #$4000
        BLO    TST1
 TERR   PULS   X,PC        
+
+* C16K (Bentoc adaptation du code de préhisto)
+* Compare les 16K d'une page avec la RAM
+* In  : A = page entre 0 et 127
+*       Y = pointeur vers une zone RAM
+* Out : CC.Z = 0 si les donnees sont identiques 
+* Mod : néant
+
+C16K   EQU    *
+       PSHS   X,Y,D
+       JSR    SETPAG
+       LDX    #$0000
+CMP1   LDD    ,X++
+       CMPD   ,Y++
+       BNE    CRTS    
+       CMPX   #$4000
+       BLO    CMP1
+CRTS   PULS   D,Y,X,PC   
        
 ********************************************************************************
 * Clear memory in data area
