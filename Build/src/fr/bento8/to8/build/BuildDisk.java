@@ -542,15 +542,17 @@ public class BuildDisk
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_address = rli.ram_address;
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).fd_ram_endAddress = rli.ram_endAddress;
 				gameMode.getValue().ramFD.setData(rli.ram_page, rli.ram_address, binBytes);
-				if (writeIdx)
+				if (writeIdx) {
 					gameMode.getValue().fdIdx.add(rli); // Seconde passe
+				}
 			} else {
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_page = rli.ram_page;
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_address = rli.ram_address;		
 				gameMode.getValue().code.dataIndex.get(gameMode.getValue()).t2_ram_endAddress = rli.ram_endAddress;
 				gameMode.getValue().ramT2.setData(rli.ram_page, rli.ram_address, binBytes);
-				if (writeIdx)				
+				if (writeIdx) {				
 					gameMode.getValue().t2Idx.add(rli); // Seconde passe
+				}
 			}
 		}
 	}	
@@ -757,7 +759,7 @@ public class BuildDisk
 					abortFloppyDisk = true;
 			}
 			
-			gm.indexSizeFD += 2; // index supplémentaire pour ajustement avec RAM Loader Manager et MaineEngine
+			gm.indexSizeFD += 4; // index supplémentaire pour ajustement avec RAM Loader Manager et MaineEngine
 			gm.indexSizeFD *= INDEX_STRUCT_SIZE_FD;
 			gm.indexSizeFD += 2+1; // index + fin
 			totalIndexSizeFD += gm.indexSizeFD;			
@@ -788,7 +790,7 @@ public class BuildDisk
 					abortT2 = true;
 			}
 			
-			gm.indexSizeT2 += 2; // index supplémentaire pour ajustement avec RAM Loader Manager et MainEngine		
+			gm.indexSizeT2 += 4; // index supplémentaire pour ajustement avec RAM Loader Manager et MainEngine		
 			gm.indexSizeT2 *= INDEX_STRUCT_SIZE_T2;
 			gm.indexSizeT2 += 2+1; // index + fin
 			totalIndexSizeT2 += gm.indexSizeT2;
@@ -1070,7 +1072,7 @@ public class BuildDisk
 			
 			nbHalfPages += 1;
 			if (rImg.startAddress[rImg.curPage] < 0x2000 && rImg.endAddress[rImg.curPage] > 0x2000)
-				nbHalfPages += 1;			
+				nbHalfPages += 1;	
 			
 			// Division de la page RAM en deux parties			
 			if (writeIndex) {			
@@ -1106,7 +1108,7 @@ public class BuildDisk
 					if (rImg.mode == BuildDisk.FLOPPY_DISK) {
 						gm.fdIdx.add(rli);
 					} else if (rImg.mode == BuildDisk.MEGAROM_T2) {
-						gm.t2Idx.add(rli);				
+						gm.t2Idx.add(rli);	
 					}			
 				}
 				
@@ -1705,14 +1707,21 @@ public class BuildDisk
 			
 			if (mode == FLOPPY_DISK) {
 				indexSize = gameMode.getValue().fdIdx.size()*7+1; // +1 balise de fin FF
+				if (gameMode.getValue().indexSizeFD-2<indexSize) {
+					throw new Exception("Builder: FD indexSize too large fix the builder code !");	
+				}
 			} else {
 				indexSize = gameMode.getValue().t2Idx.size()*6+1;
+				logger.debug("Final t2Idx: "+gameMode.getValue().fdIdx.size());
+				if (gameMode.getValue().indexSizeT2-2<indexSize) {
+					throw new Exception("Builder: T2 indexSize too large fix the builder code !");	
+				}				
 			}
 			
 			ramLoaderDataIdx.addFdb(new String[] { "RL_RAM_index+"+indexSize});	
 			ramLoaderDataIdx.addLabel("gm_" + gameMode.getKey());
 			
-			// Ecriture de l'index des de chargement des demi-pages
+			// Ecriture de l'index de chargement des demi-pages
 			if (mode == FLOPPY_DISK) {
 				Enumeration<RAMLoaderIndex> enumFd = Collections.enumeration(gameMode.getValue().fdIdx);
 				while(enumFd.hasMoreElements()) {

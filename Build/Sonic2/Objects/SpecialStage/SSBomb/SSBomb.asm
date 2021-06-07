@@ -55,6 +55,15 @@ SSB_Init                                                                  *Obj61
         jsr   SSB_InitShadow                                              *        bsr.w   loc_3529C
                                                                           *
 SSB_Bomb                                                                  *loc_34F06:
+
+        ; TODO optim
+        ; keep a variable with max zz_pos for visible obj on the curr img
+        ; test it here instead of SSB_ComputeCoordinates
+        ; simplify SSB_ComputeCoordinates (remove the test)
+        ; decrease zz_pos here and return
+        ; same when zz_pos=0 this case should be processed here 
+        ; otherwise call the following code
+
         jsr   SSB_ScaleAnim                                               *        bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *        bsr.w   loc_351A0
                                                                           *        lea     (Ani_obj61).l,a1
@@ -176,6 +185,15 @@ SSR_Init                                                                  *Obj60
         jsr   SSB_InitShadow                                              *    bsr.w   loc_3529C
                                                                           *
 SSR_Ring                                                                  *loc_34FF0:
+
+        ; TODO optim
+        ; keep a variable with max zz_pos for visible obj on the curr img
+        ; test it here instead of SSB_ComputeCoordinates
+        ; simplify SSB_ComputeCoordinates (remove the test)
+        ; decrease zz_pos here and return
+        ; same when zz_pos=0 this case should be processed here 
+        ; otherwise call the following code
+
         jsr   SSR_ScaleAnim                                               *    bsr.w   loc_3512A
         jsr   SSB_ComputeCoordinates                                      *    bsr.w   loc_351A0
         jsr   SSR_RingCounter                                             *    bsr.w   loc_35036
@@ -344,14 +362,17 @@ SSB_ScaleAnim                                                             *loc_3
         lda   SSTrack_drawing_index
         bne   @a                  
         ldd   ss_z_pos_img_start,u
-        subd  #HalfPipe_Seg_z_steps
+        subd  #HalfPipe_Img_z_depth
         ble   SSB_DeleteObject
         std   ss_z_pos_img_start,u
+        stb   ss_z_pos+1,u
+        sta   ss_z_pos+2,u                  ; ss_z_pos is always 0
         bra   @b
-@a      ldd   ss_z_pos,u                                                                          
+@a      ldd   ss_z_pos+1,u                                                                          
         subd  HalfPipe_z_step                                             *    subi.l  #$CCCC,objoff_30(a0)
         ble   SSB_DeleteObject                                            *    ble.s   loc_3516C
-@b      std   ss_z_pos,u                                                  *    bra.s   loc_35150
+        std   ss_z_pos+1,u        
+@b                                                                        *    bra.s   loc_35150
                                                                           *; ===========================================================================
                                                                           *
                                                                           *loc_35146:
@@ -363,8 +384,8 @@ SSB_ScaleAnim                                                             *loc_3
         ldx   anim,u                                                      *    cmpi.b  #$A,anim(a0)
         cmpx  #Ani_SSBomb_explode                                         
         beq   SSB_ScaleAnim_return                                        *    beq.s   return_3516A
-                                                                          *    move.w  objoff_30(a0),d0
-        cmpd  #$001D                                                      *    cmpi.w  #$1D,d0
+        ldb   ss_z_pos+1,u                                                *    move.w  objoff_30(a0),d0
+        cmpb  #$1D                                                        *    cmpi.w  #$1D,d0
         ble   SSB_ScaleAnim_LoadAnim                                      *    ble.s   loc_35164
         ldb   #$1E                                                        *    moveq   #$1E,d0
                                                                           *
@@ -381,20 +402,23 @@ SSR_ScaleAnim
         lda   SSTrack_drawing_index
         bne   @a                  
         ldd   ss_z_pos_img_start,u
-        subd  #HalfPipe_Seg_z_steps
+        subd  #HalfPipe_Img_z_depth
         ble   SSB_DeleteObject
-        std   ss_z_pos_img_start,u        
+        std   ss_z_pos_img_start,u
+        stb   ss_z_pos+1,u
+        sta   ss_z_pos+2,u                  ; ss_z_pos is always 0
         bra   @b
-@a      ldd   ss_z_pos,u                                                                          
+@a      ldd   ss_z_pos+1,u                                                                          
         subd  HalfPipe_z_step
         ble   SSB_DeleteObject
-@b      std   ss_z_pos,u 
-        
+        std   ss_z_pos+1,u        
+@b
         ldx   anim,u
         cmpx  #Ani_SSRing_stars                                         
         beq   SSR_ScaleAnim_return
 
-        cmpd  #$001D
+        ldb   ss_z_pos+1,u
+        cmpb  #$1D
         ble   SSR_ScaleAnim_LoadAnim
         ldb   #$1E
 
@@ -538,7 +562,7 @@ SSB_ComputeCoordinates                                                    *loc_3
                                                                           
                                                                           *    movea.l (SS_CurrentPerspective).w,a1
         ldd   ss_z_pos,u               ; load sprite z position           *    move.w  objoff_30(a0),d0
-        beq   SSB_CC_Return_1          ; if z=0 sprite is behind camera   *    beq.w   loc_35258
+        beq   SSB_CC_OutOfScreen       ; if z=0 sprite is behind camera   *    beq.w   loc_35258
         cmpd  ,x++                     ; read nb of ellipses for this img *    cmp.w   (a1)+,d0
         bgt   SSB_CC_Return_1          ; sprite is too far, no ellipse    *    bgt.w   loc_35258
         subd  #1                       ; each perspective data for an img *    subq.w  #1,d0

@@ -50,7 +50,7 @@ IrqPsg
         addd  #1
         std   Vint_runcount
         
-        *jsr   ReadJoypads        
+        jsr   ReadJoypads        
         
         *jsr   PSGFrame
         *jsr   PSGSFXFrame

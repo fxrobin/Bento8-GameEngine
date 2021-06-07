@@ -11,7 +11,8 @@
         INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
         INCLUDE "./Engine/Macros.asm"   
         
-HalfPipe_Img_Duration equ 5 ; track maximum refresh rate: 50Hz/HalfPipe_Img_Duration=10fps
+HalfPipe_Img_Duration equ 5 ; (min value = 5) track maximum refresh rate: 50Hz/HalfPipe_Img_Duration= x fps
+HalfPipe_one_z_step   equ (HalfPipe_Img_z_depth*256)/HalfPipe_Img_Duration
 
 SpecialStage
         lda   routine,u
@@ -119,9 +120,9 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.l  #0,(Camera_Y_pos_copy).w
                                                       *    cmpi.w  #1,(Player_mode).w  ; is this a Tails alone game?
                                                       *    bgt.s   +           ; if yes, branch
-        ;ldu   #MainCharacter
-        ;lda   #ObjID_SonicSS
-        ;sta   id,u                                    *    move.b  #ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
+        ldu   #MainCharacter
+        lda   #ObjID_SSSonic
+        sta   id,u                                    *    move.b  #ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
                                                       *    tst.w   (Player_mode).w     ; is this a Sonic and Tails game?
                                                       *    bne.s   ++          ; if not, branch
                                                       *+   move.b  #ObjID_TailsSS,(Sidekick+id).w ; load Obj10 (special stage Tails)
@@ -134,7 +135,7 @@ SpecialStage_Init                                     *SpecialStage:
         ;ldu   #SpecialStageNumberOfRings
         ;lda   #ObjID_SSNumberOfRings
         ;sta   id,u                                    *    move.b  #ObjID_SSNumberOfRings,(SpecialStageNumberOfRings+id).w ; load Obj87 (special stage ring count)
-        ;lda   #$00
+        lda   #$00
         sta   SS_Offset_X                             *    move.w  #$80,(SS_Offset_X).w
         sta   SS_Offset_Y                             *    move.w  #$36,(SS_Offset_Y).w
                                                       *    bsr.w   SSPlaneB_Background
@@ -465,7 +466,6 @@ SSObjectsManager_LoadObject                           *-
         rola
         addd  SS_Seg_Len_x4                           *    add.w   d3,d0
         std   ss_z_pos,u                              *    move.w  d0,objoff_30(a1)
-        addd  #HalfPipe_Seg_z_steps
         std   ss_z_pos_img_start,u
         lda   ,x+
         sta   angle,u                                 *    move.b  (a0)+,angle(a1)
@@ -636,11 +636,11 @@ SSInitPalAndData                                      *SSInitPalAndData:
                                                       *; End of function SSInitPalAndData     
 
 Ani_SSTrack_Len
-        fdb 24*4 ; 0
-        fdb 24*4 ; 1
-        fdb 12*4 ; 2
-        fdb 16*4 ; 3
-        fdb 11*4 ; 4
+        fdb (24*4)+HalfPipe_Img_z_depth ; 0
+        fdb (24*4)+HalfPipe_Img_z_depth ; 1
+        fdb (12*4)+HalfPipe_Img_z_depth ; 2
+        fdb (16*4)+HalfPipe_Img_z_depth ; 3
+        fdb (11*4)+HalfPipe_Img_z_depth ; 4
         fdb 0    ; 5
 
 SpecialLevelLayout
@@ -791,14 +791,32 @@ HalfPipe_Display
         bge   HalfPipe_LoadNewTrackImage
         
 HalfPipe_KeepSameTrackImage
-        lda   HalfPipe_Nb_Elapsed_Frames
-        ldb  #$CC                                ; z_pos step decrement
+ IFGE (HalfPipe_one_z_step-255)
+        ldb   HalfPipe_Nb_Elapsed_Frames         ; 8x16 bit mul sucks 
+        ldy   #HalfPipe_one_z_step               ; TODO NEVER TESTED 
+        pshs  y,d,cc                             ; USAGE WHEN track refresh rate >= 12fps (HalfPipe_Img_Duration <= 4)
+		lda   4,s                                ; CAP to HalfPipe_Img_z_depth
         mul
-        std   HalfPipe_Nb_Elapsed_Frames_scaled
-        ldd   HalfPipe_Nb_Elapsed_Frames
-        subd  HalfPipe_Nb_Elapsed_Frames_scaled
-        std   HalfPipe_Nb_Elapsed_Frames
+        std   3,s
+        tfr   y,d
+        ldb   2,s
+        clr   2,s
+        mul
+        addd  2,s
+        std   2,s
+		puls  pc,y,d,cc
+		sty   HalfPipe_z_step
+		jmp   DisplaySprite
+ ELSE		
+        lda   HalfPipe_Nb_Elapsed_Frames         ; 8x8 bit mul is the way to go
+        ldb   #HalfPipe_one_z_step               ; look for one main loop duration and adjust
+        mul                                      ; object position to keep a constant speed
+        cmpd  #((HalfPipe_Img_z_depth*256)/2)
+        bls   @a
+        ldd   #((HalfPipe_Img_z_depth*256)/2)    ; one sub step can not be more than an img z depth
+@a      std   HalfPipe_z_step
         jmp   DisplaySprite                      ; return
+ ENDC
         
 HalfPipe_LoadNewTrackImage
         ldd   Vint_runcount

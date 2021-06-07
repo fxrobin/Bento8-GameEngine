@@ -10,7 +10,7 @@ SpecialSonic_Routines
         fdb   Init
         fdb   Move
 Init
-        ldd   #Ani_ssonicWalk
+        ldd   #Ani_SSonicRunFlat
         std   anim,u
         ldb   #$04
         stb   priority,u

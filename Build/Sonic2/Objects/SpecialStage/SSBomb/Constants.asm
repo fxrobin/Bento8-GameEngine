@@ -8,19 +8,19 @@
 *
 * ---------------------------------------------------------------------------
 
-HalfPipe_Seg_z_steps  equ 4 ; number of z pos increment into a single image 
+HalfPipe_Img_z_depth  equ 4 ; number of z pos increment into a single image 
 
 * ===========================================================================
 * Object Constants
 * ===========================================================================
 
-ss_z_pos                      equ ext_variables    ; and ext_variables+1  ; distance from camera to half-pipe segment end (0: front)
-ss_parent                     equ ext_variables+2  ; and ext_variables+3  ; object ptr to child or parent (0: front)
-ss_shadow_tilt                equ ext_variables+4  ; 0:flat 1:diagonal 2:side
-ss_self_delete                equ ext_variables+5  ; flag usually set by parent to tell to child to self delete
-collision_property            equ ext_variables+6
-mapping_frame                 equ ext_variables+7
-ss_z_pos_img_start            equ ext_variables+8  ; and ext_variables+9  ; distance from camera to half-pipe segment end (0: front) a start of last image
+ss_z_pos                      equ ext_variables    ; and ext_variables+1 ; and ext_variables+2 ; first byte is always 0, distance from camera to half-pipe segment end (0: front)
+ss_parent                     equ ext_variables+3  ; and ext_variables+4  ; object ptr to child or parent (0: front)
+ss_shadow_tilt                equ ext_variables+5  ; 0:flat 1:diagonal 2:side
+ss_self_delete                equ ext_variables+6  ; flag usually set by parent to tell to child to self delete
+collision_property            equ ext_variables+7
+mapping_frame                 equ ext_variables+8
+ss_z_pos_img_start            equ ext_variables+9  ; and ext_variables+10  ; distance from camera to half-pipe segment end (0: front) a start of last image
 
 ;ss_dplc_timer = $23
 ;ss_x_pos = objoff_2A

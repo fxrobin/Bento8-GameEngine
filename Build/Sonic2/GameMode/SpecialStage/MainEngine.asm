@@ -145,7 +145,7 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         INCLUDE "./Engine/Graphics/UnsetDisplayPriority.asm"
         INCLUDE "./Engine/Graphics/DrawSprites.asm"
         INCLUDE "./Engine/Graphics/BgBufferAlloc.asm"	
-        ; INCLUDE "./Engine/Joypad/ReadJoypads.asm"
+        INCLUDE "./Engine/Joypad/ReadJoypads.asm"
         INCLUDE "./Engine/ObjectManagement/RunObjects.asm"
         INCLUDE "./Engine/ObjectManagement/DeleteObject.asm"
         INCLUDE "./Engine/ObjectManagement/ClearObj.asm"
