@@ -108,6 +108,7 @@ public class SpriteSheet {
 						image = op.filter(image, null);
 					}
 
+					checkPixelRange();
 					prepareImages(variant);
 
 				} else {
@@ -115,10 +116,12 @@ public class SpriteSheet {
 					logger.info("Resolution: " + subImageWidth + "x" + height + "px (doit être inférieur ou égal à 160x200)");
 					logger.info("Taille pixel:  " + pixelSize + "Bytes (doit être 8)");
 					// System.out.println("Nombre de composants: "+numComponents+" (doit être 3)");
+					throw new Exception ("Erreur de format d'image PNG.");
 				}
 			}
 			else {
 				logger.info("La largeur d'image :" + width + " n'est pas divisible par le nombre d'images :" +  nbImages);
+				throw new Exception ("Erreur de format d'image PNG.");
 			}
 
 		} catch (Exception e) {
@@ -126,6 +129,16 @@ public class SpriteSheet {
 			System.out.println(e);
 		}
 	}
+	
+	public void checkPixelRange() throws Exception {
+        // Vérifie que les index de couleur respectent la plage : 0 transparent, 1-16 couleurs
+		for (int i = 0; i < image.getRaster().getDataBuffer().getSize(); i++) {
+			if ((byte) (((DataBufferByte) image.getRaster().getDataBuffer()).getElem(i)) > 16) {
+				logger.info("Le fichier png contient des indices de couleur > 16. Rappel: 0 transparent 1-16 couleurs");
+				throw new Exception ("Erreur de format d'image PNG.");
+			}
+		}
+	}	
 
 	public void prepareImages(String variant) {
 		// sépare l'image en deux parties pour la RAM A et RAM B

@@ -12,7 +12,7 @@ SpecialSonic_Routines
 Init
         ldd   #Ani_SSonicRunFlat
         std   anim,u
-        ldb   #$04
+        ldb   #$03
         stb   priority,u
         ldd   #$80B9
         std   xy_pixel,u

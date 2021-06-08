@@ -171,7 +171,7 @@ public class BuildDisk
 	
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	private static void loadGameConfiguration(String configFileName) throws Exception {
+	public static void loadGameConfiguration(String configFileName) throws Exception {
 		logger.info("Load Game configuration: "+configFileName+" ...");
 		game = new Game(configFileName);
 		

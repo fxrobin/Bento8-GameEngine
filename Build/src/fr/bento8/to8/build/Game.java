@@ -66,6 +66,9 @@ public class Game {
 	public byte[] mainEXOBytes;
 	public byte[] bootLoaderBytes;
 	
+	public Game() throws Exception {	
+	}
+	
 	public Game(String file) throws Exception {	
 			Properties prop = new Properties();
 			this.name = "Game";

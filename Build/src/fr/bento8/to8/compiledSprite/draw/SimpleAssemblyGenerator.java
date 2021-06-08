@@ -53,6 +53,40 @@ public class SimpleAssemblyGenerator{
 	private byte[] content;
 	private String asmDrawFileName, lstDrawFileName, binDrawFileName;
 	private Path asmDFile, lstDFile, binDFile;
+	
+	public static void main(String[] args) throws Throwable {
+		
+		// Unit Test or single image conversion
+		// ------------------------------------
+		// command line arguments
+		//
+		// 0: png file name
+		// 1: mode (comma separated)
+		//            NB0  : no flip, background backup / draw / erase compilated sprite, no x offset
+		//            ND0  : no flip, draw compilated sprite, no x offset
+		//            NB1  : no flip, background backup / draw / erase compilated sprite, 1px x offset
+		//            ND1  : no flip, draw compilated sprite, 1px x offset
+		//            XB0  : x flip, background backup / draw / erase compilated sprite, no x offset 
+		//            XD0  : x flip, draw compilated sprite, no x offset 
+		//            XB1  : x flip, background backup / draw / erase compilated sprite, 1px x offset 
+		//            XD1  : x flip, draw compilated sprite, 1px x offset 
+		//            YB0  : y flip, background backup / draw / erase compilated sprite, no x offset 
+		//            YD0  : y flip, draw compilated sprite, no x offset 
+		//            YB1  : y flip, background backup / draw / erase compilated sprite, 1px x offset 
+		//            YD1  : y flip, draw compilated sprite, 1px x offset 
+		//            XYB0 : xy flip, background backup / draw / erase compilated sprite, no x offset 
+		//            XYD0 : xy flip, draw compilated sprite, no x offset 
+		//            XYB1 : xy flip, background backup / draw / erase compilated sprite, 1px x offset 
+		//            XYD1 : xy flip, draw compilated sprite, 1px x offset
+		// 2: output dir
+		// 3: sprite name
+		// 4: config file
+		
+		BuildDisk.loadGameConfiguration(args[4]);
+		SpriteSheet ss = new SpriteSheet(args[3], args[0], 1, args[1]);
+		SimpleAssemblyGenerator sasm = new SimpleAssemblyGenerator(ss, args[2]+args[3], 0);
+		sasm.compileCode("A000");
+	}
 
 	public SimpleAssemblyGenerator(SpriteSheet spriteSheet, String destDir, int imageNum) throws Exception {
 		spriteCenterEven = (spriteSheet.center % 2) == 0;

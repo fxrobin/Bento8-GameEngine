@@ -46,7 +46,7 @@ SSB_Init                                                                  *Obj61
                                                                           *        move.l  #Obj61_MapUnc_36508,mappings(a0)
                                                                           *        move.w  #make_art_tile(ArtTile_ArtNem_SpecialBomb,1,0),art_tile(a0)
         ; coordinate system                                               *        move.b  #4,render_flags(a0)
-        ldd   #$0302                                                      
+        ldd   #$0402                                                      
         sta   priority,u                                                  *        move.b  #3,priority(a0)
         stb   collision_flags,u                                           *        move.b  #2,collision_flags(a0)
                                                                           *        move.b  #-1,(SS_unk_DB4D).w
@@ -140,7 +140,7 @@ SSB_CheckIfForeground                                                     *loc_3
         ldd   ss_z_pos,u                                                  
         cmpd  #4                                                          *        cmpi.w  #4,objoff_30(a0)
         bhs   @a                                                          *        bhs.s   return_34F9E
-        lda   #1                                                          
+        lda   #2                                                          
         sta   priority,u                                                  *        move.b  #1,priority(a0)
                                                                           *
 @a                                                                        *return_34F9E:
@@ -173,7 +173,7 @@ SSR_Init                                                                  *Obj60
                                                                           *    move.l  #Obj5A_Obj5B_Obj60_MapUnc_3632A,mappings(a0)
                                                                           *    move.w  #make_art_tile(ArtTile_ArtNem_SpecialRings,3,0),art_tile(a0)
                                                                           *    move.b  #4,render_flags(a0)
-        ldd   #$0301
+        ldd   #$0401
         sta   priority,u                                                  *    move.b  #3,priority(a0)
         stb   collision_flags,u                                           *    move.b  #1,collision_flags(a0)
 		
