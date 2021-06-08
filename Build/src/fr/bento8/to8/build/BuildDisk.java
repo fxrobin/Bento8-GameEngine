@@ -1221,7 +1221,7 @@ public class BuildDisk
 
 			if (!firstPass) {
 				game.romT2.curPage++;
-				if (game.romT2.curPage == 24) { // FIX TODO la programmation de ma T.2 ne fonctionne pas en page 24
+				if (game.romT2.curPage == 24) { // TODO Ajout d'un paramétrage pour exclure des pages mémoire d'une T.2
 					game.romT2.curPage++;
 				}
 				game.romT2.updateEndPage();

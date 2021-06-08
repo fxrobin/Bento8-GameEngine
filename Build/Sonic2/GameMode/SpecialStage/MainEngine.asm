@@ -154,5 +154,5 @@ Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of obje
         ; INCLUDE "./Engine/Ram/ClearDataMemory.asm"
         INCLUDE "./Engine/Graphics/ClearInterlacedDataMemory.asm"
         INCLUDE "./Engine/Palette/UpdatePalette.asm"
-        ; INCLUDE "./Engine/Sound/PSGlib.asm"
+        INCLUDE "./Engine/Sound/PSGlib.asm"
         INCLUDE "./Engine/Irq/IrqPsgJoypad.asm"	

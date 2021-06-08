@@ -52,7 +52,7 @@ IrqPsg
         
         jsr   ReadJoypads        
         
-        *jsr   PSGFrame
+        jsr   PSGFrame
         *jsr   PSGSFXFrame
 IrqPsg_end        
         lda   #$00

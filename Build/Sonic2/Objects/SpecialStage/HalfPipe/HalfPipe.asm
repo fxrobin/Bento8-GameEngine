@@ -227,9 +227,9 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
         jsr   WaitVBL                                                       
-        jsr   IrqSet50Hz                                                      
-                                                      *    move.w  #MusID_SpecStage,d0
-        ; start music                                 *    bsr.w   PlayMusic
+        jsr   IrqSet50Hz   
+        ldx   #Psg_SpecialStage                       *    move.w  #MusID_SpecStage,d0
+        jmp   PSGPlayNoRepeat                         *    bsr.w   PlayMusic
                                                       *    move.w  (VDP_Reg1_val).w,d0
                                                       *    ori.b   #$40,d0
                                                       *    move.w  d0,(VDP_control_port).l
