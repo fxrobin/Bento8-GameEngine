@@ -145,6 +145,7 @@ Sample_page     fcb   0
 Sample_data     fdb   0
 Sample_data_end fdb   0
 Sample_rate     fcb   0
+Sample_value    fdb   0     ; MSB always to 0 for 16 bit add
 
 MUSIC_TRACK_COUNT = (tracksEnd-tracksStart)/sizeof{Track}
 MUSIC_DAC_FM_TRACK_COUNT = (SongDACFMEnd-SongDACFMStart)/sizeof{Track}
@@ -160,10 +161,10 @@ MUSIC_PSG_TRACK_COUNT = (SongPSGEnd-SongPSGStart)/sizeof{Track}
 *
 
 _WriteYM MACRO
-        sta   ,u
+        stb   ,u
         nop
         nop
-        stb   ,x
+        sta   ,x
  ENDM  
  
 _YMBusyWait MACRO
@@ -189,14 +190,68 @@ PlayMusic
         sta   SongPage
         ldx   1,x
         
-        ldd   SMPS_DAC_FLAG,x                         ; load DAC Track
+        ldd   SMPS_DAC_FLAG,x          ; load DAC Track
         bne   @a
         ldd   SMPS_DAC_TRACK,x
         std   SongDAC.DataPointer
 @a        
         ldd   #$FF05
-        sta   AbsVar.StopMusic                        ; music is unpaused
-        stb   zPALUpdTick                             ; reset PAL tick
+        sta   AbsVar.StopMusic         ; music is unpaused
+        stb   zPALUpdTick              ; reset PAL tick
+        
+        ; init YM2413 for DAC emulation   
+        ; select FM 9-ch mode        
+        this._y(14, 0);
+             
+        ; make sure all channels key-off
+      this._y(37, 0, false);
+      this._y(38, 0, false);
+      this._y(39, 0, false);
+      this._y(40, 0, false);
+
+      // select violin tone whose modulator AR is 15.
+      this._y(53, (1 << 4) | 15, false);
+      this._y(54, (1 << 4) | 15, false);
+      this._y(55, (1 << 4) | 15, false);
+      this._y(56, (1 << 4) | 15, false);
+
+      // set f-number fnum=1 is the most accurate but need longer wait time.
+      const fnum = 32;
+      this._y(21, fnum, false);
+      this._y(22, fnum, false);
+      this._y(23, fnum, false);
+      this._y(24, fnum, false);
+
+      // start phase generator
+      this._y(37, 16, false);
+      this._y(38, 16, false);
+      this._y(39, 16, false);
+      this._y(40, 16, false);
+
+      const goalClock = this.to.relativeClock ? (this.from.clock * this.to.clock) : (this.to.clock || 3579545);
+      // wait until 1/4 cycle of phase generator
+      const freq = (fnum * goalClock) / 72 / (1 << 19);
+      const cycleInSeconds = 1.0 / freq;
+      const nnnn = Math.round(44100 * (cycleInSeconds / 4));
+      this._buf.push(new VGMWaitWordCommand({ count: nnnn }), false);
+
+      // stop phase generator
+      this._y(21, 0, false);
+      this._y(22, 0, false);
+      this._y(23, 0, false);
+      this._y(24, 0, false);        
+        
+        ldd   #$8038                   
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0        
+        _WriteYM
+        decb
+        _YMBusyWait2
+        _WriteYM         
+        decb
+        _YMBusyWait2
+        _WriteYM        
+        
         rts
         
         
@@ -232,16 +287,96 @@ UpdateEverything
 @a      jsr   UpdateMusic        
         
 UpdateDAC   
-        lda   Sample_page
-        _SetCartPageA                  ; Bankswitch to the DAC data
-        lda   SongDAC.CurDAC          ; Get currently playing DAC sound
+        lda   SongDAC.CurDAC           ; Get currently playing DAC sound
         bmi   @a                       ; If one is queued (80h+), go to it!
         rts
-@a      suba  #$81
-        sta   SongDAC.CurDAC
+@a      lda   Sample_page
+        _SetCartPageA                  ; Bankswitch to the DAC data        
+        ldx   Sample_data
+        cmpx  Sample_data_end
+        beq   DACClearNote
+        lda   ,x+                      ; read sample and unpack value
+        stx   Sample_data        
+        lsra
+        lsra
+        lsra
+        lsra
+        ldu   #DACDecodeTbl
+        ldb   a,u
+        addb  Sample_value
+        stb   Sample_value 
+        cmpb  #$1D                     ; convert sample value to 3 YM2413 FM instruments
+        bhi   @a  
+        ldd   #$0000                   ; ($00-$1D) mapped to $0000 
+        bra   @c      
+@a      cmpb  #$DF
+        blo   @b  
+        ldd   #$0EEE                   ; ($DF-$FF) mapped to $0EEE 
+        bra   @c    
+@b      lda   #0
+        lsrb
+        addd  Sample_value
+        bitb  #1
+        bne   @odd
+        ldx   #DACTable                ; read three nibbles xx x_
+        ldd   d,x
+        lsra
+        rorb
+        lsra
+        rorb
+        lsra
+        rorb
+        lsra
+        rorb                           ; changed nibbles to _x xx                        
+        bra   @c            
+@odd    ldx   #DACTable                ; read three nibbles _x xx
+        ldd   d,x   
+        anda  #$0F
+@c      ora   #$80      
+        ldb   #$38
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0        
+        _WriteYM
+        decb
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola                        
+        anda  #$0F
+        ora   #$80
+        nop
+        _WriteYM         
+        decb
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola                        
+        anda  #$0F
+        ora   #$80
+        nop
+        _WriteYM                
+        rts
         
-        ; TODO
-            
+DACClearNote        
+        clr   SongDAC.CurDAC
+        ldd   #$8038                        ; mute DAC
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0        
+        _WriteYM
+        decb
+        _YMBusyWait2
+        _WriteYM         
+        decb
+        _YMBusyWait2
+        _WriteYM
         rts
 
 * ************************************************************************************
@@ -331,11 +466,11 @@ DACAfterDur
         bne   @a
         rts                            ; if a rest, quit
 @       suba  #$81                     ; Otherwise, transform note into an index...
-        ldx   #DACPitchPtrTbl
+        ldx   #zDACMasterRate
         ldb   a,x
         stb   Sample_rate
         asla
-        ldx   #DACPtrTbl
+        ldx   #DACMasterPlaylist
         ldu   a,x
         sta   SongDAC.CurDAC
         stu   Sample_index
@@ -344,23 +479,12 @@ DACAfterDur
         ldd   3,u
         std   Sample_data_end
         ldd   1,u
-        std   Sample_data        
-        rts
-
-DACClearNote
-        ldd   #$3880                        ; mute DAC
-        ldu   #YM2413_A0
-        ldx   #YM2413_D0        
-        _WriteYM
-        deca
-        _YMBusyWait2
-        _WriteYM         
-        deca
-        _YMBusyWait2
-        _WriteYM
+        std   Sample_data
+        lda   #$80
+        sta   Sample_value        
         rts
         
-DACPtrTbl
+DACMasterPlaylist
         fdb   DAC_Sample1 ; $81 - Kick
         fdb   DAC_Sample2 ; $82 - Snare
         fdb   DAC_Sample3 ; $83 - Clap
@@ -379,7 +503,7 @@ DACPtrTbl
         fdb   DAC_Sample7 ; $90 - Mid Bongo
         fdb   DAC_Sample7 ; $91 - Low Bongo
          
-DACPitchPtrTbl
+zDACMasterRate
         fcb   $17 ; $81 - Kick
         fcb   $01 ; $82 - Snare
         fcb   $06 ; $83 - Clap
@@ -403,89 +527,87 @@ DACDecodeTbl
         fcb   $80,$FF,$FE,$FC,$F8,$F0,$E0,$C0
 
 DACTable        
-; 30 val ignorées à $00 ($00-$1D inclus)
-; 32 val ignorées à $EE ($DF-$FF inclus)
-        fdb   $00,$00,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$02
-        fdb   $00,$20,$04
-        fdb   $00,$40,$04
-        fdb   $00,$40,$04
-        fdb   $00,$40,$04
-        fdb   $00,$40,$06
-        fdb   $00,$60,$06
-        fdb   $00,$60,$08
-        fdb   $00,$80,$0A
-        fdb   $00,$A0,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$22
-        fdb   $02,$20,$24
-        fdb   $02,$40,$24
-        fdb   $02,$40,$24
-        fdb   $02,$40,$24
-        fdb   $02,$40,$26
-        fdb   $02,$60,$26
-        fdb   $02,$60,$28
-        fdb   $02,$80,$2A
-        fdb   $02,$A0,$44
-        fdb   $04,$40,$44
-        fdb   $04,$40,$44
-        fdb   $04,$40,$44
-        fdb   $04,$40,$46
-        fdb   $04,$60,$46
-        fdb   $04,$60,$48
-        fdb   $04,$80,$4A
-        fdb   $04,$A0,$66
-        fdb   $06,$60,$66
-        fdb   $06,$60,$68
-        fdb   $06,$80,$6A
-        fdb   $06,$A0,$88
-        fdb   $08,$80,$8A
-        fdb   $08,$A0,$AA
-        fdb   $0A,$A0,$CC
-        fdb   $0C,$C2,$44
-        fdb   $24,$42,$44
-        fdb   $24,$42,$44
-        fdb   $24,$42,$44
-        fdb   $24,$42,$46
-        fdb   $24,$62,$46
-        fdb   $24,$62,$48
-        fdb   $24,$82,$4A
-        fdb   $24,$A2,$66
-        fdb   $26,$62,$66
-        fdb   $26,$62,$68
-        fdb   $26,$82,$6A
-        fdb   $26,$A2,$88
-        fdb   $28,$82,$8A
-        fdb   $28,$A2,$AA
-        fdb   $2A,$A2,$CC
-        fdb   $2C,$C4,$66
-        fdb   $46,$64,$66
-        fdb   $46,$64,$68
-        fdb   $46,$84,$6A
-        fdb   $46,$A4,$88
-        fdb   $48,$84,$8A
-        fdb   $48,$A4,$AA
-        fdb   $4A,$A4,$CC
-        fdb   $4C,$C6,$88
-        fdb   $68,$86,$8A
-        fdb   $68,$A6,$AA
-        fdb   $6A,$A6,$CC
-        fdb   $6C,$C8,$AA
-        fdb   $8A,$A8,$CC
-        fdb   $8C,$CA,$CC
-        fdb   $AC,$CC,$EE
-        fdb   $CE,$EE,$EE        
+        fcb   $00,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$04,$00
+        fcb   $40,$04,$00
+        fcb   $40,$04,$00
+        fcb   $40,$04,$00
+        fcb   $40,$06,$00
+        fcb   $60,$06,$00
+        fcb   $60,$08,$00
+        fcb   $80,$0A,$00
+        fcb   $A0,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$04,$20
+        fcb   $42,$04,$20
+        fcb   $42,$04,$20
+        fcb   $42,$04,$20
+        fcb   $42,$06,$20
+        fcb   $62,$06,$20
+        fcb   $62,$08,$20
+        fcb   $82,$0A,$20
+        fcb   $A2,$04,$40
+        fcb   $44,$04,$40
+        fcb   $44,$04,$40
+        fcb   $44,$04,$40
+        fcb   $44,$06,$40
+        fcb   $64,$06,$40
+        fcb   $64,$08,$40
+        fcb   $84,$0A,$40
+        fcb   $A4,$06,$60
+        fcb   $66,$06,$60
+        fcb   $66,$08,$60
+        fcb   $86,$0A,$60
+        fcb   $A6,$08,$80
+        fcb   $88,$0A,$80
+        fcb   $A8,$0A,$A0
+        fcb   $AA,$0C,$C0
+        fcb   $CC,$04,$42
+        fcb   $44,$24,$42
+        fcb   $44,$24,$42
+        fcb   $44,$24,$42
+        fcb   $44,$26,$42
+        fcb   $64,$26,$42
+        fcb   $64,$28,$42
+        fcb   $84,$2A,$42
+        fcb   $A4,$26,$62
+        fcb   $66,$26,$62
+        fcb   $66,$28,$62
+        fcb   $86,$2A,$62
+        fcb   $A6,$28,$82
+        fcb   $88,$2A,$82
+        fcb   $A8,$2A,$A2
+        fcb   $AA,$2C,$C2
+        fcb   $CC,$26,$64
+        fcb   $66,$46,$64
+        fcb   $66,$48,$64
+        fcb   $86,$4A,$64
+        fcb   $A6,$48,$84
+        fcb   $88,$4A,$84
+        fcb   $A8,$4A,$A4
+        fcb   $AA,$4C,$C4
+        fcb   $CC,$48,$86
+        fcb   $88,$6A,$86
+        fcb   $A8,$6A,$A6
+        fcb   $AA,$6C,$C6
+        fcb   $CC,$6A,$A8
+        fcb   $AA,$8C,$C8
+        fcb   $CC,$8C,$CA
+        fcb   $CC,$AE,$EC
+        fcb   $EE,$CE,$EE        
 
 * ************************************************************************************
 * 
