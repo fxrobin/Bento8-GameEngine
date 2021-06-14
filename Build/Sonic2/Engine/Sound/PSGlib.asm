@@ -533,15 +533,13 @@ PSGSFXGetStatus
 * destroys A,B,X
         
 PSGFrame 
-
-        lda   PSGMusicPage
-        _SetCartPageA
-
         lda   PSGMusicStatus                          ; check if we have got to play a tune
         bne   PSGFrame_continue
         rts
 
-PSGFrame_continue        
+PSGFrame_continue
+        lda   PSGMusicPage
+        _SetCartPageA        
         lda   PSGMusicSkipFrames                      ; check if we havve got to skip frames
         bne   _skipFrame
         ldx   PSGMusicPointer                         ; read current address

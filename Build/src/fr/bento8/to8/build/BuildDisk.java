@@ -38,7 +38,6 @@ import fr.bento8.to8.image.AnimationBin;
 import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.image.ImageSetBin;
 import fr.bento8.to8.image.PaletteTO8;
-import fr.bento8.to8.image.PngToBottomUpB16Bin;
 import fr.bento8.to8.image.Sprite;
 import fr.bento8.to8.image.SpriteSheet;
 import fr.bento8.to8.image.SubSprite;
