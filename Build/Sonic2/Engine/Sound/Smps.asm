@@ -21,46 +21,46 @@ Track STRUCT
                                                       ;         3 (08h)  modulation on
                                                       ;         4 (10h)  do not attack next note
                                                       ;         7 (80h)  track is playing
-        PlaybackControl                rmb   1
+PlaybackControl                rmb   1
                                                       ;         "voice control"; bits 
                                                       ;         2 (04h)  If set, bound for part II, otherwise 0 (see zWriteFMIorII)
                                                       ;                 -- bit 2 has to do with sending key on/off, which uses this differentiation bit directly
                                                       ;         7 (80h)  PSG Track
-        VoiceControl                   rmb   1
-        TempoDivider                   rmb   1        ; timing divisor; 1 = Normal, 2 = Half, 3 = Third...
-        DataPointer                    rmb   2        ; Track's position
-        Transpose                      rmb   1        ; Transpose (from coord flag E9)
-        Volume                         rmb   1        ; channel volume (only applied at voice changes)
-        AMSFMSPan                      rmb   1        ; Panning / AMS / FMS settings
-        VoiceIndex                     rmb   1        ; Current voice in use OR current PSG tone
-        VolFlutter                     rmb   1        ; PSG flutter (dynamically effects PSG volume for decay effects)
-        StackPointer                   rmb   1        ; "Gosub" stack position offset (starts at 2Ah, i.e. end of track, and each jump decrements by 2)
-        DurationTimeout                rmb   1        ; current duration timeout; counting down to zero
-        SavedDuration                  rmb   1        ; last set duration (if a note follows a note, this is reapplied to 0Bh)
+VoiceControl                   rmb   1
+TempoDivider                   rmb   1                ; timing divisor; 1 = Normal, 2 = Half, 3 = Third...
+DataPointer                    rmb   2                ; Track's position
+Transpose                      rmb   1                ; Transpose (from coord flag E9)
+Volume                         rmb   1                ; channel volume (only applied at voice changes)
+AMSFMSPan                      rmb   1                ; Panning / AMS / FMS settings
+VoiceIndex                     rmb   1                ; Current voice in use OR current PSG tone
+VolFlutter                     rmb   1                ; PSG flutter (dynamically effects PSG volume for decay effects)
+StackPointer                   rmb   1                ; "Gosub" stack position offset (starts at 2Ah, i.e. end of track, and each jump decrements by 2)
+DurationTimeout                rmb   1                ; current duration timeout; counting down to zero
+SavedDuration                  rmb   1                ; last set duration (if a note follows a note, this is reapplied to 0Bh)
                                                       ; 0Dh / 0Eh change a little depending on track -- essentially they hold data relevant to the next note to play
-        SavedDAC                                      ; DAC  Next drum to play
-        FreqLow                        rmb   1        ; FM/PSG  frequency low byte
-        FreqHigh                       rmb   1        ; FM/PSG  frequency high byte
-        NoteFillTimeout                rmb   1        ; Currently set note fill; counts down to zero and then cuts off note
-        NoteFillMaster                 rmb   1        ; Reset value for current note fill
-        ModulationPtrLow               rmb   1        ; low byte of address of current modulation setting
-        ModulationPtrHigh              rmb   1        ; high byte of address of current modulation setting
-        ModulationWait                 rmb   1        ; Wait for ww period of time before modulation starts
-        ModulationSpeed                rmb   1        ; Modulation Speed
-        ModulationDelta                rmb   1        ; Modulation change per Mod. Step
-        ModulationSteps                rmb   1        ; Number of steps in modulation (divided by 2)
-        ModulationValLow               rmb   1        ; Current modulation value low byte
-        ModulationValHigh              rmb   1        ; Current modulation value high byte
-        Detune                         rmb   1        ; Set by detune coord flag E1; used to add directly to FM/PSG frequency
-        VolTLMask                      rmb   1        ; zVolTLMaskTbl value set during voice setting (value based on algorithm indexing zGain table)
-        PSGNoise                       rmb   1        ; PSG noise setting
-        VoicePtrLow                    rmb   1        ; low byte of custom voice table (for SFX)
-        VoicePtrHigh                   rmb   1        ; high byte of custom voice table (for SFX)
-        TLPtrLow                       rmb   1        ; low byte of where TL bytes of current voice begin (set during voice setting)
-        TLPtrHigh                      rmb   1        ; high byte of where TL bytes of current voice begin (set during voice setting)
-        LoopCounters                   rmb   $A       ; Loop counter index 0
+NextData                       rmb   2                ; DAC  Next drum to play
+                                                      ; FM/PSG  frequency low byte
+                                                      ; FM/PSG  frequency high byte
+NoteFillTimeout                rmb   1                ; Currently set note fill; counts down to zero and then cuts off note
+NoteFillMaster                 rmb   1                ; Reset value for current note fill
+ModulationPtrLow               rmb   1                ; low byte of address of current modulation setting
+ModulationPtrHigh              rmb   1                ; high byte of address of current modulation setting
+ModulationWait                 rmb   1                ; Wait for ww period of time before modulation starts
+ModulationSpeed                rmb   1                ; Modulation Speed
+ModulationDelta                rmb   1                ; Modulation change per Mod. Step
+ModulationSteps                rmb   1                ; Number of steps in modulation (divided by 2)
+ModulationValLow               rmb   1                ; Current modulation value low byte
+ModulationValHigh              rmb   1                ; Current modulation value high byte
+Detune                         rmb   1                ; Set by detune coord flag E1; used to add directly to FM/PSG frequency
+VolTLMask                      rmb   1                ; zVolTLMaskTbl value set during voice setting (value based on algorithm indexing zGain table)
+PSGNoise                       rmb   1                ; PSG noise setting
+VoicePtrLow                    rmb   1                ; low byte of custom voice table (for SFX)
+VoicePtrHigh                   rmb   1                ; high byte of custom voice table (for SFX)
+TLPtrLow                       rmb   1                ; low byte of where TL bytes of current voice begin (set during voice setting)
+TLPtrHigh                      rmb   1                ; high byte of where TL bytes of current voice begin (set during voice setting)
+LoopCounters                   rmb   $A               ; Loop counter index 0
                                                       ;   ... open ...
-        GoSubStack                                    ; start of next track, every two bytes below this is a coord flag "gosub" (F8h) return stack
+GoSubStack                                            ; start of next track, every two bytes below this is a coord flag "gosub" (F8h) return stack
                                                       ;
                                                       ;        The bytes between +20h and +29h are "open"; starting at +20h and going up are possible loop counters
                                                       ;        (for coord flag F7) while +2Ah going down (never AT 2Ah though) are stacked return addresses going
@@ -68,32 +68,33 @@ Track STRUCT
                                                       ;        or other track memory if you're not careful with these!  No range checking is performed!
                                                       ;
                                                       ;        All tracks are 2Ah bytes long
-ENDSTRUCT
+ ENDSTRUCT
 
 Var STRUCT
-        SFXPriorityVal                 rmb   1
-        TempoTimeout                   rmb   1
-        CurrentTempo                   rmb   1        ; Stores current tempo value here
-        StopMusic                      rmb   1        ; Set to 7Fh to pause music, set to 80h to unpause. Otherwise 00h
-        FadeOutCounter                 rmb   1
-        FadeOutDelay                   rmb   1
-        Communication                  rmb   1        ; Unused byte used to synchronise gameplay events with music
-        QueueToPlay                    rmb   1        ; if NOT set to 80h, means new index was requested by 68K
-        SFXToPlay                      rmb   1        ; When Genesis wants to play "normal" sound, it writes it here
-        SFXStereoToPlay                rmb   1        ; When Genesis wants to play alternating stereo sound, it writes it here
-        SFXUnknown                     rmb   1        ; Unknown type of sound queue, but it's in Genesis code like it was once used
-        VoiceTblPtr                    rmb   2        ; address of the voices
-        FadeInFlag                     rmb   1
-        FadeInDelay                    rmb   1
-        FadeInCounter                  rmb   1
-        1upPlaying                     rmb   1
-        TempoMod                       rmb   1
-        TempoTurbo                     rmb   1        ; Stores the tempo if speed shoes are acquired (or 7Bh is played anywho)
-        SpeedUpFlag                    rmb   1
-        DACEnabled                     rmb   1
-        MusicBankNumber                rmb   1
-        IsPalFlag                      rmb   1
-ENDSTRUCT
+SFXPriorityVal                 rmb   1        
+TempoTimeout                   rmb   1        
+CurrentTempo                   rmb   1                ; Stores current tempo value here
+StopMusic                      rmb   1                ; Set to 7Fh to pause music, set to 80h to unpause. Otherwise 00h
+FadeOutCounter                 rmb   1        
+FadeOutDelay                   rmb   1        
+Communication                  rmb   1                ; Unused byte used to synchronise gameplay events with music
+QueueToPlay                    rmb   1                ; if NOT set to 80h, means new index was requested by 68K
+SFXToPlay                      rmb   1                ; When Genesis wants to play "normal" sound, it writes it here
+SFXStereoToPlay                rmb   1                ; When Genesis wants to play alternating stereo sound, it writes it here
+SFXUnknown                     rmb   1                ; Unknown type of sound queue, but it's in Genesis code like it was once used
+VoiceTblPtr                    rmb   2                ; address of the voices
+FadeInFlag                     rmb   1        
+FadeInDelay                    rmb   1        
+FadeInCounter                  rmb   1        
+1upPlaying                     rmb   1        
+TempoMod                       rmb   1        
+TempoTurbo                     rmb   1                ; Stores the tempo if speed shoes are acquired (or 7Bh is played anywho)
+SpeedUpFlag                    rmb   1        
+DACEnabled                     rmb   1        
+MusicBankNumber                rmb   1        
+IsPalFlag                      rmb   1        
+ ENDSTRUCT
+
 
 YM2413_A0       fdb   $E7B1 
 YM2413_D0       fdb   $E7B2
@@ -187,7 +188,7 @@ _YMBusyWait3 MACRO
 YMBusyWait
         nop
 YMBusyWait2
-        tst   #$0000
+        tst   $0000
         pshs  pc
 
 * ************************************************************************************
@@ -276,7 +277,7 @@ PlayMusic
 @a        
         ldd   #$FF05
         sta   AbsVar.StopMusic         ; music is unpaused
-        stb   zPALUpdTick              ; reset PAL tick
+        stb   PALUpdTick              ; reset PAL tick
         rts
         
         
@@ -304,19 +305,20 @@ MusicFrame
 UpdateEverything        
         lda   AbsVar.IsPalFlag
         beq   @a
-        dec   zPALUpdTick
+        dec   PALUpdTick
         bne   @a
         lda   #5
-        sta   zPALUpdTick
+        sta   PALUpdTick
         jsr   UpdateMusic              ; play 2 frames in one to keep original speed
 @a      jsr   UpdateMusic        
         
 UpdateDAC   
-        lda   SongDAC.CurDAC           ; Get currently playing DAC sound
+        lda   CurDAC                   ; Get currently playing DAC sound
         bmi   @a                       ; If one is queued (80h+), go to it!
         rts
 @a      lda   Sample_page
-        _SetCartPageA                  ; Bankswitch to the DAC data        
+        _SetCartPageA                  ; Bankswitch to the DAC data
+                
         ldx   Sample_data
         cmpx  Sample_data_end
         beq   DACClearNote
@@ -391,7 +393,7 @@ UpdateDAC
         rts
         
 DACClearNote        
-        clr   SongDAC.CurDAC
+        clr   CurDAC
         ldd   #$8038                        ; mute DAC
         ldu   #YM2413_A0
         ldx   #YM2413_D0        
@@ -410,9 +412,8 @@ DACClearNote
 _UpdateTrack MACRO
         ldx   #\1
         lda   PlaybackControl,x        ; Is bit 7 (80h) set on playback control byte? (means "is playing")
-        bpl   @a                       
+        bpl   *+5                       
         jsr   \2                       ; If so, UpdateTrack
-@a
  ENDM
 
 UpdateMusic
@@ -465,6 +466,7 @@ DACUpdateTrack
         rts
 @a       
         ldx   SongDAC.DataPointer
+        
 @b      lda   ,x+                      ; read DAC song data
         cmpa  #$E0
         blo   @a                       ; test for >= E0h, which is a coordination flag
@@ -472,7 +474,7 @@ DACUpdateTrack
         bra   @b                       ; read all consecutive coordination flags 
 @a        
         bpl   SetDuration              ; test for 80h not set, which is a note duration
-        sta   SongDAC.SavedDAC	       ; This is a note; store it here
+        sta   SongDAC.NextData	       ; This is a note; store it here
         lda   ,x
         bpl   SetDurationAndForward    ; test for 80h not set, which is a note duration
         lda   SongDAC.SavedDuration
@@ -486,18 +488,18 @@ SetDuration
 DACAfterDur
         stx   SongDAC.DataPointer
         ; TODO SFX
-        lda   SongDAC.SavedDAC
+        lda   SongDAC.NextData
         cmpa  #$80
         bne   @a
         rts                            ; if a rest, quit
-@       suba  #$81                     ; Otherwise, transform note into an index...
+@a      suba  #$81                     ; Otherwise, transform note into an index...
         ldx   #zDACMasterRate
         ldb   a,x
         stb   Sample_rate
         asla
         ldx   #DACMasterPlaylist
         ldu   a,x
-        sta   SongDAC.CurDAC
+        sta   CurDAC
         stu   Sample_index
         lda   ,u
         sta   Sample_page
@@ -664,39 +666,39 @@ CoordFlag
         jmp   [a,x] 
 
 CoordFlagLookup
-        fdb   #cfPanningAMSFMS       ; E0
-        fdb   #cfDetune              ; E1
-        fdb   #cfSetCommunication    ; E2
-        fdb   #cfJumpReturn          ; E3
-        fdb   #cfFadeInToPrevious    ; E4
-        fdb   #cfSetTempoDivider     ; E5
-        fdb   #cfChangeFMVolume      ; E6
-        fdb   #cfPreventAttack       ; E7
-        fdb   #cfNoteFill            ; E8
-        fdb   #cfChangeTransposition ; E9
-        fdb   #cfSetTempo            ; EA
-        fdb   #cfSetTempoMod         ; EB
-        fdb   #cfChangePSGVolume     ; EC
-        fdb   #cfClearPush           ; ED
-        fdb   #cfStopSpecialFM4      ; EE
-        fdb   #cfSetVoice            ; EF
-        fdb   #cfModulation          ; F0
-        fdb   #cfEnableModulation    ; F1
-        fdb   #cfStopTrack           ; F2
-        fdb   #cfSetPSGNoise         ; F3
-        fdb   #cfDisableModulation   ; F4
-        fdb   #cfSetPSGTone          ; F5
-        fdb   #cfJumpTo              ; F6
-        fdb   #cfRepeatAtPos         ; F7
-        fdb   #cfJumpToGosub         ; F8
-        fdb   #cfOpF9                ; F9
-        fdb   #cfNop                 ; FA
-        fdb   #cfNop                 ; FB
-        fdb   #cfNop                 ; FC
-        fdb   #cfNop                 ; FD
-        fdb   #cfNop                 ; FE
-        fdb   #cfNop                 ; FF      
-        
+        fdb   cfPanningAMSFMS       ; E0
+        fdb   cfDetune              ; E1
+        fdb   cfSetCommunication    ; E2
+        fdb   cfJumpReturn          ; E3
+        fdb   cfFadeInToPrevious    ; E4
+        fdb   cfSetTempoDivider     ; E5
+        fdb   cfChangeFMVolume      ; E6
+        fdb   cfPreventAttack       ; E7
+        fdb   cfNoteFill            ; E8
+        fdb   cfChangeTransposition ; E9
+        fdb   cfSetTempo            ; EA
+        fdb   cfSetTempoMod         ; EB
+        fdb   cfChangePSGVolume     ; EC
+        fdb   cfClearPush           ; ED
+        fdb   cfStopSpecialFM4      ; EE
+        fdb   cfSetVoice            ; EF
+        fdb   cfModulation          ; F0
+        fdb   cfEnableModulation    ; F1
+        fdb   cfStopTrack           ; F2
+        fdb   cfSetPSGNoise         ; F3
+        fdb   cfDisableModulation   ; F4
+        fdb   cfSetPSGTone          ; F5
+        fdb   cfJumpTo              ; F6
+        fdb   cfRepeatAtPos         ; F7
+        fdb   cfJumpToGosub         ; F8
+        fdb   cfOpF9                ; F9
+        fdb   cfNop                 ; FA
+        fdb   cfNop                 ; FB
+        fdb   cfNop                 ; FC
+        fdb   cfNop                 ; FD
+        fdb   cfNop                 ; FE
+        fdb   cfNop                 ; FF
+
 cfPanningAMSFMS
         rts
               
@@ -777,4 +779,4 @@ cfOpF9
 
 cfNop 
         rts                                                 
-        
+                   

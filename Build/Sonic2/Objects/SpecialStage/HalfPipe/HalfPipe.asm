@@ -226,7 +226,8 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    bsr.w   RunPLC_RAM
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
-        jsr   WaitVBL                                                       
+        jsr   WaitVBL
+        jsr   InitYM2413DAC                                                       
         jsr   IrqSet50Hz   
         ldx   #Smps_MCZ                               *    move.w  #MusID_SpecStage,d0
         jmp   PlayMusic                               *    bsr.w   PlayMusic

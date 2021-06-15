@@ -2,8 +2,13 @@ package fr.bento8.to8.build;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,6 +22,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -2604,9 +2611,10 @@ public class BuildDisk
 		String binFile = asmFileName + ".bin";
 		String lstFile = asmFileName + ".lst";
 		String glbFile = asmFileName + ".glb";			
+		String glbTmpFile = asmFileName + ".tmp";
 
 		logger.debug("\t# Compile "+path.toString());
-		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbFile, option).start();
+		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbTmpFile, option).start();
 		BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
 		String line;
 
@@ -2618,7 +2626,24 @@ public class BuildDisk
 		if (result != 0) {
 			throw new Exception ("Error "+asmFile);
 		}
+		
+	    Pattern pattern = Pattern.compile("^.*[^\\}]\\sEQU\\s.*$", Pattern.MULTILINE);
+	    FileInputStream input = new FileInputStream(glbTmpFile);
+	    FileChannel channel = input.getChannel();
+	    Path out = Paths.get(glbFile);
+	    String data = "";
 
+	    ByteBuffer bbuf = channel.map(FileChannel.MapMode.READ_ONLY, 0, (int) channel.size());
+	    CharBuffer cbuf = Charset.forName("8859_1").newDecoder().decode(bbuf);
+
+	    Matcher matcher = pattern.matcher(cbuf);
+	    while (matcher.find()) {
+	    	String match = matcher.group();
+		    data += match + System.lineSeparator();
+	    }
+	    
+	    Files.write(out, data.getBytes());
+	    input.close();
 		return result;
 	}
 	
