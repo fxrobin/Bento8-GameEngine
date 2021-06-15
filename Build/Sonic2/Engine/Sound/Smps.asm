@@ -175,6 +175,15 @@ _YMBusyWait2 MACRO
         jsr   YMBusyWait2
  ENDM
  
+_YMBusyWait3 MACRO
+        exg   a,b
+        exg   a,b
+        nop
+        nop
+        nop
+        nop
+ ENDM
+ 
 YMBusyWait
         nop
 YMBusyWait2
@@ -182,7 +191,77 @@ YMBusyWait2
         pshs  pc
 
 * ************************************************************************************
-* receives in X the address of the  to start playing
+* Setup YM2413 for DAC emulation
+* destroys A, B, U, X
+
+InitYM2413DAC 
+
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0 
+  
+        ldd   #$000E
+        _WriteYM                       ; disable rhyhtm mode    
+        ldb   #$28
+        _YMBusyWait2
+        _WriteYM                       ; make sure channel 8 is key-off            
+        ldb   #$27
+        _YMBusyWait2
+        _WriteYM                       ; make sure channel 7 is key-off            
+        ldb   #$26
+        _YMBusyWait2
+        _WriteYM                       ; make sure channel 6 is key-off            
+        ldd   #$1F38
+        _YMBusyWait3
+        _WriteYM                       ; select violin tone (modulator AR is 15)            
+        ldb   #$37
+        _YMBusyWait2
+        _WriteYM                       ; select violin tone (modulator AR is 15)            
+        ldb   #$36
+        _YMBusyWait2
+        _WriteYM                       ; select violin tone (modulator AR is 15)  
+        ldd   #$2018
+        _YMBusyWait3
+        _WriteYM                       ; set frequency            
+        ldb   #$17
+        _YMBusyWait2
+        _WriteYM                       ; set frequency            
+        ldb   #$16
+        _YMBusyWait2
+        _WriteYM                       ; set frequency  
+        ldd   #$1028
+        _YMBusyWait3
+        _WriteYM                       ; start phase generator            
+        ldb   #$27
+        _YMBusyWait2
+        _WriteYM                       ; start phase generator            
+        ldb   #$26
+        _YMBusyWait2
+        _WriteYM                       ; start phase generator  
+        
+        ; wait until 1/4 cycle of phase generator (freq $20)
+        ; 6809 cycles: ((1.0 / (($20 * 3579545) / 72 / 524288)) / 4)*1000000 = 82388
+
+        ldd   #$0CDF                   ; 3 cy
+WaitPhase        
+        exg   a,b                      ; 8 cy |
+        exg   a,b                      ; 8 cy |
+        subd  1                        ; 6 cy |
+        bne   WaitPhase                ; 3 cy | : total loop = 25 cy * $CDF
+        exg   a,b                      ; 8 cy
+        ldb   #$18                     ; 2 cy - D: $0018 now
+                                       ; total wait time : 82388 cycles        
+        
+        _WriteYM                       ; stop phase generator            
+        ldb   #$17
+        _YMBusyWait2
+        _WriteYM                       ; stop phase generator            
+        ldb   #$16
+        _YMBusyWait2
+        _WriteYM                       ; stop phase generator         
+        rts
+
+* ************************************************************************************
+* receives in X the address of the song
 * destroys A
 
 PlayMusic 
@@ -198,60 +277,6 @@ PlayMusic
         ldd   #$FF05
         sta   AbsVar.StopMusic         ; music is unpaused
         stb   zPALUpdTick              ; reset PAL tick
-        
-        ; init YM2413 for DAC emulation   
-        ; select FM 9-ch mode        
-        this._y(14, 0);
-             
-        ; make sure all channels key-off
-      this._y(37, 0, false);
-      this._y(38, 0, false);
-      this._y(39, 0, false);
-      this._y(40, 0, false);
-
-      // select violin tone whose modulator AR is 15.
-      this._y(53, (1 << 4) | 15, false);
-      this._y(54, (1 << 4) | 15, false);
-      this._y(55, (1 << 4) | 15, false);
-      this._y(56, (1 << 4) | 15, false);
-
-      // set f-number fnum=1 is the most accurate but need longer wait time.
-      const fnum = 32;
-      this._y(21, fnum, false);
-      this._y(22, fnum, false);
-      this._y(23, fnum, false);
-      this._y(24, fnum, false);
-
-      // start phase generator
-      this._y(37, 16, false);
-      this._y(38, 16, false);
-      this._y(39, 16, false);
-      this._y(40, 16, false);
-
-      const goalClock = this.to.relativeClock ? (this.from.clock * this.to.clock) : (this.to.clock || 3579545);
-      // wait until 1/4 cycle of phase generator
-      const freq = (fnum * goalClock) / 72 / (1 << 19);
-      const cycleInSeconds = 1.0 / freq;
-      const nnnn = Math.round(44100 * (cycleInSeconds / 4));
-      this._buf.push(new VGMWaitWordCommand({ count: nnnn }), false);
-
-      // stop phase generator
-      this._y(21, 0, false);
-      this._y(22, 0, false);
-      this._y(23, 0, false);
-      this._y(24, 0, false);        
-        
-        ldd   #$8038                   
-        ldu   #YM2413_A0
-        ldx   #YM2413_D0        
-        _WriteYM
-        decb
-        _YMBusyWait2
-        _WriteYM         
-        decb
-        _YMBusyWait2
-        _WriteYM        
-        
         rts
         
         
