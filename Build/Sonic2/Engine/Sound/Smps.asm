@@ -13,6 +13,8 @@ SMPS_VOICE                   equ   0
 SMPS_NB_FM                   equ   2
 SMPS_NB_PSG                  equ   3
 SMPS_TEMPO                   equ   4
+SMPS_TEMPO_DELAY             equ   4
+SMPS_DELAY                   equ   5
 SMPS_TRK_HEADER              equ   6
 SMPS_DAC_FLAG                equ   8
 
@@ -174,6 +176,8 @@ DoSFXFlag       fcb   0     ; flag to indicate we're updating SFX (and thus use 
 Paused          fcb   0     ; 0 = normal, -1 = pause all sound and music
 
 SongPage        fcb   0     ; memory page of song data
+SongDelay       fcb   0     ; song header delay
+MusicData       fdb   0     ; address of song data
 Sample_index    fdb   0
 Sample_page     fcb   0
 Sample_data     fdb   0
@@ -300,12 +304,13 @@ WaitPhase
 
 _InitTrackFM MACRO
         ldx   #\1
-        lda   AbsVar.CurrentTempo        
+        lda   SongDelay        
         sta   TempoDivider,x
         ldd   #$8201
         sta   PlaybackControl,x
         stb   DurationTimeout,x
         ldd   SMPS_TRK_DATA_PTR,u
+        addd  MusicData
         std   DataPointer,x
         ldd   SMPS_TRK_TR_VOL_PTR,u
         std   TransposeAndVolume,x
@@ -320,6 +325,7 @@ _InitTrackPSG MACRO
         sta   PlaybackControl,x
         stb   DurationTimeout,x
         ldd   SMPS_TRK_DATA_PTR,u
+        addd  MusicData
         std   DataPointer,x
         ldd   SMPS_TRK_TR_VOL_PTR,u
         std   TransposeAndVolume,x
@@ -333,15 +339,18 @@ BGMLoad
         lda   ,x                       ; get memory page that contains track data
         sta   SongPage
         ldx   1,x                      ; get ptr to track data
+        stx   MusicData
         _SetCartPageA
         
         ldd   SMPS_VOICE,x   
         std   AbsVar.VoiceTblPtr
         
-        lda   SMPS_TEMPO,x
-        sta   AbsVar.TempoMod
-        sta   AbsVar.CurrentTempo
-        sta   AbsVar.TempoTimeout
+        ldd   SMPS_TEMPO_DELAY,x
+        sta   SongDelay
+        stb   AbsVar.TempoMod
+        stb   AbsVar.CurrentTempo
+        stb   AbsVar.TempoTimeout
+        
         lda   #$05
         sta   PALUpdTick
         
@@ -349,13 +358,15 @@ BGMLoad
         ; silence tracks that are not in use !
         
         lda   SMPS_NB_FM,x
+        sta   @dyn+1
         leau  SMPS_TRK_HEADER,x
         ldy   SMPS_DAC_FLAG,x
         bne   @a
         _InitTrackFM SongDAC
+@dyn    lda   #$00                                    ; (dynamic)      
         deca
 @a      asla
-        ldy   ifmjmp
+        ldy   #ifmjmp
         jmp   [a,y]    
 ifmjmp        
         fdb   ifm
@@ -379,9 +390,10 @@ ifm2    _InitTrackFM SongFM2
 ifm1    _InitTrackFM SongFM1
 ifm0    _InitTrackFM SongFM0
 ifm
+        ldx   MusicData
         lda   SMPS_NB_PSG,x
 @a      asla
-        ldy   ipsgjmp
+        ldy   #ipsgjmp
         jmp   [a,y]    
 ipsgjmp    
         fdb   ipsg0
@@ -393,14 +405,11 @@ ipsg3   _InitTrackPSG SongPSG3
 ipsg2   _InitTrackPSG SongPSG2  
 ipsg1   _InitTrackPSG SongPSG1
 ipsg0
-        
-        lda   #$80
-        sta   AbsVar.StopMusic         ; music is unpaused
         rts
         
         
 * ************************************************************************************
-* processes a music frame
+* processes a music frame (VInt)
 *
 * SMPS Song Data
 * --------------
@@ -411,13 +420,15 @@ ipsg0
 *
 * destroys A,B,X
         
+@a      rts        
 MusicFrame 
         lda   SongPage                 ; page switch to the music
+        beq   @a                       ; no music to play
         _SetCartPageA
         ;clr   DoSFXFlag
         lda   AbsVar.StopMusic
-        bmi   UpdateEverything         ; branch if music is playing
-        jsr   PauseMusic               ; check if we have to unpause
+        beq   UpdateEverything
+        jsr   PauseMusic
         bra   UpdateDAC
         
 UpdateEverything        
@@ -448,8 +459,8 @@ UpdateDAC
         lsra
         ldu   #DACDecodeTbl
         ldb   a,u
-        addb  Sample_value
-        stb   Sample_value 
+        addb  Sample_value+1
+        stb   Sample_value+1 
         cmpb  #$1D                     ; convert sample value to 3 YM2413 FM instruments
         bhi   @a  
         ldd   #$0000                   ; ($00-$1D) mapped to $0000 
@@ -608,7 +619,10 @@ DACUpdateTrack
 SetDurationAndForward
         leax  1,x
 SetDuration
-        ; TODO
+        ldb   SongDAC.TempoDivider
+        mul
+        stb   SongDAC.SavedDuration
+        stb   SongDAC.DurationTimeout
 DACAfterDur
         stx   SongDAC.DataPointer
         ; TODO SFX
@@ -632,7 +646,7 @@ DACAfterDur
         ldd   1,u
         std   Sample_data
         lda   #$80
-        sta   Sample_value        
+        sta   Sample_value+1        
         rts
         
 DACMasterPlaylist
