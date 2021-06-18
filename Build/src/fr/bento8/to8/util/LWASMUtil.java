@@ -3,6 +3,7 @@ package fr.bento8.to8.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,5 +59,11 @@ public class LWASMUtil {
 
 		return size;
 	}	
+	
+	public static int getSize(String binFile) throws IOException {
+	    Path bin = Paths.get(binFile);
+	    FileChannel imageFileChannel = FileChannel.open(bin);
+		return Math.toIntExact(imageFileChannel.size());
+	}		
 	
 }

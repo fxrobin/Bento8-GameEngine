@@ -43,7 +43,7 @@ public class RAMLoaderIndex extends ItemBin{
 	}
 
 	public String getFullName() {
-		return "RAMLoaderIndex "+String.format("$%1$04X", ram_page)+" "+ram_address+" "+String.format("$%1$04X", ram_endAddress);
+		return "RAMLoaderIndex "+String.format("$%1$04X", ram_address)+"|"+String.format("$%1$02X", ram_page)+" "+String.format("$%1$04X", ram_endAddress);
 	}
 
 	public Object getObject() {

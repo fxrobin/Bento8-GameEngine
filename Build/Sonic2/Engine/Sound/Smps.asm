@@ -8,11 +8,35 @@
 * RAS' work merged into SVN by Flamewing
 * ---------------------------------------------------------------------------
 
-; SMPS file format offsets
-SMPS_DAC_FLAG                equ 8
-SMPS_DAC_TRACK               equ 6
-PlaybackControl              equ 0
-DurationTimeout              equ 11
+; SMPS Header
+SMPS_VOICE                   equ   0
+SMPS_NB_FM                   equ   2
+SMPS_NB_PSG                  equ   3
+SMPS_TEMPO                   equ   4
+SMPS_TRK_HEADER              equ   6
+SMPS_DAC_FLAG                equ   8
+
+; SMPS Header each track relative
+SMPS_TRK_DATA_PTR            equ   0 
+SMPS_TRK_TR_VOL_PTR          equ   2
+SMPS_TRK_ENV_PTR             equ   5
+SMPS_TRK_FM_HDR_LEN          equ   4
+SMPS_TRK_PSG_HDR_LEN         equ   6
+
+; Track STRUCT Constants
+PlaybackControl              equ   0
+TempoDivider                 equ   2
+DataPointer                  equ   3
+TransposeAndVolume           equ   5
+VoiceIndex                   equ   8
+DurationTimeout              equ   11
+
+; Hardware Addresses
+YM2413_A0                    equ   $E7B1 
+YM2413_D0                    equ   $E7B2
+PSG                          equ   $E7B0
+
+******************************************************************************
 
 Track STRUCT
                                                       ;         "playback control"; bits 
@@ -30,7 +54,7 @@ VoiceControl                   rmb   1
 TempoDivider                   rmb   1                ; timing divisor; 1 = Normal, 2 = Half, 3 = Third...
 DataPointer                    rmb   2                ; Track's position
 Transpose                      rmb   1                ; Transpose (from coord flag E9)
-Volume                         rmb   1                ; channel volume (only applied at voice changes)
+Volume                         rmb   1                ; (Dependency) Should follow Transpose - channel volume (only applied at voice changes)
 AMSFMSPan                      rmb   1                ; Panning / AMS / FMS settings
 VoiceIndex                     rmb   1                ; Current voice in use OR current PSG tone
 VolFlutter                     rmb   1                ; PSG flutter (dynamically effects PSG volume for decay effects)
@@ -69,6 +93,8 @@ GoSubStack                                            ; start of next track, eve
                                                       ;
                                                       ;        All tracks are 2Ah bytes long
  ENDSTRUCT
+ 
+******************************************************************************
 
 Var STRUCT
 SFXPriorityVal                 rmb   1        
@@ -95,23 +121,24 @@ MusicBankNumber                rmb   1
 IsPalFlag                      rmb   1        
  ENDSTRUCT
 
+******************************************************************************
 
-YM2413_A0       fdb   $E7B1 
-YM2413_D0       fdb   $E7B2
-PSG             fdb   $E7B0
-
+StructStart
 AbsVar          Var
 
 tracksStart		; This is the beginning of all BGM track memory
 SongDACFMStart
 SongDAC         Track
 SongFMStart
+SongFM0         Track
 SongFM1         Track
 SongFM2         Track
 SongFM3         Track
 SongFM4         Track
 SongFM5         Track
 SongFM6         Track
+SongFM7         Track
+SongFM8         Track
 SongFMEnd
 SongDACFMEnd
 SongPSGStart
@@ -133,10 +160,16 @@ tracksEnd
 ;SFX_PSG3        Track
 ;SFX_PSGEnd
 ;tracksSFXEnd
+StructEnd
+
+        org   StructStart
+        fill  0,(StructEnd-StructStart)     ; I want struct data to be in binary please ...
+        
+******************************************************************************
 
 PALUpdTick      fcb   0     ; this counts from 0 to 5 to periodically "double update" for PAL systems (basically every 6 frames you need to update twice to keep up)
 CurDAC          fcb   0     ; indicate DAC sample playing status
-CurSong         fcb   0     ; currently playing song index
+;CurSong        fcb   0     ; currently playing song index
 DoSFXFlag       fcb   0     ; flag to indicate we're updating SFX (and thus use custom voice table); set to FFh while doing SFX, 0 when not.
 Paused          fcb   0     ; 0 = normal, -1 = pause all sound and music
 
@@ -189,7 +222,7 @@ YMBusyWait
         nop
 YMBusyWait2
         tst   $0000
-        pshs  pc
+        puls  pc
 
 * ************************************************************************************
 * Setup YM2413 for DAC emulation
@@ -265,19 +298,104 @@ WaitPhase
 * receives in X the address of the song
 * destroys A
 
-PlayMusic 
-        lda   ,x   
+_InitTrackFM MACRO
+        ldx   #\1
+        lda   AbsVar.CurrentTempo        
+        sta   TempoDivider,x
+        ldd   #$8201
+        sta   PlaybackControl,x
+        stb   DurationTimeout,x
+        ldd   SMPS_TRK_DATA_PTR,u
+        std   DataPointer,x
+        ldd   SMPS_TRK_TR_VOL_PTR,u
+        std   TransposeAndVolume,x
+        leau  SMPS_TRK_FM_HDR_LEN,u       
+ ENDM
+
+_InitTrackPSG MACRO
+        ldx   #\1
+        lda   AbsVar.CurrentTempo        
+        sta   TempoDivider,x
+        ldd   #$8201
+        sta   PlaybackControl,x
+        stb   DurationTimeout,x
+        ldd   SMPS_TRK_DATA_PTR,u
+        std   DataPointer,x
+        ldd   SMPS_TRK_TR_VOL_PTR,u
+        std   TransposeAndVolume,x
+        lda   SMPS_TRK_ENV_PTR,u
+        sta   VoiceIndex,x
+        leau  SMPS_TRK_PSG_HDR_LEN,u
+ ENDM
+
+PlayMusic
+BGMLoad
+        lda   ,x                       ; get memory page that contains track data
         sta   SongPage
-        ldx   1,x
+        ldx   1,x                      ; get ptr to track data
+        _SetCartPageA
         
-        ldd   SMPS_DAC_FLAG,x          ; load DAC Track
+        ldd   SMPS_VOICE,x   
+        std   AbsVar.VoiceTblPtr
+        
+        lda   SMPS_TEMPO,x
+        sta   AbsVar.TempoMod
+        sta   AbsVar.CurrentTempo
+        sta   AbsVar.TempoTimeout
+        lda   #$05
+        sta   PALUpdTick
+        
+        ; TODO
+        ; silence tracks that are not in use !
+        
+        lda   SMPS_NB_FM,x
+        leau  SMPS_TRK_HEADER,x
+        ldy   SMPS_DAC_FLAG,x
         bne   @a
-        ldd   SMPS_DAC_TRACK,x
-        std   SongDAC.DataPointer
-@a        
-        ldd   #$FF05
+        _InitTrackFM SongDAC
+        deca
+@a      asla
+        ldy   ifmjmp
+        jmp   [a,y]    
+ifmjmp        
+        fdb   ifm
+        fdb   ifm0        
+        fdb   ifm1        
+        fdb   ifm2
+        fdb   ifm3
+        fdb   ifm4
+        fdb   ifm5
+        fdb   ifm6
+        fdb   ifm7
+        fdb   ifm8
+
+ifm8    _InitTrackFM SongFM8
+ifm7    _InitTrackFM SongFM7
+ifm6    _InitTrackFM SongFM6
+ifm5    _InitTrackFM SongFM5
+ifm4    _InitTrackFM SongFM4
+ifm3    _InitTrackFM SongFM3
+ifm2    _InitTrackFM SongFM2
+ifm1    _InitTrackFM SongFM1
+ifm0    _InitTrackFM SongFM0
+ifm
+        lda   SMPS_NB_PSG,x
+@a      asla
+        ldy   ipsgjmp
+        jmp   [a,y]    
+ipsgjmp    
+        fdb   ipsg0
+        fdb   ipsg1
+        fdb   ipsg2
+        fdb   ipsg3
+
+ipsg3   _InitTrackPSG SongPSG3
+ipsg2   _InitTrackPSG SongPSG2  
+ipsg1   _InitTrackPSG SongPSG1
+ipsg0
+        
+        lda   #$80
         sta   AbsVar.StopMusic         ; music is unpaused
-        stb   PALUpdTick              ; reset PAL tick
         rts
         
         
@@ -296,9 +414,9 @@ PlayMusic
 MusicFrame 
         lda   SongPage                 ; page switch to the music
         _SetCartPageA
-        clr   DoSFXFlag
+        ;clr   DoSFXFlag
         lda   AbsVar.StopMusic
-        beq   UpdateEverything         ; branch if music is playing
+        bmi   UpdateEverything         ; branch if music is playing
         jsr   PauseMusic               ; check if we have to unpause
         bra   UpdateDAC
         
@@ -419,12 +537,15 @@ _UpdateTrack MACRO
 UpdateMusic
         jsr   TempoWait
         _UpdateTrack SongDAC,DACUpdateTrack
+        _UpdateTrack SongFM0,FMUpdateTrack        
         _UpdateTrack SongFM1,FMUpdateTrack
         _UpdateTrack SongFM2,FMUpdateTrack
         _UpdateTrack SongFM3,FMUpdateTrack
         _UpdateTrack SongFM4,FMUpdateTrack
         _UpdateTrack SongFM5,FMUpdateTrack
         _UpdateTrack SongFM6,FMUpdateTrack
+        _UpdateTrack SongFM7,FMUpdateTrack
+        _UpdateTrack SongFM8,FMUpdateTrack                
         _UpdateTrack SongPSG1,PSGUpdateTrack
         _UpdateTrack SongPSG2,PSGUpdateTrack
         _UpdateTrack SongPSG3,PSGUpdateTrack        
@@ -438,20 +559,23 @@ TempoWait
         ; overflows, it will update.  So a tempo of 80h will update every other
         ; frame, or 30 times a second.
 
-        lda   Var.CurrentTempo  ; tempo value
-        adda  Var.TempoTimeout  ; Adds previous value to
-        sta   Var.TempoTimeout  ; Store this as new
+        lda   AbsVar.CurrentTempo  ; tempo value
+        adda  AbsVar.TempoTimeout  ; Adds previous value to
+        sta   AbsVar.TempoTimeout  ; Store this as new
         bcc   @a
         rts                     ; If addition overflowed (answer greater than FFh), return
 @a
         ; So if adding tempo value did NOT overflow, then we add 1 to all durations
         inc   SongDAC.DurationTimeout
+        inc   SongFM0.DurationTimeout        
         inc   SongFM1.DurationTimeout
         inc   SongFM2.DurationTimeout
         inc   SongFM3.DurationTimeout
         inc   SongFM4.DurationTimeout
         inc   SongFM5.DurationTimeout
         inc   SongFM6.DurationTimeout
+        inc   SongFM7.DurationTimeout
+        inc   SongFM8.DurationTimeout                
         inc   SongPSG1.DurationTimeout
         inc   SongPSG2.DurationTimeout
         inc   SongPSG3.DurationTimeout

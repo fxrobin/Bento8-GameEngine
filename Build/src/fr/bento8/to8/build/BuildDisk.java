@@ -1227,9 +1227,9 @@ public class BuildDisk
 
 			if (!firstPass) {
 				game.romT2.curPage++;
-				if (game.romT2.curPage == 24) { // TODO Ajout d'un paramétrage pour exclure des pages mémoire d'une T.2
-					game.romT2.curPage++;
-				}
+//				if (game.romT2.curPage == 24) { // TODO Ajout d'un paramétrage pour exclure des pages mémoire d'une T.2
+//					game.romT2.curPage++;
+//				}
 				game.romT2.updateEndPage();
 				
 				if (game.romT2.isOutOfMemory()) {

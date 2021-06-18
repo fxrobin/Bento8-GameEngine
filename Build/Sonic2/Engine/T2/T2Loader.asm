@@ -165,7 +165,7 @@ EraseError_2
         
 WriteError
         jsr   WaitOffScreen
-        lda   #$04
+        lda   #$02
         sta   $E7DB                    * selectionne l'indice de couleur a ecrire
         ldd   #$0000
         stb   $E7DA                    * positionne la nouvelle couleur (Vert et Rouge)
