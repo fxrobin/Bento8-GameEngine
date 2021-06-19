@@ -36,6 +36,7 @@ _SetCartPageA MACRO
         lda   #$C0
         sta   $0555
         lda   Glb_Page
+        suba  #$80        
         sta   $0555                    ; selection de la page T.2 en zone cartouche
         bra   End@
 RAMPg@  sta   Glb_Page                 ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)
@@ -72,6 +73,7 @@ _SetCartPageB MACRO
         ldb   #$C0
         stb   $0555
         ldb   Glb_Page
+        subb  #$80
         stb   $0555                    ; selection de la page T.2 en zone cartouche
         bra   End@
 RAMPg@  stb   Glb_Page                 ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)

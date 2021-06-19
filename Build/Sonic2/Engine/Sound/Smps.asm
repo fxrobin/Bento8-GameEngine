@@ -541,8 +541,9 @@ DACClearNote
 _UpdateTrack MACRO
         ldx   #\1
         lda   PlaybackControl,x        ; Is bit 7 (80h) set on playback control byte? (means "is playing")
-        bpl   *+5                       
+        bpl   a@                       
         jsr   \2                       ; If so, UpdateTrack
+a@      equ   *        
  ENDM
 
 UpdateMusic
