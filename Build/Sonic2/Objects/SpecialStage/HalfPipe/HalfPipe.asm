@@ -227,10 +227,10 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
         jsr   WaitVBL
-        ;jsr   InitYM2413DAC                                                       
-        ;jsr   IrqSet50Hz   
-        ;ldx   #Smps_MCZ                               *    move.w  #MusID_SpecStage,d0
-        ;jmp   PlayMusic                               *    bsr.w   PlayMusic
+        jsr   InitYM2413DAC                                                       
+        jsr   IrqSet50Hz   
+        ldx   #Smps_MCZ                               *    move.w  #MusID_SpecStage,d0
+        jmp   PlayMusic                               *    bsr.w   PlayMusic
                                                       *    move.w  (VDP_Reg1_val).w,d0
                                                       *    ori.b   #$40,d0
                                                       *    move.w  d0,(VDP_control_port).l

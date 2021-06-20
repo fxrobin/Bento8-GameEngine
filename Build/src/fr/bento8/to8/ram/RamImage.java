@@ -23,13 +23,6 @@ public class RamImage
 	
 	public RamImage (int lastPage) {
 		this.data = new byte[lastPage][PAGE_SIZE];
-
-        // Pour test de copie vers T.2: valorise tt les données d'une page par son numéro		
-//		for (int i=0; i<lastPage; i++) {
-//			for (int j=0; j<PAGE_SIZE; j++) {
-//				this.data[i][j] = (byte)i;
-//			}
-//		}
 		
 		this.startAddress = new int[lastPage];
 		this.endAddress = new int[lastPage];
@@ -38,6 +31,24 @@ public class RamImage
 		this.endPage = -1;
 		this.curPage = 0;		
 	}
+	
+	public RamImage (int lastPage, boolean testMode) {
+		this.data = new byte[lastPage][PAGE_SIZE];
+
+        // Pour test de copie vers T.2: valorise tt les données d'une page par son numéro		
+		for (int i=0; i<lastPage; i++) {
+			for (int j=0; j<PAGE_SIZE; j++) {
+				this.data[i][j] = (byte)i;
+			}
+		}
+		
+		this.startAddress = new int[lastPage];
+		this.endAddress = new int[lastPage];
+		this.lastPage = lastPage;
+		this.startPage = 0;
+		this.endPage = lastPage-1;
+		this.curPage = 0;		
+	}	
 	
 	public void setData (int page, int startPos, byte[] newData) {
 		int endPos = newData.length+startPos;		

@@ -184,6 +184,8 @@ Sample_data     fdb   0
 Sample_data_end fdb   0
 Sample_rate     fcb   0
 Sample_value    fdb   0     ; MSB always to 0 for 16 bit add
+DACFMSample     fdb   0
+DACSampleParity fcb   0     ; 0:hi nibble 1:lo nibble
 
 MUSIC_TRACK_COUNT = (tracksEnd-tracksStart)/sizeof{Track}
 MUSIC_DAC_FM_TRACK_COUNT = (SongDACFMEnd-SongDACFMStart)/sizeof{Track}
@@ -430,7 +432,21 @@ MusicFrame
         beq   UpdateEverything
         jsr   PauseMusic
         bra   UpdateDAC
-        
+
+DACClearNote        
+        clr   CurDAC
+        ldd   #$8038                        ; mute DAC
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0        
+        _WriteYM
+        decb
+        _YMBusyWait2
+        _WriteYM         
+        decb
+        _YMBusyWait2
+        _WriteYM
+        rts
+
 UpdateEverything        
         lda   AbsVar.IsPalFlag
         beq   @a
@@ -451,12 +467,23 @@ UpdateDAC
         ldx   Sample_data
         cmpx  Sample_data_end
         beq   DACClearNote
+WriteToDAC
+        tst   DACSampleParity
+        bne   @a
+        lda   ,x                       ; read sample and unpack value
+        lsra
+        lsra
+        lsra
+        lsra
+        inc   DACSampleParity
+        bra   @b
+@a        
         lda   ,x+                      ; read sample and unpack value
         stx   Sample_data        
-        lsra
-        lsra
-        lsra
-        lsra
+        anda  #$0F
+        dec   DACSampleParity
+@b      
+
         ldu   #DACDecodeTbl
         ldb   a,u
         addb  Sample_value+1
@@ -471,7 +498,7 @@ UpdateDAC
         bra   @c    
 @b      lda   #0
         lsrb
-        addd  Sample_value
+        addd  Sample_value             ; data is 3 nibbles long so x1.5
         bitb  #1
         bne   @odd
         ldx   #DACTable                ; read three nibbles xx x_
@@ -483,17 +510,18 @@ UpdateDAC
         lsra
         rorb
         lsra
-        rorb                           ; changed nibbles to _x xx                        
+        rorb                           ; changed nibbles to _x xx
         bra   @c            
 @odd    ldx   #DACTable                ; read three nibbles _x xx
         ldd   d,x   
-        anda  #$0F
-@c      ora   #$80      
+@c      anda  #$0F
+        ora   #$80
+        std   DACFMSample      
         ldb   #$38
         ldu   #YM2413_A0
         ldx   #YM2413_D0        
         _WriteYM
-        decb
+        ldd   DACFMSample        
         lslb
         rola
         lslb
@@ -504,9 +532,10 @@ UpdateDAC
         rola                        
         anda  #$0F
         ora   #$80
-        nop
+        std   DACFMSample        
+        ldb   #$37      
         _WriteYM         
-        decb
+        ldd   DACFMSample
         lslb
         rola
         lslb
@@ -517,22 +546,8 @@ UpdateDAC
         rola                        
         anda  #$0F
         ora   #$80
-        nop
+        ldb   #$36
         _WriteYM                
-        rts
-        
-DACClearNote        
-        clr   CurDAC
-        ldd   #$8038                        ; mute DAC
-        ldu   #YM2413_A0
-        ldx   #YM2413_D0        
-        _WriteYM
-        decb
-        _YMBusyWait2
-        _WriteYM         
-        decb
-        _YMBusyWait2
-        _WriteYM
         rts
 
 * ************************************************************************************
@@ -631,14 +646,14 @@ DACAfterDur
         cmpa  #$80
         bne   @a
         rts                            ; if a rest, quit
-@a      suba  #$81                     ; Otherwise, transform note into an index...
+@a      sta   CurDAC
+        suba  #$81                     ; Otherwise, transform note into an index...
         ldx   #zDACMasterRate
         ldb   a,x
         stb   Sample_rate
         asla
         ldx   #DACMasterPlaylist
         ldu   a,x
-        sta   CurDAC
         stu   Sample_index
         lda   ,u
         sta   Sample_page

@@ -136,9 +136,6 @@ public class BuildDisk
 			compileAndWriteBootT2();
 			buildT2Loader();
 			
-			// TODO: migrer le code ASM sprite compilé de "position independant" (,PCR) a "position dependant"
-			// TODO: inclure dans les sprites compilés l'accès au variables de position plutot que de faire un passage de paramètre par registre (test performance)
-			
 		} catch (Exception e) {
 			logger.fatal("Build error.", e);
 		}
@@ -1227,9 +1224,6 @@ public class BuildDisk
 
 			if (!firstPass) {
 				game.romT2.curPage++;
-//				if (game.romT2.curPage == 24) { // TODO Ajout d'un paramétrage pour exclure des pages mémoire d'une T.2
-//					game.romT2.curPage++;
-//				}
 				game.romT2.updateEndPage();
 				
 				if (game.romT2.isOutOfMemory()) {

@@ -25,10 +25,11 @@ _SetCartPageA MACRO
         
         lda   $E7E6
         anda  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
-        sta   $E7E6                    ; TODO eventuellement a remplacer par un clr au lieu des trois instr.
+        sta   $E7E6
         
         lda   #$F0                     ; sortie du mode commande T.2
-        sta   $0555                    ; dans le cas ou l'irq intervient en cours de changement de page        
+        sta   $0555                    ; dans le cas ou l'irq intervient en cours de changement de page
+                
         lda   #$AA                     ; sequence pour commutation de page T.2
         sta   $0555
         lda   #$55
@@ -36,7 +37,7 @@ _SetCartPageA MACRO
         lda   #$C0
         sta   $0555
         lda   Glb_Page
-        suba  #$80        
+        anda  #$7F                     ; le bit 7 doit etre a 0        
         sta   $0555                    ; selection de la page T.2 en zone cartouche
         bra   End@
 RAMPg@  sta   Glb_Page                 ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)
@@ -62,10 +63,11 @@ _SetCartPageB MACRO
         
         ldb   $E7E6
         andb  #$DF                     ; passe le bit5 a 0 pour cartouche au lieu de 1 pour RAM
-        stb   $E7E6                    ; TODO eventuellement a remplacer par un clr au lieu des trois instr.
+        stb   $E7E6
         
         ldb   #$F0                     ; sortie du mode commande T.2
-        stb   $0555                    ; dans le cas ou l'irq intervient en cours de changement de page        
+        stb   $0555                    ; dans le cas ou l'irq intervient en cours de changement de page
+                
         ldb   #$AA                     ; sequence pour commutation de page T.2
         stb   $0555
         ldb   #$55
@@ -73,7 +75,7 @@ _SetCartPageB MACRO
         ldb   #$C0
         stb   $0555
         ldb   Glb_Page
-        subb  #$80
+        anda  #$7F                     ; le bit 7 doit etre a 0
         stb   $0555                    ; selection de la page T.2 en zone cartouche
         bra   End@
 RAMPg@  stb   Glb_Page                 ; selection de la page RAM en zone cartouche (bit 5 integre au numero de page)
