@@ -6,6 +6,16 @@
 * Disassembled by Xenowhirl for AS
 * Additional disassembly work by RAS Oct 2008
 * RAS' work merged into SVN by Flamewing
+*
+* !!! not finished !!!
+* just a try to play PCM thru 3 FM channels
+* IRQ must be set so quick, it makes no sense
+* Call with:
+*        jsr   InitYM2413DAC                                                       
+*        jsr   IrqSet50Hz   
+*        ldx   #Smps_MCZ
+*        jmp   PlayMusic
+*
 * ---------------------------------------------------------------------------
 
 ; SMPS Header
@@ -170,6 +180,7 @@ StructEnd
 ******************************************************************************
 
 PALUpdTick      fcb   0     ; this counts from 0 to 5 to periodically "double update" for PAL systems (basically every 6 frames you need to update twice to keep up)
+CurDAC          fcb   0     ; indicate DAC sample playing status
 ;CurSong        fcb   0     ; currently playing song index
 DoSFXFlag       fcb   0     ; flag to indicate we're updating SFX (and thus use custom voice table); set to FFh while doing SFX, 0 when not.
 Paused          fcb   0     ; 0 = normal, -1 = pause all sound and music
@@ -177,6 +188,14 @@ Paused          fcb   0     ; 0 = normal, -1 = pause all sound and music
 SongPage        fcb   0     ; memory page of song data
 SongDelay       fcb   0     ; song header delay
 MusicData       fdb   0     ; address of song data
+Sample_index    fdb   0
+Sample_page     fcb   0
+Sample_data     fdb   0
+Sample_data_end fdb   0
+Sample_rate     fcb   0
+Sample_value    fdb   0     ; MSB always to 0 for 16 bit add
+DACFMSample     fdb   0
+DACSampleParity fcb   0     ; 0:hi nibble 1:lo nibble
 
 MUSIC_TRACK_COUNT = (tracksEnd-tracksStart)/sizeof{Track}
 MUSIC_DAC_FM_TRACK_COUNT = (SongDACFMEnd-SongDACFMStart)/sizeof{Track}
@@ -192,10 +211,10 @@ MUSIC_PSG_TRACK_COUNT = (SongPSGEnd-SongPSGStart)/sizeof{Track}
 *
 
 _WriteYM MACRO
-        sta   ,u
+        stb   ,u
         nop
         nop
-        stb   ,y
+        sta   ,x
  ENDM  
  
 _YMBusyWait MACRO
@@ -222,31 +241,74 @@ YMBusyWait2
         puls  pc
 
 * ************************************************************************************
-* Setup YM2413 for Drum Mode
+* Setup YM2413 for DAC emulation
 * destroys A, B, U, X
 
-YM2413_DrumModeOn
+InitYM2413DAC 
+
         ldu   #YM2413_A0
-        ldy   #YM2413_D0
-        ldx   #@data
-@a      ldd   ,x++
-        bmi   @end
-        _WriteYM
+        ldx   #YM2413_D0 
+  
+        ldd   #$000E
+        _WriteYM                       ; disable rhyhtm mode    
+        ldb   #$28
+        _YMBusyWait2
+        _WriteYM                       ; make sure channel 8 is key-off            
+        ldb   #$27
+        _YMBusyWait2
+        _WriteYM                       ; make sure channel 7 is key-off            
+        ldb   #$26
+        _YMBusyWait2
+        _WriteYM                       ; make sure channel 6 is key-off            
+        ldd   #$1F38
         _YMBusyWait3
-        bra   @a
-@end    rts        
-@data
-        fdb   $0E20
-        fdb   $1620
-        fdb   $1750
-        fdb   $18C0
-        fdb   $2605
-        fdb   $2705
-        fdb   $2801
-        fdb   $3600
-        fdb   $3700
-        fdb   $3800
-        fcb   $FF
+        _WriteYM                       ; select violin tone (modulator AR is 15)            
+        ldb   #$37
+        _YMBusyWait2
+        _WriteYM                       ; select violin tone (modulator AR is 15)            
+        ldb   #$36
+        _YMBusyWait2
+        _WriteYM                       ; select violin tone (modulator AR is 15)  
+        ldd   #$2018
+        _YMBusyWait3
+        _WriteYM                       ; set frequency            
+        ldb   #$17
+        _YMBusyWait2
+        _WriteYM                       ; set frequency            
+        ldb   #$16
+        _YMBusyWait2
+        _WriteYM                       ; set frequency  
+        ldd   #$1028
+        _YMBusyWait3
+        _WriteYM                       ; start phase generator            
+        ldb   #$27
+        _YMBusyWait2
+        _WriteYM                       ; start phase generator            
+        ldb   #$26
+        _YMBusyWait2
+        _WriteYM                       ; start phase generator  
+        
+        ; wait until 1/4 cycle of phase generator (freq $20)
+        ; 6809 cycles: ((1.0 / (($20 * 3579545) / 72 / 524288)) / 4)*1000000 = 82388
+
+        ldd   #$0CDF                   ; 3 cy
+WaitPhase        
+        exg   a,b                      ; 8 cy |
+        exg   a,b                      ; 8 cy |
+        subd  1                        ; 6 cy |
+        bne   WaitPhase                ; 3 cy | : total loop = 25 cy * $CDF
+        exg   a,b                      ; 8 cy
+        ldb   #$18                     ; 2 cy - D: $0018 now
+                                       ; total wait time : 82388 cycles        
+        
+        _WriteYM                       ; stop phase generator            
+        ldb   #$17
+        _YMBusyWait2
+        _WriteYM                       ; stop phase generator            
+        ldb   #$16
+        _YMBusyWait2
+        _WriteYM                       ; stop phase generator         
+        rts
 
 * ************************************************************************************
 * receives in X the address of the song
@@ -378,7 +440,22 @@ MusicFrame
         ;clr   DoSFXFlag
         lda   AbsVar.StopMusic
         beq   UpdateEverything
-        jmp   PauseMusic 
+        jsr   PauseMusic
+        bra   UpdateDAC
+
+DACClearNote        
+        clr   CurDAC
+        ldd   #$8038                        ; mute DAC
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0        
+        _WriteYM
+        decb
+        _YMBusyWait2
+        _WriteYM         
+        decb
+        _YMBusyWait2
+        _WriteYM
+        rts
 
 UpdateEverything        
         lda   AbsVar.IsPalFlag
@@ -388,7 +465,100 @@ UpdateEverything
         lda   #5
         sta   PALUpdTick
         jsr   UpdateMusic              ; play 2 frames in one to keep original speed
-@a      jmp   UpdateMusic        
+@a      jsr   UpdateMusic        
+        
+UpdateDAC   
+        lda   CurDAC                   ; Get currently playing DAC sound
+        bmi   @a                       ; If one is queued (80h+), go to it!
+        rts
+@a      lda   Sample_page
+        _SetCartPageA                  ; Bankswitch to the DAC data
+                
+        ldx   Sample_data
+        cmpx  Sample_data_end
+        beq   DACClearNote
+WriteToDAC
+        tst   DACSampleParity
+        bne   @a
+        lda   ,x                       ; read sample and unpack value
+        lsra
+        lsra
+        lsra
+        lsra
+        inc   DACSampleParity
+        bra   @b
+@a        
+        lda   ,x+                      ; read sample and unpack value
+        stx   Sample_data        
+        anda  #$0F
+        dec   DACSampleParity
+@b      
+
+        ldu   #DACDecodeTbl
+        ldb   a,u
+        addb  Sample_value+1
+        stb   Sample_value+1 
+        cmpb  #$1D                     ; convert sample value to 3 YM2413 FM instruments
+        bhi   @a  
+        ldd   #$0000                   ; ($00-$1D) mapped to $0000 
+        bra   @c      
+@a      cmpb  #$DF
+        blo   @b  
+        ldd   #$0EEE                   ; ($DF-$FF) mapped to $0EEE 
+        bra   @c    
+@b      lda   #0
+        lsrb
+        addd  Sample_value             ; data is 3 nibbles long so x1.5
+        bitb  #1
+        bne   @odd
+        ldx   #DACTable                ; read three nibbles xx x_
+        ldd   d,x
+        lsra
+        rorb
+        lsra
+        rorb
+        lsra
+        rorb
+        lsra
+        rorb                           ; changed nibbles to _x xx
+        bra   @c            
+@odd    ldx   #DACTable                ; read three nibbles _x xx
+        ldd   d,x   
+@c      anda  #$0F
+        ora   #$80
+        std   DACFMSample      
+        ldb   #$38
+        ldu   #YM2413_A0
+        ldx   #YM2413_D0        
+        _WriteYM
+        ldd   DACFMSample        
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola                        
+        anda  #$0F
+        ora   #$80
+        std   DACFMSample        
+        ldb   #$37      
+        _WriteYM         
+        ldd   DACFMSample
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola
+        lslb
+        rola                        
+        anda  #$0F
+        ora   #$80
+        ldb   #$36
+        _WriteYM                
+        rts
 
 * ************************************************************************************
 * 
@@ -455,68 +625,180 @@ DACUpdateTrack
         dec   SongDAC.DurationTimeout
         beq   @a
         rts
-@a
-        ldd   #$0E20                   ; note has ended, so note off
-        ldu   #YM2413_A0 
-        ldy   #YM2413_D0        
-        _WriteYM
-         
+@a       
         ldx   SongDAC.DataPointer
         
-@b      ldb   ,x+                      ; read DAC song data
-        cmpb  #$E0
+@b      lda   ,x+                      ; read DAC song data
+        cmpa  #$E0
         blo   @a                       ; test for >= E0h, which is a coordination flag
         jsr   CoordFlag
         bra   @b                       ; read all consecutive coordination flags 
 @a        
         bpl   SetDuration              ; test for 80h not set, which is a note duration
-        stb   SongDAC.NextData	       ; This is a note; store it here
-        ldb   ,x
+        sta   SongDAC.NextData	       ; This is a note; store it here
+        lda   ,x
         bpl   SetDurationAndForward    ; test for 80h not set, which is a note duration
-        ldb   SongDAC.SavedDuration
-        stb   SongDAC.DurationTimeout
+        lda   SongDAC.SavedDuration
+        sta   SongDAC.DurationTimeout
         bra   DACAfterDur
 
 SetDurationAndForward
         leax  1,x
 SetDuration
-        lda   SongDAC.TempoDivider
+        ldb   SongDAC.TempoDivider
         mul
         stb   SongDAC.SavedDuration
         stb   SongDAC.DurationTimeout
 DACAfterDur
         stx   SongDAC.DataPointer
-        ldb   SongDAC.NextData
-        cmpb  #$80
+        ; TODO SFX
+        lda   SongDAC.NextData
+        cmpa  #$80
         bne   @a
         rts                            ; if a rest, quit
-@a
-        ldx   #@data            
-        subb  #$81                     ; transform note into an index...      
-        ldb   b,x
-        lda   #$0E
-        ldu   #YM2413_A0 
-        ldy   #YM2413_D0        
-        _WriteYM    
+@a      sta   CurDAC
+        suba  #$81                     ; Otherwise, transform note into an index...
+        ldx   #zDACMasterRate
+        ldb   a,x
+        stb   Sample_rate
+        asla
+        ldx   #DACMasterPlaylist
+        ldu   a,x
+        stu   Sample_index
+        lda   ,u
+        sta   Sample_page
+        ldd   3,u
+        std   Sample_data_end
+        ldd   1,u
+        std   Sample_data
+        lda   #$80
+        sta   Sample_value+1        
         rts
-@data
-        fcb   $30 ; $81 - Kick
-        fcb   $28 ; $82 - Snare
-        fcb   $21 ; $83 - Clap
-        fcb   $22 ; $84 - Scratch
-        fcb   $22 ; $85 - Timpani
-        fcb   $24 ; $86 - Hi Tom
-        fcb   $24 ; $87 - Bongo
-        fcb   $24 ; $88 - Hi Timpani
-        fcb   $24 ; $89 - Mid Timpani
-        fcb   $24 ; $8A - Mid Low Timpani
-        fcb   $24 ; $8B - Low Timpani
-        fcb   $24 ; $8C - Mid Tom
-        fcb   $24 ; $8D - Low Tom
-        fcb   $24 ; $8E - Floor Tom
-        fcb   $24 ; $8F - Hi Bongo
-        fcb   $24 ; $90 - Mid Bongo
-        fcb   $24 ; $91 - Low Bongo
+        
+DACMasterPlaylist
+        fdb   DAC_Sample1 ; $81 - Kick
+        fdb   DAC_Sample2 ; $82 - Snare
+        fdb   DAC_Sample3 ; $83 - Clap
+        fdb   DAC_Sample4 ; $84 - Scratch
+        fdb   DAC_Sample5 ; $85 - Timpani
+        fdb   DAC_Sample6 ; $86 - Hi Tom
+        fdb   DAC_Sample7 ; $87 - Bongo
+        fdb   DAC_Sample5 ; $88 - Hi Timpani
+        fdb   DAC_Sample5 ; $89 - Mid Timpani
+        fdb   DAC_Sample5 ; $8A - Mid Low Timpani
+        fdb   DAC_Sample5 ; $8B - Low Timpani
+        fdb   DAC_Sample6 ; $8C - Mid Tom
+        fdb   DAC_Sample6 ; $8D - Low Tom
+        fdb   DAC_Sample6 ; $8E - Floor Tom
+        fdb   DAC_Sample7 ; $8F - Hi Bongo
+        fdb   DAC_Sample7 ; $90 - Mid Bongo
+        fdb   DAC_Sample7 ; $91 - Low Bongo
+         
+zDACMasterRate
+        fcb   $17 ; $81 - Kick
+        fcb   $01 ; $82 - Snare
+        fcb   $06 ; $83 - Clap
+        fcb   $08 ; $84 - Scratch
+        fcb   $1B ; $85 - Timpani
+        fcb   $0A ; $86 - Hi Tom
+        fcb   $1B ; $87 - Bongo
+        fcb   $12 ; $88 - Hi Timpani
+        fcb   $15 ; $89 - Mid Timpani
+        fcb   $1C ; $8A - Mid Low Timpani
+        fcb   $1D ; $8B - Low Timpani
+        fcb   $02 ; $8C - Mid Tom
+        fcb   $05 ; $8D - Low Tom
+        fcb   $08 ; $8E - Floor Tom
+        fcb   $08 ; $8F - Hi Bongo
+        fcb   $0B ; $90 - Mid Bongo
+        fcb   $12 ; $91 - Low Bongo
+        
+DACDecodeTbl
+        fcb   0,1,2,4,8,$10,$20,$40
+        fcb   $80,$FF,$FE,$FC,$F8,$F0,$E0,$C0
+
+DACTable        
+        fcb   $00,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$02,$00
+        fcb   $20,$04,$00
+        fcb   $40,$04,$00
+        fcb   $40,$04,$00
+        fcb   $40,$04,$00
+        fcb   $40,$06,$00
+        fcb   $60,$06,$00
+        fcb   $60,$08,$00
+        fcb   $80,$0A,$00
+        fcb   $A0,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$02,$20
+        fcb   $22,$04,$20
+        fcb   $42,$04,$20
+        fcb   $42,$04,$20
+        fcb   $42,$04,$20
+        fcb   $42,$06,$20
+        fcb   $62,$06,$20
+        fcb   $62,$08,$20
+        fcb   $82,$0A,$20
+        fcb   $A2,$04,$40
+        fcb   $44,$04,$40
+        fcb   $44,$04,$40
+        fcb   $44,$04,$40
+        fcb   $44,$06,$40
+        fcb   $64,$06,$40
+        fcb   $64,$08,$40
+        fcb   $84,$0A,$40
+        fcb   $A4,$06,$60
+        fcb   $66,$06,$60
+        fcb   $66,$08,$60
+        fcb   $86,$0A,$60
+        fcb   $A6,$08,$80
+        fcb   $88,$0A,$80
+        fcb   $A8,$0A,$A0
+        fcb   $AA,$0C,$C0
+        fcb   $CC,$04,$42
+        fcb   $44,$24,$42
+        fcb   $44,$24,$42
+        fcb   $44,$24,$42
+        fcb   $44,$26,$42
+        fcb   $64,$26,$42
+        fcb   $64,$28,$42
+        fcb   $84,$2A,$42
+        fcb   $A4,$26,$62
+        fcb   $66,$26,$62
+        fcb   $66,$28,$62
+        fcb   $86,$2A,$62
+        fcb   $A6,$28,$82
+        fcb   $88,$2A,$82
+        fcb   $A8,$2A,$A2
+        fcb   $AA,$2C,$C2
+        fcb   $CC,$26,$64
+        fcb   $66,$46,$64
+        fcb   $66,$48,$64
+        fcb   $86,$4A,$64
+        fcb   $A6,$48,$84
+        fcb   $88,$4A,$84
+        fcb   $A8,$4A,$A4
+        fcb   $AA,$4C,$C4
+        fcb   $CC,$48,$86
+        fcb   $88,$6A,$86
+        fcb   $A8,$6A,$A6
+        fcb   $AA,$6C,$C6
+        fcb   $CC,$6A,$A8
+        fcb   $AA,$8C,$C8
+        fcb   $CC,$8C,$CA
+        fcb   $CC,$AE,$EC
+        fcb   $EE,$CE,$EE        
 
 * ************************************************************************************
 * 
@@ -542,10 +824,10 @@ PauseMusic
 * 
 
 CoordFlag
-        subb  #$E0
-        aslb
-        ldy   #CoordFlagLookup
-        jmp   [b,y] 
+        suba  #$E0
+        asla
+        ldx   #CoordFlagLookup
+        jmp   [a,x] 
 
 CoordFlagLookup
         fdb   cfPanningAMSFMS       ; E0
@@ -648,9 +930,6 @@ cfSetPSGTone
         rts         
 
 cfJumpTo
-        ldd   ,x
-        ldx   MusicData
-        leax  d,x
         rts             
 
 cfRepeatAtPos
