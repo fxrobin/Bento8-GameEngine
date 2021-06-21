@@ -25,17 +25,8 @@ SMPS_TRK_ENV_PTR             equ   5
 SMPS_TRK_FM_HDR_LEN          equ   4
 SMPS_TRK_PSG_HDR_LEN         equ   6
 
-; Track STRUCT Constants
-PlaybackControl              equ   0
-TempoDivider                 equ   2
-DataPointer                  equ   3
-TransposeAndVolume           equ   5
-VoiceIndex                   equ   8
-DurationTimeout              equ   11
-
 ; Hardware Addresses
-YM2413_A0                    equ   $E7B1 
-YM2413_D0                    equ   $E7B2
+YM2413_A0                    equ   $E7B1
 PSG                          equ   $E7B0
 
 ******************************************************************************
@@ -49,41 +40,33 @@ Track STRUCT
                                                       ;         7 (80h)  track is playing
 PlaybackControl                rmb   1
                                                       ;         "voice control"; bits 
-                                                      ;         2 (04h)  If set, bound for part II, otherwise 0 (see zWriteFMIorII)
-                                                      ;                 -- bit 2 has to do with sending key on/off, which uses this differentiation bit directly
+                                                      ;         0-3 (00h-0Fh) Voice number
                                                       ;         7 (80h)  PSG Track
 VoiceControl                   rmb   1
 TempoDivider                   rmb   1                ; timing divisor; 1 = Normal, 2 = Half, 3 = Third...
 DataPointer                    rmb   2                ; Track's position
 Transpose                      rmb   1                ; Transpose (from coord flag E9)
 Volume                         rmb   1                ; (Dependency) Should follow Transpose - channel volume (only applied at voice changes)
-AMSFMSPan                      rmb   1                ; Panning / AMS / FMS settings
 VoiceIndex                     rmb   1                ; Current voice in use OR current PSG tone
 VolFlutter                     rmb   1                ; PSG flutter (dynamically effects PSG volume for decay effects)
 StackPointer                   rmb   1                ; "Gosub" stack position offset (starts at 2Ah, i.e. end of track, and each jump decrements by 2)
 DurationTimeout                rmb   1                ; current duration timeout; counting down to zero
 SavedDuration                  rmb   1                ; last set duration (if a note follows a note, this is reapplied to 0Bh)
                                                       ; 0Dh / 0Eh change a little depending on track -- essentially they hold data relevant to the next note to play
-NextData                       rmb   2                ; DAC  Next drum to play
-                                                      ; FM/PSG  frequency low byte
-                                                      ; FM/PSG  frequency high byte
+NextData                       rmb   2                ; DAC Next drum to play - FM/PSG  frequency
 NoteFillTimeout                rmb   1                ; Currently set note fill; counts down to zero and then cuts off note
 NoteFillMaster                 rmb   1                ; Reset value for current note fill
-ModulationPtrLow               rmb   1                ; low byte of address of current modulation setting
-ModulationPtrHigh              rmb   1                ; high byte of address of current modulation setting
+ModulationPtr                  rmb   2                ; address of current modulation setting
 ModulationWait                 rmb   1                ; Wait for ww period of time before modulation starts
 ModulationSpeed                rmb   1                ; Modulation Speed
 ModulationDelta                rmb   1                ; Modulation change per Mod. Step
 ModulationSteps                rmb   1                ; Number of steps in modulation (divided by 2)
-ModulationValLow               rmb   1                ; Current modulation value low byte
-ModulationValHigh              rmb   1                ; Current modulation value high byte
+ModulationVal                  rmb   2                ; Current modulation value
 Detune                         rmb   1                ; Set by detune coord flag E1; used to add directly to FM/PSG frequency
 VolTLMask                      rmb   1                ; zVolTLMaskTbl value set during voice setting (value based on algorithm indexing zGain table)
 PSGNoise                       rmb   1                ; PSG noise setting
-VoicePtrLow                    rmb   1                ; low byte of custom voice table (for SFX)
-VoicePtrHigh                   rmb   1                ; high byte of custom voice table (for SFX)
-TLPtrLow                       rmb   1                ; low byte of where TL bytes of current voice begin (set during voice setting)
-TLPtrHigh                      rmb   1                ; high byte of where TL bytes of current voice begin (set during voice setting)
+VoicePtr                       rmb   2                ; custom voice table (for SFX)
+TLPtr                          rmb   2                ; where TL bytes of current voice begin (set during voice setting)
 LoopCounters                   rmb   $A               ; Loop counter index 0
                                                       ;   ... open ...
 GoSubStack                                            ; start of next track, every two bytes below this is a coord flag "gosub" (F8h) return stack
@@ -95,7 +78,34 @@ GoSubStack                                            ; start of next track, eve
                                                       ;
                                                       ;        All tracks are 2Ah bytes long
  ENDSTRUCT
- 
+
+; Track STRUCT Constants
+PlaybackControl              equ   0
+VoiceControl                 equ   1
+TempoDivider                 equ   2
+DataPointer                  equ   3
+TransposeAndVolume           equ   5
+VoiceIndex                   equ   7
+VolFlutter                   equ   8
+StackPointer                 equ   9
+DurationTimeout              equ   10
+SavedDuration                equ   11
+NextData                     equ   12
+NoteFillTimeout              equ   14
+NoteFillMaster               equ   15
+ModulationPtr                equ   16
+ModulationWait               equ   18
+ModulationSpeed              equ   19
+ModulationDelta              equ   20
+ModulationSteps              equ   21
+ModulationVal                equ   22
+Detune                       equ   25
+VolTLMask                    equ   25
+PSGNoise                     equ   26
+VoicePtr                     equ   27
+TLPtr                        equ   29
+LoopCounters                 equ   31
+
 ******************************************************************************
 
 Var STRUCT
@@ -195,7 +205,7 @@ _WriteYM MACRO
         sta   ,u
         nop
         nop
-        stb   ,y
+        stb   1,u
  ENDM  
  
 _YMBusyWait MACRO
@@ -227,7 +237,6 @@ YMBusyWait2
 
 YM2413_DrumModeOn
         ldu   #YM2413_A0
-        ldy   #YM2413_D0
         ldx   #@data
 @a      ldd   ,x++
         bmi   @end
@@ -254,6 +263,8 @@ YM2413_DrumModeOn
 
 _InitTrackFM MACRO
         ldx   #\1
+        lda   #\2
+        sta   VoiceControl,x
         lda   SongDelay        
         sta   TempoDivider,x
         ldd   #$8201
@@ -269,6 +280,8 @@ _InitTrackFM MACRO
 
 _InitTrackPSG MACRO
         ldx   #\1
+        lda   #\2
+        sta   VoiceControl,x
         lda   AbsVar.CurrentTempo        
         sta   TempoDivider,x
         ldd   #$8201
@@ -330,15 +343,15 @@ ifmjmp
         fdb   ifm7
         fdb   ifm8
 
-ifm8    _InitTrackFM SongFM8
-ifm7    _InitTrackFM SongFM7
-ifm6    _InitTrackFM SongFM6
-ifm5    _InitTrackFM SongFM5
-ifm4    _InitTrackFM SongFM4
-ifm3    _InitTrackFM SongFM3
-ifm2    _InitTrackFM SongFM2
-ifm1    _InitTrackFM SongFM1
-ifm0    _InitTrackFM SongFM0
+ifm8    _InitTrackFM SongFM8,$08
+ifm7    _InitTrackFM SongFM7,$07
+ifm6    _InitTrackFM SongFM6,$06
+ifm5    _InitTrackFM SongFM5,$05
+ifm4    _InitTrackFM SongFM4,$04
+ifm3    _InitTrackFM SongFM3,$03
+ifm2    _InitTrackFM SongFM2,$02
+ifm1    _InitTrackFM SongFM1,$01
+ifm0    _InitTrackFM SongFM0,$00
 ifm
         ldx   MusicData
         lda   SMPS_NB_PSG,x
@@ -351,9 +364,9 @@ ipsgjmp
         fdb   ipsg2
         fdb   ipsg3
 
-ipsg3   _InitTrackPSG SongPSG3
-ipsg2   _InitTrackPSG SongPSG2  
-ipsg1   _InitTrackPSG SongPSG1
+ipsg3   _InitTrackPSG SongPSG3,$82
+ipsg2   _InitTrackPSG SongPSG2,$81  
+ipsg1   _InitTrackPSG SongPSG1,$80
 ipsg0
         rts
         
@@ -394,8 +407,8 @@ UpdateEverything
 * 
 
 _UpdateTrack MACRO
-        ldx   #\1
-        lda   PlaybackControl,x        ; Is bit 7 (80h) set on playback control byte? (means "is playing")
+        ldy   #\1
+        lda   PlaybackControl,y        ; Is bit 7 (80h) set on playback control byte? (means "is playing")
         bpl   a@                       
         jsr   \2                       ; If so, UpdateTrack
 a@      equ   *        
@@ -456,13 +469,12 @@ DACUpdateTrack
         beq   @a
         rts
 @a
-        ldd   #$0E20                   ; note has ended, so note off
-        ldu   #YM2413_A0 
-        ldy   #YM2413_D0        
-        _WriteYM
-         
         ldx   SongDAC.DataPointer
         
+        ldd   #$0E20                   ; note has ended, so note off
+        ldu   #YM2413_A0    
+        _WriteYM
+                 
 @b      ldb   ,x+                      ; read DAC song data
         cmpb  #$E0
         blo   @a                       ; test for >= E0h, which is a coordination flag
@@ -495,8 +507,7 @@ DACAfterDur
         subb  #$81                     ; transform note into an index...      
         ldb   b,x
         lda   #$0E
-        ldu   #YM2413_A0 
-        ldy   #YM2413_D0        
+        ldu   #YM2413_A0      
         _WriteYM    
         rts
 @data
@@ -520,9 +531,89 @@ DACAfterDur
 
 * ************************************************************************************
 * 
-        
+
+_FMNoteOff MACRO
+        lda   PlaybackControl,y
+        anda  $14
+        bne   a@
+        lda   VoiceControl,y
+        adda  #$20
+        ldb   #$00
+        ldu   #YM2413_A0
+        _WriteYM   
+a@      equ   *        
+ ENDM
+
 FMUpdateTrack
-        dec   DurationTimeout,x
+        dec   DurationTimeout,y        ; Decrement duration
+        bne   NoteFillUpdate           ; If not time-out yet, go do updates only
+        lda   PlaybackControl,y
+        anda  #$F7
+        sta   PlaybackControl,y        ; When duration over, clear "do not attack" bit 4 (0x10) of track's play control
+FMDoNext
+        ldx   DataPointer,y
+        
+        _FMNoteOff
+        
+@b      ldb   ,x+                      ; read song data
+        cmpb  #$E0
+        blo   @a                       ; test for >= E0h, which is a coordination flag
+        jsr   CoordFlag
+        bra   @b                       ; read all consecutive coordination flags 
+@a      
+          
+        bpl   FMSetDuration            ; test for 80h not set, which is a note duration
+FMSetFreq
+        subb  #$80
+        beq   FMDoRest
+        
+        stb   NextData,y               ; This is a note; store it here
+        ldb   ,x                       ; Get next byte
+        bpl   FMSetDurationAndForward  ; test for 80h not set, which is a note duration
+        ldb   SavedDuration,y
+        stb   DurationTimeout,y
+        bra   FMAfterDur
+
+FMSetDurationAndForward
+        leax  1,x
+FMSetDuration
+        lda   TempoDivider,y
+        mul
+        stb   SavedDuration,y
+        stb   DurationTimeout,y
+FMAfterDur
+        stx   DataPointer,y
+        ldb   NextData,y
+        cmpb  #$80
+        bne   @a
+        rts                            ; if a rest, quit
+@a
+        ldx   #@data            
+        subb  #$81                     ; transform note into an index...      
+        ldb   b,x
+        lda   #$0E
+        ldu   #YM2413_A0       
+        _WriteYM    
+        rts
+
+
+
+FMPrepareNote
+FMNoteOn
+DoModulation        
+FMUpdateFreq
+        rts
+                
+NoteFillUpdate
+        bra   DoModulation
+        rts
+  
+FMDoRest  
+        lda   PlaybackControl,y        ; Set bit 1 (track is at rest)
+        ora   #$02
+        sta   PlaybackControl,y
+        ldd   #$0000
+        sta   NextData,y               ; Zero out FM Frequency
         rts
   
 * ************************************************************************************
@@ -544,35 +635,35 @@ PauseMusic
 CoordFlag
         subb  #$E0
         aslb
-        ldy   #CoordFlagLookup
-        jmp   [b,y] 
+        ldu   #CoordFlagLookup
+        jmp   [b,u] 
 
 CoordFlagLookup
         fdb   cfPanningAMSFMS       ; E0
         fdb   cfDetune              ; E1
         fdb   cfSetCommunication    ; E2
-        fdb   cfJumpReturn          ; E3
+        fdb   cfJumpReturn          ; E3 -- todo
         fdb   cfFadeInToPrevious    ; E4
         fdb   cfSetTempoDivider     ; E5
-        fdb   cfChangeFMVolume      ; E6
-        fdb   cfPreventAttack       ; E7
+        fdb   cfChangeFMVolume      ; E6 -- todo
+        fdb   cfPreventAttack       ; E7 -- todo
         fdb   cfNoteFill            ; E8
-        fdb   cfChangeTransposition ; E9
+        fdb   cfChangeTransposition ; E9 -- todo
         fdb   cfSetTempo            ; EA
         fdb   cfSetTempoMod         ; EB
         fdb   cfChangePSGVolume     ; EC
         fdb   cfClearPush           ; ED
         fdb   cfStopSpecialFM4      ; EE
-        fdb   cfSetVoice            ; EF
-        fdb   cfModulation          ; F0
+        fdb   cfSetVoice            ; EF -- todo
+        fdb   cfModulation          ; F0 -- todo
         fdb   cfEnableModulation    ; F1
         fdb   cfStopTrack           ; F2
-        fdb   cfSetPSGNoise         ; F3
-        fdb   cfDisableModulation   ; F4
+        fdb   cfSetPSGNoise         ; F3 -- todo
+        fdb   cfDisableModulation   ; F4 -- todo
         fdb   cfSetPSGTone          ; F5
-        fdb   cfJumpTo              ; F6
-        fdb   cfRepeatAtPos         ; F7
-        fdb   cfJumpToGosub         ; F8
+        fdb   cfJumpTo              ; F6 -- todo
+        fdb   cfRepeatAtPos         ; F7 -- todo
+        fdb   cfJumpToGosub         ; F8 -- todo
         fdb   cfOpF9                ; F9
         fdb   cfNop                 ; FA
         fdb   cfNop                 ; FB
