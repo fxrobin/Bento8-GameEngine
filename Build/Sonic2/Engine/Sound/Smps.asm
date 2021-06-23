@@ -486,7 +486,6 @@ DACUpdateTrack
         ldb   ,x
         bpl   SetDurationAndForward    ; test for 80h not set, which is a note duration
         ldb   SongDAC.SavedDuration
-        stb   SongDAC.DurationTimeout
         bra   DACAfterDur
 
 SetDurationAndForward
@@ -495,8 +494,8 @@ SetDuration
         lda   SongDAC.TempoDivider
         mul
         stb   SongDAC.SavedDuration
-        stb   SongDAC.DurationTimeout
 DACAfterDur
+        stb   SongDAC.DurationTimeout
         stx   SongDAC.DataPointer
         ldb   SongDAC.NextData
         cmpb  #$80
@@ -533,10 +532,10 @@ DACAfterDur
 * 
 
 _FMNoteOff MACRO
-        lda   PlaybackControl,y
-        anda  $14
-        bne   a@
-        lda   VoiceControl,y
+        lda   PlaybackControl,y        	; Load this track's playback control byte
+        anda  #$14                      ; Are bits 4 (no attack) or 2 (SFX overriding) set?
+        bne   a@                        ; If they are, return
+        lda   VoiceControl,y            ; Otherwise, send a KEY OFF
         adda  #$20
         ldb   #$00
         ldu   #YM2413_A0
@@ -550,72 +549,101 @@ FMUpdateTrack
         lda   PlaybackControl,y
         anda  #$F7
         sta   PlaybackControl,y        ; When duration over, clear "do not attack" bit 4 (0x10) of track's play control
+        
 FMDoNext
         ldx   DataPointer,y
+        lda   PlaybackControl,y        ; Clear bit 1 (02h) "track is rest" from track
+        anda  #$FD
+        sta   PlaybackControl,y        
+        _FMNoteOff                     ; TODO : Check if must be moved after Coord Flag reading or not
         
-        _FMNoteOff
-        
-@b      ldb   ,x+                      ; read song data
+@b      ldb   ,x+                      ; Read song data
         cmpb  #$E0
-        blo   @a                       ; test for >= E0h, which is a coordination flag
+        blo   @a                       ; Test for >= E0h, which is a coordination flag
         jsr   CoordFlag
-        bra   @b                       ; read all consecutive coordination flags 
-@a      
-          
-        bpl   FMSetDuration            ; test for 80h not set, which is a note duration
-FMSetFreq
-        subb  #$80
-        beq   FMDoRest
+        bra   @b                       ; Read all consecutive coordination flags 
+@a      bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
         
-        stb   NextData,y               ; This is a note; store it here
-        ldb   ,x                       ; Get next byte
-        bpl   FMSetDurationAndForward  ; test for 80h not set, which is a note duration
-        ldb   SavedDuration,y
-        stb   DurationTimeout,y
-        bra   FMAfterDur
+FMSetFreq
+        subb  #$80                     ; Test for a rest
+        bne   @a
+        lda   PlaybackControl,y        ; Set bit 1 (track is at rest)
+        ora   #$02
+        sta   PlaybackControl,y
+        bra   @b        
+@a      addb  Transpose,y              ; Add current channel transpose (coord flag E9)
+        aslb                           ; Transform note into an index...
+        ldu   #Frequencies
+        ldd   b,u
+        std   NextData,y               ; Store Frequency
+@b      ldb   ,x                       ; Get next byte
+        bpl   FMSetDurationAndForward  ; Test for 80h not set, which is a note duration
+        ldb   SavedDuration,y        
+        bra   FinishTrackUpdate
 
 FMSetDurationAndForward
         leax  1,x
+        
 FMSetDuration
         lda   TempoDivider,y
         mul
         stb   SavedDuration,y
-        stb   DurationTimeout,y
-FMAfterDur
-        stx   DataPointer,y
-        ldb   NextData,y
-        cmpb  #$80
-        bne   @a
-        rts                            ; if a rest, quit
-@a
-        ldx   #@data            
-        subb  #$81                     ; transform note into an index...      
-        ldb   b,x
-        lda   #$0E
-        ldu   #YM2413_A0       
-        _WriteYM    
-        rts
-
-
-
+        
+FinishTrackUpdate
+        stb   DurationTimeout,y        ; Last set duration ... put into ticker
+        stx   DataPointer,y            ; Stores to the track pointer memory
+        lda   PlaybackControl,y
+        bita  #$10                     ; Is bit 4 (10h) "do not attack next note" set on playback?
+        bne   @a                       
+        bra   FMPrepareNote            ; If so, quit
+@a      ldb   NoteFillMaster,y
+        stb   NoteFillTimeout,y        ; Reset 0Fh "note fill" value to master
+        clr   VolFlutter,y             ; Reset PSG flutter byte
+        bita  #$08                     ; Is bit 3 (08h) modulation turned on?
+        beq   @b
+        bra   FMPrepareNote            ; if not, quit
+@b      ldx   ModulationPtr,y
+        jsr   SetModulation            ; reload modulation settings for the new note
+        
 FMPrepareNote
-FMNoteOn
-DoModulation        
+        lda   PlaybackControl,y
+        bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
+        beq   @a                       
+        rts                            ; If so, quit
 FMUpdateFreq
+        maj detune ...
+        write freq     ...  
+
+FMNoteOn
+        write note ...
+        
+DoModulation  
+        modulate ...
+              
+FMUpdateFreq
+        maj detune ...
+        write freq  ...
         rts
+        
                 
 NoteFillUpdate
+        fill timeout ...
         bra   DoModulation
         rts
-  
-FMDoRest  
-        lda   PlaybackControl,y        ; Set bit 1 (track is at rest)
-        ora   #$02
-        sta   PlaybackControl,y
-        ldd   #$0000
-        sta   NextData,y               ; Zero out FM Frequency
-        rts
-  
+ 
+; 95 notes (Note value $81=C0 $DF=A#7), lowest note for YM2413 is G0
+; lower notes (YM2612 compatibility) are mapped to C1 - F#1
+Frequencies
+        fdb   $0000 ; padding for ($80=rest), saves a dec instruction
+        fdb   $0157,$016B,$0181,$0198,$01B0,$01CA,$01E5,$0101,$0110,$0120,$0131,$0143 ; C1 - F#1 / G0 - B0
+        fdb   $0157,$016B,$0181,$0198,$01B0,$01CA,$01E5,$0301,$0310,$0320,$0331,$0343 ; C1 - B1
+        fdb   $0357,$036B,$0381,$0398,$03B0,$03CA,$03E5,$0501,$0510,$0520,$0531,$0543 ; ...
+        fdb   $0557,$056B,$0581,$0598,$05B0,$05CA,$05E5,$0701,$0710,$0720,$0731,$0743 ; 
+        fdb   $0757,$076B,$0781,$0798,$07B0,$07CA,$07E5,$0901,$0910,$0920,$0931,$0943 ; 
+        fdb   $0957,$096B,$0981,$0998,$09B0,$09CA,$09E5,$0B01,$0B10,$0B20,$0B31,$0B43 ;
+        fdb   $0B57,$0B6B,$0B81,$0B98,$0BB0,$0BCA,$0BE5,$0D01,$0D10,$0D20,$0D31,$0D43 ; 
+        fdb   $0D57,$0D6B,$0D81,$0D98,$0DB0,$0DCA,$0DE5,$0F01,$0F10,$0F20,$0F31       ; C7 - A#7
+        
 * ************************************************************************************
 *   
         
@@ -655,8 +683,8 @@ CoordFlagLookup
         fdb   cfClearPush           ; ED
         fdb   cfStopSpecialFM4      ; EE
         fdb   cfSetVoice            ; EF -- todo
-        fdb   cfModulation          ; F0 -- todo
-        fdb   cfEnableModulation    ; F1
+        fdb   cfModulation          ; F0 -- done
+        fdb   cfEnableModulation    ; F1 -- done
         fdb   cfStopTrack           ; F2
         fdb   cfSetPSGNoise         ; F3 -- todo
         fdb   cfDisableModulation   ; F4 -- todo
@@ -720,10 +748,37 @@ cfStopSpecialFM4
 cfSetVoice
         rts
 
+; (via Saxman's doc): F0wwxxyyzz - modulation
+; o	ww - Wait for ww period of time before modulation starts
+; o	xx - Modulation Speed
+; o	yy - Modulation change per Mod. Step
+; o	zz - Number of steps in modulation
+;
 cfModulation
-        rts         
+        lda   PlaybackControl,y
+        ora   #$08
+        sta   PlaybackControl,y        ; Set bit 3 (08h) of "playback control" byte (modulation on)
+        stx   ModulationPtr,y          ; Back up modulation setting address
+SetModulation
+        ldd   ,x++                     ; also read ModulationSpeed
+        std   ModulationWait,y         ; also write ModulationSpeed
+        ldd   2,x++                    ; also read ModulationSteps
+        sta   ModulationDelta,y        
+        lsrb                           ; divide number of steps by 2
+        stb   ModulationSteps,y
+        lda   PlaybackControl,y
+        bita  #$10                     ; Is bit 4 "do not attack next note" (10h) set?
+        bne   @a                       ; If so, quit!
+        ldd   #0
+        std   ModulationVal,y          ; Clear modulation value
+@a      rts         
 
+; (via Saxman's doc): Turn on modulation
+;
 cfEnableModulation
+        lda   PlaybackControl,y
+        ora   #$08
+        sta   PlaybackControl,y        ; Set bit 3 (08h) of "playback control" byte (modulation on)
         rts   
 
 cfStopTrack
