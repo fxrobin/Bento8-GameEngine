@@ -224,7 +224,16 @@ _YMBusyWait10 MACRO
         nop
  ENDM
  
- _YMBusyWait17 MACRO
+_YMBusyWait13 MACRO
+        nop
+        nop
+        nop
+        nop
+        nop                                        
+        brn   *
+ ENDM 
+ 
+_YMBusyWait17 MACRO
         nop
         nop
         nop
@@ -266,6 +275,33 @@ YM2413_DrumModeOn
         fdb   $3700
         fdb   $3800
         fcb   $FF
+
+* ************************************************************************************
+* Setup YM2413 voices
+* destroys A, B, U, X
+
+YM2413_Voices
+        ldu   #YM2413_A0
+        ldx   #@data
+        lda   #$30
+@a      ldb   ,x+
+        _WriteYM
+        _YMBusyWait13
+        inca
+        cmpa  #$39
+        bne   @a
+@end    rts        
+@data
+        fcb   $0F
+        fcb   $1F
+        fcb   $2F
+        fcb   $3F
+        fcb   $4F
+        fcb   $5F
+        fcb   $6F
+        fcb   $7F
+        fcb   $8F
+
 
 * ************************************************************************************
 * receives in X the address of the song
@@ -335,8 +371,8 @@ BGMLoad
         leau  SMPS_TRK_HEADER,x
         ldy   SMPS_DAC_FLAG,x
         bne   @a
-        _InitTrackFM SongDAC
-@dyn    lda   #$00                                    ; (dynamic)      
+        _InitTrackFM SongDAC,$06       ; optim VoiceControl inutile
+@dyn    lda   #$00                     ; (dynamic)      
         deca
 @a      asla
         ldy   #ifmjmp
@@ -556,6 +592,76 @@ DACAfterDur
 
 * ************************************************************************************
 * 
+
+DoModulationNoteFill
+        lda   PlaybackControl,y
+        bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
+        beq   @a
+        rts                            ; If so, quit        
+@a      bita  #$08                     ; Is bit 3 (08h) "modulation on" set on playback?
+        bne   @b
+        rts                            ; If not, quit        
+@b      lda   ModulationWait,y         ; 'ww' period of time before modulation starts
+        beq   @c                       ; if zero, go to it!
+        dec   ModulationWait,y         ; Otherwise, decrement timer
+        rts                            ; return if decremented
+@c      dec   ModulationSpeed,y        ; Decrement modulation speed counter
+        beq   @d
+        rts                            ; Return if not yet zero
+@d      ldx   ModulationPtr,y
+        lda   1,x
+        sta   ModulationSpeed,y
+        lda   ModulationSteps,y
+        bne   @e
+        lda   3,x
+        sta   ModulationSteps,y     
+        neg   ModulationDelta,y
+        rts                
+@e      dec   ModulationSteps,y
+        ldb   ModulationDelta,y
+        sex
+        addd  ModulationVal,y
+        std   ModulationVal,y
+                
+FMUpdateFreqNoteFill
+        ldb   Track.Detune
+        sex
+        addd  NextData,y               ; Apply detune but don't update stored frequency
+        addd  ModulationVal,y        
+        stb   @dyn+1
+        ldb   #$10                     ; set LSB Frequency Command
+        addb  VoiceControl,y
+        ldu   #YM2413_A0        
+        stb   ,u
+        addb  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        nop
+        sta   1,u
+        _YMBusyWait19
+        lda   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
+        stb   ,u
+        anda  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
+@dyn    adda  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
+        sta   1,u   
+        sta   NoteControl,y
+        rts
+ 
+NoteFillUpdate
+        lda   NoteFillTimeout,y        ; Get current note fill value
+        beq   DoModulationNoteFill     ; If zero, return!
+        dec   NoteFillTimeout,y        ; Decrement note fill
+        bne   DoModulationNoteFill     ; If not zero, return
+        
+        lda   PlaybackControl,y
+        ora   #$02                     ; Set bit 1 (track is at rest)
+        lda   VoiceControl,y           ; Send a Key Off
+        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
+        ldu   #YM2413_A0
+        sta   ,u
+        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
+        andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
+        stb   1,u                      ; send to YM
+        stb   NoteControl,y                
+        rts 
  
 FMUpdateTrack
         dec   DurationTimeout,y        ; Decrement duration
@@ -582,7 +688,6 @@ FMNoteOff
         andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
         stb   1,u                      ; send to YM
         stb   NoteControl,y        
-        
 @b      ldb   ,x+                      ; Read song data
         cmpb  #$E0
         blo   @a                       ; Test for >= E0h, which is a coordination flag
@@ -658,50 +763,6 @@ FMUpdateFreqAndNoteOn
         sta   NoteControl,y
         
 DoModulation  
-        
-        
-              
-FMUpdateFreq
-        ldb   Track.Detune
-        sex
-        addd  NextData,y               ; Apply detune but don't update stored frequency
-        stb   @dyn+1
-        ldb   #$10                     ; set LSB Frequency Command
-        addb  VoiceControl,y
-        ldu   #YM2413_A0        
-        stb   ,u
-        addb  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
-        nop
-        sta   1,u
-        _YMBusyWait19
-        lda   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        stb   ,u
-        anda  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
-@dyn    adda  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        sta   1,u   
-        sta   NoteControl,y
-        rts
-        
-                
-NoteFillUpdate
-        lda   NoteFillTimeout,y        ; Get current note fill value
-        beq   DoModulationNoteFill     ; If zero, return!
-        dec   NoteFillTimeout,y        ; Decrement note fill
-        bne   DoModulationNoteFill     ; If not zero, return
-        
-        lda   PlaybackControl,y
-        ora   #$02                     ; Set bit 1 (track is at rest)
-        lda   VoiceControl,y           ; Send a Key Off
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        ldu   #YM2413_A0
-        sta   ,u
-        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
-        andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
-        stb   1,u                      ; send to YM
-        stb   NoteControl,y                
-        rts
-        
-DoModulationNoteFill
         lda   PlaybackControl,y
         bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
         beq   @a
@@ -717,13 +778,25 @@ DoModulationNoteFill
         beq   @d
         rts                            ; Return if not yet zero
 @d      ldx   ModulationPtr,y
-        addd  #1
-        lda   ,x
-        
-FMUpdateFreqNoteFill
+        lda   1,x
+        sta   ModulationSpeed,y
+        lda   ModulationSteps,y
+        bne   @e
+        lda   3,x
+        sta   ModulationSteps,y     
+        neg   ModulationDelta,y
+        rts                
+@e      dec   ModulationSteps,y
+        ldb   ModulationDelta,y
+        sex
+        addd  ModulationVal,y
+        std   ModulationVal,y        
+              
+FMUpdateFreq
         ldb   Track.Detune
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
+        addd  ModulationVal,y        
         stb   @dyn+1
         ldb   #$10                     ; set LSB Frequency Command
         addb  VoiceControl,y
@@ -784,7 +857,7 @@ CoordFlagLookup
         fdb   cfFadeInToPrevious    ; E4
         fdb   cfSetTempoDivider     ; E5
         fdb   cfChangeFMVolume      ; E6 -- todo
-        fdb   cfPreventAttack       ; E7 -- todo
+        fdb   cfPreventAttack       ; E7 -- done
         fdb   cfNoteFill            ; E8
         fdb   cfChangeTransposition ; E9 -- todo
         fdb   cfSetTempo            ; EA
@@ -797,9 +870,9 @@ CoordFlagLookup
         fdb   cfEnableModulation    ; F1 -- done
         fdb   cfStopTrack           ; F2
         fdb   cfSetPSGNoise         ; F3 -- todo
-        fdb   cfDisableModulation   ; F4 -- todo
+        fdb   cfDisableModulation   ; F4 -- done
         fdb   cfSetPSGTone          ; F5
-        fdb   cfJumpTo              ; F6 -- todo
+        fdb   cfJumpTo              ; F6 -- done
         fdb   cfRepeatAtPos         ; F7 -- todo
         fdb   cfJumpToGosub         ; F8 -- todo
         fdb   cfOpF9                ; F9
@@ -832,6 +905,9 @@ cfChangeFMVolume
         rts     
 
 cfPreventAttack
+        lda   PlaybackControl,y
+        ora   #$10
+        sta   PlaybackControl,y        ; Set bit 4 (10h) on playback control; do not attack next note
         rts      
 
 cfNoteFill 
@@ -872,7 +948,7 @@ cfModulation
 SetModulation
         ldd   ,x++                     ; also read ModulationSpeed
         std   ModulationWait,y         ; also write ModulationSpeed
-        ldd   2,x++                    ; also read ModulationSteps
+        ldd   ,x++                     ; also read ModulationSteps
         sta   ModulationDelta,y        
         lsrb                           ; divide number of steps by 2
         stb   ModulationSteps,y
@@ -898,6 +974,9 @@ cfSetPSGNoise
         rts        
 
 cfDisableModulation
+        lda   PlaybackControl,y
+        anda  #$F7
+        sta   PlaybackControl,y        ; Clear bit 3 (08h) of "playback control" byte (modulation off)        
         rts  
 
 cfSetPSGTone

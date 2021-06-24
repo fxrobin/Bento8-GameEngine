@@ -1,12 +1,15 @@
-(main)test
- *	opt c,ct
+*(main)test
+	opt c,ct
 
         org   $A000
 
-
-        bpl   *+5                       
-        jsr   $7894                       ; If so, UpdateTrack
-WaitPhase        
-
-
-        
+YM2413_Voices
+        ldu   #$FFFF
+        ldx   #@data
+        lda   #$30
+@a      ldb   ,x+
+        inca
+        cmpa  #$39
+        bne   @a
+@end    rts   
+@data

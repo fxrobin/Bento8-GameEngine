@@ -228,6 +228,7 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    bsr.w   WaitForVint
         jsr   WaitVBL
         jsr   YM2413_DrumModeOn
+        jsr   YM2413_Voices
         lda   #$01
         sta   AbsVar.IsPalFlag                                                       
         jsr   IrqSet50Hz   
