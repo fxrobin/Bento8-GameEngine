@@ -50,12 +50,21 @@ IrqSmps
         addd  #1
         std   Vint_runcount
         
+        sts   @a+2                                    ; backup system stack
+        lds   #IRQSysStack                            ; set tmp system stack for IRQ 
         jsr   ReadJoypads        
         jsr   MusicFrame
+@a      lds   #0                                      ; (dynamic) restore system stack   
         
 IrqSmps_end        
-        lda   #$00
+        lda   #$00                                    ; (dynamic)
         _SetCartPageA                                 ; restore data page
         jmp   $E830                                   ; return to caller
         
 Vint_runcount fdb $0000
+
+; This space allow the use of system stack inside IRQ calls
+; otherwise the writes in sys stack will erase data when S is in use
+; (outside of IRQ) for another task than sys stack, ex: stack blast copy 
+              fill  0,32
+IRQSysStack

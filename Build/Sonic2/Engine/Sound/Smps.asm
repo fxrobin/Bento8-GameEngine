@@ -292,16 +292,15 @@ YM2413_Voices
         bne   @a
 @end    rts        
 @data
-        fcb   $0F
+        fcb   $73
+        fcb   $22
+        fcb   $93
+        fcb   $34
+        fcb   $34
+        fcb   $8E
         fcb   $1F
-        fcb   $2F
-        fcb   $3F
-        fcb   $4F
-        fcb   $5F
-        fcb   $6F
-        fcb   $7F
-        fcb   $8F
-
+        fcb   $1F
+        fcb   $1F        
 
 * ************************************************************************************
 * receives in X the address of the song
@@ -372,8 +371,8 @@ BGMLoad
         ldy   SMPS_DAC_FLAG,x
         bne   @a
         _InitTrackFM SongDAC,$06       ; optim VoiceControl inutile
-@dyn    lda   #$00                     ; (dynamic)      
-        deca
+@dyn    lda   #$00                     ; (dynamic)
+        deca                           ; nb fm track - 1 (dac track)      
 @a      asla
         ldy   #ifmjmp
         jmp   [a,y]    
@@ -628,21 +627,21 @@ FMUpdateFreqNoteFill
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
         addd  ModulationVal,y        
-        stb   @dyn+1
-        ldb   #$10                     ; set LSB Frequency Command
-        addb  VoiceControl,y
+        sta   @dyn+1
+        lda   #$10                     ; set LSB Frequency Command
+        adda  VoiceControl,y
         ldu   #YM2413_A0        
-        stb   ,u
-        addb  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        sta   ,u
+        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
-        sta   1,u
-        _YMBusyWait19
-        lda   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        stb   ,u
-        anda  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
-@dyn    adda  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        sta   1,u   
-        sta   NoteControl,y
+        stb   1,u
+        _YMBusyWait17
+        ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
+        sta   ,u
+        andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
+@dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
+        stb   1,u   
+        stb   NoteControl,y
         rts
  
 NoteFillUpdate
@@ -725,13 +724,13 @@ FinishTrackUpdate
         stx   DataPointer,y            ; Stores to the track pointer memory
         lda   PlaybackControl,y
         bita  #$10                     ; Is bit 4 (10h) "do not attack next note" set on playback?
-        bne   @a                       
+        beq   @a                       
         bra   FMPrepareNote            ; If so, quit
 @a      ldb   NoteFillMaster,y
         stb   NoteFillTimeout,y        ; Reset 0Fh "note fill" value to master
         clr   VolFlutter,y             ; Reset PSG flutter byte
         bita  #$08                     ; Is bit 3 (08h) modulation turned on?
-        beq   @b
+        bne   @b
         bra   FMPrepareNote            ; if not, quit
 @b      ldx   ModulationPtr,y
         jsr   SetModulation            ; reload modulation settings for the new note
@@ -745,22 +744,22 @@ FMUpdateFreqAndNoteOn
         ldb   Track.Detune
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
-        stb   @dyn+1
-        ldb   #$10                     ; set LSB Frequency Command
-        addb  VoiceControl,y
+        sta   @dyn+1
+        lda   #$10                     ; set LSB Frequency Command
+        adda  VoiceControl,y
         ldu   #YM2413_A0        
-        stb   ,u
-        addb  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        sta   ,u
+        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
-        sta   1,u
+        stb   1,u
         _YMBusyWait17
-        lda   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        ora   #$10                     ; Set bit 5 (10h) Key On        
-        stb   ,u
-        anda  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
-@dyn    adda  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        sta   1,u   
-        sta   NoteControl,y
+        ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
+        orb   #$10                     ; Set bit 5 (10h) Key On        
+        sta   ,u
+        andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
+@dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
+        stb   1,u   
+        stb   NoteControl,y
         
 DoModulation  
         lda   PlaybackControl,y
@@ -797,21 +796,21 @@ FMUpdateFreq
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
         addd  ModulationVal,y        
-        stb   @dyn+1
-        ldb   #$10                     ; set LSB Frequency Command
-        addb  VoiceControl,y
+        sta   @dyn+1
+        lda   #$10                     ; set LSB Frequency Command
+        adda  VoiceControl,y
         ldu   #YM2413_A0        
-        stb   ,u
-        addb  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        sta   ,u
+        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
-        sta   1,u
-        _YMBusyWait19
-        lda   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        stb   ,u
-        anda  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
-@dyn    adda  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        sta   1,u   
-        sta   NoteControl,y
+        stb   1,u
+        _YMBusyWait17
+        ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
+        sta   ,u
+        andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
+@dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
+        stb   1,u   
+        stb   NoteControl,y
         rts        
  
 ; 95 notes (Note value $81=C0 $DF=A#7), lowest note for YM2413 is G0
@@ -883,7 +882,10 @@ CoordFlagLookup
         fdb   cfNop                 ; FE
         fdb   cfNop                 ; FF
 
+; (via Saxman's doc): panning, AMS, FMS
+;
 cfPanningAMSFMS
+        leax  1,x
         rts
               
 cfDetune
@@ -901,7 +903,10 @@ cfFadeInToPrevious
 cfSetTempoDivider
         rts    
         
+; (via Saxman's doc): Change channel volume BY xx; xx is signed
+;
 cfChangeFMVolume
+        leax  1,x
         rts     
 
 cfPreventAttack
@@ -913,7 +918,10 @@ cfPreventAttack
 cfNoteFill 
         rts          
 
+; (via Saxman's doc): add xx to channel key
+;
 cfChangeTransposition
+        leax  1,x
         rts
 
 cfSetTempo 
@@ -930,8 +938,11 @@ cfClearPush
 
 cfStopSpecialFM4
         rts     
-
+        
+; (via Saxman's doc): set voice selection to xx
+;
 cfSetVoice
+        leax  1,x
         rts
 
 ; (via Saxman's doc): F0wwxxyyzz - modulation
@@ -970,7 +981,10 @@ cfEnableModulation
 cfStopTrack
         rts
 
+; (via Saxman's doc): Change current PSG noise to xx (For noise channel, E0-E7)
+;
 cfSetPSGNoise
+        leax  1,x
         rts        
 
 cfDisableModulation
@@ -988,10 +1002,21 @@ cfJumpTo
         leax  d,x
         rts             
 
+; (via Saxman's doc): $F7xxyyzzzz - repeat section of music
+;    * xx - loop index, for loops within loops without confusing the engine.
+;          o EXAMPLE: Some notes, then a section that is looped twice, then some more notes, and finally the whole thing is looped three times.
+;            The "inner" loop (the section that is looped twice) would have an xx of 01, looking something along the lines of F70102zzzz, whereas the "outside" loop (the whole thing loop) would have an xx of 00, looking something like F70003zzzz.
+;    * yy - number of times to repeat
+;          o NOTE: This includes the initial encounter of the F7 flag, not number of times to repeat AFTER hitting the flag.
+;    * zzzz - position to loop back to
+;
 cfRepeatAtPos
+        leax  4,x
         rts        
 
+; (via Saxman's doc): jump to position yyyy (keep previous position in memory for returning)
 cfJumpToGosub
+        leax  2,x
         rts        
 
 cfOpF9     
