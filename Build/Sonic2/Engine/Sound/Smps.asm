@@ -462,18 +462,18 @@ a@      equ   *
 UpdateMusic
         jsr   TempoWait
         _UpdateTrack SongDAC,DACUpdateTrack
-        _UpdateTrack SongFM0,FMUpdateTrack        
+        ;_UpdateTrack SongFM0,FMUpdateTrack        
         _UpdateTrack SongFM1,FMUpdateTrack
-        _UpdateTrack SongFM2,FMUpdateTrack
-        _UpdateTrack SongFM3,FMUpdateTrack
-        _UpdateTrack SongFM4,FMUpdateTrack
-        _UpdateTrack SongFM5,FMUpdateTrack
-        _UpdateTrack SongFM6,FMUpdateTrack
-        _UpdateTrack SongFM7,FMUpdateTrack
-        _UpdateTrack SongFM8,FMUpdateTrack                
-        _UpdateTrack SongPSG1,PSGUpdateTrack
-        _UpdateTrack SongPSG2,PSGUpdateTrack
-        _UpdateTrack SongPSG3,PSGUpdateTrack        
+        ;_UpdateTrack SongFM2,FMUpdateTrack
+        ;_UpdateTrack SongFM3,FMUpdateTrack
+        ;_UpdateTrack SongFM4,FMUpdateTrack
+        ;_UpdateTrack SongFM5,FMUpdateTrack
+        ;_UpdateTrack SongFM6,FMUpdateTrack
+        ;_UpdateTrack SongFM7,FMUpdateTrack
+        ;_UpdateTrack SongFM8,FMUpdateTrack                
+        ;_UpdateTrack SongPSG1,PSGUpdateTrack
+        ;_UpdateTrack SongPSG2,PSGUpdateTrack
+        ;_UpdateTrack SongPSG3,PSGUpdateTrack        
         rts
         
 * ************************************************************************************
@@ -555,7 +555,7 @@ DACAfterDur
         _WriteYM    
         rts
 @data
-        fcb   $30 ; $81 - Kick
+        fcb   $34 ; $81 - Kick
         fcb   $28 ; $82 - Snare
         fcb   $21 ; $83 - Clap
         fcb   $22 ; $84 - Scratch
@@ -623,7 +623,7 @@ DoModulationNoteFill
         std   ModulationVal,y
                 
 FMUpdateFreqNoteFill
-        ldb   Track.Detune
+        ldb   Detune,y
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
         addd  ModulationVal,y        
@@ -632,7 +632,7 @@ FMUpdateFreqNoteFill
         adda  VoiceControl,y
         ldu   #YM2413_A0        
         sta   ,u
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
         stb   1,u
         _YMBusyWait17
@@ -741,7 +741,7 @@ FMPrepareNote
         beq   FMUpdateFreqAndNoteOn                       
         rts                            ; If so, quit
 FMUpdateFreqAndNoteOn
-        ldb   Track.Detune
+        ldb   Detune,y
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
         sta   @dyn+1
@@ -749,7 +749,7 @@ FMUpdateFreqAndNoteOn
         adda  VoiceControl,y
         ldu   #YM2413_A0        
         sta   ,u
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
         stb   1,u
         _YMBusyWait17
@@ -792,7 +792,7 @@ DoModulation
         std   ModulationVal,y        
               
 FMUpdateFreq
-        ldb   Track.Detune
+        ldb   Detune,y
         sex
         addd  NextData,y               ; Apply detune but don't update stored frequency
         addd  ModulationVal,y        
@@ -801,7 +801,7 @@ FMUpdateFreq
         adda  VoiceControl,y
         ldu   #YM2413_A0        
         sta   ,u
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
+        adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
         stb   1,u
         _YMBusyWait17
