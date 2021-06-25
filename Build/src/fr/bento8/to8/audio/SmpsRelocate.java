@@ -61,6 +61,8 @@ public class SmpsRelocate{
 		}		
 		
 		//TODO ajout traitement des adresse associées à des commandes
+		//$F6zzzz  *** change *** substract $1380 to value zzzz
+		//$F7xxyyzzzz  *** change *** substract $1380 to value zzzz
 
 		Path path = Paths.get(args[0]+".out");
 		Files.write(path, fIN);

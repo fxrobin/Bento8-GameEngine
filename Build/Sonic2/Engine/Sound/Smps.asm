@@ -40,7 +40,7 @@ Track STRUCT
                                                       ;         7 (80h)  track is playing
 PlaybackControl                rmb   1
                                                       ;         "voice control"; bits 
-                                                      ;         0-3 (00h-0Fh) Voice number
+                                                      ;         0-3 (00h-0Fh) Channel number
                                                       ;         7   (80h) PSG Track
 VoiceControl                   rmb   1
                                                       ;         "note control"; bits
@@ -113,6 +113,7 @@ PSGNoise                     equ   27
 VoicePtr                     equ   28
 TLPtr                        equ   30
 LoopCounters                 equ   32
+GoSubStack                   equ   42
 
 ******************************************************************************
 
@@ -996,9 +997,11 @@ cfDisableModulation
 cfSetPSGTone
         rts         
 
+; (via Saxman's doc):  $F6zzzz - jump to position
+;    * zzzz - position to loop back to (negative offset)
+;
 cfJumpTo
         ldd   ,x
-        ldx   MusicData
         leax  d,x
         rts             
 
@@ -1008,10 +1011,21 @@ cfJumpTo
 ;            The "inner" loop (the section that is looped twice) would have an xx of 01, looking something along the lines of F70102zzzz, whereas the "outside" loop (the whole thing loop) would have an xx of 00, looking something like F70003zzzz.
 ;    * yy - number of times to repeat
 ;          o NOTE: This includes the initial encounter of the F7 flag, not number of times to repeat AFTER hitting the flag.
-;    * zzzz - position to loop back to
+;    * zzzz - position to loop back to (negative offset)
 ;
 cfRepeatAtPos
-        leax  4,x
+        ldd   ,x++                     ; Loop index is in 'a'
+        adda  LoopCounters             ; Add to make loop index offset
+        leau  a,y
+        tst   ,u
+        bne   @a
+        stb   ,u                       ; Otherwise, set it to the new number of repeats  
+@a      dec   ,u                       ; One less loop
+        beq   @b                       ; If counted to zero, skip the rest of this (hence start loop count of 1 terminates the loop without ever looping)
+        ldd   ,x
+        leax  d,x                      ; loop back
+        rts
+@b      leax  2,x
         rts        
 
 ; (via Saxman's doc): jump to position yyyy (keep previous position in memory for returning)
