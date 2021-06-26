@@ -45,7 +45,13 @@ public class SmpsRelocate{
 			return;
 		}
 		
+		// Relocate Voice
+		// ********************************************************************
+		
 		relocate(SMPS_VOICE);
+		
+		// Relocate Tracks
+		// ********************************************************************		
 		
 		int nbFMTracks = fIN[SMPS_NB_FM];
 		int pos = SMPS_FM_START;
@@ -60,11 +66,31 @@ public class SmpsRelocate{
 			pos += SMPS_PSG_SIZE;
 		}		
 		
-		//TODO ajout traitement des adresse associées à des commandes
-		//$F6zzzz  *** change *** substract $1380 to value zzzz
-		//$F7xxyyzzzz  *** change *** substract $1380 to value zzzz
-
-		Path path = Paths.get(args[0]+".out");
+		// Coordination flags
+		// ********************************************************************
+		while (pos < fIN.length) {
+			
+			switch (fIN[pos]) {
+				case (byte)0xF6: //$F6zzzz
+				case (byte)0xF8: //$F8zzzz					
+					relocateOffsetBack(pos+1);
+				    pos += 3;
+					break;
+				case (byte)0xF7: //$F7xxyyzzzz
+					relocateOffsetBack(pos+3);
+				    pos += 5;
+					break;
+				case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
+					modulation(pos+3);
+				    pos += 5;
+					break;					
+				default:
+					pos++;
+					break;
+			}			
+			
+		}				
+		Path path = Paths.get(args[0]+".smp");
 		Files.write(path, fIN);
 	}
 	
@@ -77,4 +103,24 @@ public class SmpsRelocate{
 		fIN[pos] = (byte) (address >> 8);
 		fIN[pos+1] = (byte) (address);
 	}
+	
+	private static void relocateOffsetBack (int pos) throws Exception {
+		if (pos > fIN.length) {
+			throw new Exception ("File is invalid.");
+		}
+		int address = ((fIN[pos+1] & 0xff) << 8) | (fIN[pos] & 0xff);
+		address += offset-pos;
+		fIN[pos] = (byte) (address >> 8);
+		fIN[pos+1] = (byte) (address);
+	}
+
+	private static void modulation (int pos) throws Exception {
+		if (pos > fIN.length) {
+			throw new Exception ("File is invalid.");
+		}
+		int value = (fIN[pos] & 0xff);
+		value = (int) (value/3.733333333);
+		if (value==0) {value=(byte)0x01;}
+		fIN[pos] = (byte) (value);
+	}	
 }

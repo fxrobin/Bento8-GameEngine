@@ -51,7 +51,7 @@ NoteControl                    rmb   1
 TempoDivider                   rmb   1                ; timing divisor; 1 = Normal, 2 = Half, 3 = Third...
 DataPointer                    rmb   2                ; Track's position
 Transpose                      rmb   1                ; Transpose (from coord flag E9)
-Volume                         rmb   1                ; (Dependency) Should follow Transpose - channel volume (only applied at voice changes)
+InstrAndVolume                 rmb   1                ; (Dependency) Should follow Transpose - channel instrument and volume (only applied at voice changes)
 VoiceIndex                     rmb   1                ; Current voice in use OR current PSG tone
 VolFlutter                     rmb   1                ; PSG flutter (dynamically effects PSG volume for decay effects)
 StackPointer                   rmb   1                ; "Gosub" stack position offset (starts at 2Ah, i.e. end of track, and each jump decrements by 2)
@@ -74,7 +74,7 @@ VoicePtr                       rmb   2                ; custom voice table (for 
 TLPtr                          rmb   2                ; where TL bytes of current voice begin (set during voice setting)
 LoopCounters                   rmb   $A               ; Loop counter index 0
                                                       ;   ... open ...
-GoSubStack                                            ; start of next track, every two bytes below this is a coord flag "gosub" (F8h) return stack
+                                                      ; start of next track, every two bytes below this is a coord flag "gosub" (F8h) return stack
                                                       ;
                                                       ;        The bytes between +20h and +29h are "open"; starting at +20h and going up are possible loop counters
                                                       ;        (for coord flag F7) while +2Ah going down (never AT 2Ah though) are stacked return addresses going
@@ -90,9 +90,9 @@ VoiceControl                 equ   1
 NoteControl                  equ   2
 TempoDivider                 equ   3
 DataPointer                  equ   4
-TransposeAndVolume           equ   6
+TranspAndInstrAndVol         equ   6
 Transpose                    equ   6
-Volume                       equ   7
+InstrAndVolume               equ   7
 VoiceIndex                   equ   8
 VolFlutter                   equ   9
 StackPointer                 equ   10
@@ -280,6 +280,8 @@ YM2413_DrumModeOn
 * ************************************************************************************
 * Setup YM2413 voices
 * destroys A, B, U, X
+*
+* TODO replace with voice block in song
 
 YM2413_Voices
         ldu   #YM2413_A0
@@ -316,11 +318,14 @@ _InitTrackFM MACRO
         ldd   #$8201
         sta   PlaybackControl,x
         stb   DurationTimeout,x
+        ldb   #GoSubStack
+        stb   StackPointer,x
         ldd   SMPS_TRK_DATA_PTR,u
         addd  MusicData
         std   DataPointer,x
         ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TransposeAndVolume,x
+        addb  #\3                      * third parameter is a tmp fix
+        std   TranspAndInstrAndVol,x
         leau  SMPS_TRK_FM_HDR_LEN,u       
  ENDM
 
@@ -333,11 +338,13 @@ _InitTrackPSG MACRO
         ldd   #$8201
         sta   PlaybackControl,x
         stb   DurationTimeout,x
+        ldb   #GoSubStack
+        stb   StackPointer,x        
         ldd   SMPS_TRK_DATA_PTR,u
         addd  MusicData
         std   DataPointer,x
         ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TransposeAndVolume,x
+        std   TranspAndInstrAndVol,x
         lda   SMPS_TRK_ENV_PTR,u
         sta   VoiceIndex,x
         leau  SMPS_TRK_PSG_HDR_LEN,u
@@ -371,7 +378,7 @@ BGMLoad
         leau  SMPS_TRK_HEADER,x
         ldy   SMPS_DAC_FLAG,x
         bne   @a
-        _InitTrackFM SongDAC,$06       ; optim VoiceControl inutile
+        _InitTrackFM SongDAC,$06,$00   ; optim VoiceControl inutile
 @dyn    lda   #$00                     ; (dynamic)
         deca                           ; nb fm track - 1 (dac track)      
 @a      asla
@@ -389,15 +396,18 @@ ifmjmp
         fdb   ifm7
         fdb   ifm8
 
-ifm8    _InitTrackFM SongFM8,$08
-ifm7    _InitTrackFM SongFM7,$07
-ifm6    _InitTrackFM SongFM6,$06
-ifm5    _InitTrackFM SongFM5,$05
-ifm4    _InitTrackFM SongFM4,$04
-ifm3    _InitTrackFM SongFM3,$03
-ifm2    _InitTrackFM SongFM2,$02
-ifm1    _InitTrackFM SongFM1,$01
-ifm0    _InitTrackFM SongFM0,$00
+        * third parameter is a tmp fix
+        * will be removed when song voices will be loaded
+
+ifm8    _InitTrackFM SongFM8,$08,$10
+ifm7    _InitTrackFM SongFM7,$07,$10
+ifm6    _InitTrackFM SongFM6,$06,$10
+ifm5    _InitTrackFM SongFM5,$05,$80
+ifm4    _InitTrackFM SongFM4,$04,$30
+ifm3    _InitTrackFM SongFM3,$03,$30
+ifm2    _InitTrackFM SongFM2,$02,$90
+ifm1    _InitTrackFM SongFM1,$01,$20
+ifm0    _InitTrackFM SongFM0,$00,$70
 ifm
         ldx   MusicData
         lda   SMPS_NB_PSG,x
@@ -463,11 +473,11 @@ a@      equ   *
 UpdateMusic
         jsr   TempoWait
         _UpdateTrack SongDAC,DACUpdateTrack
-        ;_UpdateTrack SongFM0,FMUpdateTrack        
+        _UpdateTrack SongFM0,FMUpdateTrack        
         _UpdateTrack SongFM1,FMUpdateTrack
-        ;_UpdateTrack SongFM2,FMUpdateTrack
-        ;_UpdateTrack SongFM3,FMUpdateTrack
-        ;_UpdateTrack SongFM4,FMUpdateTrack
+        _UpdateTrack SongFM2,FMUpdateTrack
+        _UpdateTrack SongFM3,FMUpdateTrack
+        _UpdateTrack SongFM4,FMUpdateTrack
         ;_UpdateTrack SongFM5,FMUpdateTrack
         ;_UpdateTrack SongFM6,FMUpdateTrack
         ;_UpdateTrack SongFM7,FMUpdateTrack
@@ -853,13 +863,13 @@ CoordFlagLookup
         fdb   cfPanningAMSFMS       ; E0
         fdb   cfDetune              ; E1
         fdb   cfSetCommunication    ; E2
-        fdb   cfJumpReturn          ; E3 -- todo
+        fdb   cfJumpReturn          ; E3 -- done
         fdb   cfFadeInToPrevious    ; E4
         fdb   cfSetTempoDivider     ; E5
-        fdb   cfChangeFMVolume      ; E6 -- todo
+        fdb   cfChangeFMVolume      ; E6 -- done
         fdb   cfPreventAttack       ; E7 -- done
         fdb   cfNoteFill            ; E8
-        fdb   cfChangeTransposition ; E9 -- todo
+        fdb   cfChangeTransposition ; E9 -- done
         fdb   cfSetTempo            ; EA
         fdb   cfSetTempoMod         ; EB
         fdb   cfChangePSGVolume     ; EC
@@ -873,8 +883,8 @@ CoordFlagLookup
         fdb   cfDisableModulation   ; F4 -- done
         fdb   cfSetPSGTone          ; F5
         fdb   cfJumpTo              ; F6 -- done
-        fdb   cfRepeatAtPos         ; F7 -- todo
-        fdb   cfJumpToGosub         ; F8 -- todo
+        fdb   cfRepeatAtPos         ; F7 -- done
+        fdb   cfJumpToGosub         ; F8 -- done
         fdb   cfOpF9                ; F9
         fdb   cfNop                 ; FA
         fdb   cfNop                 ; FB
@@ -894,8 +904,14 @@ cfDetune
             
 cfSetCommunication
         rts   
-        
+
+; Return (Sonic 1 & 2)
+;
 cfJumpReturn
+        lda   StackPointer,y           ; retrieve stack ptr
+        ldx   a,y                      ; load return address
+        adda  #2                       
+        sta   StackPointer,y           ; free stack position
         rts         
         
 cfFadeInToPrevious
@@ -907,7 +923,13 @@ cfSetTempoDivider
 ; (via Saxman's doc): Change channel volume BY xx; xx is signed
 ;
 cfChangeFMVolume
-        leax  1,x
+        ldb   InstrAndVolume,y
+        addb  ,x+
+        stb   InstrAndVolume,y
+        lda   #$30
+        adda  VoiceControl,y
+        ldu   #YM2413_A0    
+        _WriteYM        
         rts     
 
 cfPreventAttack
@@ -922,7 +944,9 @@ cfNoteFill
 ; (via Saxman's doc): add xx to channel key
 ;
 cfChangeTransposition
-        leax  1,x
+        lda   Transpose,y
+        adda  ,x+
+        sta   Transpose,y
         rts
 
 cfSetTempo 
@@ -1030,7 +1054,13 @@ cfRepeatAtPos
 
 ; (via Saxman's doc): jump to position yyyy (keep previous position in memory for returning)
 cfJumpToGosub
-        leax  2,x
+        lda   StackPointer,y
+        suba  #2
+        sta   StackPointer,y           ; move stack backward
+        leax  2,x                      ; move x to return address
+        stx   a,y                      ; store return address to stack
+        ldd   -2,x                     ; read sub address
+        leax  d,x                      ; gosub
         rts        
 
 cfOpF9     
