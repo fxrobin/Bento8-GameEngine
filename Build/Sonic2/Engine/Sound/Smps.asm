@@ -295,7 +295,7 @@ YM2413_Voices
         bne   @a
 @end    rts        
 @data
-        fcb   $73
+        fcb   $72
         fcb   $22
         fcb   $93
         fcb   $34
@@ -715,7 +715,8 @@ FMSetFreq
 @a      addb  Transpose,y              ; Add current channel transpose (coord flag E9)
         aslb                           ; Transform note into an index...
         ldu   #Frequencies
-        ldd   b,u
+        lda   #0    
+        ldd   d,u
         std   NextData,y               ; Store Frequency
 @b      ldb   ,x                       ; Get next byte
         bpl   FMSetDurationAndForward  ; Test for 80h not set, which is a note duration
@@ -828,14 +829,14 @@ FMUpdateFreq
 ; lower notes (YM2612 compatibility) are mapped to C1 - F#1
 Frequencies
         fdb   $0000 ; padding for ($80=rest), saves a dec instruction
-        fdb   $0157,$016B,$0181,$0198,$01B0,$01CA,$01E5,$0101,$0110,$0120,$0131,$0143 ; C1 - F#1 / G0 - B0
-        fdb   $0157,$016B,$0181,$0198,$01B0,$01CA,$01E5,$0301,$0310,$0320,$0331,$0343 ; C1 - B1
-        fdb   $0357,$036B,$0381,$0398,$03B0,$03CA,$03E5,$0501,$0510,$0520,$0531,$0543 ; ...
-        fdb   $0557,$056B,$0581,$0598,$05B0,$05CA,$05E5,$0701,$0710,$0720,$0731,$0743 ; 
-        fdb   $0757,$076B,$0781,$0798,$07B0,$07CA,$07E5,$0901,$0910,$0920,$0931,$0943 ; 
-        fdb   $0957,$096B,$0981,$0998,$09B0,$09CA,$09E5,$0B01,$0B10,$0B20,$0B31,$0B43 ;
-        fdb   $0B57,$0B6B,$0B81,$0B98,$0BB0,$0BCA,$0BE5,$0D01,$0D10,$0D20,$0D31,$0D43 ; 
-        fdb   $0D57,$0D6B,$0D81,$0D98,$0DB0,$0DCA,$0DE5,$0F01,$0F10,$0F20,$0F31       ; C7 - A#7
+        fdb   $0102,$0112,$0122,$0133,$0146,$0159,$016D,$0183,$019A,$01B3,$01CC,$01E8 ; G0 - F#1
+        fdb   $0302,$0312,$0322,$0333,$0346,$0359,$036D,$0383,$039A,$03B3,$03CC,$03E8 ; G1 - F#2
+        fdb   $0502,$0512,$0522,$0533,$0546,$0559,$056D,$0583,$059A,$05B3,$05CC,$05E8 ; G2 - F#3
+        fdb   $0702,$0712,$0722,$0733,$0746,$0759,$076D,$0783,$079A,$07B3,$07CC,$07E8 ; G3 - F#4
+        fdb   $0902,$0912,$0922,$0933,$0946,$0959,$096D,$0983,$099A,$09B3,$09CC,$09E8 ; G4 - F#5
+        fdb   $0B02,$0B12,$0B22,$0B33,$0B46,$0B59,$0B6D,$0B83,$0B9A,$0BB3,$0BCC,$0BE8 ; G5 - F#6
+        fdb   $0D02,$0D12,$0D22,$0D33,$0D46,$0D59,$0D6D,$0D83,$0D9A,$0DB3,$0DCC,$0DE8 ; G6 - F#7
+        fdb   $0F02,$0F12,$0F22,$0F33,$0F46,$0F59,$0F6D,$0F83,$0F9A,$0FB3,$0FCC       ; G7 - F8        
         
 * ************************************************************************************
 *   

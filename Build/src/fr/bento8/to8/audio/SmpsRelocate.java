@@ -66,10 +66,26 @@ public class SmpsRelocate{
 			pos += SMPS_PSG_SIZE;
 		}		
 		
-		// Coordination flags
-		// ********************************************************************
 		while (pos < fIN.length) {
 			
+			// Notes
+			// ********************************************************************
+			if (fIN[pos]>(byte)0x87 && fIN[pos]<(byte)0xE0) {
+				
+				// perfect Map
+				fIN[pos] = (byte) (fIN[pos]-7);
+				
+			} else if (fIN[pos]>(byte)0x80 && fIN[pos]<=(byte)0x87) {
+				
+				// YM2413 cannot produce deep bass so Octave up
+				fIN[pos] = (byte) (fIN[pos]+5);
+				
+				//fIN[pos] = (byte) 0x80; Alt solution si to silence note
+				//fIN[pos] = (byte) 0x81; Alt solution si to play lowest note				
+			}			
+			
+			// Coordination flags
+			// ********************************************************************
 			switch (fIN[pos]) {
 				case (byte)0xF6: //$F6zzzz
 				case (byte)0xF8: //$F8zzzz					
