@@ -272,9 +272,9 @@ YM2413_DrumModeOn
         fdb   $2605
         fdb   $2705
         fdb   $2801
-        fdb   $3600
-        fdb   $3700
-        fdb   $3800
+        fdb   $3600 ; drum at max vol        
+        fdb   $3700 ; drum at max vol
+        fdb   $3800 ; drum at max vol
         fcb   $FF
 
 * ************************************************************************************
@@ -291,19 +291,34 @@ YM2413_Voices
         _WriteYM
         _YMBusyWait13
         inca
-        cmpa  #$39
+        cmpa  #$36
         bne   @a
 @end    rts        
 @data
-        fcb   $72
-        fcb   $22
-        fcb   $93
-        fcb   $34
-        fcb   $34
-        fcb   $8E
-        fcb   $1F
-        fcb   $1F
+        fcb   $71
+        fcb   $21
+        fcb   $98
+        fcb   $32
+        fcb   $32
         fcb   $1F        
+        
+* ************************************************************************************
+* Silent
+* destroys A, B, U, X
+*
+* TODO replace with voice block in song
+
+SN76489_Silent
+        ldu   #PSG
+        lda   #$9F
+        sta   ,u
+        lda   #$BF
+        sta   ,u        
+        lda   #$DF
+        sta   ,u
+        lda   #$FF
+        sta   ,u                                
+        rts        
 
 * ************************************************************************************
 * receives in X the address of the song
@@ -472,12 +487,12 @@ a@      equ   *
 
 UpdateMusic
         jsr   TempoWait
-        _UpdateTrack SongDAC,DACUpdateTrack
-        _UpdateTrack SongFM0,FMUpdateTrack        
-        _UpdateTrack SongFM1,FMUpdateTrack
+        ;_UpdateTrack SongDAC,DACUpdateTrack
+        ;_UpdateTrack SongFM0,FMUpdateTrack        
+        ;_UpdateTrack SongFM1,FMUpdateTrack
         _UpdateTrack SongFM2,FMUpdateTrack
-        _UpdateTrack SongFM3,FMUpdateTrack
-        _UpdateTrack SongFM4,FMUpdateTrack
+        ;_UpdateTrack SongFM3,FMUpdateTrack
+        ;_UpdateTrack SongFM4,FMUpdateTrack
         ;_UpdateTrack SongFM5,FMUpdateTrack
         ;_UpdateTrack SongFM6,FMUpdateTrack
         ;_UpdateTrack SongFM7,FMUpdateTrack

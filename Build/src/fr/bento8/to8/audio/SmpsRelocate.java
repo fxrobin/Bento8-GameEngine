@@ -56,13 +56,13 @@ public class SmpsRelocate{
 		int nbFMTracks = fIN[SMPS_NB_FM];
 		int pos = SMPS_FM_START;
 		for (int i = 0; i < nbFMTracks; i++) {
-			relocate(pos);
+			relocateTrack(pos);
 			pos += SMPS_FM_SIZE;
 		}
 		
 		int nbPSGTracks = fIN[SMPS_NB_PSG];
 		for (int i = 0; i < nbPSGTracks; i++) {
-			relocate(pos);
+			relocateTrack(pos);
 			pos += SMPS_PSG_SIZE;
 		}		
 		
@@ -87,6 +87,14 @@ public class SmpsRelocate{
 			// Coordination flags
 			// ********************************************************************
 			switch (fIN[pos]) {
+				case (byte)0xE6: //E6xx - volume
+					fIN[pos+1] = (byte) (fIN[pos+1] / 8);
+			    	pos += 2;
+			    	break;				
+				case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
+					modulation(pos+3);
+			    	pos += 5;
+			    	break;				
 				case (byte)0xF6: //$F6zzzz
 				case (byte)0xF8: //$F8zzzz					
 					relocateOffsetBack(pos+1);
@@ -95,11 +103,7 @@ public class SmpsRelocate{
 				case (byte)0xF7: //$F7xxyyzzzz
 					relocateOffsetBack(pos+3);
 				    pos += 5;
-					break;
-				case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
-					modulation(pos+3);
-				    pos += 5;
-					break;					
+					break;				
 				default:
 					pos++;
 					break;
@@ -118,6 +122,17 @@ public class SmpsRelocate{
 		address += offset;
 		fIN[pos] = (byte) (address >> 8);
 		fIN[pos+1] = (byte) (address);
+	}
+
+	private static void relocateTrack (int pos) throws Exception {
+		if (pos > fIN.length) {
+			throw new Exception ("File is invalid.");
+		}
+		int address = ((fIN[pos+1] & 0xff) << 8) | (fIN[pos] & 0xff);
+		address += offset;
+		fIN[pos] = (byte) (address >> 8);
+		fIN[pos+1] = (byte) (address);
+		fIN[pos+3] = (byte) (fIN[pos+3] / 8); // Volume
 	}
 	
 	private static void relocateOffsetBack (int pos) throws Exception {

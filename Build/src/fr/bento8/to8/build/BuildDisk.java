@@ -2559,8 +2559,7 @@ public class BuildDisk
 	 */
 	public static byte[] exomize(String binFile) {
 		try {
-			//ProcessBuilder pb = new ProcessBuilder(game.exobin, Paths.get(binFile).toString());
-			ProcessBuilder pb = new ProcessBuilder("exomizer.exe", "raw", "-B", "-b", "-P0", "-o", Paths.get(binFile+".exo").toString(), Paths.get(binFile+".raw").toString());
+			ProcessBuilder pb = new ProcessBuilder(game.exobin, "raw", "-B", "-b", "-P0", "-o", Paths.get(binFile+".exo").toString(), Paths.get(binFile+".raw").toString());
 			pb.redirectErrorStream(true);
 			Process p = pb.start();			
 			BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));

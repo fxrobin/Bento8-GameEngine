@@ -121,8 +121,8 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    cmpi.w  #1,(Player_mode).w  ; is this a Tails alone game?
                                                       *    bgt.s   +           ; if yes, branch
         ldu   #MainCharacter
-        lda   #ObjID_SSSonic
-        sta   id,u                                    *    move.b  #ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
+        ;lda   #ObjID_SSSonic
+        ;sta   id,u                                    *    move.b  #ObjID_SonicSS,(MainCharacter+id).w ; load Obj09 (special stage Sonic)
                                                       *    tst.w   (Player_mode).w     ; is this a Sonic and Tails game?
                                                       *    bne.s   ++          ; if not, branch
                                                       *+   move.b  #ObjID_TailsSS,(Sidekick+id).w ; load Obj10 (special stage Tails)
@@ -227,8 +227,9 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
         jsr   WaitVBL
-        jsr   YM2413_DrumModeOn
+        ;jsr   YM2413_DrumModeOn
         jsr   YM2413_Voices
+        jsr   SN76489_Silent
         lda   #$01
         sta   AbsVar.IsPalFlag                                                       
         jsr   IrqSet50Hz   
