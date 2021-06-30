@@ -227,7 +227,7 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
         jsr   WaitVBL
-        ;jsr   YM2413_DrumModeOn
+        jsr   YM2413_DrumModeOn
         jsr   YM2413_Voices
         jsr   SN76489_Silent
         lda   #$01

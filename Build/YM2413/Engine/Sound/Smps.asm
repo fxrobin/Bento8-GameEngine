@@ -486,12 +486,12 @@ a@      equ   *
 
 UpdateMusic
         jsr   TempoWait
-        ;_UpdateTrack SongDAC,DACUpdateTrack
-        ;_UpdateTrack SongFM0,FMUpdateTrack ; trompette (avec piano basse) 7      
-        ;_UpdateTrack SongFM1,FMUpdateTrack ; trompette (avec piano basse) 9 doublage piste 0
-        ;_UpdateTrack SongFM2,FMUpdateTrack ; trompette intro puis xylophone 12
+        _UpdateTrack SongDAC,DACUpdateTrack
+        _UpdateTrack SongFM0,FMUpdateTrack ; trompette (avec piano basse) 7      
+        _UpdateTrack SongFM1,FMUpdateTrack ; trompette (avec piano basse) 9 doublage piste 0
+        _UpdateTrack SongFM2,FMUpdateTrack ; trompette intro puis xylophone 12
         _UpdateTrack SongFM3,FMUpdateTrack ; bassline 14
-        ;_UpdateTrack SongFM4,FMUpdateTrack ; trompette fantome 5
+        _UpdateTrack SongFM4,FMUpdateTrack ; trompette fantome 5
         ;_UpdateTrack SongFM5,FMUpdateTrack
         ;_UpdateTrack SongFM6,FMUpdateTrack
         ;_UpdateTrack SongFM7,FMUpdateTrack
@@ -580,23 +580,23 @@ DACAfterDur
         _WriteYM    
         rts
 @data
-        fcb   $30 ; $81 - Kick
+        fcb   $34 ; $81 - Kick
         fcb   $28 ; $82 - Snare
         fcb   $21 ; $83 - Clap
         fcb   $22 ; $84 - Scratch
         fcb   $22 ; $85 - Timpani
-        fcb   $34 ; $86 - Hi Tom
-        fcb   $28 ; $87 - Bongo
+        fcb   $24 ; $86 - Hi Tom
+        fcb   $24 ; $87 - Bongo
         fcb   $24 ; $88 - Hi Timpani
-        fcb   $24 ; $89 - Mid Timpani
-        fcb   $24 ; $8A - Mid Low Timpani
-        fcb   $24 ; $8B - Low Timpani
-        fcb   $24 ; $8C - Mid Tom
-        fcb   $24 ; $8D - Low Tom
-        fcb   $24 ; $8E - Floor Tom
+        fcb   $28 ; $89 - Mid Timpani
+        fcb   $30 ; $8A - Mid Low Timpani
+        fcb   $30 ; $8B - Low Timpani
+        fcb   $28 ; $8C - Mid Tom
+        fcb   $30 ; $8D - Low Tom
+        fcb   $30 ; $8E - Floor Tom
         fcb   $24 ; $8F - Hi Bongo
-        fcb   $24 ; $90 - Mid Bongo
-        fcb   $24 ; $91 - Low Bongo
+        fcb   $28 ; $90 - Mid Bongo
+        fcb   $30 ; $91 - Low Bongo
  
 ; PSG Noise Drum       
 ;Note	NMode	Env	Vol	Ch3Vol	Ch3Freq	Slide
@@ -677,12 +677,13 @@ NoteFillUpdate
         
         lda   PlaybackControl,y
         ora   #$02                     ; Set bit 1 (track is at rest)
+        sta   PlaybackControl,y        
         lda   VoiceControl,y           ; Send a Key Off
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
         ldu   #YM2413_A0
         sta   ,u
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
-        andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
+        andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
         stb   1,u                      ; send to YM
         stb   NoteControl,y                
         rts 
@@ -691,7 +692,7 @@ FMUpdateTrack
         dec   DurationTimeout,y        ; Decrement duration
         bne   NoteFillUpdate           ; If not time-out yet, go do updates only
         lda   PlaybackControl,y
-        anda  #$F7
+        anda  #$EF
         sta   PlaybackControl,y        ; When duration over, clear "do not attack" bit 4 (0x10) of track's play control
         
 FMDoNext
@@ -700,24 +701,27 @@ FMDoNext
         anda  #$FD
         sta   PlaybackControl,y        
        
+FMReadCoordFlag        
+        ldb   ,x+                      ; Read song data
+        stb   NoteDyn+1
+        cmpb  #$E0
+        blo   FMNoteOff                ; Test for >= E0h, which is a coordination flag
+        jsr   CoordFlag
+        bra   FMReadCoordFlag          ; Read all consecutive coordination flags
+
 FMNoteOff        
-        ; TODO : Check if Note Off must be moved after Coord Flag reading or not
         anda  #$14                     ; Are bits 4 (no attack) or 2 (SFX overriding) set?
-        bne   @b                       ; If they are, skip
+        bne   NoteDyn                  ; If they are, skip
         lda   VoiceControl,y           ; Otherwise, send a Key Off
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
         ldu   #YM2413_A0
         sta   ,u
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
-        andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
+        andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
         stb   1,u                      ; send to YM
-        stb   NoteControl,y        
-@b      ldb   ,x+                      ; Read song data
-        cmpb  #$E0
-        blo   @a                       ; Test for >= E0h, which is a coordination flag
-        jsr   CoordFlag
-        bra   @b                       ; Read all consecutive coordination flags 
-@a      bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
+        stb   NoteControl,y                
+NoteDyn ldb   #0                       ; (dynamic) retore note value   
+        bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
         
 FMSetFreq
         subb  #$80                     ; Test for a rest
@@ -780,7 +784,7 @@ FMUpdateFreqAndNoteOn
         stb   1,u
         _YMBusyWait17
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        orb   #$10                     ; Set bit 5 (10h) Key On        
+        orb   #$10                     ; Set bit 4 (10h) Key On        
         sta   ,u
         andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
 @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
@@ -843,14 +847,14 @@ FMUpdateFreq
 ; lower notes (YM2612 compatibility) are mapped to C1 - F#1
 Frequencies
         fdb   $0000 ; padding for ($80=rest), saves a dec instruction
-        fdb   $0102,$0112,$0122,$0133,$0146,$0159,$016D,$0183,$019A,$01B3,$01CC,$01E8 ; G0 - F#1
-        fdb   $0302,$0312,$0322,$0333,$0346,$0359,$036D,$0383,$039A,$03B3,$03CC,$03E8 ; G1 - F#2
-        fdb   $0502,$0512,$0522,$0533,$0546,$0559,$056D,$0583,$059A,$05B3,$05CC,$05E8 ; G2 - F#3
-        fdb   $0702,$0712,$0722,$0733,$0746,$0759,$076D,$0783,$079A,$07B3,$07CC,$07E8 ; G3 - F#4
-        fdb   $0902,$0912,$0922,$0933,$0946,$0959,$096D,$0983,$099A,$09B3,$09CC,$09E8 ; G4 - F#5
-        fdb   $0B02,$0B12,$0B22,$0B33,$0B46,$0B59,$0B6D,$0B83,$0B9A,$0BB3,$0BCC,$0BE8 ; G5 - F#6
-        fdb   $0D02,$0D12,$0D22,$0D33,$0D46,$0D59,$0D6D,$0D83,$0D9A,$0DB3,$0DCC,$0DE8 ; G6 - F#7
-        fdb   $0F02,$0F12,$0F22,$0F33,$0F46,$0F59,$0F6D,$0F83,$0F9A,$0FB3,$0FCC       ; G7 - F8        
+        fdb   $00AD,$00B7,$00C2,$00CD,$00DA,$00E6,$00F4,$0102,$0112,$0122,$0133,$0146 ; C0 - B0
+        fdb   $0159,$016D,$0183,$019A,$01B3,$01CC,$01E8,$0302,$0312,$0322,$0333,$0346 ; C1 - B1
+        fdb   $0359,$036D,$0383,$039A,$03B3,$03CC,$03E8,$0502,$0512,$0522,$0533,$0546 ; C2 - B2
+        fdb   $0559,$056D,$0583,$059A,$05B3,$05CC,$05E8,$0702,$0712,$0722,$0733,$0746 ; C3 - B3
+        fdb   $0759,$076D,$0783,$079A,$07B3,$07CC,$07E8,$0902,$0912,$0922,$0933,$0946 ; C4 - B4
+        fdb   $0959,$096D,$0983,$099A,$09B3,$09CC,$09E8,$0B02,$0B12,$0B22,$0B33,$0B46 ; C5 - B5
+        fdb   $0B59,$0B6D,$0B83,$0B9A,$0BB3,$0BCC,$0BE8,$0D02,$0D12,$0D22,$0D33,$0D46 ; C6 - B6
+        fdb   $0D59,$0D6D,$0D83,$0D9A,$0DB3,$0DCC,$0DE8,$0F02,$0F12,$0F22,$0F33       ; C7 - A#7        
         
 * ************************************************************************************
 *   
@@ -950,7 +954,7 @@ cfChangeFMVolume
         rts     
 
 cfPreventAttack
-        rts                            ; TODO !!!!!!!!! bug de note qui dure a l'infini dans le cas d'un prevent attack
+        ;rts                            ; TODO !!!!!!!!! bug de note qui dure a l'infini dans le cas d'un prevent attack
         lda   PlaybackControl,y
         ora   #$10
         sta   PlaybackControl,y        ; Set bit 4 (10h) on playback control; do not attack next note
@@ -1100,9 +1104,9 @@ cfJumpToGosub
         lda   StackPointer,y
         suba  #2
         sta   StackPointer,y           ; move stack backward
-        leax  2,x                      ; move x to return address
-        stx   a,y                      ; store return address to stack
-        ldd   -2,x                     ; read sub address
+        leau  2,x                      ; move x to return address
+        stu   a,y                      ; store return address to stack
+        ldd   ,x                       ; read sub address
         leax  d,x                      ; gosub
         rts        
 

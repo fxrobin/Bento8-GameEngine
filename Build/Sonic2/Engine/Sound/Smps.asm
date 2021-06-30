@@ -124,7 +124,6 @@ CurrentTempo                   rmb   1                ; Stores current tempo val
 StopMusic                      rmb   1                ; Set to 7Fh to pause music, set to 80h to unpause. Otherwise 00h
 FadeOutCounter                 rmb   1        
 FadeOutDelay                   rmb   1        
-Communication                  rmb   1                ; Unused byte used to synchronise gameplay events with music
 QueueToPlay                    rmb   1                ; if NOT set to 80h, means new index was requested by 68K
 SFXToPlay                      rmb   1                ; When Genesis wants to play "normal" sound, it writes it here
 SFXStereoToPlay                rmb   1                ; When Genesis wants to play alternating stereo sound, it writes it here
@@ -272,7 +271,7 @@ YM2413_DrumModeOn
         fdb   $2605
         fdb   $2705
         fdb   $2801
-        fdb   $3600 ; drum at max vol        
+        fdb   $36F0 ; drum at max vol        
         fdb   $3700 ; drum at max vol
         fdb   $3800 ; drum at max vol
         fcb   $FF
@@ -296,10 +295,10 @@ YM2413_Voices
 @end    rts        
 @data
         fcb   $71
-        fcb   $21
-        fcb   $98
-        fcb   $32
-        fcb   $32
+        fcb   $91
+        fcb   $C1
+        fcb   $E2
+        fcb   $52
         fcb   $1F        
         
 * ************************************************************************************
@@ -487,12 +486,12 @@ a@      equ   *
 
 UpdateMusic
         jsr   TempoWait
-        ;_UpdateTrack SongDAC,DACUpdateTrack
-        ;_UpdateTrack SongFM0,FMUpdateTrack        
-        ;_UpdateTrack SongFM1,FMUpdateTrack
-        _UpdateTrack SongFM2,FMUpdateTrack
-        ;_UpdateTrack SongFM3,FMUpdateTrack
-        ;_UpdateTrack SongFM4,FMUpdateTrack
+        _UpdateTrack SongDAC,DACUpdateTrack
+        _UpdateTrack SongFM0,FMUpdateTrack ; trompette (avec piano basse) 7      
+        _UpdateTrack SongFM1,FMUpdateTrack ; trompette (avec piano basse) 9 doublage piste 0
+        _UpdateTrack SongFM2,FMUpdateTrack ; trompette intro puis xylophone 12
+        _UpdateTrack SongFM3,FMUpdateTrack ; bassline 14
+        _UpdateTrack SongFM4,FMUpdateTrack ; trompette fantome 5
         ;_UpdateTrack SongFM5,FMUpdateTrack
         ;_UpdateTrack SongFM6,FMUpdateTrack
         ;_UpdateTrack SongFM7,FMUpdateTrack
@@ -589,15 +588,15 @@ DACAfterDur
         fcb   $24 ; $86 - Hi Tom
         fcb   $24 ; $87 - Bongo
         fcb   $24 ; $88 - Hi Timpani
-        fcb   $24 ; $89 - Mid Timpani
-        fcb   $24 ; $8A - Mid Low Timpani
-        fcb   $24 ; $8B - Low Timpani
-        fcb   $24 ; $8C - Mid Tom
-        fcb   $24 ; $8D - Low Tom
-        fcb   $24 ; $8E - Floor Tom
+        fcb   $28 ; $89 - Mid Timpani
+        fcb   $30 ; $8A - Mid Low Timpani
+        fcb   $30 ; $8B - Low Timpani
+        fcb   $28 ; $8C - Mid Tom
+        fcb   $30 ; $8D - Low Tom
+        fcb   $30 ; $8E - Floor Tom
         fcb   $24 ; $8F - Hi Bongo
-        fcb   $24 ; $90 - Mid Bongo
-        fcb   $24 ; $91 - Low Bongo
+        fcb   $28 ; $90 - Mid Bongo
+        fcb   $30 ; $91 - Low Bongo
  
 ; PSG Noise Drum       
 ;Note	NMode	Env	Vol	Ch3Vol	Ch3Freq	Slide
@@ -678,12 +677,13 @@ NoteFillUpdate
         
         lda   PlaybackControl,y
         ora   #$02                     ; Set bit 1 (track is at rest)
+        sta   PlaybackControl,y        
         lda   VoiceControl,y           ; Send a Key Off
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
         ldu   #YM2413_A0
         sta   ,u
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
-        andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
+        andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
         stb   1,u                      ; send to YM
         stb   NoteControl,y                
         rts 
@@ -692,7 +692,7 @@ FMUpdateTrack
         dec   DurationTimeout,y        ; Decrement duration
         bne   NoteFillUpdate           ; If not time-out yet, go do updates only
         lda   PlaybackControl,y
-        anda  #$F7
+        anda  #$EF
         sta   PlaybackControl,y        ; When duration over, clear "do not attack" bit 4 (0x10) of track's play control
         
 FMDoNext
@@ -701,24 +701,27 @@ FMDoNext
         anda  #$FD
         sta   PlaybackControl,y        
        
+FMReadCoordFlag        
+        ldb   ,x+                      ; Read song data
+        stb   NoteDyn+1
+        cmpb  #$E0
+        blo   FMNoteOff                ; Test for >= E0h, which is a coordination flag
+        jsr   CoordFlag
+        bra   FMReadCoordFlag          ; Read all consecutive coordination flags
+
 FMNoteOff        
-        ; TODO : Check if Note Off must be moved after Coord Flag reading or not
         anda  #$14                     ; Are bits 4 (no attack) or 2 (SFX overriding) set?
-        bne   @b                       ; If they are, skip
+        bne   NoteDyn                  ; If they are, skip
         lda   VoiceControl,y           ; Otherwise, send a Key Off
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
         ldu   #YM2413_A0
         sta   ,u
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
-        andb  #$EF                     ; Clear bit 5 (10h) Key Off (and used as 2 cycles tempo)
+        andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
         stb   1,u                      ; send to YM
-        stb   NoteControl,y        
-@b      ldb   ,x+                      ; Read song data
-        cmpb  #$E0
-        blo   @a                       ; Test for >= E0h, which is a coordination flag
-        jsr   CoordFlag
-        bra   @b                       ; Read all consecutive coordination flags 
-@a      bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
+        stb   NoteControl,y                
+NoteDyn ldb   #0                       ; (dynamic) retore note value   
+        bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
         
 FMSetFreq
         subb  #$80                     ; Test for a rest
@@ -781,7 +784,7 @@ FMUpdateFreqAndNoteOn
         stb   1,u
         _YMBusyWait17
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        orb   #$10                     ; Set bit 5 (10h) Key On        
+        orb   #$10                     ; Set bit 4 (10h) Key On        
         sta   ,u
         andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
 @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
@@ -844,14 +847,14 @@ FMUpdateFreq
 ; lower notes (YM2612 compatibility) are mapped to C1 - F#1
 Frequencies
         fdb   $0000 ; padding for ($80=rest), saves a dec instruction
-        fdb   $0102,$0112,$0122,$0133,$0146,$0159,$016D,$0183,$019A,$01B3,$01CC,$01E8 ; G0 - F#1
-        fdb   $0302,$0312,$0322,$0333,$0346,$0359,$036D,$0383,$039A,$03B3,$03CC,$03E8 ; G1 - F#2
-        fdb   $0502,$0512,$0522,$0533,$0546,$0559,$056D,$0583,$059A,$05B3,$05CC,$05E8 ; G2 - F#3
-        fdb   $0702,$0712,$0722,$0733,$0746,$0759,$076D,$0783,$079A,$07B3,$07CC,$07E8 ; G3 - F#4
-        fdb   $0902,$0912,$0922,$0933,$0946,$0959,$096D,$0983,$099A,$09B3,$09CC,$09E8 ; G4 - F#5
-        fdb   $0B02,$0B12,$0B22,$0B33,$0B46,$0B59,$0B6D,$0B83,$0B9A,$0BB3,$0BCC,$0BE8 ; G5 - F#6
-        fdb   $0D02,$0D12,$0D22,$0D33,$0D46,$0D59,$0D6D,$0D83,$0D9A,$0DB3,$0DCC,$0DE8 ; G6 - F#7
-        fdb   $0F02,$0F12,$0F22,$0F33,$0F46,$0F59,$0F6D,$0F83,$0F9A,$0FB3,$0FCC       ; G7 - F8        
+        fdb   $00AD,$00B7,$00C2,$00CD,$00DA,$00E6,$00F4,$0102,$0112,$0122,$0133,$0146 ; C0 - B0
+        fdb   $0159,$016D,$0183,$019A,$01B3,$01CC,$01E8,$0302,$0312,$0322,$0333,$0346 ; C1 - B1
+        fdb   $0359,$036D,$0383,$039A,$03B3,$03CC,$03E8,$0502,$0512,$0522,$0533,$0546 ; C2 - B2
+        fdb   $0559,$056D,$0583,$059A,$05B3,$05CC,$05E8,$0702,$0712,$0722,$0733,$0746 ; C3 - B3
+        fdb   $0759,$076D,$0783,$079A,$07B3,$07CC,$07E8,$0902,$0912,$0922,$0933,$0946 ; C4 - B4
+        fdb   $0959,$096D,$0983,$099A,$09B3,$09CC,$09E8,$0B02,$0B12,$0B22,$0B33,$0B46 ; C5 - B5
+        fdb   $0B59,$0B6D,$0B83,$0B9A,$0BB3,$0BCC,$0BE8,$0D02,$0D12,$0D22,$0D33,$0D46 ; C6 - B6
+        fdb   $0D59,$0D6D,$0D83,$0D9A,$0DB3,$0DCC,$0DE8,$0F02,$0F12,$0F22,$0F33       ; C7 - A#7        
         
 * ************************************************************************************
 *   
@@ -876,50 +879,46 @@ CoordFlag
         jmp   [b,u] 
 
 CoordFlagLookup
-        fdb   cfPanningAMSFMS       ; E0
-        fdb   cfDetune              ; E1
-        fdb   cfSetCommunication    ; E2
+        fdb   cfSkip1               ; E0 -- unsupported
+        fdb   cfDetune              ; E1 -- done
+        fdb   cfSkip1               ; E2 -- unsupported
         fdb   cfJumpReturn          ; E3 -- done
-        fdb   cfFadeInToPrevious    ; E4
-        fdb   cfSetTempoDivider     ; E5
+        fdb   cfFadeInToPrevious    ; E4 --todo
+        fdb   cfSetTempoDivider     ; E5 -- done
         fdb   cfChangeFMVolume      ; E6 -- done
         fdb   cfPreventAttack       ; E7 -- done
-        fdb   cfNoteFill            ; E8
+        fdb   cfNoteFill            ; E8 -- done
         fdb   cfChangeTransposition ; E9 -- done
-        fdb   cfSetTempo            ; EA
-        fdb   cfSetTempoMod         ; EB
-        fdb   cfChangePSGVolume     ; EC
-        fdb   cfClearPush           ; ED
-        fdb   cfStopSpecialFM4      ; EE
-        fdb   cfSetVoice            ; EF -- todo
+        fdb   cfSetTempo            ; EA -- done
+        fdb   cfSetTempoMod         ; EB -- done
+        fdb   cfChangePSGVolume     ; EC --todo
+        fdb   cfNop                 ; ED -- unsupported
+        fdb   cfNop                 ; EE -- unsupported
+        fdb   cfSetVoice            ; EF --todo
         fdb   cfModulation          ; F0 -- done
         fdb   cfEnableModulation    ; F1 -- done
-        fdb   cfStopTrack           ; F2
-        fdb   cfSetPSGNoise         ; F3 -- todo
+        fdb   cfStopTrack           ; F2 --todo
+        fdb   cfSetPSGNoise         ; F3 --todo
         fdb   cfDisableModulation   ; F4 -- done
-        fdb   cfSetPSGTone          ; F5
+        fdb   cfSetPSGTone          ; F5 -- done
         fdb   cfJumpTo              ; F6 -- done
         fdb   cfRepeatAtPos         ; F7 -- done
         fdb   cfJumpToGosub         ; F8 -- done
-        fdb   cfOpF9                ; F9
-        fdb   cfNop                 ; FA
-        fdb   cfNop                 ; FB
-        fdb   cfNop                 ; FC
-        fdb   cfNop                 ; FD
-        fdb   cfNop                 ; FE
-        fdb   cfNop                 ; FF
+        fdb   cfNop                 ; F9 -- unsupported
+        fdb   cfNop                 ; FA -- free
+        fdb   cfNop                 ; FB -- free
+        fdb   cfNop                 ; FC -- free
+        fdb   cfNop                 ; FD -- free
+        fdb   cfNop                 ; FE -- free
+        fdb   cfNop                 ; FF -- free
 
-; (via Saxman's doc): panning, AMS, FMS
-;
-cfPanningAMSFMS
-        leax  1,x
-        rts
-              
+; (via Saxman's doc): Alter note values by xx
+; More or less a pitch bend; this is applied to the frequency as a signed value
+;              
 cfDetune
-        rts         
-            
-cfSetCommunication
-        rts   
+        lda   ,x+
+        sta   Detune,y
+        rts           
 
 ; Return (Sonic 1 & 2)
 ;
@@ -932,13 +931,19 @@ cfJumpReturn
         
 cfFadeInToPrevious
         rts   
-        
+
+; Change tempo divider to xx
+;        
 cfSetTempoDivider
+        lda   ,x+
+        sta   TempoDivider,y
         rts    
         
 ; (via Saxman's doc): Change channel volume BY xx; xx is signed
 ;
 cfChangeFMVolume
+        leax  1,x
+        rts                             ; TODO !!!!!!!! bug sur volume
         ldb   InstrAndVolume,y
         addb  ,x+
         stb   InstrAndVolume,y
@@ -949,12 +954,18 @@ cfChangeFMVolume
         rts     
 
 cfPreventAttack
+        ;rts                            ; TODO !!!!!!!!! bug de note qui dure a l'infini dans le cas d'un prevent attack
         lda   PlaybackControl,y
         ora   #$10
         sta   PlaybackControl,y        ; Set bit 4 (10h) on playback control; do not attack next note
         rts      
 
+; (via Saxman's doc): set note fill amount to xx
+;
 cfNoteFill 
+        lda   ,x+
+        sta   NoteFillTimeout,y
+        sta   NoteFillMaster,y
         rts          
 
 ; (via Saxman's doc): add xx to channel key
@@ -965,20 +976,34 @@ cfChangeTransposition
         sta   Transpose,y
         rts
 
+; (via Saxman's doc): set music tempo to xx
+;
 cfSetTempo 
+        lda   ,x+
+        sta   AbsVar.CurrentTempo
         rts          
 
+; (via Saxman's doc): Change Tempo Modifier to xx for ALL channels
+;
 cfSetTempoMod
+        lda   ,x+
+        sta   SongDAC.TempoDivider
+        sta   SongFM0.TempoDivider
+        sta   SongFM1.TempoDivider
+        sta   SongFM2.TempoDivider
+        sta   SongFM3.TempoDivider
+        sta   SongFM4.TempoDivider
+        sta   SongFM5.TempoDivider
+        sta   SongFM6.TempoDivider
+        sta   SongFM7.TempoDivider
+        sta   SongFM8.TempoDivider
+        sta   SongPSG1.TempoDivider
+        sta   SongPSG2.TempoDivider
+        sta   SongPSG3.TempoDivider
         rts        
 
 cfChangePSGVolume
         rts    
-
-cfClearPush
-        rts          
-
-cfStopSpecialFM4
-        rts     
         
 ; (via Saxman's doc): set voice selection to xx
 ;
@@ -1019,6 +1044,8 @@ cfEnableModulation
         sta   PlaybackControl,y        ; Set bit 3 (08h) of "playback control" byte (modulation on)
         rts   
 
+; (via Saxman's doc): stop the track
+;
 cfStopTrack
         rts
 
@@ -1034,7 +1061,11 @@ cfDisableModulation
         sta   PlaybackControl,y        ; Clear bit 3 (08h) of "playback control" byte (modulation off)        
         rts  
 
+; (via Saxman's doc): Change current PSG tone to xx
+;
 cfSetPSGTone
+        lda   ,x+
+        sta   VoiceIndex,y
         rts         
 
 ; (via Saxman's doc):  $F6zzzz - jump to position
@@ -1073,14 +1104,18 @@ cfJumpToGosub
         lda   StackPointer,y
         suba  #2
         sta   StackPointer,y           ; move stack backward
-        leax  2,x                      ; move x to return address
-        stx   a,y                      ; store return address to stack
-        ldd   -2,x                     ; read sub address
+        leau  2,x                      ; move x to return address
+        stu   a,y                      ; store return address to stack
+        ldd   ,x                       ; read sub address
         leax  d,x                      ; gosub
         rts        
 
 cfOpF9     
         rts          
+
+cfSkip1
+        leax  1,x
+        rts 
 
 cfNop 
         rts                                                 
