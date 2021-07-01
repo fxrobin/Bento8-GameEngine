@@ -12,7 +12,6 @@
         org   $6100
 
         jsr   YM2413_DrumModeOn
-        jsr   YM2413_Voices
         jsr   SN76489_Silent
         lda   #$01
         sta   AbsVar.IsPalFlag                                                       

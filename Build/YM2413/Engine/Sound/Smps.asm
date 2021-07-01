@@ -275,31 +275,6 @@ YM2413_DrumModeOn
         fdb   $3700 ; drum at max vol
         fdb   $3800 ; drum at max vol
         fcb   $FF
-
-* ************************************************************************************
-* Setup YM2413 voices
-* destroys A, B, U, X
-*
-* TODO replace with voice block in song
-
-YM2413_Voices
-        ldu   #YM2413_A0
-        ldx   #@data
-        lda   #$30
-@a      ldb   ,x+
-        _WriteYM
-        _YMBusyWait13
-        inca
-        cmpa  #$36
-        bne   @a
-@end    rts        
-@data
-        fcb   $71
-        fcb   $91
-        fcb   $C1
-        fcb   $E2
-        fcb   $52
-        fcb   $1F        
         
 * ************************************************************************************
 * Silent
@@ -824,27 +799,26 @@ DoModulation
 FMUpdateFreq
         ldb   Detune,y
         sex
-        addd  NextData,y               ; Apply detune but don't update stored frequency
-        addd  ModulationVal,y        
+        addd  NextData,y               ; apply detune but don't update stored frequency
+        addd  ModulationVal,y          ; add modulation effect
         sta   @dyn+1
         lda   #$10                     ; set LSB Frequency Command
-        adda  VoiceControl,y
-        ldu   #YM2413_A0        
-        sta   ,u
+        adda  VoiceControl,y           ; get channel number
+        ldu   #YM2413_A0               
+        sta   ,u                       ; send Fnum update Command
         adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
-        nop
-        stb   1,u
-        _YMBusyWait17
+        nop                            ; total wait 4 cycles
+        stb   1,u                      ; send FNum (b0-b7)
+        _YMBusyWait17                  ; total wait 24 cycles
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        sta   ,u
-        andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
+        sta   ,u                       ; send command
+        andb  #$F0                     ; clear FNum MSB (and used as 2 cycles tempo)
 @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        stb   1,u   
+        stb   1,u                      ; send FNum (b8) and Block (b0-b2)
         stb   NoteControl,y
         rts        
  
-; 95 notes (Note value $81=C0 $DF=A#7), lowest note for YM2413 is G0
-; lower notes (YM2612 compatibility) are mapped to C1 - F#1
+; 95 notes (Note value $81=C0 $DF=A#7)
 Frequencies
         fdb   $0000 ; padding for ($80=rest), saves a dec instruction
         fdb   $00AD,$00B7,$00C2,$00CD,$00DA,$00E6,$00F4,$0102,$0112,$0122,$0133,$0146 ; C0 - B0
@@ -897,7 +871,7 @@ CoordFlagLookup
         fdb   cfSetVoice            ; EF --todo
         fdb   cfModulation          ; F0 -- done
         fdb   cfEnableModulation    ; F1 -- done
-        fdb   cfStopTrack           ; F2 --todo
+        fdb   cfStopTrack           ; F2 -- done
         fdb   cfSetPSGNoise         ; F3 --todo
         fdb   cfDisableModulation   ; F4 -- done
         fdb   cfSetPSGTone          ; F5 -- done
@@ -942,8 +916,6 @@ cfSetTempoDivider
 ; (via Saxman's doc): Change channel volume BY xx; xx is signed
 ;
 cfChangeFMVolume
-        leax  1,x
-        rts                             ; TODO !!!!!!!! bug sur volume
         ldb   InstrAndVolume,y
         addb  ,x+
         stb   InstrAndVolume,y
@@ -954,7 +926,6 @@ cfChangeFMVolume
         rts     
 
 cfPreventAttack
-        ;rts                            ; TODO !!!!!!!!! bug de note qui dure a l'infini dans le cas d'un prevent attack
         lda   PlaybackControl,y
         ora   #$10
         sta   PlaybackControl,y        ; Set bit 4 (10h) on playback control; do not attack next note
@@ -1008,7 +979,13 @@ cfChangePSGVolume
 ; (via Saxman's doc): set voice selection to xx
 ;
 cfSetVoice
-        leax  1,x
+        ldu   #YM2413_A0
+        lda   VoiceControl,y           ; read channel nb   
+        adda  #$30
+        ldb   InstrAndVolume,y
+        andb  #$0F        
+        addb   ,x+
+        _WriteYM
         rts
 
 ; (via Saxman's doc): F0wwxxyyzz - modulation
@@ -1047,6 +1024,20 @@ cfEnableModulation
 ; (via Saxman's doc): stop the track
 ;
 cfStopTrack
+        lda   PlaybackControl,y
+        anda  #$6F                     ; clear playback byte bit 7 (80h) -- currently playing (not anymore)
+        sta   PlaybackControl,y        ; clear playback byte bit 4 (10h) -- do not attack
+        
+        lda   VoiceControl,y           ; send a Key Off - read channel nb
+        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
+        ldu   #YM2413_A0
+        sta   ,u
+        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
+        andb  #$EF                     ; clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
+        stb   1,u                      ; send to YM
+        stb   NoteControl,y               
+        
+        puls  u                        ; removing return address from stack; will not return to coord flag loop                        
         rts
 
 ; (via Saxman's doc): Change current PSG noise to xx (For noise channel, E0-E7)

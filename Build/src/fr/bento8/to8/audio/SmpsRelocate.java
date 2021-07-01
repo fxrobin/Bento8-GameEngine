@@ -17,7 +17,7 @@ public class SmpsRelocate{
 
 	private static byte[] fIN;
 	private static FileOutputStream fOUT;
-	private static int offset = 0;
+	private static int offset = 0; //4992 pour S2
 	
 	public static void main(String[] args) throws Throwable {
 
@@ -74,8 +74,12 @@ public class SmpsRelocate{
 					fIN[pos+1] = (byte) (fIN[pos+1] / 8);
 			    	pos += 2;
 			    	break;				
+				case (byte)0xEF: //EFxx - voice
+					fIN[pos+1] = (byte) (fIN[pos+1] << 4);
+			    	pos += 2;
+			    	break;				    	
 				case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
-					modulation(pos+3);
+					modulation(pos+2);
 			    	pos += 5;
 			    	break;				
 				case (byte)0xF6: //$F6zzzz
