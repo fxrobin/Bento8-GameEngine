@@ -22,7 +22,7 @@ public class SmpsRelocate{
 
 	private static byte[] fIN;
 	private static FileOutputStream fOUT;
-	private static int offset = 0; //4992 pour S2
+	private static int offset = 0; //-4992 pour S2, -55191 pour Staff Roll 
 
 	public static void main(String[] args) throws Throwable {
 
@@ -73,7 +73,7 @@ public class SmpsRelocate{
 		} else {
 			int vi = 0, curVoice = voicePos;
 			while (curVoice<fIN.length) {
-				voiceMap[vi++] = (byte)(estimateOPPLLVoice1234(curVoice) << 4);
+				voiceMap[vi++] = estimateOPPLLVoice1234(curVoice);
 				curVoice += 25;
 			}
 		}		
@@ -99,7 +99,7 @@ public class SmpsRelocate{
 			// ********************************************************************
 			switch (fIN[pos]) {
 			case (byte)0xE6: //E6xx - volume
-				fIN[pos+1] = (byte) (fIN[pos+1] / 8);
+				fIN[pos+1] = (byte) (fIN[pos+1] / 8); // TODO conserver la parte de précision pour répercuter sur instr suivante
 			pos += 2;
 			break;				
 			case (byte)0xEF: //EFxx - voice
@@ -180,7 +180,7 @@ public class SmpsRelocate{
 		return data;
 	}	
 
-	public static byte estimateOPPLLVoice1234 (int pos) {
+	public static byte estimateOPPLLVoice1324 (int pos) {
 		OPNVoice opn = new OPNVoice(
 				(byte)((fIN[pos] & 0x38) >> 3),
 				(byte)(fIN[pos] & 0x07),
@@ -191,10 +191,10 @@ public class SmpsRelocate{
 				new OPNSlotParam((byte)((fIN[pos+1+2] & 0x70) >> 4), (byte)(fIN[pos+1+2] & 0xF), (byte)(fIN[pos+21+2] & 0x7F), (byte)((fIN[pos+5+2] & 0x70) >> 6), (byte)(fIN[pos+5+2] & 0x1F), (byte)((fIN[pos+9+2] & 0x80) >> 7), (byte)(fIN[pos+9+2] & 0x7F), (byte)(fIN[pos+13+2] & 0x1F), (byte)((fIN[pos+17+2] & 0xF0) >> 4), (byte)(fIN[pos+17+2] & 0xF), (byte)0),
 				new OPNSlotParam((byte)((fIN[pos+1+3] & 0x70) >> 4), (byte)(fIN[pos+1+3] & 0xF), (byte)(fIN[pos+21+3] & 0x7F), (byte)((fIN[pos+5+3] & 0x70) >> 6), (byte)(fIN[pos+5+3] & 0x1F), (byte)((fIN[pos+9+3] & 0x80) >> 7), (byte)(fIN[pos+9+3] & 0x7F), (byte)(fIN[pos+13+3] & 0x1F), (byte)((fIN[pos+17+3] & 0xF0) >> 4), (byte)(fIN[pos+17+3] & 0xF), (byte)0)
 				);
-		return opn.toOPL().toOPLLROMVoice()[0];
+		return opn.toOPL().toOPLLROMVoice();
 	}
 	
-	public static byte estimateOPPLLVoice1324 (int pos) {
+	public static byte estimateOPPLLVoice1234 (int pos) {
 		OPNVoice opn = new OPNVoice(
 				(byte)((fIN[pos] & 0x38) >> 3),
 				(byte)(fIN[pos] & 0x07),
@@ -205,6 +205,7 @@ public class SmpsRelocate{
 				new OPNSlotParam((byte)((fIN[pos+1+1] & 0x70) >> 4), (byte)(fIN[pos+1+1] & 0xF), (byte)(fIN[pos+21+1] & 0x7F), (byte)((fIN[pos+5+1] & 0x70) >> 6), (byte)(fIN[pos+5+1] & 0x1F), (byte)((fIN[pos+9+1] & 0x80) >> 7), (byte)(fIN[pos+9+1] & 0x7F), (byte)(fIN[pos+13+1] & 0x1F), (byte)((fIN[pos+17+1] & 0xF0) >> 4), (byte)(fIN[pos+17+1] & 0xF), (byte)0),				
 				new OPNSlotParam((byte)((fIN[pos+1+3] & 0x70) >> 4), (byte)(fIN[pos+1+3] & 0xF), (byte)(fIN[pos+21+3] & 0x7F), (byte)((fIN[pos+5+3] & 0x70) >> 6), (byte)(fIN[pos+5+3] & 0x1F), (byte)((fIN[pos+9+3] & 0x80) >> 7), (byte)(fIN[pos+9+3] & 0x7F), (byte)(fIN[pos+13+3] & 0x1F), (byte)((fIN[pos+17+3] & 0xF0) >> 4), (byte)(fIN[pos+17+3] & 0xF), (byte)0)
 				);
-		return opn.toOPL().toOPLLROMVoice()[0];
+		return opn.toOPL().toOPLLROMVoice();
 	}	
+	
 }

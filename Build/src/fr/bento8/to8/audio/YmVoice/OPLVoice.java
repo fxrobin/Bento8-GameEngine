@@ -2,7 +2,7 @@ package fr.bento8.to8.audio.YmVoice;
 
 public class OPLVoice {
 
-	public byte fb, con;
+	public byte fb, con, vv;
 	public OPLSlotParam[] slots;	
 
 	float[] _ml_tbl = new float[] {0,5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15};
@@ -74,8 +74,15 @@ public class OPLVoice {
 		this.con = con;
 		this.slots = slots;		
 	}			
+	
+	public OPLVoice(byte fb, byte con, byte vv, OPLSlotParam[] slots) {
+		this.fb = fb;
+		this.con = con;
+		this.vv = vv;
+		this.slots = slots;		
+	}			
 
-	public byte[] toOPLLROMVoice() {
+	public byte toOPLLROMVoice() {
 		int diff = Integer.MAX_VALUE;
 		byte program = 0;
 		OPLLVoice opllv = new OPLLVoice();
@@ -125,7 +132,8 @@ public class OPLVoice {
 				voff -= 2;
 			}
 		}
-		return new byte[] {program, (byte)voff, (byte)ooff};
+		
+	    return (byte)((program << 4) + (byte)Math.min(15, Math.max(0, vv+voff)));
 	}
 
 }

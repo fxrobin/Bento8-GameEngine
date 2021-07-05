@@ -111,7 +111,27 @@ public class OPNVoice {
 				this.slots[2].toOPLSlotParam(),
 				this.slots[3].toOPLSlotParam()
 		};
+		
+		// set volume
+	    int vol;
+	    switch (this.con) {
+	      case 4:
+	        vol = (ss[2].tl + ss[3].tl) / 2;
+	        break;
+	      case 5:
+	      case 6:
+	        vol = (ss[1].tl + ss[2].tl + ss[3].tl) / 3;
+	        break;
+	      case 7:
+	        vol = (ss[0].tl + ss[1].tl + ss[2].tl + ss[3].tl) / 4;
+	        break;
+	      default:
+	        vol = ss[3].tl;
+	        break;
+	    }
+	    int vv = (vol >> 3);		
 
+	    // select slots
 		OPLSlotParam s0, s1;
 		switch (this.con) {
 		case 0: case 3:
@@ -119,25 +139,25 @@ public class OPNVoice {
 			s1 = ss[3];
 			s1.setMl(ss[1].ml);
 			s1.setTl((byte)(Math.min(63, Math.max(0, ss[1].tl - 2) + ss[3].tl)));
-			return new OPLVoice(this.fb, (byte)0, new OPLSlotParam[] {s0, s1});
+			return new OPLVoice(this.fb, (byte)0, (byte)vv, new OPLSlotParam[] {s0, s1});
 		case 1:
 			s0 = ss[0];
 			s1 = ss[3];
 			s1.setMl(ss[2].ml);
 			s1.setTl((byte)(Math.min(63, Math.max(0, ss[2].tl - 2) + ss[3].tl)));
-			return new OPLVoice(this.fb, (byte)0, new OPLSlotParam[] {s0, s1});	    	  
+			return new OPLVoice(this.fb, (byte)0, (byte)vv, new OPLSlotParam[] {s0, s1});	    	  
 		case 2:
 			s0 = ss[0];
 			s1 = ss[3];
-			return new OPLVoice(this.fb, (byte)0, new OPLSlotParam[] {s0, s1});	    	  
+			return new OPLVoice(this.fb, (byte)0, (byte)vv, new OPLSlotParam[] {s0, s1});	    	  
 		case 4: case 5: case 6:
 			s0 = ss[0];
 			s1 = ss[1];
-			return new OPLVoice(this.fb, (byte)0, new OPLSlotParam[] {s0, s1});	    
+			return new OPLVoice(this.fb, (byte)0, (byte)vv, new OPLSlotParam[] {s0, s1});	    
 		default:
 			s0 = ss[0];
 			s1 = ss[1];
-			return new OPLVoice(this.fb, (byte)1, new OPLSlotParam[] {s0, s1});	  
+			return new OPLVoice(this.fb, (byte)1, (byte)vv, new OPLSlotParam[] {s0, s1});	  
 		}
 	}
 
