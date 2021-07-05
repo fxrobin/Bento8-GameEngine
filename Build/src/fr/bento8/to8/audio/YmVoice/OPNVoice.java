@@ -47,14 +47,14 @@ public class OPNVoice {
 			this.rr = rr;
 			this.ssg = ssg;
 		};	
-
+		
 		private OPLSlotParam toOPLSlotParam() {
 			OPLSlotParam sp = new OPLSlotParam(
 					am,
 					(byte)0,
 					(byte)0,
-					(byte)(ks >> 1),
 					ml,
+					(byte)(ks >> 1),					
 					(byte)0,
 					(byte)Math.min(63, tl),
 					_AR(ar),

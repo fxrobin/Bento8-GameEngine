@@ -1,10 +1,8 @@
 package fr.bento8.to8.audio;
 
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.StringTokenizer;
 
 import fr.bento8.to8.audio.YmVoice.OPNVoice;
 import fr.bento8.to8.audio.YmVoice.OPNVoice.OPNSlotParam;
@@ -18,10 +16,8 @@ public class SmpsRelocate{
 	private static int SMPS_FM_SIZE = 4;
 	private static int SMPS_PSG_SIZE = 6;
 
-	private static byte[] voiceMap = new byte[256];
-
 	private static byte[] fIN;
-	private static FileOutputStream fOUT;
+	private static byte[] fOUT;
 	private static int offset = 0; //-4992 pour S2, -55191 pour Staff Roll 
 
 	public static void main(String[] args) throws Throwable {
@@ -42,39 +38,40 @@ public class SmpsRelocate{
 			System.out.println("Fatal: can't open input file");
 			return;
 		}
-
+		
 		offset = Integer.parseInt(args[1]);
-
-		fOUT = new FileOutputStream(args[1]);
-		if (fOUT == null) {
-			System.out.println("Fatal: can't write to output PSG file");
-			return;
-		}
 
 		// Relocate Voice
 		// ********************************************************************
 
 		int voicePos = relocate(SMPS_VOICE);
+		int nbVoices = 0;
 
 		// Load Voices
 		if (args.length == 3) {
-			Path voiceFile = Path.of(args[2]);
-			if (voiceFile == null) {
-				System.out.println("Fatal: can't input voice file");
-				return;			
-			}
-			String voice = Files.readString(voiceFile);
-			StringTokenizer voices = new StringTokenizer(voice, " .,;-/:|");
-			int vi = 0;
-			while (voices.hasMoreTokens())
-			{
-				voiceMap[vi++] = hexStringToByteArray(voices.nextToken()+"0")[0];	
-			}
+			
+// TODO : Add Transpose/Volume override to file conf
+//			Path voiceFile = Path.of(args[2]);
+//			if (voiceFile == null) {
+//				System.out.println("Fatal: can't input voice file");
+//				return;			
+//			}
+//			String voice = Files.readString(voiceFile);
+//			StringTokenizer voices = new StringTokenizer(voice, " .,;-/:|");
+//			int vi = 0;
+//			while (voices.hasMoreTokens())
+//			{
+//				voiceMap[vi++] = hexStringToByteArray(voices.nextToken()+"0")[0];	
+//			}
 		} else {
-			int vi = 0, curVoice = voicePos;
+			int curVoice = voicePos, dstVoice = voicePos;
+			byte[] result;
 			while (curVoice<fIN.length) {
-				voiceMap[vi++] = estimateOPPLLVoice1234(curVoice);
+				result = estimateOPPLLVoice1234(curVoice);
+				fIN[dstVoice++] = result[0];
+				fIN[dstVoice++] = result[1];
 				curVoice += 25;
+				nbVoices++;
 			}
 		}		
 
@@ -101,15 +98,11 @@ public class SmpsRelocate{
 			case (byte)0xE6: //E6xx - volume
 				fIN[pos+1] = (byte) (fIN[pos+1] / 8); // TODO conserver la parte de précision pour répercuter sur instr suivante
 			pos += 2;
-			break;				
-			case (byte)0xEF: //EFxx - voice
-				fIN[pos+1] = voiceMap[fIN[pos+1]];
-			pos += 2;
-			break;				    	
+			break;
 			case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
 				modulation(pos+2);
 			pos += 5;
-			break;				
+			break;			
 			case (byte)0xF6: //$F6zzzz
 			case (byte)0xF8: //$F8zzzz					
 				relocateOffsetBack(pos+1);
@@ -118,15 +111,24 @@ public class SmpsRelocate{
 			case (byte)0xF7: //$F7xxyyzzzz
 				relocateOffsetBack(pos+3);
 			pos += 5;
+			break;
+			case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
+			pos += 2;
 			break;				
 			default:
 				pos++;
 				break;
 			}			
 
-		}				
+		}
+		
+		fOUT = new byte[voicePos+(nbVoices*2)];
+		for (int i=0; i<voicePos+(nbVoices*2); i++) {
+			fOUT[i] = fIN[i];
+		}		
+		
 		Path path = Paths.get(args[0]+".smp");
-		Files.write(path, fIN);
+		Files.write(path, fOUT);
 	}
 
 	private static int relocate (int pos) throws Exception {
@@ -169,18 +171,7 @@ public class SmpsRelocate{
 		fIN[pos] = (byte) (Math.ceil(value/3.733333333));
 	}	
 
-	/* s must be an even-length string. */
-	private static byte[] hexStringToByteArray(String s) {
-		int len = s.length();
-		byte[] data = new byte[len / 2];
-		for (int i = 0; i < len; i += 2) {
-			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-					+ Character.digit(s.charAt(i+1), 16));
-		}
-		return data;
-	}	
-
-	public static byte estimateOPPLLVoice1324 (int pos) {
+	public static byte[] estimateOPPLLVoice1324 (int pos) {
 		OPNVoice opn = new OPNVoice(
 				(byte)((fIN[pos] & 0x38) >> 3),
 				(byte)(fIN[pos] & 0x07),
@@ -194,7 +185,7 @@ public class SmpsRelocate{
 		return opn.toOPL().toOPLLROMVoice();
 	}
 	
-	public static byte estimateOPPLLVoice1234 (int pos) {
+	public static byte[] estimateOPPLLVoice1234 (int pos) {
 		OPNVoice opn = new OPNVoice(
 				(byte)((fIN[pos] & 0x38) >> 3),
 				(byte)(fIN[pos] & 0x07),

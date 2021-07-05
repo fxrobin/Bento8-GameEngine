@@ -5,7 +5,7 @@ public class OPLVoice {
 	public byte fb, con, vv;
 	public OPLSlotParam[] slots;	
 
-	float[] _ml_tbl = new float[] {0,5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15};
+	double[] _ml_tbl = new double[] {0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15};
 
 	static class OPLSlotParam {
 
@@ -82,7 +82,7 @@ public class OPLVoice {
 		this.slots = slots;		
 	}			
 
-	public byte toOPLLROMVoice() {
+	public byte[] toOPLLROMVoice() {
 		int diff = Integer.MAX_VALUE;
 		byte program = 0;
 		OPLLVoice opllv = new OPLLVoice();
@@ -91,20 +91,19 @@ public class OPLVoice {
 			OPLLVoice opll = opllv.OPLLVoiceMap[i];
 			if (i == 13) continue;
 			int d = 0;
-			float ml_a = this.slots[1].ml / _ml_tbl[this.slots[0].ml];
-			float ml_b = opll.slots[1].ml / _ml_tbl[opll.slots[0].ml];
+			double ml_a = this.slots[1].ml / _ml_tbl[this.slots[0].ml];
+			double ml_b = opll.slots[1].ml / _ml_tbl[opll.slots[0].ml];
 			d += (Math.abs(ml_a - ml_b))*2;
 			d += (Math.abs(this.fb - opll.fb))/2;
 			d += (Math.abs(this.slots[0].ar - opll.slots[0].ar));
 			d += (Math.abs(this.slots[1].ar - opll.slots[1].ar));
 			d += (Math.abs(this.slots[0].dr - opll.slots[0].dr));
 			d += (Math.abs(this.slots[1].dr - opll.slots[1].dr));
-			d +=
-					Math.min(
-							63,
-							4 * Math.abs(this.slots[0].sl - opll.slots[0].sl) +
-							Math.abs(this.slots[0].tl - ((opll.slots[0].tl + opll.slots[0].ws != 0) ? 8 : 0))
-							) >> 3;
+			d +=  Math.min(
+					63,
+					4 * Math.abs(this.slots[0].sl - opll.slots[0].sl) +
+					Math.abs(this.slots[0].tl - ((opll.slots[0].tl + opll.slots[0].ws != 0) ? 8 : 0))
+					) >> 3;
 		if (this.slots[1].rr == 0) {
 			// sustainable tone
 			if (opll.slots[1].eg == 0) {
@@ -125,6 +124,7 @@ public class OPLVoice {
 		}
 		OPLLVoice opll = opllv.OPLLVoiceMap[program];
 		int ooff = (int) Math.floor((Math.log(_ml_tbl[this.slots[1].ml] / _ml_tbl[opll.slots[1].ml])/ Math.log(2)) / 2);
+
 		int voff = 1;
 		if (opll.slots[1].ws != 0) {
 			voff -= 2;
@@ -132,8 +132,8 @@ public class OPLVoice {
 				voff -= 2;
 			}
 		}
-		
-	    return (byte)((program << 4) + (byte)Math.min(15, Math.max(0, vv+voff)));
+		System.out.println(program+" "+voff+" "+ooff);
+	    return new byte[] {(byte)((program << 4) + (byte)Math.min(15, Math.max(0, vv+voff))), (byte)(ooff*12 & 0xff)};
 	}
 
 }
