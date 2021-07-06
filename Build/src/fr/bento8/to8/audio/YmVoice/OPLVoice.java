@@ -132,7 +132,7 @@ public class OPLVoice {
 				voff -= 2;
 			}
 		}
-		System.out.println(program+" "+voff+" "+ooff);
+
 	    return new byte[] {(byte)((program << 4) + (byte)Math.min(15, Math.max(0, vv+voff))), (byte)(ooff*12 & 0xff)};
 	}
 

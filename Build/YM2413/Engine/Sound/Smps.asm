@@ -470,7 +470,7 @@ UpdateMusic
         _UpdateTrack SongFM2,FMUpdateTrack ; trompette intro puis xylophone 12
         _UpdateTrack SongFM3,FMUpdateTrack ; bassline 14
         _UpdateTrack SongFM4,FMUpdateTrack ; trompette fantome 5
-        _UpdateTrack SongFM5,FMUpdateTrack
+        ;_UpdateTrack SongFM5,FMUpdateTrack
         ;_UpdateTrack SongFM6,FMUpdateTrack
         ;_UpdateTrack SongFM7,FMUpdateTrack
         ;_UpdateTrack SongFM8,FMUpdateTrack                
@@ -704,8 +704,9 @@ FMSetFreq
         ora   #$02
         sta   PlaybackControl,y
         bra   @b        
-@a      addb  Transpose,y              ; Add current channel transpose (coord flag E9)
-        addb  InstrTranspose,y
+@a      addb  #$0B                     ; Add FMFrequencies offet for C0 Note
+        addb  Transpose,y              ; Add current channel transpose (coord flag E9)
+        addb  InstrTranspose,y         ; Add Instrument (Voice) offset (coord flag EF)
         aslb                           ; Transform note into an index...
         ldu   #FMFrequencies
         lda   #0    
@@ -816,9 +817,10 @@ FMUpdateFreq
         stb   NoteControl,y
         rts        
  
-; 95 notes (Note value $81=C0 $DF=A#7)
+; 95 notes (Note value $81=C0 $DF=A#7) with direct access
+; Other notes can be accessed by transpose
 FMFrequencies
-        fdb   $0000 ; padding for ($80=rest), saves a dec instruction
+        fdb   $0056,$005B,$0061,$0067,$006D,$0073,$007A,$0081,$0089,$0091,$009A,$00A2 ; C-1 - B-1
         fdb   $00AD,$00B7,$00C2,$00CD,$00DA,$00E6,$00F4,$0102,$0112,$0122,$0133,$0146 ; C0 - B0
         fdb   $0159,$016D,$0183,$019A,$01B3,$01CC,$01E8,$0302,$0312,$0322,$0333,$0346 ; C1 - B1
         fdb   $0359,$036D,$0383,$039A,$03B3,$03CC,$03E8,$0502,$0512,$0522,$0533,$0546 ; C2 - B2
@@ -827,6 +829,8 @@ FMFrequencies
         fdb   $0959,$096D,$0983,$099A,$09B3,$09CC,$09E8,$0B02,$0B12,$0B22,$0B33,$0B46 ; C5 - B5
         fdb   $0B59,$0B6D,$0B83,$0B9A,$0BB3,$0BCC,$0BE8,$0D02,$0D12,$0D22,$0D33,$0D46 ; C6 - B6
         fdb   $0D59,$0D6D,$0D83,$0D9A,$0DB3,$0DCC,$0DE8,$0F02,$0F12,$0F22,$0F33,$0F46 ; C7 - B7        
+        fdb   $0F59,$0F6D,$0F83,$0F9A,$0FB3,$0FCC,$0FE8,$0FE8,$0FE8,$0FE8,$0FE8,$0FE8 ; C8 - F#8
+        fdb   $0FE8,$0FE8,$0FE8,$0FE8,$0FE8,$0FE8,$0FE8,$0FE8                         ; F#8
         
 * ************************************************************************************
 *   PSG Update Track
@@ -1295,7 +1299,7 @@ cfJumpTo
 ;
 cfRepeatAtPos
         ldd   ,x++                     ; Loop index is in 'a'
-        adda  LoopCounters             ; Add to make loop index offset
+        adda  #LoopCounters            ; Add to make loop index offset
         leau  a,y
         tst   ,u
         bne   @a

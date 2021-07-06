@@ -97,29 +97,28 @@ public class SmpsRelocate{
 			switch (fIN[pos]) {
 			case (byte)0xE6: //E6xx - volume
 				fIN[pos+1] = (byte) (fIN[pos+1] / 8); // TODO conserver la parte de précision pour répercuter sur instr suivante
-			pos += 2;
-			break;
+				pos += 2;
+				break;
 			case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
 				modulation(pos+2);
-			pos += 5;
-			break;			
+				pos += 5;
+				break;			
 			case (byte)0xF6: //$F6zzzz
 			case (byte)0xF8: //$F8zzzz					
 				relocateOffsetBack(pos+1);
-			pos += 3;
-			break;
+				pos += 3;
+				break;
 			case (byte)0xF7: //$F7xxyyzzzz
 				relocateOffsetBack(pos+3);
-			pos += 5;
-			break;
+				pos += 5;
+				break;
 			case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
-			pos += 2;
-			break;				
+				pos += 2;
+				break;				
 			default:
 				pos++;
 				break;
 			}			
-
 		}
 		
 		fOUT = new byte[voicePos+(nbVoices*2)];
