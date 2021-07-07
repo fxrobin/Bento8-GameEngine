@@ -57,7 +57,7 @@ NoteControl                    rmb   1
 TempoDivider                   rmb   1                ; timing divisor; 1 = Normal, 2 = Half, 3 = Third...
 DataPointer                    rmb   2                ; Track's position
 Transpose                      rmb   1                ; Transpose (from coord flag E9)
-InstrAndVolume                 rmb   1                ; (Dependency) Should follow Transpose - channel instrument and volume (only applied at voice changes)
+Volume                         rmb   1                ; Attenuation - (Dependency) Should follow Transpose
 VoiceIndex                     rmb   1                ; Current voice in use OR current PSG tone
 VolFlutter                     rmb   1                ; PSG flutter (dynamically effects PSG volume for decay effects)
 StackPointer                   rmb   1                ; "Gosub" stack position offset (starts at 2Ah, i.e. end of track, and each jump decrements by 2)
@@ -79,6 +79,7 @@ PSGNoise                       rmb   1                ; PSG noise setting
 VoicePtr                       rmb   2                ; custom voice table (for SFX)
 TLPtr                          rmb   2                ; where TL bytes of current voice begin (set during voice setting)
 InstrTranspose                 rmb   1                ; instrument transpose
+InstrAndVolume                 rmb   1                ; current instrument and volume
 LoopCounters                   rmb   $A               ; Loop counter index 0
                                                       ;   ... open ...
                                                       ; start of next track, every two bytes below this is a coord flag "gosub" (F8h) return stack
@@ -97,9 +98,9 @@ VoiceControl                 equ   1
 NoteControl                  equ   2
 TempoDivider                 equ   3
 DataPointer                  equ   4
-TranspAndInstrAndVol         equ   6
+TranspAndVolume         equ   6
 Transpose                    equ   6
-InstrAndVolume               equ   7
+Volume                       equ   7
 VoiceIndex                   equ   8
 VolFlutter                   equ   9
 StackPointer                 equ   10
@@ -120,8 +121,9 @@ PSGNoise                     equ   27
 VoicePtr                     equ   28
 TLPtr                        equ   30
 InstrTranspose               equ   32 
-LoopCounters                 equ   33   
-GoSubStack                   equ   43
+InstrAndVolume               equ   33 
+LoopCounters                 equ   34   
+GoSubStack                   equ   44
 
 ******************************************************************************
 
@@ -319,7 +321,7 @@ _InitTrackFM MACRO
         addd  MusicData
         std   DataPointer,x
         ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TranspAndInstrAndVol,x
+        std   TranspAndVolume,x
         leau  SMPS_TRK_FM_HDR_LEN,u       
  ENDM
 
@@ -338,7 +340,7 @@ _InitTrackPSG MACRO
         addd  MusicData
         std   DataPointer,x
         ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TranspAndInstrAndVol,x
+        std   TranspAndVolume,x
         lda   SMPS_TRK_ENV_PTR,u
         sta   VoiceIndex,x
         leau  SMPS_TRK_PSG_HDR_LEN,u
@@ -1136,9 +1138,15 @@ cfSetTempoDivider
 ; (via Saxman's doc): Change channel volume BY xx; xx is signed
 ;
 cfChangeFMVolume
-        ldb   InstrAndVolume,y
-        addb  ,x+
-        stb   InstrAndVolume,y
+        lda   Volume,y                 ; apply volume attenuation change
+        adda  ,x+
+        sta   Volume,y
+        ldb   InstrAndVolume,y         ; apply current track attenuation to voice        
+        lsra                           ; volume attenuation is unsigned
+        lsra
+        lsra
+        sta   >*+4
+        addb  #0        
         lda   #$30
         adda  VoiceControl,y
         _WriteYM        
@@ -1206,9 +1214,15 @@ cfSetVoice
         ldu   AbsVar.VoiceTblPtr
         aslb
         ldd   b,u
-        sta   InstrAndVolume,y
-        sta   YM2413_A1
+        sta   InstrAndVolume,y        
         stb   InstrTranspose,y
+        ldb   Volume,y                 ; apply current track attenuation to voice
+        lsrb                           ; volume attenuation is unsigned
+        lsrb
+        lsrb
+        stb   >*+4
+        adda  #0
+        sta   YM2413_A1
         rts
 
 ; (via Saxman's doc): F0wwxxyyzz - modulation

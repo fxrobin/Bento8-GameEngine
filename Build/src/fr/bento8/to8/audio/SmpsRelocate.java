@@ -95,10 +95,6 @@ public class SmpsRelocate{
 			// Coordination flags
 			// ********************************************************************
 			switch (fIN[pos]) {
-			case (byte)0xE6: //E6xx - volume
-				fIN[pos+1] = (byte) (fIN[pos+1] / 8); // TODO conserver la parte de précision pour répercuter sur instr suivante
-				pos += 2;
-				break;
 			case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
 				modulation(pos+2);
 				pos += 5;
@@ -112,7 +108,7 @@ public class SmpsRelocate{
 				relocateOffsetBack(pos+3);
 				pos += 5;
 				break;
-			case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
+			case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE6: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
 				pos += 2;
 				break;				
 			default:
@@ -149,7 +145,6 @@ public class SmpsRelocate{
 		address += offset;
 		fIN[pos] = (byte) (address >> 8);
 		fIN[pos+1] = (byte) (address);
-		fIN[pos+3] = (byte) (fIN[pos+3] / 8); // Volume
 	}
 
 	private static void relocateOffsetBack (int pos) throws Exception {
