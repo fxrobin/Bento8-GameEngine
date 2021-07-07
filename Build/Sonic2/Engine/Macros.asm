@@ -126,4 +126,34 @@ _RunObject MACRO
         abx
         ldu   #\2        
         jsr   [,x]
- ENDM                   
+ ENDM
+ 
+_asld MACRO
+        aslb
+        rola
+ ENDM        
+ 
+_asrd MACRO
+        asra
+        rorb
+ ENDM      
+ 
+_lsld MACRO
+        lslb
+        rola
+ ENDM        
+ 
+_lsrd MACRO
+        lsra
+        rorb
+ ENDM
+ 
+_rold MACRO
+        rolb
+        rola
+ ENDM    
+ 
+_rord MACRO
+        rora
+        rorb
+ ENDM

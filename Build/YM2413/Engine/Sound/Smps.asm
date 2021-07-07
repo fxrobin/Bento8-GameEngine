@@ -26,9 +26,9 @@ SMPS_TRK_FM_HDR_LEN          equ   4
 SMPS_TRK_PSG_HDR_LEN         equ   6
 
 ; Hardware Addresses
-PSG                          equ   $E7B0
-YM2413_A0                    equ   $E7B1
-YM2413_A1                    equ   $E7B2
+PSG                          equ   $E7B0 ; e7fe or e7ff
+YM2413_A0                    equ   $E7B1 ; e7fc or e7fe
+YM2413_A1                    equ   $E7B2 ; e7fd or e7ff
 
 ******************************************************************************
 
@@ -43,11 +43,11 @@ PlaybackControl                rmb   1
                                                       ;         "voice control"; bits 
                                                       ;         0-3 (00h-0Fh) Channel number
                                                       ;         7   (80h) PSG Track
-                                                      ; PSG     Chn       |a| |1Fh|
-                                                      ; VOL1    0x90	= 100 1xxxx	vol 4b xxxx = attenuation value
-                                                      ; VOL2    0xb0	= 101 1xxxx	vol 4b
-                                                      ; VOL3    0xd0	= 110 1xxxx	vol 4b                                                      
-                                                      
+                                                      ;         PSG    Chn    |a| |00000|
+                                                      ;         Voice1 0x80 = 100  00000
+                                                      ;         Voice2 0xa0 = 101  00000
+                                                      ;         Voice3 0xc0 = 110  00000                                                      
+                                                      ;         Voice4 0xe0 = 111  00000                                                      
 VoiceControl                   rmb   1
                                                       ;         "note control"; bits
                                                       ;         0-3 (00h-0Fh) Current Block(0-2) and FNum(8)
@@ -79,6 +79,16 @@ PSGNoise                       rmb   1                ; PSG noise setting
 VoicePtr                       rmb   2                ; custom voice table (for SFX)
 TLPtr                          rmb   2                ; where TL bytes of current voice begin (set during voice setting)
 InstrTranspose                 rmb   1                ; instrument transpose
+                                                      ;         "InstrAndVolume"; bits
+                                                      ;          FM Instr.  Attnenuation
+                                                      ; FM       0000       xxxx
+                                                      ; FM       0001       xxxx 
+                                                      ; ...  
+                                                      ; PSG      Chn    |a| |1Fh|
+                                                      ; VOL1     0x90 = 100 1xxxx	vol 4b xxxx = attenuation value
+                                                      ; VOL2     0xb0 = 101 1xxxx	vol 4b
+                                                      ; VOL3     0xd0 = 110 1xxxx	vol 4b
+                                                      ; VOL4     0xf0 = 111 1xxxx	vol 4b       
 InstrAndVolume                 rmb   1                ; current instrument and volume
 LoopCounters                   rmb   $A               ; Loop counter index 0
                                                       ;   ... open ...
@@ -98,7 +108,7 @@ VoiceControl                 equ   1
 NoteControl                  equ   2
 TempoDivider                 equ   3
 DataPointer                  equ   4
-TranspAndVolume         equ   6
+TranspAndVolume              equ   6
 Transpose                    equ   6
 Volume                       equ   7
 VoiceIndex                   equ   8
@@ -175,6 +185,7 @@ SongPSGStart
 SongPSG1        Track
 SongPSG2        Track
 SongPSG3        Track
+SongPSG4        Track
 SongPSGEnd
 tracksEnd
 
@@ -220,10 +231,10 @@ MUSIC_PSG_TRACK_COUNT = (SongPSGEnd-SongPSGStart)/sizeof{Track}
 *
 
 _WriteYM MACRO
-        sta   YM2413_A0
+        sta   <YM2413_A0
         nop
         nop
-        stb   YM2413_A1
+        stb   <YM2413_A1
  ENDM  
  
 _YMBusyWait10 MACRO
@@ -293,57 +304,32 @@ YM2413_DrumModeOn
 
 SN76489_Silent
         lda   #$9F
-        sta   PSG
+        sta   <PSG
         lda   #$BF
-        sta   PSG       
+        sta   <PSG       
         lda   #$DF
-        sta   PSG
+        sta   <PSG
         lda   #$FF
-        sta   PSG                               
+        sta   <PSG                               
         rts        
 
 * ************************************************************************************
+* PlayMusic - Load a new music and init all tracks
+*
 * receives in X the address of the song
 * destroys A
+* ************************************************************************************
 
 _InitTrackFM MACRO
         ldx   #\1
         lda   #\2
-        sta   VoiceControl,x
-        lda   SongDelay        
-        sta   TempoDivider,x
-        ldd   #$8201
-        sta   PlaybackControl,x
-        stb   DurationTimeout,x
-        ldb   #GoSubStack
-        stb   StackPointer,x
-        ldd   SMPS_TRK_DATA_PTR,u
-        addd  MusicData
-        std   DataPointer,x
-        ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TranspAndVolume,x
-        leau  SMPS_TRK_FM_HDR_LEN,u       
+        jsr   InitTrackFM
  ENDM
-
+ 
 _InitTrackPSG MACRO
         ldx   #\1
-        lda   #\2
-        sta   VoiceControl,x
-        lda   AbsVar.CurrentTempo        
-        sta   TempoDivider,x
-        ldd   #$8201
-        sta   PlaybackControl,x
-        stb   DurationTimeout,x
-        ldb   #GoSubStack
-        stb   StackPointer,x        
-        ldd   SMPS_TRK_DATA_PTR,u
-        addd  MusicData
-        std   DataPointer,x
-        ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TranspAndVolume,x
-        lda   SMPS_TRK_ENV_PTR,u
-        sta   VoiceIndex,x
-        leau  SMPS_TRK_PSG_HDR_LEN,u
+        ldd   #\2
+        jsr   InitTrackPSG
  ENDM
 
 PlayMusic
@@ -375,7 +361,7 @@ BGMLoad
         leau  SMPS_TRK_HEADER,x
         ldy   SMPS_DAC_FLAG,x
         bne   @a
-        _InitTrackFM SongDAC,$06,$00   ; optim VoiceControl inutile
+        _InitTrackFM SongDAC,$06       ; drum mode use channel 6-8
 @dyn    lda   #$00                     ; (dynamic)
         deca                           ; nb fm track - 1 (dac track)      
 @a      asla
@@ -413,16 +399,54 @@ ipsgjmp
         fdb   ipsg1
         fdb   ipsg2
         fdb   ipsg3
+        fdb   ipsg4        
 
-ipsg3   _InitTrackPSG SongPSG3,$D0
-ipsg2   _InitTrackPSG SongPSG2,$B0  
-ipsg1   _InitTrackPSG SongPSG1,$90
+ipsg4   _InitTrackPSG SongPSG4,$F0E0
+ipsg3   _InitTrackPSG SongPSG3,$D0C0
+ipsg2   _InitTrackPSG SongPSG2,$B0A0
+ipsg1   _InitTrackPSG SongPSG1,$9080
 ipsg0
         rts
-        
+
+InitTrackFM
+        sta   VoiceControl,x
+        lda   SongDelay        
+        sta   TempoDivider,x
+        ldd   #$8201
+        sta   PlaybackControl,x
+        stb   DurationTimeout,x
+        ldb   #GoSubStack
+        stb   StackPointer,x
+        ldd   SMPS_TRK_DATA_PTR,u
+        addd  MusicData
+        std   DataPointer,x
+        ldd   SMPS_TRK_TR_VOL_PTR,u
+        std   TranspAndVolume,x
+        leau  SMPS_TRK_FM_HDR_LEN,u
+        rts       
+ 
+InitTrackPSG
+        sta   VoiceControl,x
+        stb   InstrAndVolume,x
+        lda   AbsVar.CurrentTempo        
+        sta   TempoDivider,x
+        ldd   #$8201
+        sta   PlaybackControl,x
+        stb   DurationTimeout,x
+        ldb   #GoSubStack
+        stb   StackPointer,x        
+        ldd   SMPS_TRK_DATA_PTR,u
+        addd  MusicData
+        std   DataPointer,x
+        ldd   SMPS_TRK_TR_VOL_PTR,u
+        std   TranspAndVolume,x
+        lda   SMPS_TRK_ENV_PTR,u
+        sta   VoiceIndex,x
+        leau  SMPS_TRK_PSG_HDR_LEN,u
+        rts        
         
 * ************************************************************************************
-* processes a music frame (VInt)
+* MusicFrame - processes a music frame (VInt)
 *
 * SMPS Song Data
 * --------------
@@ -432,6 +456,7 @@ ipsg0
 * value in range [$E0, $FF] : Coordination flag
 *
 * destroys A,B,X
+* ************************************************************************************
         
 @a      rts        
 MusicFrame 
@@ -451,10 +476,8 @@ UpdateEverything
         lda   #5
         sta   PALUpdTick
         jsr   UpdateMusic              ; play 2 frames in one to keep original speed
-@a      jmp   UpdateMusic        
-
-* ************************************************************************************
-* 
+@a      jmp   UpdateMusic
+        ; end of UpdateEverything        
 
 _UpdateTrack MACRO
         ldy   #\1
@@ -466,19 +489,20 @@ a@      equ   *
 
 UpdateMusic
         jsr   TempoWait
-        _UpdateTrack SongDAC,DACUpdateTrack
-        _UpdateTrack SongFM0,FMUpdateTrack ; trompette (avec piano basse) 7      
-        _UpdateTrack SongFM1,FMUpdateTrack ; trompette (avec piano basse) 9 doublage piste 0
-        _UpdateTrack SongFM2,FMUpdateTrack ; trompette intro puis xylophone 12
-        _UpdateTrack SongFM3,FMUpdateTrack ; bassline 14
-        _UpdateTrack SongFM4,FMUpdateTrack ; trompette fantome 5
+        ;_UpdateTrack SongDAC,DACUpdateTrack
+        ;_UpdateTrack SongFM0,FMUpdateTrack      
+        ;_UpdateTrack SongFM1,FMUpdateTrack
+        ;_UpdateTrack SongFM2,FMUpdateTrack
+        ;_UpdateTrack SongFM3,FMUpdateTrack
+        ;_UpdateTrack SongFM4,FMUpdateTrack
         ;_UpdateTrack SongFM5,FMUpdateTrack
         ;_UpdateTrack SongFM6,FMUpdateTrack
         ;_UpdateTrack SongFM7,FMUpdateTrack
         ;_UpdateTrack SongFM8,FMUpdateTrack                
-        ;_UpdateTrack SongPSG1,PSGUpdateTrack
-        ;_UpdateTrack SongPSG2,PSGUpdateTrack
-        ;_UpdateTrack SongPSG3,PSGUpdateTrack        
+        _UpdateTrack SongPSG1,PSGUpdateTrack
+        _UpdateTrack SongPSG2,PSGUpdateTrack
+        _UpdateTrack SongPSG3,PSGUpdateTrack        
+        _UpdateTrack SongPSG4,PSGUpdateTrack
         rts
         
 * ************************************************************************************
@@ -509,11 +533,11 @@ TempoWait
         inc   SongPSG1.DurationTimeout
         inc   SongPSG2.DurationTimeout
         inc   SongPSG3.DurationTimeout
+        inc   SongPSG4.DurationTimeout
         rts
 
 * ************************************************************************************
 * 
-
 DACUpdateTrack        
         dec   SongDAC.DurationTimeout
         beq   @a
@@ -575,22 +599,6 @@ DACAfterDur
         fcb   $24 ; $8F - Hi Bongo
         fcb   $28 ; $90 - Mid Bongo
         fcb   $30 ; $91 - Low Bongo
- 
-; PSG Noise Drum       
-;Note	NMode	Env	Vol	Ch3Vol	Ch3Freq	Slide
-;88	E7	02	0	F	030	02
-;89	E7	02	0	F	030	02
-;8D	E7	02	0	F	030	02
-;9D	E7	02	0	F	030	02
-
-;82	E7	01	0	F	030	02
-;81	E7	01	4	6	010	02
-;85	E7	01	4	6	010	02
-;84	E7	01	4	6	010	02
-
-;91?	E7	04	3	6	010	02
-;90?	E7	03	3	6	010	02
-        
 
 * ************************************************************************************
 * FM Track Update
@@ -633,16 +641,16 @@ FMUpdateFreqNoteFill
         sta   @dyn+1
         lda   #$10                     ; set LSB Frequency Command
         adda  VoiceControl,y
-        sta   YM2413_A0
+        sta   <YM2413_A0
         adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
-        stb   YM2413_A1
+        stb   <YM2413_A1
         _YMBusyWait17
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        sta   YM2413_A0
+        sta   <YM2413_A0
         andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
 @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        stb   YM2413_A1
+        stb   <YM2413_A1
         stb   NoteControl,y
         rts
  
@@ -657,10 +665,10 @@ NoteFillUpdate
         sta   PlaybackControl,y        
         lda   VoiceControl,y           ; Send a Key Off
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        sta   YM2413_A0
+        sta   <YM2413_A0
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
         andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
-        stb   YM2413_A1                ; send to YM
+        stb   <YM2413_A1                ; send to YM
         stb   NoteControl,y                
         rts 
  
@@ -691,10 +699,10 @@ FMNoteOff
         bne   NoteDyn                  ; If they are, skip
         lda   VoiceControl,y           ; Otherwise, send a Key Off
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        sta   YM2413_A0
+        sta   <YM2413_A0
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
         andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
-        stb   YM2413_A1                ; send to YM
+        stb   <YM2413_A1                ; send to YM
         stb   NoteControl,y                
 NoteDyn ldb   #0                       ; (dynamic) retore note value   
         bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
@@ -755,17 +763,17 @@ FMUpdateFreqAndNoteOn
         sta   @dyn+1
         lda   #$10                     ; set LSB Frequency Command
         adda  VoiceControl,y
-        sta   YM2413_A0
+        sta   <YM2413_A0
         adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop
-        stb   YM2413_A1
+        stb   <YM2413_A1
         _YMBusyWait17
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
         orb   #$10                     ; Set bit 4 (10h) Key On        
-        sta   YM2413_A0
+        sta   <YM2413_A0
         andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
 @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        stb   YM2413_A1   
+        stb   <YM2413_A1   
         stb   NoteControl,y
         
 DoModulation  
@@ -806,16 +814,16 @@ FMUpdateFreq
         sta   @dyn+1
         lda   #$10                     ; set LSB Frequency Command
         adda  VoiceControl,y           ; get channel number
-        sta   YM2413_A0                ; send Fnum update Command
+        sta   <YM2413_A0                ; send Fnum update Command
         adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
         nop                            ; total wait 4 cycles
-        stb   YM2413_A1                ; send FNum (b0-b7)
+        stb   <YM2413_A1                ; send FNum (b0-b7)
         _YMBusyWait17                  ; total wait 24 cycles
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-        sta   YM2413_A0                ; send command
+        sta   <YM2413_A0                ; send command
         andb  #$F0                     ; clear FNum MSB (and used as 2 cycles tempo)
 @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-        stb   YM2413_A1                ; send FNum (b8) and Block (b0-b2)
+        stb   <YM2413_A1                ; send FNum (b8) and Block (b0-b2)
         stb   NoteControl,y
         rts        
  
@@ -837,227 +845,181 @@ FMFrequencies
 * ************************************************************************************
 *   PSG Update Track
 
+_PSGNoteOff MACRO
+        lda   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)
+        ora   #$1F                     ; Attenuation Off
+        sta   <PSG
+ ENDM
+ 
+PSGNoteFillUpdate
+        lda   NoteFillTimeout,y        ; Get current note fill value
+        lbeq   PSGDoModulation         ; If zero, return!
+        dec   NoteFillTimeout,y        ; Decrement note fill
+        lbne   PSGDoModulation         ; If not zero, return
+        
+        lda   PlaybackControl,y
+        ora   #$02                     ; Set bit 1 (track is at rest)
+        sta   PlaybackControl,y    
+        _PSGNoteOff                  
+        rts 
+ 
 PSGUpdateTrack
-        dec   DurationTimeout,y        ; Decrement duration
-        rts
 
-* _PSGNoteOff MACRO
-*         lda   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)
-*         ora   #$1F                     ; Attenuation Off
-*         sta   PSG
-*  ENDM
-*         
-* PSGDoModulationNoteFill
-*         lda   PlaybackControl,y
-*         bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
-*         beq   @a
-*         rts                            ; If so, quit        
-* @a      bita  #$08                     ; Is bit 3 (08h) "modulation on" set on playback?
-*         bne   @b
-*         rts                            ; If not, quit        
-* @b      lda   ModulationWait,y         ; 'ww' period of time before modulation starts
-*         beq   @c                       ; if zero, go to it!
-*         dec   ModulationWait,y         ; Otherwise, decrement timer
-*         rts                            ; return if decremented
-* @c      dec   ModulationSpeed,y        ; Decrement modulation speed counter
-*         beq   @d
-*         rts                            ; Return if not yet zero
-* @d      ldx   ModulationPtr,y
-*         lda   1,x
-*         sta   ModulationSpeed,y
-*         lda   ModulationSteps,y
-*         bne   @e
-*         lda   3,x
-*         sta   ModulationSteps,y     
-*         neg   ModulationDelta,y
-*         rts                
-* @e      dec   ModulationSteps,y
-*         ldb   ModulationDelta,y
-*         sex
-*         addd  ModulationVal,y
-*         std   ModulationVal,y
-*                 
-* PSGUpdateFreqNoteFill
-*         ldb   Detune,y
-*         sex
-*         addd  NextData,y               ; Apply detune but don't update stored frequency
-*         addd  ModulationVal,y        
-*         sta   @dyn+1
-*         lda   #$10                     ; set LSB Frequency Command
-*         adda  VoiceControl,y
-*         sta   YM2413_A0
-*         adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
-*         nop
-*         stb   YM2413_A1
-*         _YMBusyWait17
-*         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-*         sta   YM2413_A0
-*         andb  #$F0                     ; Clear FNum MSB (and used as 2 cycles tempo)
-* @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-*         stb   YM2413_A1   
-*         stb   NoteControl,y
-*         rts
-*  
-* PSGNoteFillUpdate
-*         lda   NoteFillTimeout,y        ; Get current note fill value
-*         beq   PSGDoModulationNoteFill  ; If zero, return!
-*         dec   NoteFillTimeout,y        ; Decrement note fill
-*         bne   PSGDoModulationNoteFill  ; If not zero, return
-*         
-*         lda   PlaybackControl,y
-*         ora   #$02                     ; Set bit 1 (track is at rest)
-*         sta   PlaybackControl,y        
-*         lda   VoiceControl,y           ; Send a Key Off
-*         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-*         sta   YM2413_A0
-*         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
-*         andb  #$EF                     ; Clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
-*         stb   YM2413_A1                ; send to YM
-*         stb   NoteControl,y                
-*         rts 
-*  
-* PSGUpdateTrack
-*         dec   DurationTimeout,y        ; Decrement duration
-*         bne   PSGNoteFillUpdate        ; If not time-out yet, go do updates only
-*         lda   PlaybackControl,y
-*         anda  #$EF
-*         sta   PlaybackControl,y        ; When duration over, clear "do not attack" bit 4 (0x10) of track's play control
-*         
-* PSGDoNext
-*         ldx   DataPointer,y
-*         lda   PlaybackControl,y        ; Clear bit 1 (02h) "track is rest" from track
-*         anda  #$FD
-*         sta   PlaybackControl,y        
-*        
-* PSGReadCoordFlag        
-*         ldb   ,x+                      ; Read song data
-*         cmpb  #$E0
-*         blo   @a                       ; Test for >= E0h, which is a coordination flag
-*         jsr   CoordFlag
-*         bra   PSGReadCoordFlag         ; Read all consecutive coordination flags
-* @a      bpl   PSGSetDuration           ; Test for 80h not set, which is a note duration
-*         
-* PSGSetFreq
-*         subb  #$81                     ; Test for a rest
-*         bcc   @a                       ; If a note branch
-*         lda   PlaybackControl,y        ; If carry (only time that happens if 80h because of earlier logic) this is a rest!
-*         ora   #$02
-*         sta   PlaybackControl,y        ; Set bit 1 (track is at rest)
-*         ldd   #$FFFF                   ; TODO toujours utile ???
-*         std   NextData,y               ; Store Frequency
-*         _PSGNoteOff
-*         rts        
-* @a
-*         addb  Transpose,y              ; Add current channel transpose (coord flag E9)
-*         addb  InstrTranspose,y
-*         aslb                           ; Transform note into an index...
-*         ldu   #PSGFrequencies
-*         lda   #0    
-*         ldd   d,u
-*         std   NextData,y               ; Store Frequency
-*        
-*         ldb   ,x                       ; Get next byte
-*         bpl   PSGSetDurationAndForward  ; Test for 80h not set, which is a note duration
-*         ldb   SavedDuration,y        
-*         bra   PSGFinishTrackUpdate
-* 
-* PSGSetDurationAndForward
-*         leax  1,x
-*         
-* PSGSetDuration
-*         lda   TempoDivider,y
-*         mul
-*         stb   SavedDuration,y
-*         
-* PSGFinishTrackUpdate
-*         stb   DurationTimeout,y        ; Last set duration ... put into ticker
-*         stx   DataPointer,y            ; Stores to the track pointer memory
-*         lda   PlaybackControl,y
-*         bita  #$10                     ; Is bit 4 (10h) "do not attack next note" set on playback?
-*         beq   @a                       
-*         bra   PSGPrepareNote            ; If so, quit
-* @a      ldb   NoteFillMaster,y
-*         stb   NoteFillTimeout,y        ; Reset 0Fh "note fill" value to master
-*         clr   VolFlutter,y             ; Reset PSG flutter byte
-*         bita  #$08                     ; Is bit 3 (08h) modulation turned on?
-*         bne   @b
-*         bra   PSGPrepareNote           ; if not, quit
-* @b      ldx   ModulationPtr,y
-*         jsr   SetModulation            ; reload modulation settings for the new note
-*         
-* PSGDoNoteOn
-*         lda   PlaybackControl,y
-*         bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
-*         beq   PSGUpdateFreqAndNoteOn                       
-*         rts                            ; If so, quit
-* PSGUpdateFreq
-*         ldb   Detune,y
-*         sex
-*         addd  NextData,y               ; Apply detune but don't update stored frequency
-* ..
-* 
-* 
-*         stb   NoteControl,y
-*         
-* PSGDoModulation  
-*         lda   PlaybackControl,y
-*         bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
-*         beq   @a
-*         rts                            ; If so, quit        
-* @a      bita  #$08                     ; Is bit 3 (08h) "modulation on" set on playback?
-*         bne   @b
-*         rts                            ; If not, quit        
-* @b      lda   ModulationWait,y         ; 'ww' period of time before modulation starts
-*         beq   @c                       ; if zero, go to it!
-*         dec   ModulationWait,y         ; Otherwise, decrement timer
-*         rts                            ; return if decremented
-* @c      dec   ModulationSpeed,y        ; Decrement modulation speed counter
-*         beq   @d
-*         rts                            ; Return if not yet zero
-* @d      ldx   ModulationPtr,y
-*         lda   1,x
-*         sta   ModulationSpeed,y
-*         lda   ModulationSteps,y
-*         bne   @e
-*         lda   3,x
-*         sta   ModulationSteps,y     
-*         neg   ModulationDelta,y
-*         rts                
-* @e      dec   ModulationSteps,y
-*         ldb   ModulationDelta,y
-*         sex
-*         addd  ModulationVal,y
-*         std   ModulationVal,y        
-*               
-* PSGUpdateFreq
-*         ldb   Detune,y
-*         sex
-*         addd  NextData,y               ; apply detune but don't update stored frequency
-*         addd  ModulationVal,y          ; add modulation effect
-*         sta   @dyn+1
-*         lda   #$10                     ; set LSB Frequency Command
-*         adda  VoiceControl,y           ; get channel number
-*         sta   YM2413_A0                ; send Fnum update Command
-*         adda  #$10                     ; set Sus/Key/Block/FNum(MSB) Command(and used as 2 cycles tempo)
-*         nop                            ; total wait 4 cycles
-*         stb   YM2413_A1                ; send FNum (b0-b7)
-*         _YMBusyWait17                  ; total wait 24 cycles
-*         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
-*         sta   YM2413_A0                ; send command
-*         andb  #$F0                     ; clear FNum MSB (and used as 2 cycles tempo)
-* @dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)
-*         stb   YM2413_A1                ; send FNum (b8) and Block (b0-b2)
-*         stb   NoteControl,y
-*         rts        
-*  
-* ; 70 notes
-* PSGFrequencies
-*         fdb   $0356,$0326,$02F9,$02CE,$02A5,$0280,$025C,$023A,$021A,$01FB,$01DF,$01C4
-*         fdb   $10AB,$0193,$017D,$0167,$0153,$0140,$012E,$011D,$010D,$00FE,$00EF,$00E2
-*         fdb   $00D6,$00C9,$00BE,$00B4,$00A9,$00A0,$0097,$008F,$0087,$007F,$0078,$0071
-*         fdb   $000B,$0065,$005F,$005A,$0055,$0050,$004B,$0047,$0043,$0040,$003C,$0039
-*         fdb   $0036,$0033,$0030,$002D,$002B,$0028,$0026,$0024,$0022,$0020,$001F,$001D
-*         fdb   $001B,$001A,$0018,$0017,$0016,$0015,$0013,$0012,$0011,$0000
+ ; TODO add zPSGDoVolFX and zPSGUpdateVolFX 
+
+        dec   DurationTimeout,y        ; Decrement duration
+        bne   PSGNoteFillUpdate        ; If not time-out yet, go do updates only
+        lda   PlaybackControl,y
+        anda  #$EF
+        sta   PlaybackControl,y        ; When duration over, clear "do not attack" bit 4 (0x10) of track's play control
+        
+PSGDoNext
+        ldx   DataPointer,y
+        lda   PlaybackControl,y        ; Clear bit 1 (02h) "track is rest" from track
+        anda  #$FD
+        sta   PlaybackControl,y        
+       
+PSGReadCoordFlag        
+        ldb   ,x+                      ; Read song data
+        cmpb  #$E0
+        blo   @a                       ; Test for >= E0h, which is a coordination flag
+        jsr   CoordFlag
+        bra   PSGReadCoordFlag         ; Read all consecutive coordination flags
+@a      bpl   PSGSetDuration           ; Test for 80h not set, which is a note duration
+        
+PSGSetFreq
+        subb  #$81                     ; Test for a rest
+        bcc   @a                       ; If a note branch
+        lda   PlaybackControl,y        ; If carry (only time that happens if 80h because of earlier logic) this is a rest!
+        ora   #$02
+        sta   PlaybackControl,y        ; Set bit 1 (track is at rest)
+        ldd   #$FFFF                   ; TODO toujours utile ???
+        std   NextData,y               ; Store Frequency
+        _PSGNoteOff
+        rts        
+@a
+        addb  Transpose,y              ; Add current channel transpose (coord flag E9)
+        addb  InstrTranspose,y
+        aslb                           ; Transform note into an index...
+        ldu   #PSGFrequencies
+        lda   #0    
+        ldd   d,u
+        std   NextData,y               ; Store Frequency
+       
+        ldb   ,x                       ; Get next byte
+        bpl   PSGSetDurationAndForward  ; Test for 80h not set, which is a note duration
+        ldb   SavedDuration,y        
+        bra   PSGFinishTrackUpdate
+
+PSGSetDurationAndForward
+        leax  1,x
+        
+PSGSetDuration
+        lda   TempoDivider,y
+        mul
+        stb   SavedDuration,y
+        
+PSGFinishTrackUpdate
+        stb   DurationTimeout,y        ; Last set duration ... put into ticker
+        stx   DataPointer,y            ; Stores to the track pointer memory
+        lda   PlaybackControl,y
+        bita  #$10                     ; Is bit 4 (10h) "do not attack next note" set on playback?
+        beq   @a                       
+        bra   PSGDoNoteOn              ; If so, quit
+@a      ldb   NoteFillMaster,y
+        stb   NoteFillTimeout,y        ; Reset 0Fh "note fill" value to master
+        clr   VolFlutter,y             ; Reset PSG flutter byte
+        bita  #$08                     ; Is bit 3 (08h) modulation turned on?
+        bne   @b
+        bra   PSGDoNoteOn              ; if not, quit
+@b      ldx   ModulationPtr,y
+        jsr   SetModulation            ; reload modulation settings for the new note
+        
+PSGDoNoteOn
+        lda   PlaybackControl,y
+        bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
+        beq   PSGUpdateFreq                       
+        rts                            ; If so, quit
+PSGUpdateFreq
+        ldb   Detune,y
+        sex
+        addd  NextData,y               ; Apply detune but don't update stored frequency
+        std   @dyn+1
+        andb  #$0F                     ; Keep only lower four bits (first PSG reg write only applies d0-d3 of freq)
+        lda   VoiceControl,y
+        cmpa  #$E0
+        bne   @a
+        addb  #$C0
+        bra   @b
+@a      addb  VoiceControl,y           ; Get "voice control" byte...
+@b      stb   <PSG
+@dyn    ldd   #0
+        _lsrd
+        _lsrd
+        _lsrd
+        _lsrd              
+        stb   <PSG
+        
+PSGDoModulation  
+        lda   PlaybackControl,y
+        bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
+        beq   @a
+        rts                            ; If so, quit        
+@a      bita  #$08                     ; Is bit 3 (08h) "modulation on" set on playback?
+        bne   @b
+        rts                            ; If not, quit        
+@b      lda   ModulationWait,y         ; 'ww' period of time before modulation starts
+        beq   @c                       ; if zero, go to it!
+        dec   ModulationWait,y         ; Otherwise, decrement timer
+        rts                            ; return if decremented
+@c      dec   ModulationSpeed,y        ; Decrement modulation speed counter
+        beq   @d
+        rts                            ; Return if not yet zero
+@d      ldx   ModulationPtr,y
+        lda   1,x
+        sta   ModulationSpeed,y
+        lda   ModulationSteps,y
+        bne   @e
+        lda   3,x
+        sta   ModulationSteps,y     
+        neg   ModulationDelta,y
+        rts                
+@e      dec   ModulationSteps,y
+        ldb   ModulationDelta,y
+        sex
+        addd  ModulationVal,y
+        std   ModulationVal,y        
+              
+PSGUpdateFreq2
+        ldb   Detune,y
+        sex
+        addd  NextData,y               ; apply detune but don't update stored frequency
+        addd  ModulationVal,y          ; add modulation effect
+        std   @dyn+1
+        andb  #$0F                     ; Keep only lower four bits (first PSG reg write only applies d0-d3 of freq)
+        lda   VoiceControl,y
+        cmpa  #$E0
+        bne   @a
+        addb  #$C0
+        bra   @b
+@a      addb  VoiceControl,y           ; Get "voice control" byte...
+@b      stb   <PSG
+@dyn    ldd   #0
+        _lsrd
+        _lsrd
+        _lsrd
+        _lsrd              
+        stb   <PSG
+        rts        
+ 
+; 70 notes
+PSGFrequencies
+        fdb   $0356,$0326,$02F9,$02CE,$02A5,$0280,$025C,$023A,$021A,$01FB,$01DF,$01C4
+        fdb   $10AB,$0193,$017D,$0167,$0153,$0140,$012E,$011D,$010D,$00FE,$00EF,$00E2
+        fdb   $00D6,$00C9,$00BE,$00B4,$00A9,$00A0,$0097,$008F,$0087,$007F,$0078,$0071
+        fdb   $000B,$0065,$005F,$005A,$0055,$0050,$004B,$0047,$0043,$0040,$003C,$0039
+        fdb   $0036,$0033,$0030,$002D,$002B,$0028,$0026,$0024,$0022,$0020,$001F,$001D
+        fdb   $001B,$001A,$0018,$0017,$0016,$0015,$0013,$0012,$0011,$0000
                  
 * ************************************************************************************
 *   
@@ -1087,14 +1049,14 @@ CoordFlagLookup
         fdb   cfChangeTransposition ; E9 -- done
         fdb   cfSetTempo            ; EA -- done
         fdb   cfSetTempoMod         ; EB -- done
-        fdb   cfChangePSGVolume     ; EC --todo
+        fdb   cfChangePSGVolume     ; EC -- done
         fdb   cfNop                 ; ED -- unsupported
         fdb   cfNop                 ; EE -- unsupported
-        fdb   cfSetVoice            ; EF --todo
+        fdb   cfSetVoice            ; EF -- done
         fdb   cfModulation          ; F0 -- done
         fdb   cfEnableModulation    ; F1 -- done
         fdb   cfStopTrack           ; F2 -- done
-        fdb   cfSetPSGNoise         ; F3 --todo
+        fdb   cfSetPSGNoise         ; F3 -- done
         fdb   cfDisableModulation   ; F4 -- done
         fdb   cfSetPSGTone          ; F5 -- done
         fdb   cfJumpTo              ; F6 -- done
@@ -1198,10 +1160,14 @@ cfSetTempoMod
         sta   SongPSG1.TempoDivider
         sta   SongPSG2.TempoDivider
         sta   SongPSG3.TempoDivider
+        sta   SongPSG4.TempoDivider
         rts        
 
 cfChangePSGVolume
-        leax  1,x
+        lda   InstrAndVolume,y
+        adda  ,x+
+        sta   InstrAndVolume,y
+        sta   <PSG
         rts    
         
 ; (via Saxman's doc): set voice selection to xx
@@ -1209,7 +1175,7 @@ cfChangePSGVolume
 cfSetVoice
         lda   VoiceControl,y           ; read channel nb   
         adda  #$30
-        sta   YM2413_A0
+        sta   <YM2413_A0
         ldb   ,x+
         ldu   AbsVar.VoiceTblPtr
         aslb
@@ -1222,7 +1188,7 @@ cfSetVoice
         lsrb
         stb   >*+4
         adda  #0
-        sta   YM2413_A1
+        sta   <YM2413_A1
         rts
 
 ; (via Saxman's doc): F0wwxxyyzz - modulation
@@ -1267,10 +1233,10 @@ cfStopTrack
         
         lda   VoiceControl,y           ; send a Key Off - read channel nb
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        sta   YM2413_A0
+        sta   <YM2413_A0
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
         andb  #$EF                     ; clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
-        stb   YM2413_A1                ; send to YM
+        stb   <YM2413_A1                ; send to YM
         stb   NoteControl,y               
         
         puls  u                        ; removing return address from stack; will not return to coord flag loop                        
@@ -1279,7 +1245,11 @@ cfStopTrack
 ; (via Saxman's doc): Change current PSG noise to xx (For noise channel, E0-E7)
 ;
 cfSetPSGNoise
-        leax  1,x
+        lda   #$E0
+        sta   VoiceControl,y
+        lda   ,x+
+        sta   PSGNoise,y
+        sta   <PSG
         rts        
 
 cfDisableModulation
