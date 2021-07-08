@@ -304,13 +304,13 @@ YM2413_DrumModeOn
 
 SN76489_Silent
         lda   #$9F
-        sta   <PSG
+        sta   PSG
         lda   #$BF
-        sta   <PSG       
+        sta   PSG       
         lda   #$DF
-        sta   <PSG
+        sta   PSG
         lda   #$FF
-        sta   <PSG                               
+        sta   PSG                               
         rts        
 
 * ************************************************************************************
@@ -500,9 +500,9 @@ UpdateMusic
         ;_UpdateTrack SongFM7,FMUpdateTrack
         ;_UpdateTrack SongFM8,FMUpdateTrack                
         _UpdateTrack SongPSG1,PSGUpdateTrack
-        _UpdateTrack SongPSG2,PSGUpdateTrack
-        _UpdateTrack SongPSG3,PSGUpdateTrack        
-        _UpdateTrack SongPSG4,PSGUpdateTrack
+        ;_UpdateTrack SongPSG2,PSGUpdateTrack
+        ;_UpdateTrack SongPSG3,PSGUpdateTrack        
+        ;_UpdateTrack SongPSG4,PSGUpdateTrack
         rts
         
 * ************************************************************************************
@@ -853,9 +853,9 @@ _PSGNoteOff MACRO
  
 PSGNoteFillUpdate
         lda   NoteFillTimeout,y        ; Get current note fill value
-        lbeq   PSGDoModulation         ; If zero, return!
+        lbeq  PSGUpdateVolFX           ; If zero, return!
         dec   NoteFillTimeout,y        ; Decrement note fill
-        lbne   PSGDoModulation         ; If not zero, return
+        lbne  PSGUpdateVolFX           ; If not zero, return
         
         lda   PlaybackControl,y
         ora   #$02                     ; Set bit 1 (track is at rest)
@@ -864,9 +864,6 @@ PSGNoteFillUpdate
         rts 
  
 PSGUpdateTrack
-
- ; TODO add zPSGDoVolFX and zPSGUpdateVolFX 
-
         dec   DurationTimeout,y        ; Decrement duration
         bne   PSGNoteFillUpdate        ; If not time-out yet, go do updates only
         lda   PlaybackControl,y
@@ -896,8 +893,8 @@ PSGSetFreq
         ldd   #$FFFF                   ; TODO toujours utile ???
         std   NextData,y               ; Store Frequency
         _PSGNoteOff
-        rts        
-@a
+        bra   @b
+@a                
         addb  Transpose,y              ; Add current channel transpose (coord flag E9)
         addb  InstrTranspose,y
         aslb                           ; Transform note into an index...
@@ -905,8 +902,8 @@ PSGSetFreq
         lda   #0    
         ldd   d,u
         std   NextData,y               ; Store Frequency
-       
-        ldb   ,x                       ; Get next byte
+@b       
+        ldb   ,x                        ; Get next byte
         bpl   PSGSetDurationAndForward  ; Test for 80h not set, which is a note duration
         ldb   SavedDuration,y        
         bra   PSGFinishTrackUpdate
@@ -959,6 +956,31 @@ PSGUpdateFreq
         _lsrd
         _lsrd              
         stb   <PSG
+        bra   PSGDoVolFX
+        
+PSGUpdateVolFX
+        lda   VoiceIndex,y
+        beq   PSGDoModulation
+        
+PSGDoVolFX
+        ; TODO implement FlutterTbl
+                
+PSGUpdateVol                
+        lda   PlaybackControl,y
+        bita  #$10                     ; Is bit 4 (10h) "do not attack next note" set on playback?
+        bne   @b                       ; If so, branch
+@c      ldb   Volume,y
+        cmpb  #$10
+        blo   @a
+        ldb   #$0F
+@a      addb  VoiceControl,y
+        orb   #$10
+        stb   <PSG
+        bra   PSGDoModulation        
+@b      lda   NoteFillMaster,y         ; If you get here, then "do not attack next note" was set...
+        beq   @c                       ; If it's zero, then just process normally
+        lda   NoteFillTimeout,y        
+        bne   @c                       ; If it's not zero, then just process normally
         
 PSGDoModulation  
         lda   PlaybackControl,y
