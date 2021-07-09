@@ -95,8 +95,8 @@ public class SmpsRelocate{
 			// Coordination flags
 			// ********************************************************************
 			switch (fIN[pos]) {
-			case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement !!!
-				modulation(pos+2);
+			case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement, en attendant un asrd fait le job sur les pistes FM
+				//modulation(pos+2);
 				pos += 5;
 				break;			
 			case (byte)0xF6: //$F6zzzz
