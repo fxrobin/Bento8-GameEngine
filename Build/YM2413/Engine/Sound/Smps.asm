@@ -26,7 +26,7 @@ SMPS_TRK_FM_HDR_LEN          equ   4
 SMPS_TRK_PSG_HDR_LEN         equ   6
 
 ; Hardware Addresses
-PSG                          equ   $E7FE
+PSG                          equ   $E7FF
 YM2413_A0                    equ   $E7FC
 YM2413_A1                    equ   $E7FD
 
@@ -182,10 +182,10 @@ SongFM8         Track
 SongFMEnd
 SongDACFMEnd
 SongPSGStart
+SongPSG0        Track
 SongPSG1        Track
 SongPSG2        Track
 SongPSG3        Track
-SongPSG4        Track
 SongPSGEnd
 tracksEnd
 
@@ -243,6 +243,11 @@ _WriteYM MACRO
         nop
         stb   YM2413_A1
  ENDM  
+
+_YMBusyWait5 MACRO
+        nop                                        
+        brn   *
+ ENDM
  
 _YMBusyWait10 MACRO
         nop
@@ -279,8 +284,20 @@ _YMBusyWait19 MACRO
  ENDM
 
 * ************************************************************************************
+* InitSoundDriver
+* destroys A
+
+InitSoundDriver
+        lda   #$01                     ; 1: play 60hz track at 50hz, 0: do not skip frames
+        sta   AbsVar.IsPalFlag 
+        rts
+
+* ************************************************************************************
 * Setup YM2413 for Drum Mode
 * destroys A, B, U, X
+
+
+; TODO SET ALSO NoteControl !!!!!!!!!!!!!!!!!!!!
 
 YM2413_DrumModeOn
         ldx   #@data
@@ -289,27 +306,67 @@ YM2413_DrumModeOn
         _WriteYM
         _YMBusyWait10
         bra   @a
-@end    rts        
+@end    lda   #$05                     ; saves values for FMSilenceAll routine
+        sta   SongFM6.NoteControl 
+        lda   #$00
+        sta   SongFM7.NoteControl
+        lda   #$01
+        sta   SongFM8.NoteControl                
+        rts        
 @data
         fdb   $0E20
         fdb   $1620
         fdb   $1700 ; recommended setting is $1750 and $2705 for snare but $1700 and $2700 gives better SD sound (noise), affects HH that will sound more like a cowbell 
         fdb   $18C0
-        fdb   $2605
-        fdb   $2700
-        fdb   $2801
+        fdb   $2605 ; (dependency) if modified, change hardcoded value at DrumModeOn end label
+        fdb   $2700 ; (dependency) if modified, change hardcoded value at DrumModeOn end label
+        fdb   $2801 ; (dependency) if modified, change hardcoded value at DrumModeOn end label
         fdb   $36F0 ; drum at max vol        
         fdb   $3700 ; drum at max vol
         fdb   $3800 ; drum at max vol
         fcb   $FF
         
 * ************************************************************************************
-* Silent
-* destroys A, B, U, X
+* InitMusicPlayback
+* destroys A
 *
-* TODO replace with voice block in song
 
-SN76489_Silent
+InitMusicPlayback
+        jsr   FMSilenceAll
+        jsr   PSGSilenceAll
+        rts
+
+* ************************************************************************************
+* FMSilenceAll
+* destroys A, B, Y
+*
+
+* TODO for all writes test real wait timing and ajust
+
+FMSilenceAll
+        ldd   #$200E
+        stb   YM2413_A0
+        ldy   #SongFM0.NoteControl     ; (wait of 4 cycles)
+        sta   YM2413_A1                ; note off for all drums     
+        _YMBusyWait5
+                
+@a      _YMBusyWait10                  ; total wait btw two notes : 24 cycles
+        leay  sizeof{Track},y          ; (wait of 5 cycles)
+        ldb   ,y                       ; (wait of 4 cycles)
+        sta   YM2413_A0
+        andb  #$EF                     ; note off for each track (wait of 2 cycles)
+        inca                           ; (wait of 2 cycles)
+        stb   YM2413_A1
+        cmpa  #$29                     ; (wait of 2 cycles)
+        bne   @a                       ; (wait of 3 cycles)
+        rts
+
+* ************************************************************************************
+* PSGSilenceAll
+* destroys A
+*
+        
+PSGSilenceAll
         lda   #$9F
         sta   PSG
         lda   #$BF
@@ -324,7 +381,7 @@ SN76489_Silent
 * PlayMusic - Load a new music and init all tracks
 *
 * receives in X the address of the song
-* destroys A
+* destroys A, B, X, Y
 * ************************************************************************************
 
 _InitTrackFM MACRO
@@ -346,7 +403,8 @@ BGMLoad
         ldx   1,x                      ; get ptr to track data
         stx   MusicData
         _SetCartPageA
-        
+
+        jsr   InitMusicPlayback        
         ldd   SMPS_VOICE,x
         addd  MusicData   
         std   AbsVar.VoiceTblPtr
@@ -359,9 +417,6 @@ BGMLoad
         
         lda   #$05
         sta   PALUpdTick
-        
-        ; TODO
-        ; silence tracks that are not in use !
         
         lda   SMPS_NB_FM,x
         sta   @dyn+1
@@ -408,10 +463,10 @@ ipsgjmp
         fdb   ipsg3
         fdb   ipsg4        
 
-ipsg4   _InitTrackPSG SongPSG4,$E0F0
-ipsg3   _InitTrackPSG SongPSG3,$C0D0
+ipsg4   _InitTrackPSG SongPSG0,$E0F0
+ipsg3   _InitTrackPSG SongPSG3,$8090
 ipsg2   _InitTrackPSG SongPSG2,$A0B0
-ipsg1   _InitTrackPSG SongPSG1,$8090
+ipsg1   _InitTrackPSG SongPSG1,$C0D0
 ipsg0
         rts
 
@@ -476,9 +531,9 @@ MusicFrame
         jmp   PauseMusic 
 
 UpdateEverything        
-        lda   AbsVar.IsPalFlag
-        beq   @a
-        dec   PALUpdTick
+        lda   AbsVar.IsPalFlag         ; TODO use SMPS relocate to convert timings
+        beq   @a                       ; to play 60hz songs at 50hz at normal speed
+        dec   PALUpdTick               ; this will allow to throw away this code
         bne   @a
         lda   #5
         sta   PALUpdTick
@@ -496,20 +551,20 @@ a@      equ   *
 
 UpdateMusic
         jsr   TempoWait
-        ;_UpdateTrack SongDAC,DACUpdateTrack
-        ;_UpdateTrack SongFM0,FMUpdateTrack      
-        ;_UpdateTrack SongFM1,FMUpdateTrack
-        ;_UpdateTrack SongFM2,FMUpdateTrack
-        ;_UpdateTrack SongFM3,FMUpdateTrack
-        ;_UpdateTrack SongFM4,FMUpdateTrack
-        ;_UpdateTrack SongFM5,FMUpdateTrack
-        ;_UpdateTrack SongFM6,FMUpdateTrack
-        ;_UpdateTrack SongFM7,FMUpdateTrack
-        ;_UpdateTrack SongFM8,FMUpdateTrack                
+        _UpdateTrack SongDAC,DACUpdateTrack
+        _UpdateTrack SongFM0,FMUpdateTrack      
+        _UpdateTrack SongFM1,FMUpdateTrack
+        _UpdateTrack SongFM2,FMUpdateTrack
+        _UpdateTrack SongFM3,FMUpdateTrack
+        _UpdateTrack SongFM4,FMUpdateTrack
+        _UpdateTrack SongFM5,FMUpdateTrack
+        _UpdateTrack SongFM6,FMUpdateTrack
+        _UpdateTrack SongFM7,FMUpdateTrack
+        _UpdateTrack SongFM8,FMUpdateTrack                
+        _UpdateTrack SongPSG0,PSGUpdateTrack
         _UpdateTrack SongPSG1,PSGUpdateTrack
-        _UpdateTrack SongPSG2,PSGUpdateTrack
-        _UpdateTrack SongPSG3,PSGUpdateTrack        
-        ;_UpdateTrack SongPSG4,PSGUpdateTrack
+        _UpdateTrack SongPSG2,PSGUpdateTrack        
+        _UpdateTrack SongPSG3,PSGUpdateTrack
         rts
         
 * ************************************************************************************
@@ -537,10 +592,10 @@ TempoWait
         inc   SongFM6.DurationTimeout
         inc   SongFM7.DurationTimeout
         inc   SongFM8.DurationTimeout                
+        inc   SongPSG0.DurationTimeout
         inc   SongPSG1.DurationTimeout
         inc   SongPSG2.DurationTimeout
         inc   SongPSG3.DurationTimeout
-        inc   SongPSG4.DurationTimeout
         rts
 
 * ************************************************************************************
@@ -855,7 +910,7 @@ FMFrequencies
 
 _PSGNoteOff MACRO
         lda   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)
-        ora   #$1F                     ; Attenuation Off
+        ora   #$1F                     ; Volume Off
         sta   <PSG
  ENDM
  
@@ -967,7 +1022,7 @@ PSGUpdateVolFX
         lda   VoiceIndex,y
         beq   PSGDoModulation
         ldb   Volume,y
-        stb   DynVol+1        
+        stb   DynVol+1          
         bra   PSGFlutter
 
 VolEnvHold
@@ -997,6 +1052,8 @@ PSGFlutter
                 
 PSGUpdateVol                
         lda   PlaybackControl,y
+        bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
+        bne   PSGDoModulation          ; If so, branch           
         bita  #$10                     ; Is bit 4 (10h) "do not attack next note" set on playback?
         bne   @b                       ; If so, branch
 DynVol  ldb   #0                       ; (dynamic) volume
@@ -1067,9 +1124,9 @@ PSGUpdateFreq2
 ; 70 notes
 PSGFrequencies
 		fdb   $0356,$0326,$02F9,$02CE,$02A5,$0280,$025C,$023A,$021A,$01FB,$01DF,$01C4
-        fdb   $10AB,$0193,$017D,$0167,$0153,$0140,$012E,$011D,$010D,$00FE,$00EF,$00E2
+        fdb   $01AB,$0193,$017D,$0167,$0153,$0140,$012E,$011D,$010D,$00FE,$00EF,$00E2
         fdb   $00D6,$00C9,$00BE,$00B4,$00A9,$00A0,$0097,$008F,$0087,$007F,$0078,$0071
-        fdb   $000B,$0065,$005F,$005A,$0055,$0050,$004B,$0047,$0043,$0040,$003C,$0039
+        fdb   $006B,$0065,$005F,$005A,$0055,$0050,$004B,$0047,$0043,$0040,$003C,$0039
         fdb   $0036,$0033,$0030,$002D,$002B,$0028,$0026,$0024,$0022,$0020,$001F,$001D
         fdb   $001B,$001A,$0018,$0017,$0016,$0015,$0013,$0012,$0011,$0000
                  
@@ -1266,10 +1323,10 @@ cfSetTempoMod
         sta   SongFM6.TempoDivider
         sta   SongFM7.TempoDivider
         sta   SongFM8.TempoDivider
+        sta   SongPSG0.TempoDivider
         sta   SongPSG1.TempoDivider
         sta   SongPSG2.TempoDivider
         sta   SongPSG3.TempoDivider
-        sta   SongPSG4.TempoDivider
         rts        
 
 cfChangePSGVolume

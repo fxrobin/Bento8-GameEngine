@@ -11,11 +11,10 @@
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
+        jsr   InitSoundDriver
+        jsr   IrqSet50Hz
+                
         jsr   YM2413_DrumModeOn
-        jsr   SN76489_Silent
-        lda   #$01
-        sta   AbsVar.IsPalFlag                                                       
-        jsr   IrqSet50Hz   
         ldx   #Smps_MCZ
         jsr   PlayMusic 
 
