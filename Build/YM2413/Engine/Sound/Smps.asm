@@ -489,7 +489,7 @@ InitTrackFM
  
 InitTrackPSG
         sta   VoiceControl,x
-        stb   InstrAndVolume,x
+        stb   InstrAndVolume,x                 ; TODO inutile pour PSG a retirer !!!
         lda   SongDelay        
         sta   TempoDivider,x
         ldd   #$8201
@@ -1330,10 +1330,9 @@ cfSetTempoMod
         rts        
 
 cfChangePSGVolume
-        lda   InstrAndVolume,y
+        lda   Volume,y
         adda  ,x+
-        sta   InstrAndVolume,y
-        sta   <PSG
+        sta   Volume,y
         rts    
         
 ; (via Saxman's doc): set voice selection to xx
@@ -1398,13 +1397,16 @@ cfStopTrack
         sta   PlaybackControl,y        ; clear playback byte bit 4 (10h) -- do not attack
         
         lda   VoiceControl,y           ; send a Key Off - read channel nb
+        bmi   @a                       ; Is voice control bit 7 (80h) a PSG track set?
         adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
         sta   <YM2413_A0
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB)  (and used as 2 cycles tempo)
         andb  #$EF                     ; clear bit 4 (10h) Key Off (and used as 2 cycles tempo)
         stb   <YM2413_A1                ; send to YM
         stb   NoteControl,y               
-        
+        puls  u                        ; removing return address from stack; will not return to coord flag loop                        
+        rts
+@a      _PSGNoteOff        
         puls  u                        ; removing return address from stack; will not return to coord flag loop                        
         rts
 
