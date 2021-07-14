@@ -1,0 +1,32 @@
+Sound46_RingSpill_Header:
+	smpsHeaderStartSong 2
+	smpsHeaderVoice     Sound_Ring_Voices
+	smpsHeaderTempoSFX  $01
+	smpsHeaderChanSFX   $02
+
+	smpsHeaderSFXChannel cFM4, Sound46_RingSpill_FM4,	$00, $05
+	smpsHeaderSFXChannel cFM5, Sound46_RingSpill_FM5,	$00, $08
+
+; FM4 Data
+Sound46_RingSpill_FM4:
+	smpsSetvoice        $00
+	dc.b	nA5, $02, $05, $05, $05, $05, $05, $05, $3A
+	smpsStop
+
+; FM5 Data
+Sound46_RingSpill_FM5:
+	smpsSetvoice        $00
+	dc.b	nRst, $02, nG5, $02, $05, $15, $02, $05, $32
+	smpsStop
+
+-------------------
+
+; losing rings (scatter)
+Sound46:	dc.w z80_ptr(ringsamp),$0102
+		dc.w $8004,z80_ptr(+),$0005
+		dc.w $8005,z80_ptr(++),$0008
++		dc.b $EF,$00,$C6,$02,$05,$05,$05,$05,$05,$05,$3A,$F2
++		dc.b $EF,$00,$80,$02,$C4,$02,$05,$15,$02,$05,$32,$F2
+
+ringsamp:	dc.b $04,$37,$77,$72,$49,$1F,$1F,$1F,$1F,$07,$07,$0A
+		dc.b $0D,$00,$00,$0B,$0B,$1F,$1F,$0F,$0F,$23,$23,$80,$80
