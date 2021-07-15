@@ -3,7 +3,7 @@
 ********************************************************************************
 * Game Engine (TO8 Thomson) - Benoit Rousseau 2020-2021
 * ------------------------------------------------------------------------------
-*
+* Simple Test for YM2413 and SN76489 sound cards
 *
 ********************************************************************************
 
@@ -15,7 +15,7 @@
         jsr   IrqSet50Hz
                 
         jsr   YM2413_DrumModeOn
-        ldx   #Smps_MCZ
+        ldx   #Smps_EHZ
         jsr   PlayMusic 
 
 * ==============================================================================
@@ -23,6 +23,13 @@
 * ==============================================================================
 LevelMainLoop
         jsr   WaitVBL    
+        
+        lda   Fire_Press
+        bita  #c1_button_A_mask
+        beq   LevelMainLoop
+        ldx   #Smps_SlowSmash
+        jsr   PlaySound
+             
         bra   LevelMainLoop
         
 * ---------------------------------------------------------------------------
@@ -43,5 +50,6 @@ Glb_Cur_Wrk_Screen_Id         fcb   $00   ; screen buffer set to write operation
 * ==============================================================================
         INCLUDE "./Engine/Graphics/WaitVBL.asm"
         INCLUDE "./Engine/Joypad/ReadJoypads.asm"
+        INCLUDE "./Engine/Irq/IrqSmpsJoypad.asm"        
         INCLUDE "./Engine/Sound/Smps.asm"
-        INCLUDE "./Engine/Irq/IrqSmpsJoypad.asm"	
+	

@@ -21,12 +21,25 @@ SMPS_DELAY                   equ   5
 SMPS_TRK_HEADER              equ   6
 SMPS_DAC_FLAG                equ   8
 
-; SMPS Header each track relative
+; SMPS Header (each track)
 SMPS_TRK_DATA_PTR            equ   0 
 SMPS_TRK_TR_VOL_PTR          equ   2
 SMPS_TRK_ENV_PTR             equ   5
 SMPS_TRK_FM_HDR_LEN          equ   4
 SMPS_TRK_PSG_HDR_LEN         equ   6
+
+; SMPS SFX Header
+SMPS_SFX_VOICE               equ   0
+SMPS_SFX_TEMPO               equ   2
+SMPS_SFX_TEMPO_NB_CH         equ   2
+SMPS_SFX_NB_CH               equ   3
+SMPS_SFX_HDR_LEN             equ   4
+
+; SMPS SFX Header (each track)
+SMPS_SFX_TRK_CH              equ   0
+SMPS_SFX_TRK_DATA_PTR        equ   2 
+SMPS_SFX_TRK_TR_VOL_PTR      equ   4
+SMPS_SFX_TRK_HDR_LEN         equ   5
 
 ; Hardware Addresses
 PSG                          equ   $E7FF
@@ -79,7 +92,6 @@ ModulationVal                  rmb   2                ; Current modulation value
 Detune                         rmb   1                ; Set by detune coord flag E1; used to add directly to FM/PSG frequency
 VolTLMask                      rmb   1                ; zVolTLMaskTbl value set during voice setting (value based on algorithm indexing zGain table)
 PSGNoise                       rmb   1                ; PSG noise setting
-VoicePtr                       rmb   2                ; custom voice table (for SFX)
 TLPtr                          rmb   2                ; where TL bytes of current voice begin (set during voice setting)
 InstrTranspose                 rmb   1                ; instrument transpose
                                                       ;         "InstrAndVolume"; bits
@@ -131,12 +143,11 @@ ModulationVal                equ   23
 Detune                       equ   25
 VolTLMask                    equ   26
 PSGNoise                     equ   27
-VoicePtr                     equ   28
-TLPtr                        equ   30
-InstrTranspose               equ   32 
-InstrAndVolume               equ   33 
-LoopCounters                 equ   34   
-GoSubStack                   equ   44
+TLPtr                        equ   28
+InstrTranspose               equ   30 
+InstrAndVolume               equ   31 
+LoopCounters                 equ   32   
+GoSubStack                   equ   42
 
 ******************************************************************************
 
@@ -152,6 +163,7 @@ SFXToPlay                      rmb   1                ; When Genesis wants to pl
 SFXStereoToPlay                rmb   1                ; When Genesis wants to play alternating stereo sound, it writes it here
 SFXUnknown                     rmb   1                ; Unknown type of sound queue, but it's in Genesis code like it was once used
 VoiceTblPtr                    rmb   2                ; address of the voices
+SFXVoiceTblPtr                 rmb   2                ; address of the SFX voices
 FadeInFlag                     rmb   1        
 FadeInDelay                    rmb   1        
 FadeInCounter                  rmb   1        
@@ -218,6 +230,7 @@ Paused          fcb   0     ; 0 = normal, -1 = pause all sound and music
 SongPage        fcb   0     ; memory page of song data
 SongDelay       fcb   0     ; song header delay
 MusicData       fdb   0     ; address of song data
+SoundData       fdb   0     ; address of sound data
 
 MUSIC_TRACK_COUNT = (tracksEnd-tracksStart)/sizeof{Track}
 MUSIC_DAC_FM_TRACK_COUNT = (SongDACFMEnd-SongDACFMStart)/sizeof{Track}
@@ -371,12 +384,14 @@ _InitTrackFM MACRO
  
 _InitTrackPSG MACRO
         ldx   #\1
-        ldd   #\2
+        lda   #\2
         jsr   InitTrackPSG
  ENDM
 
 PlayMusic
 BGMLoad
+        _GetCartPageA
+        sta   ipsg0+1                  ; backup data page
         lda   ,x                       ; get memory page that contains track data
         sta   SongPage
         ldx   1,x                      ; get ptr to track data
@@ -442,11 +457,12 @@ ipsgjmp
         fdb   ipsg3
         fdb   ipsg4        
 
-ipsg4   _InitTrackPSG SongPSG4,$E0F0
-ipsg3   _InitTrackPSG SongPSG1,$8090
-ipsg2   _InitTrackPSG SongPSG2,$A0B0
-ipsg1   _InitTrackPSG SongPSG3,$C0D0
-ipsg0
+ipsg4   _InitTrackPSG SongPSG4,$E0
+ipsg3   _InitTrackPSG SongPSG1,$80
+ipsg2   _InitTrackPSG SongPSG2,$A0
+ipsg1   _InitTrackPSG SongPSG3,$C0
+ipsg0   lda   #0                       ; (dynamic) set back data page
+        _SetCartPageA
         rts
 
 InitTrackFM
@@ -468,7 +484,6 @@ InitTrackFM
  
 InitTrackPSG
         sta   VoiceControl,x
-        stb   InstrAndVolume,x                 ; TODO inutile pour PSG a retirer !!!
         lda   SongDelay        
         sta   TempoDivider,x
         ldd   #$8201
@@ -511,7 +526,7 @@ MusicFrame
         lda   SongPage                 ; page switch to the music
         beq   @a                       ; no music to play
         _SetCartPageA
-        ;clr   DoSFXFlag
+        clr   DoSFXFlag
         lda   AbsVar.StopMusic
         beq   UpdateEverything
 @a      rts
@@ -1097,7 +1112,108 @@ Flutter13
 * destroys A, B, X, Y
 ******************************************************************************          
 
+SFXTrackOffs        
+        fdb   SFX_FM3                  ; identified by Track id 8002 in smps sfx file (for Sonic 2 compatibility)
+        fdb   SFX_FM3                  ; identified by Track id 8003 in smps sfx file        
+        fdb   SFX_FM4                  ; identified by Track id 8004 in smps sfx file        
+        fdb   SFX_FM5                  ; identified by Track id 8005 in smps sfx file
+        fdb   SFX_PSG1                 ; identified by Track id 8080 in smps sfx file
+        fdb   SFX_PSG2                 ; identified by Track id 80A0 in smps sfx file
+        fdb   SFX_PSG3                 ; identified by Track id 80C0 in smps sfx file
+        fdb   SFX_PSG3                 ; identified by Track id 80E0 in smps sfx file
+
+MusicTrackOffs
+        fdb   SongFM3
+        fdb   SongFM3        
+        fdb   SongFM4        
+        fdb   SongFM5
+        fdb   SongPSG1
+        fdb   SongPSG2
+        fdb   SongPSG3
+        fdb   SongPSG3
+
 PlaySound
+        _GetCartPageA
+        sta   PlaySound_end+1          ; backup data page
+        lda   ,x                       ; get memory page that contains track data
+        sta   SongPage
+        ldx   1,x                      ; get ptr to track data
+        stx   SoundData
+        _SetCartPageA
+        
+        ldd   SMPS_SFX_VOICE,x
+        addd  SoundData   
+        std   AbsVar.SFXVoiceTblPtr
+
+        ldd   SMPS_SFX_TEMPO_NB_CH,x   ; init process for each track
+        sta   @dync+1
+        stb   @dyna+2
+        leax  SMPS_SFX_HDR_LEN,x        
+@a      ldu   #MusicTrackOffs
+        ldb   SMPS_SFX_TRK_CH+1,x      ; read track id
+        stb   @dynb+1
+        bmi   @psg
+        subb  #2                       ; this is an fm track
+        aslb                           ; transform track ref to an index: $02,$04,$05 => 0,4,6
+        ldy   b,u    
+        bra   @c
+@psg    cmpb  #$C0
+        bne   @b
+        lda   #$DF                     ; set silence on PSG3
+        sta   PSG
+        lda   #$FF
+        sta   PSG
+@b      asrb                           ; this is an psg track
+        asrb
+        asrb
+        asrb                           ; transform track ref to an index: $80,$A0,$C0,$E0 => 8,10,12,14
+        ldy   b,u    
+@c      lda   PlaybackControl,y        ; y (hl) ptr to Music Track
+        ora   #$04                     ; Set "SFX is overriding this track!" bit
+        sta   PlaybackControl,y
+        ldu   #SFXTrackOffs
+        ldu   b,u                      ; u (ix) ptr to SFX Track
+        ldd   #0                       ; clear SFX Track
+        std   ,u
+        std   2,u
+        std   4,u
+        std   6,u
+        std   8,u
+        std   10,u
+        std   12,u
+        std   14,u
+        std   16,u
+        std   18,u
+        std   20,u
+        std   22,u
+        std   24,u
+        std   26,u
+        std   28,u
+        std   30,u
+        std   32,u
+        std   34,u
+        std   36,u
+        std   38,u
+        std   40,u
+@dyna   ldd   #$0100                   ; (dynamic) TempoDivider
+        sta   DurationTimeout,u        ; current duration timeout to 1 (will expire immediately and thus update)
+        stb   TempoDivider,u
+@dynb   _ldd  0,GoSubStack             ; (dynamic) VoiceControl
+        sta   VoiceControl,u
+        stb   StackPointer,u           ; Reset track "gosub" stack
+        ldd   SMPS_SFX_TRK_DATA_PTR,x 
+        addd  SoundData
+        std   DataPointer,u
+        ldd   SMPS_SFX_TRK_TR_VOL_PTR,x
+        std   TranspAndVolume,u        
+        leax  SMPS_SFX_TRK_HDR_LEN,x
+@dync   lda   #0                       ; (dynamic) loop counter
+        deca    
+        lbne  @a  
+
+PlaySound_end
+        lda   #0
+        _SetCartPageA          
         rts
         
 ******************************************************************************
@@ -1247,11 +1363,16 @@ cfChangePSGVolume
 ; (via Saxman's doc): set voice selection to xx
 ;
 cfSetVoice
+        lda   DoSFXFlag
+        bmi   @a
+        ldu   AbsVar.VoiceTblPtr
+        bra   @b
+@a      ldu   AbsVar.SFXVoiceTblPtr
+@b        
         lda   VoiceControl,y           ; read channel nb   
         adda  #$30
         sta   <YM2413_A0
         ldb   ,x+
-        ldu   AbsVar.VoiceTblPtr
         aslb
         ldd   b,u
         sta   InstrAndVolume,y        

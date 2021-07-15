@@ -24,12 +24,12 @@ public class SmpsRelocate{
 
 		System.out.println("*** YM2612 to YM2413 Smps converter ***");
 
-		if (args.length !=2 && args.length != 3) {
+		if (args.length != 3) {
 			System.out.println("Arguments: inputfile address_offset voicefile");
 			System.out.println(" the first parameter is the smps file.");
 			System.out.println(" the second parameter is the address offset to apply to pointers in the smps file.");
 			System.out.println(" ex: -10 will substract 10 to address pointers");
-			System.out.println(" the third parameter is the voice mapping file (optional)");
+			System.out.println(" the third parameter is the type -m or -s (music or sound)");	
 			return;
 		}
 
@@ -44,28 +44,18 @@ public class SmpsRelocate{
 		// Relocate Voice
 		// ********************************************************************
 
-		int voicePos = relocate(SMPS_VOICE);
+		int voicePos = 0;
 		int nbVoices = 0;
-
-		// Load Voices
-		if (args.length == 3) {
-			
-// TODO : Add Transpose/Volume override to file conf
-//			Path voiceFile = Path.of(args[2]);
-//			if (voiceFile == null) {
-//				System.out.println("Fatal: can't input voice file");
-//				return;			
-//			}
-//			String voice = Files.readString(voiceFile);
-//			StringTokenizer voices = new StringTokenizer(voice, " .,;-/:|");
-//			int vi = 0;
-//			while (voices.hasMoreTokens())
-//			{
-//				voiceMap[vi++] = hexStringToByteArray(voices.nextToken()+"0")[0];	
-//			}
+		
+		if (args[2].equals("-m")) {
+		    voicePos = relocate(SMPS_VOICE);
 		} else {
-			int curVoice = voicePos, dstVoice = voicePos;
-			byte[] result;
+			voicePos = ((fIN[SMPS_VOICE] & 0xff) << 8) | (fIN[SMPS_VOICE+1] & 0xff);			
+		}
+
+		int curVoice = voicePos, dstVoice = voicePos;
+		byte[] result;
+		if (voicePos != 0) {
 			while (curVoice<fIN.length) {
 				result = estimateOPPLLVoice1234(curVoice);
 				fIN[dstVoice++] = result[0];
@@ -73,54 +63,62 @@ public class SmpsRelocate{
 				curVoice += 25;
 				nbVoices++;
 			}
-		}		
-
-		// Relocate Tracks
-		// ********************************************************************		
-
-		int nbFMTracks = fIN[SMPS_NB_FM];
-		int pos = SMPS_FM_START;
-		for (int i = 0; i < nbFMTracks; i++) {
-			relocateTrack(pos);
-			pos += SMPS_FM_SIZE;
-		}
-
-		int nbPSGTracks = fIN[SMPS_NB_PSG];
-		for (int i = 0; i < nbPSGTracks; i++) {
-			relocateTrack(pos);
-			pos += SMPS_PSG_SIZE;
-		}		
-
-		while (pos < fIN.length) {
-			// Coordination flags
-			// ********************************************************************
-			switch (fIN[pos]) {
-			case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement, en attendant un asrd fait le job sur les pistes FM
-				//modulation(pos+2);
-				pos += 5;
-				break;			
-			case (byte)0xF6: //$F6zzzz
-			case (byte)0xF8: //$F8zzzz					
-				relocateOffsetBack(pos+1);
-				pos += 3;
-				break;
-			case (byte)0xF7: //$F7xxyyzzzz
-				relocateOffsetBack(pos+3);
-				pos += 5;
-				break;
-			case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE6: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
-				pos += 2;
-				break;				
-			default:
-				pos++;
-				break;
-			}			
 		}
 		
-		fOUT = new byte[voicePos+(nbVoices*2)];
-		for (int i=0; i<voicePos+(nbVoices*2); i++) {
-			fOUT[i] = fIN[i];
-		}		
+
+		if (args[2].equals("-m")) {
+
+			// Relocate Tracks
+			// ********************************************************************		
+
+			int nbFMTracks = fIN[SMPS_NB_FM];
+			int pos = SMPS_FM_START;
+			for (int i = 0; i < nbFMTracks; i++) {
+				relocateTrack(pos);
+				pos += SMPS_FM_SIZE;
+			}
+
+			int nbPSGTracks = fIN[SMPS_NB_PSG];
+			for (int i = 0; i < nbPSGTracks; i++) {
+				relocateTrack(pos);
+				pos += SMPS_PSG_SIZE;
+			}		
+
+			while (pos < fIN.length) {
+				// Coordination flags
+				// ********************************************************************
+				switch (fIN[pos]) {
+				case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement, en attendant un asrd fait le job sur les pistes FM
+					//modulation(pos+2);
+					pos += 5;
+				break;			
+				case (byte)0xF6: //$F6zzzz
+				case (byte)0xF8: //$F8zzzz					
+					relocateOffsetBack(pos+1);
+				pos += 3;
+				break;
+				case (byte)0xF7: //$F7xxyyzzzz
+					relocateOffsetBack(pos+3);
+				pos += 5;
+				break;
+				case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE6: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
+					pos += 2;
+				break;				
+				default:
+					pos++;
+					break;
+				}			
+			}
+		}
+		
+		if (voicePos!=0) {
+			fOUT = new byte[voicePos+(nbVoices*2)];
+			for (int i=0; i<voicePos+(nbVoices*2); i++) {
+				fOUT[i] = fIN[i];
+			}		
+		} else {
+			fOUT = fIN;
+		}
 		
 		Path path = Paths.get(args[0]+".smp");
 		Files.write(path, fOUT);
