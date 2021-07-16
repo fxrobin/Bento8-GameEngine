@@ -226,11 +226,13 @@ StructEnd
 PALUpdTick      fcb   0     ; this counts from 0 to 5 to periodically "double update" for PAL systems (basically every 6 frames you need to update twice to keep up)
 DoSFXFlag       fcb   0     ; flag to indicate we're updating SFX (and thus use custom voice table); set to FFh while doing SFX, 0 when not.
 Paused          fcb   0     ; 0 = normal, -1 = pause all sound and music
-
-SongPage        fcb   0     ; memory page of song data
 SongDelay       fcb   0     ; song header delay
+
+MusicPage       fcb   0     ; memory page of music data
+SoundPage       fcb   0     ; memory page of sound data
 MusicData       fdb   0     ; address of song data
 SoundData       fdb   0     ; address of sound data
+
 
 MUSIC_TRACK_COUNT = (tracksEnd-tracksStart)/sizeof{Track}
 MUSIC_DAC_FM_TRACK_COUNT = (SongDACFMEnd-SongDACFMStart)/sizeof{Track}
@@ -393,7 +395,7 @@ BGMLoad
         _GetCartPageA
         sta   ipsg0+1                  ; backup data page
         lda   ,x                       ; get memory page that contains track data
-        sta   SongPage
+        sta   MusicPage
         ldx   1,x                      ; get ptr to track data
         stx   MusicData
         _SetCartPageA
@@ -523,7 +525,7 @@ a@      equ   *
  ENDM
         
 MusicFrame 
-        lda   SongPage                 ; page switch to the music
+        lda   MusicPage                 ; page switch to the music
         beq   @a                       ; no music to play
         _SetCartPageA
         clr   DoSFXFlag
@@ -554,14 +556,27 @@ UpdateMusic
         _UpdateTrack SongFM3,FMUpdateTrack
         _UpdateTrack SongFM4,FMUpdateTrack
         _UpdateTrack SongFM5,FMUpdateTrack
-        _UpdateTrack SongFM6,FMUpdateTrack
-        _UpdateTrack SongFM7,FMUpdateTrack
-        _UpdateTrack SongFM8,FMUpdateTrack                
-        _UpdateTrack SongPSG4,PSGUpdateTrack
+        ;_UpdateTrack SongFM6,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit
+        ;_UpdateTrack SongFM7,FMUpdateTrack
+        ;_UpdateTrack SongFM8,FMUpdateTrack                
+        ;_UpdateTrack SongPSG4,PSGUpdateTrack    ; uncomment to use noise channel as an independent channel from tone 3
         _UpdateTrack SongPSG1,PSGUpdateTrack
         _UpdateTrack SongPSG2,PSGUpdateTrack        
         _UpdateTrack SongPSG3,PSGUpdateTrack
-        rts
+
+UpdateSound        
+        lda   SoundPage                ; page switch to the sound
+        beq   @rts                     ; no sound to play
+        _SetCartPageA
+        lda   #$80
+        sta   DoSFXFlag                ; Set zDoSFXFlag = 80h (updating sound effects)
+        _UpdateTrack SFX_FM3,FMUpdateTrack
+        _UpdateTrack SFX_FM4,FMUpdateTrack
+        _UpdateTrack SFX_FM5,FMUpdateTrack
+        _UpdateTrack SFX_PSG1,PSGUpdateTrack
+        _UpdateTrack SFX_PSG2,PSGUpdateTrack        
+        _UpdateTrack SFX_PSG3,PSGUpdateTrack
+@rts    rts
 
 ******************************************************************************
 * DACUpdateTrack
@@ -636,6 +651,18 @@ DACAfterDur
 * FM Track Update
 ******************************************************************************
 
+_FMNoteOff MACRO                       ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
+        bita  #$04                     ; Is SFX overriding set?
+        bne   @skip                    ; if true skip note off, sfx is playing        
+        addb  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
+        stb   <YM2413_A0
+        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)
+        andb  #$EF                     ; clear bit 4 (10h) Key Off
+        stb   <YM2413_D0               ; send to YM
+        stb   NoteControl,y               
+@skip   equ   *        
+ ENDM	
+
 FMUpdateTrack
         dec   DurationTimeout,y        ; Decrement duration
         bne   NoteFillUpdate           ; If not time-out yet, go do updates only
@@ -661,13 +688,8 @@ FMNoteOff
         lda   PlaybackControl,y
         anda  #$14                     ; Are bits 4 (no attack) or 2 (SFX overriding) set?
         bne   NoteDyn                  ; If they are, skip
-        lda   VoiceControl,y           ; Otherwise, send a Key Off
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        sta   <YM2413_A0
-        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)
-        andb  #$EF                     ; Clear bit 4 (10h) Key Off
-        stb   <YM2413_D0               ; send to YM
-        stb   NoteControl,y                
+        ldb   VoiceControl,y           ; Otherwise, send a Key Off
+        _FMNoteOff                     ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
 NoteDyn ldb   #0                       ; (dynamic) retore note value   
         bpl   FMSetDuration            ; Test for 80h not set, which is a note duration
         
@@ -693,20 +715,15 @@ FMSetFreq
         
 NoteFillUpdate
         lda   NoteFillTimeout,y        ; Get current note fill value
-        beq   DoModulation             ; If zero, return!
+        lbeq   DoModulation            ; If zero, return!
         dec   NoteFillTimeout,y        ; Decrement note fill
         bne   DoModulation             ; If not zero, return
         
         lda   PlaybackControl,y
         ora   #$02                     ; Set bit 1 (track is at rest)
         sta   PlaybackControl,y        
-        lda   VoiceControl,y           ; Send a Key Off
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        sta   <YM2413_A0
-        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)
-        andb  #$EF                     ; Clear bit 4 (10h) Key Off
-        stb   <YM2413_D0                ; send to YM
-        stb   NoteControl,y                
+        ldb   VoiceControl,y
+        _FMNoteOff                     ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y         
         rts         
 
 FMSetDurationAndForward
@@ -734,12 +751,20 @@ FinishTrackUpdate
         
 FMPrepareNote
         lda   PlaybackControl,y
+        bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
+        bne   DoModulation                                                              
         bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
-        beq   FMUpdateFreqAndNoteOn                       
+        beq   FMUpdateFreqAndNoteOn
         rts                            ; If so, quit
 FMUpdateFreqAndNoteOn
         ldb   Detune,y
         sex
+        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/3)
+        std   @dyna+1
+        _asrd        
+        std   @dynb+1
+@dyna   ldd   #0           
+@dynb   subd  #0     
         addd  NextData,y               ; Apply detune but don't update stored frequency
         sta   @dyn+1
         lda   #$10                     ; set LSB Frequency Command
@@ -783,13 +808,22 @@ DoModulation
 @e      dec   ModulationSteps,y
         ldb   ModulationDelta,y
         sex
-        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit
+        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/2)
         addd  ModulationVal,y
         std   ModulationVal,y        
               
 FMUpdateFreq
+        lda   PlaybackControl,y
+        bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
+        bne   @rts
         ldb   Detune,y
         sex
+        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/3)
+        std   @dyna+1
+        _asrd        
+        std   @dynb+1
+@dyna   ldd   #0           
+@dynb   subd  #0          
         addd  NextData,y               ; apply detune but don't update stored frequency
         addd  ModulationVal,y          ; add modulation effect
         sta   @dyn+1
@@ -805,7 +839,7 @@ FMUpdateFreq
         sta   <YM2413_A0               ; send command
         stb   NoteControl,y
         stb   <YM2413_D0               ; send FNum (b8) and Block (b0-b2)
-        rts        
+@rts    rts        
  
 ; 95 notes (Note value $81=C0 $DF=A#7) with direct access
 ; Other notes can be accessed by transpose
@@ -826,10 +860,12 @@ FMFrequencies
 * PSG Update Track
 ******************************************************************************
 
-_PSGNoteOff MACRO
-        lda   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)
-        ora   #$1F                     ; Volume Off
-        sta   <PSG
+_PSGNoteOff MACRO                      ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
+        bita  #$04                     ; Is SFX overriding set?
+        bne   @skip                    ; if true skip note off, sfx is playing               
+        orb   #$1F                     ; Volume Off
+        stb   <PSG
+@skip   equ   *        
  ENDM
  
 PSGNoteFillUpdate
@@ -841,7 +877,8 @@ PSGNoteFillUpdate
         lda   PlaybackControl,y
         ora   #$02                     ; Set bit 1 (track is at rest)
         sta   PlaybackControl,y    
-        _PSGNoteOff                  
+        ldb   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)
+        _PSGNoteOff                    ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
         rts 
  
 PSGUpdateTrack
@@ -871,7 +908,8 @@ PSGSetFreq
         lda   PlaybackControl,y        ; If carry (only time that happens if 80h because of earlier logic) this is a rest!
         ora   #$02
         sta   PlaybackControl,y        ; Set bit 1 (track is at rest)
-        _PSGNoteOff
+        ldb   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)        
+        _PSGNoteOff                    ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
         bra   @b
 @a                
         addb  Transpose,y              ; Add current channel transpose (coord flag E9)
@@ -1041,12 +1079,12 @@ PSGUpdateFreq2
  
 ; 70 notes
 PSGFrequencies
-		fdb   $0356,$0326,$02F9,$02CE,$02A5,$0280,$025C,$023A,$021A,$01FB,$01DF,$01C4
-        fdb   $01AB,$0193,$017D,$0167,$0153,$0140,$012E,$011D,$010D,$00FE,$00EF,$00E2
-        fdb   $00D6,$00C9,$00BE,$00B4,$00A9,$00A0,$0097,$008F,$0087,$007F,$0078,$0071
-        fdb   $006B,$0065,$005F,$005A,$0055,$0050,$004B,$0047,$0043,$0040,$003C,$0039
-        fdb   $0036,$0033,$0030,$002D,$002B,$0028,$0026,$0024,$0022,$0020,$001F,$001D
-        fdb   $001B,$001A,$0018,$0017,$0016,$0015,$0013,$0012,$0011,$0001,$0010       ; last 3 values are used for channel 3 when driving noise channel. $0000 doesn't work for real SN76489 chip, so was replaced by $0001 value
+		fdb   $0356,$0327,$02FA,$02CF,$02A5,$0281,$025C,$023B,$021A,$01FC,$01E0,$01C4
+        fdb   $01AB,$0193,$017D,$0167,$0152,$0140,$012E,$011D,$010D,$00FE,$00F0,$00E2
+        fdb   $00D5,$00C9,$00BE,$00B3,$00A9,$00A0,$0097,$008E,$0086,$007F,$0078,$0071
+        fdb   $006A,$0064,$005F,$0059,$0054,$0050,$004B,$0047,$0043,$0040,$003C,$0039
+        fdb   $0035,$0032,$002F,$002C,$002A,$0028,$0025,$0023,$0022,$0020,$001F,$001D
+        fdb   $001A,$0019,$0017,$0016,$0015,$0014,$0012,$0011,$0010,$0001             ; last 3 values are also used for channel 3 when driving noise channel. $0000 doesn't work for real SN76489 chip, so was replaced by $0001 value
                  
 PSG_FlutterTbl
     ; Basically, for any tone 0-11, dynamic volume adjustments are applied to produce a pseudo-decay,
@@ -1136,7 +1174,7 @@ PlaySound
         _GetCartPageA
         sta   PlaySound_end+1          ; backup data page
         lda   ,x                       ; get memory page that contains track data
-        sta   SongPage
+        sta   SoundPage
         ldx   1,x                      ; get ptr to track data
         stx   SoundData
         _SetCartPageA
@@ -1293,6 +1331,9 @@ cfChangeFMVolume
         lda   Volume,y                 ; apply volume attenuation change
         adda  ,x+
         sta   Volume,y
+        ldb   PlaybackControl,y
+        bitb  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
+        bne   @rts        
         lsra                           ; volume attenuation is unsigned
         lsra
         lsra
@@ -1303,7 +1344,7 @@ cfChangeFMVolume
         ldb   InstrAndVolume,y         ; apply current track attenuation to voice
 @a      addb  #0                       ; (dynamic)
         stb   <YM2413_D0        
-        rts     
+@rts    rts     
 
 cfPreventAttack
         lda   PlaybackControl,y
@@ -1363,7 +1404,13 @@ cfChangePSGVolume
 ; (via Saxman's doc): set voice selection to xx
 ;
 cfSetVoice
-        lda   DoSFXFlag
+        ldb   ,x+
+        lda   PlaybackControl,y
+        bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
+        beq   @nosfx
+        stb   VoiceIndex,y             ; save voice index to restore voice after sfx
+        rts        
+@nosfx  lda   DoSFXFlag
         bmi   @a
         ldu   AbsVar.VoiceTblPtr
         bra   @b
@@ -1372,7 +1419,6 @@ cfSetVoice
         lda   VoiceControl,y           ; read channel nb   
         adda  #$30
         sta   <YM2413_A0
-        ldb   ,x+
         aslb
         ldd   b,u
         sta   InstrAndVolume,y        
@@ -1421,22 +1467,22 @@ cfEnableModulation
 
 ; (via Saxman's doc): stop the track
 ;
+
+; TODO c'est ici qu'on va restorer les parametres de piste quand un SFX se termine ...
+; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 cfStopTrack
         lda   PlaybackControl,y
         anda  #$6F                     ; clear playback byte bit 7 (80h) -- currently playing (not anymore)
         sta   PlaybackControl,y        ; clear playback byte bit 4 (10h) -- do not attack
         
-        lda   VoiceControl,y           ; send a Key Off - read channel nb
+        ldb   VoiceControl,y           ; send a Key Off - read channel nb
         bmi   @a                       ; Is voice control bit 7 (80h) a PSG track set?
-        adda  #$20                     ; set Sus/Key/Block/FNum(MSB) Command
-        sta   <YM2413_A0
-        ldb   NoteControl,y            ; load current value (do not erase FNum MSB)
-        andb  #$EF                     ; clear bit 4 (10h) Key Off
-        stb   <YM2413_D0               ; send to YM
-        stb   NoteControl,y               
-        puls  u                        ; removing return address from stack; will not return to coord flag loop                        
+        _FMNoteOff                     ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y               
+@skip   puls  u                        ; removing return address from stack; will not return to coord flag loop                        
         rts
-@a      _PSGNoteOff        
+@a      
+        _PSGNoteOff                    ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y        
         puls  u                        ; removing return address from stack; will not return to coord flag loop                        
         rts
 
@@ -1447,8 +1493,11 @@ cfSetPSGNoise
         sta   VoiceControl,y
         lda   ,x+
         sta   PSGNoise,y
+        ldb   PlaybackControl,y
+        bitb  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
+        bne   @rts        
         sta   <PSG
-        rts        
+@rts    rts        
 
 cfDisableModulation
         lda   PlaybackControl,y
