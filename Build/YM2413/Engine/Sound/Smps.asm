@@ -1467,23 +1467,72 @@ cfEnableModulation
 
 ; (via Saxman's doc): stop the track
 ;
-
-; TODO c'est ici qu'on va restorer les parametres de piste quand un SFX se termine ...
-; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 cfStopTrack
         lda   PlaybackControl,y
         anda  #$6F                     ; clear playback byte bit 7 (80h) -- currently playing (not anymore)
         sta   PlaybackControl,y        ; clear playback byte bit 4 (10h) -- do not attack
         
-        ldb   VoiceControl,y           ; send a Key Off - read channel nb
+        ldb   VoiceControl,y           ; read channel nb
         bmi   @a                       ; Is voice control bit 7 (80h) a PSG track set?
         _FMNoteOff                     ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y               
-@skip   puls  u                        ; removing return address from stack; will not return to coord flag loop                        
+        bra   @b
+@a      _PSGNoteOff                    ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
+@b      lda   DoSFXFlag
+        bmi   @d
+@rts    puls  u                        ; removing return address from stack; will not return to coord flag loop
         rts
-@a      
-        _PSGNoteOff                    ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y        
-        puls  u                        ; removing return address from stack; will not return to coord flag loop                        
+@d      lda   VoiceControl,y           ; this is SFX Track
+        lbmi  @psgsfx
+        ldu   #MusicTrackOffs
+        suba  #2
+        asla                           ; transform track ref to an index: $02,$04,$05 => 0,4,6
+        ldu   b,u                      ; U ptr to same FM track ID than SFX but for Music, Y still for FM SFX Track
+        lda   PlaybackControl,u
+        bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
+        beq   @rts                     ; if not skip this part (i.e. if SFX was not overriding this track, then nothing to restore)
+        anda  #$04                     ; Clear SFX is overriding this track from playback control
+        ora   #$02                     ; Set bit 1 (track is at rest)
+        sta   PlaybackControl,u
+        lda   MusicPage
+        _SetCartPageA        
+        stx   @dyn+1                   ; backup x
+        ldb   VoiceIndex,u
+        ldu   AbsVar.VoiceTblPtr       ; Restore Voice to music channel
+        lda   VoiceControl,u           ; read channel nb  
+        adda  #$30
+        sta   <YM2413_A0
+        aslb
+        ldd   b,x
+        sta   InstrAndVolume,u        
+        stb   InstrTranspose,u
+        ldb   Volume,u                 ; apply current track attenuation to voice
+        lsrb                           ; volume attenuation is unsigned
+        lsrb
+        lsrb
+        stb   >*+4
+        adda  #0
+        sta   <YM2413_D0
+@dyn    ldx   #0                       ; (dynamic) restore x
+        lda   SoundPage
+        _SetCartPageA  
+        puls  u                        ; removing return address from stack; will not return to coord flag loop
+        rts                   
+@psgsfx ldu   #MusicTrackOffs
+        asrb                           ; this is a psg fx track
+        asrb
+        asrb
+        asrb                           ; transform track ref to an index: $80,$A0,$C0,$E0 => 8,10,12,14
+        ldu   b,u                      ; U ptr to same FM track ID than SFX but for Music, Y still for FM SFX Track
+        lda   PlaybackControl,u
+        anda  #$04                     ; Clear SFX is overriding this track from playback control
+        ora   #$02                     ; Set bit 1 (track is at rest)
+        sta   PlaybackControl,u
+        lda   VoiceControl,u           ; read channel nb
+        cmpa  #$E0                     ; Is this a PSG 3 noise (not tone) track?
+        bne   @c                       ; If it isn't, don't do next part (non-PSG Noise doesn't restore)
+        lda   PSGNoise,u               ; Get PSG noise setting
+        sta   <PSG                     ; Write it to PSG
+@c      puls  u                        ; removing return address from stack; will not return to coord flag loop                        
         rts
 
 ; (via Saxman's doc): Change current PSG noise to xx (For noise channel, E0-E7)
