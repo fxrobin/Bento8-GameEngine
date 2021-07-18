@@ -39,7 +39,7 @@ SMPS_SFX_HDR_LEN             equ   4
 SMPS_SFX_TRK_CH              equ   0
 SMPS_SFX_TRK_DATA_PTR        equ   2 
 SMPS_SFX_TRK_TR_VOL_PTR      equ   4
-SMPS_SFX_TRK_HDR_LEN         equ   5
+SMPS_SFX_TRK_HDR_LEN         equ   6
 
 ; Hardware Addresses
 PSG                          equ   $E7FF
@@ -559,7 +559,7 @@ UpdateMusic
         ;_UpdateTrack SongFM6,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit
         ;_UpdateTrack SongFM7,FMUpdateTrack
         ;_UpdateTrack SongFM8,FMUpdateTrack                
-        ;_UpdateTrack SongPSG4,PSGUpdateTrack    ; uncomment to use noise channel as an independent channel from tone 3
+        _UpdateTrack SongPSG4,PSGUpdateTrack    ; uncomment to use noise channel as an independent channel from tone 3
         _UpdateTrack SongPSG1,PSGUpdateTrack
         _UpdateTrack SongPSG2,PSGUpdateTrack        
         _UpdateTrack SongPSG3,PSGUpdateTrack
@@ -700,7 +700,7 @@ FMSetFreq
         ora   #$02
         sta   PlaybackControl,y
         bra   @b        
-@a      addb  #$0B                     ; Add FMFrequencies offet for C0 Note
+@a      addb  #$0B                     ; Add FMFrequencies offet for C0 Note, access lower notes with transpose
         addb  Transpose,y              ; Add current channel transpose (coord flag E9)
         addb  InstrTranspose,y         ; Add Instrument (Voice) offset (coord flag EF)
         aslb                           ; Transform note into an index...
@@ -759,12 +759,6 @@ FMPrepareNote
 FMUpdateFreqAndNoteOn
         ldb   Detune,y
         sex
-        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/3)
-        std   @dyna+1
-        _asrd        
-        std   @dynb+1
-@dyna   ldd   #0           
-@dynb   subd  #0     
         addd  NextData,y               ; Apply detune but don't update stored frequency
         sta   @dyn+1
         lda   #$10                     ; set LSB Frequency Command
@@ -808,7 +802,6 @@ DoModulation
 @e      dec   ModulationSteps,y
         ldb   ModulationDelta,y
         sex
-        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/2)
         addd  ModulationVal,y
         std   ModulationVal,y        
               
@@ -818,15 +811,18 @@ FMUpdateFreq
         bne   @rts
         ldb   Detune,y
         sex
-        _asrd                          ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/3)
         std   @dyna+1
-        _asrd        
-        std   @dynb+1
-@dyna   ldd   #0           
-@dynb   subd  #0          
-        addd  NextData,y               ; apply detune but don't update stored frequency
-        addd  ModulationVal,y          ; add modulation effect
-        sta   @dyn+1
+        ldd   ModulationVal,y          ; get modulation effect
+        bmi   @a
+        _asrd                          ; modulation is divided by four
+        _asrd                          ; used for better precision of delta
+        bra   @b
+@a      _asrd                          ; modulation is divided by four
+        _asrd                          ; used for better precision of delta        
+        addd  #1                       ; negative value need +1 when div 
+@b      addd  NextData,y               ; apply detune but don't update stored frequency
+@dyna   addd  #0                       ; (dynamic) apply detune        
+        sta   @dynb+1
         lda   #$10                     ; set LSB Frequency Command
         adda  VoiceControl,y           ; get channel number
         sta   <YM2413_A0               ; send Fnum update Command
@@ -835,7 +831,7 @@ FMUpdateFreq
         _YMBusyWait11                  ; total wait 20 cycles
         ldb   NoteControl,y            ; load current value (do not erase FNum MSB) (and used as 5 cycles tempo)
         andb  #$F0                     ; clear FNum MSB (and used as 2 cycles tempo)
-@dyn    addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)        
+@dynb   addb  #0                       ; (dynamic) Set Fnum MSB (and used as 2 cycles tempo)        
         sta   <YM2413_A0               ; send command
         stb   NoteControl,y
         stb   <YM2413_D0               ; send FNum (b8) and Block (b0-b2)
@@ -911,15 +907,14 @@ PSGSetFreq
         ldb   VoiceControl,y           ; Get "voice control" byte (loads upper bits which specify attenuation setting)        
         _PSGNoteOff                    ; (dependency) should be preceded by A loaded with PlaybackControl,y and B with VoiceControl,y
         bra   @b
-@a                
+@a      addb  #$03                     ; Add Frequencies offet for C0 Note, access lower notes with transpose
         addb  Transpose,y              ; Add current channel transpose (coord flag E9)
         aslb                           ; Transform note into an index...
         ldu   #PSGFrequencies
         lda   #0    
         ldd   d,u
         std   NextData,y               ; Store Frequency
-@b       
-        ldb   ,x                        ; Get next byte
+@b      ldb   ,x                        ; Get next byte
         bpl   PSGSetDurationAndForward  ; Test for 80h not set, which is a note duration
         ldb   SavedDuration,y        
         bra   PSGFinishTrackUpdate
@@ -1077,14 +1072,17 @@ PSGUpdateFreq2
         stb   <PSG
         rts        
  
-; 70 notes
+; 70 notes (Note value $81=C3 $C7=G#8) with direct access
+; (Note value $C8 is reserved for PSG3 to drive noise PSG4)
+; Other notes can be accessed by transpose
 PSGFrequencies
-		fdb   $0356,$0327,$02FA,$02CF,$02A5,$0281,$025C,$023B,$021A,$01FC,$01E0,$01C4
-        fdb   $01AB,$0193,$017D,$0167,$0152,$0140,$012E,$011D,$010D,$00FE,$00F0,$00E2
-        fdb   $00D5,$00C9,$00BE,$00B3,$00A9,$00A0,$0097,$008E,$0086,$007F,$0078,$0071
-        fdb   $006A,$0064,$005F,$0059,$0054,$0050,$004B,$0047,$0043,$0040,$003C,$0039
-        fdb   $0035,$0032,$002F,$002C,$002A,$0028,$0025,$0023,$0022,$0020,$001F,$001D
-        fdb   $001A,$0019,$0017,$0016,$0015,$0014,$0012,$0011,$0010,$0001             ; last 3 values are also used for channel 3 when driving noise channel. $0000 doesn't work for real SN76489 chip, so was replaced by $0001 value
+        fdb                                                         $03F8,$03C0,$0388 ; A2 - B2 (Access those 3 notes thru transpose) 
+		fdb   $0356,$0327,$02FA,$02CF,$02A5,$0281,$025C,$023B,$021A,$01FC,$01E0,$01C4 ; C3 - B3
+        fdb   $01AB,$0193,$017D,$0167,$0152,$0140,$012E,$011D,$010D,$00FE,$00F0,$00E2 ; C4 - B4
+        fdb   $00D5,$00C9,$00BE,$00B3,$00A9,$00A0,$0097,$008E,$0086,$007F,$0078,$0071 ; C5 - B5
+        fdb   $006A,$0064,$005F,$0059,$0054,$0050,$004B,$0047,$0043,$0040,$003C,$0039 ; C6 - B6
+        fdb   $0035,$0032,$002F,$002C,$002A,$0028,$0025,$0023,$0022,$0020,$001F,$001D ; C7 - B7
+        fdb   $001A,$0019,$0017,$0016,$0015,$0014,$0012,$0011,$0010,$0001             ; C8 - G#8 (Last 3 values are also used for channel 3 when driving noise channel. $0000 doesn't work for real SN76489 chip, so was replaced by $0001 value)
                  
 PSG_FlutterTbl
     ; Basically, for any tone 0-11, dynamic volume adjustments are applied to produce a pseudo-decay,
@@ -1171,6 +1169,9 @@ MusicTrackOffs
         fdb   SongPSG3
 
 PlaySound
+
+        ; sauvegarde des registres !!! pshs et puls a faire également dans les autre routines hors VBL ;-)
+
         _GetCartPageA
         sta   PlaySound_end+1          ; backup data page
         lda   ,x                       ; get memory page that contains track data
@@ -1184,12 +1185,13 @@ PlaySound
         std   AbsVar.SFXVoiceTblPtr
 
         ldd   SMPS_SFX_TEMPO_NB_CH,x   ; init process for each track
-        sta   @dync+1
-        stb   @dyna+2
+        sta   @dyna+2        
+        stb   PS_cnt
         leax  SMPS_SFX_HDR_LEN,x        
 @a      ldu   #MusicTrackOffs
-        ldb   SMPS_SFX_TRK_CH+1,x      ; read track id
-        stb   @dynb+1
+        ldd   SMPS_SFX_TRK_CH,x        ; read playbackcontrol and voice id
+        std   @dynb+1
+        tstb
         bmi   @psg
         subb  #2                       ; this is an fm track
         aslb                           ; transform track ref to an index: $02,$04,$05 => 0,4,6
@@ -1201,10 +1203,10 @@ PlaySound
         sta   PSG
         lda   #$FF
         sta   PSG
-@b      asrb                           ; this is an psg track
-        asrb
-        asrb
-        asrb                           ; transform track ref to an index: $80,$A0,$C0,$E0 => 8,10,12,14
+@b      lsrb                           ; this is a psg track
+        lsrb
+        lsrb
+        lsrb                           ; transform track ref to an index: $80,$A0,$C0,$E0 => 8,10,12,14
         ldy   b,u    
 @c      lda   PlaybackControl,y        ; y (hl) ptr to Music Track
         ora   #$04                     ; Set "SFX is overriding this track!" bit
@@ -1236,8 +1238,10 @@ PlaySound
 @dyna   ldd   #$0100                   ; (dynamic) TempoDivider
         sta   DurationTimeout,u        ; current duration timeout to 1 (will expire immediately and thus update)
         stb   TempoDivider,u
-@dynb   _ldd  0,GoSubStack             ; (dynamic) VoiceControl
-        sta   VoiceControl,u
+@dynb   ldd   #0                       ; (dynamic)
+        sta   PlaybackControl,u
+        stb   VoiceControl,u
+        ldb   #GoSubStack
         stb   StackPointer,u           ; Reset track "gosub" stack
         ldd   SMPS_SFX_TRK_DATA_PTR,x 
         addd  SoundData
@@ -1245,14 +1249,15 @@ PlaySound
         ldd   SMPS_SFX_TRK_TR_VOL_PTR,x
         std   TranspAndVolume,u        
         leax  SMPS_SFX_TRK_HDR_LEN,x
-@dync   lda   #0                       ; (dynamic) loop counter
-        deca    
+        dec   PS_cnt    
         lbne  @a  
 
 PlaySound_end
         lda   #0
         _SetCartPageA          
         rts
+
+PS_cnt  fcb   0
         
 ******************************************************************************
 * CoordFlag
@@ -1303,7 +1308,18 @@ CoordFlagLookup
 ;              
 cfDetune
         lda   ,x+
-        sta   Detune,y
+        ; this should be replaced by a conversion of the smps music file
+        ; here to play sonic2 files only
+        ldb   VoiceControl,y           ; read channel nb
+        bmi   @a                       ; Is voice control bit 7 (80h) a PSG track set?        
+        asra                           ; ratio freq btw YM2612 and YM2413 is 3.73, so tame a bit (/3)
+        sta   @dyna+1
+        asra        
+        sta   @dynb+1
+@dyna   lda   #0           
+@dynb   suba  #0         
+        ; end of tmp code
+@a      sta   Detune,y
         rts           
 
 ; Return (Sonic 1 & 2)

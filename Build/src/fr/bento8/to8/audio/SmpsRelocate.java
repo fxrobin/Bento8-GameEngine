@@ -88,7 +88,15 @@ public class SmpsRelocate{
 				// Coordination flags
 				// ********************************************************************
 				switch (fIN[pos]) {
-				case (byte)0xF0: //F0wwxxyyzz - modulation TODO piste FM seulement, en attendant un asrd fait le job sur les pistes FM
+				case (byte)0xE1:
+					// TODO piste FM seulement, diviser le detune par (((53693100/15/72)/524288)/((53693100/14/72)/2097152))
+					// TODO arrondir au plus près
+					pos += 2;
+					break;			
+				case (byte)0xF0: //F0wwxxyyzz
+					// TODO piste FM seulement, et appliquer un coef 4/(((53693100/15/72)/524288)/((53693100/14/72)/2097152)) a la valeur delta
+					// TODO arrondir au plus près					
+					// TODO tester si la valeur obtenue est > 255, on cap a 255 et on log un message
 					//modulation(pos+2);
 					pos += 5;
 				break;			
@@ -101,7 +109,7 @@ public class SmpsRelocate{
 					relocateOffsetBack(pos+3);
 				pos += 5;
 				break;
-				case (byte)0xE0: case (byte)0xE1: case (byte)0xE2: case (byte)0xE5: case (byte)0xE6: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
+				case (byte)0xE0: case (byte)0xE2: case (byte)0xE5: case (byte)0xE6: case (byte)0xE8: case (byte)0xE9: case (byte)0xEA: case (byte)0xEB: case (byte)0xEF:
 					pos += 2;
 				break;				
 				default:
