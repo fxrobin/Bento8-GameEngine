@@ -226,12 +226,10 @@ SpecialStage_Init                                     *SpecialStage:
                                                       *    bsr.w   RunPLC_RAM
                                                       *    move.b  #VintID_CtrlDMA,(Vint_routine).w
                                                       *    bsr.w   WaitForVint
-        jsr   WaitVBL
+        jsr   InitSoundDriver
+        jsr   IrqSet50Hz
+        
         jsr   YM2413_DrumModeOn
-        jsr   SN76489_Silent
-        lda   #$01
-        sta   AbsVar.IsPalFlag                                                       
-        jsr   IrqSet50Hz   
         ldx   #Smps_MCZ                               *    move.w  #MusID_SpecStage,d0
         jmp   PlayMusic                               *    bsr.w   PlayMusic
                                                       *    move.w  (VDP_Reg1_val).w,d0

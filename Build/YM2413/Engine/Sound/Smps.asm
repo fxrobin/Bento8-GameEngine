@@ -286,9 +286,10 @@ _YMBusyWait19 MACRO
 ******************************************************************************
 
 InitSoundDriver
+        pshs  a
         lda   #$01                     ; 1: play 60hz track at 50hz, 0: do not skip frames
         sta   AbsVar.IsPalFlag 
-        rts
+        puls  a,pc
 
 ******************************************************************************
 * Setup YM2413 for Drum Mode
@@ -296,6 +297,7 @@ InitSoundDriver
 ******************************************************************************
 
 YM2413_DrumModeOn
+        pshs  d,x
         ldx   #@data
 @a      ldd   ,x++
         bmi   @end
@@ -308,7 +310,7 @@ YM2413_DrumModeOn
         sta   SongFM7.NoteControl
         lda   #$01
         sta   SongFM8.NoteControl                
-        rts        
+        puls  d,x,pc       
 @data
         fdb   $0E20
         fdb   $1620
@@ -392,6 +394,7 @@ _InitTrackPSG MACRO
 
 PlayMusic
 BGMLoad
+        pshs  d,y,u
         _GetCartPageA
         sta   ipsg0+1                  ; backup data page
         lda   ,x                       ; get memory page that contains track data
@@ -465,7 +468,7 @@ ipsg2   _InitTrackPSG SongPSG2,$A0
 ipsg1   _InitTrackPSG SongPSG3,$C0
 ipsg0   lda   #0                       ; (dynamic) set back data page
         _SetCartPageA
-        rts
+        puls  d,y,u,pc
 
 InitTrackFM
         sta   VoiceControl,x
@@ -559,7 +562,7 @@ UpdateMusic
         ;_UpdateTrack SongFM6,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit
         ;_UpdateTrack SongFM7,FMUpdateTrack
         ;_UpdateTrack SongFM8,FMUpdateTrack                
-        _UpdateTrack SongPSG4,PSGUpdateTrack    ; uncomment to use noise channel as an independent channel from tone 3
+        ;_UpdateTrack SongPSG4,PSGUpdateTrack    ; uncomment to use noise channel as an independent channel from tone 3
         _UpdateTrack SongPSG1,PSGUpdateTrack
         _UpdateTrack SongPSG2,PSGUpdateTrack        
         _UpdateTrack SongPSG3,PSGUpdateTrack
@@ -715,7 +718,7 @@ FMSetFreq
         
 NoteFillUpdate
         lda   NoteFillTimeout,y        ; Get current note fill value
-        lbeq   DoModulation            ; If zero, return!
+        lbeq  DoModulation             ; If zero, return!
         dec   NoteFillTimeout,y        ; Decrement note fill
         bne   DoModulation             ; If not zero, return
         
@@ -752,7 +755,7 @@ FinishTrackUpdate
 FMPrepareNote
         lda   PlaybackControl,y
         bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
-        bne   DoModulation                                                              
+        bne   DoModulation             ; If so skip freq update                                                 
         bita  #$02                     ; Is bit 1 (02h) "track is at rest" set on playback?
         beq   FMUpdateFreqAndNoteOn
         rts                            ; If so, quit
@@ -1169,8 +1172,7 @@ MusicTrackOffs
         fdb   SongPSG3
 
 PlaySound
-
-        ; sauvegarde des registres !!! pshs et puls a faire également dans les autre routines hors VBL ;-)
+        pshs  d,y,u
 
         _GetCartPageA
         sta   PlaySound_end+1          ; backup data page
@@ -1255,7 +1257,7 @@ PlaySound
 PlaySound_end
         lda   #0
         _SetCartPageA          
-        rts
+        puls  d,y,u,pc
 
 PS_cnt  fcb   0
         
@@ -1421,12 +1423,11 @@ cfChangePSGVolume
 ;
 cfSetVoice
         ldb   ,x+
+        stb   VoiceIndex,y             ; save voice index to restore voice after sfx        
         lda   PlaybackControl,y
         bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
-        beq   @nosfx
-        stb   VoiceIndex,y             ; save voice index to restore voice after sfx
-        rts        
-@nosfx  lda   DoSFXFlag
+        bne   @rts                     ; yes skip YM command
+        lda   DoSFXFlag
         bmi   @a
         ldu   AbsVar.VoiceTblPtr
         bra   @b
@@ -1446,7 +1447,7 @@ cfSetVoice
         stb   >*+4
         adda  #0
         sta   <YM2413_D0
-        rts
+@rts    rts
 
 ; (via Saxman's doc): F0wwxxyyzz - modulation
 ; o	ww - Wait for ww period of time before modulation starts
@@ -1499,21 +1500,20 @@ cfStopTrack
         rts
 @d      lda   VoiceControl,y           ; this is SFX Track
         lbmi  @psgsfx
-        ldu   #MusicTrackOffs
+        ldu   #MusicTrackOffs          ; get back the overriden music track
         suba  #2
         asla                           ; transform track ref to an index: $02,$04,$05 => 0,4,6
-        ldu   b,u                      ; U ptr to same FM track ID than SFX but for Music, Y still for FM SFX Track
+        ldu   a,u                      ; U ptr to same FM track ID than SFX but for Music, Y still for FM SFX Track
         lda   PlaybackControl,u
         bita  #$04                     ; Is bit 2 (04h) Is SFX overriding this track?
         beq   @rts                     ; if not skip this part (i.e. if SFX was not overriding this track, then nothing to restore)
-        anda  #$04                     ; Clear SFX is overriding this track from playback control
+        anda  #$FB                     ; Clear SFX is overriding this track from playback control
         ora   #$02                     ; Set bit 1 (track is at rest)
         sta   PlaybackControl,u
         lda   MusicPage
         _SetCartPageA        
-        stx   @dyn+1                   ; backup x
+        ldx   AbsVar.VoiceTblPtr       ; Restore Voice to music channel (x can be erased because we are stopping track read)        
         ldb   VoiceIndex,u
-        ldu   AbsVar.VoiceTblPtr       ; Restore Voice to music channel
         lda   VoiceControl,u           ; read channel nb  
         adda  #$30
         sta   <YM2413_A0
@@ -1528,19 +1528,18 @@ cfStopTrack
         stb   >*+4
         adda  #0
         sta   <YM2413_D0
-@dyn    ldx   #0                       ; (dynamic) restore x
         lda   SoundPage
         _SetCartPageA  
         puls  u                        ; removing return address from stack; will not return to coord flag loop
         rts                   
 @psgsfx ldu   #MusicTrackOffs
-        asrb                           ; this is a psg fx track
-        asrb
-        asrb
-        asrb                           ; transform track ref to an index: $80,$A0,$C0,$E0 => 8,10,12,14
-        ldu   b,u                      ; U ptr to same FM track ID than SFX but for Music, Y still for FM SFX Track
+        lsra                           ; this is a psg fx track
+        lsra
+        lsra
+        lsra                           ; transform track ref to an index: $80,$A0,$C0,$E0 => 8,10,12,14
+        ldu   a,u                      ; U ptr to same FM track ID than SFX but for Music, Y still for FM SFX Track
         lda   PlaybackControl,u
-        anda  #$04                     ; Clear SFX is overriding this track from playback control
+        anda  #$FB                     ; Clear SFX is overriding this track from playback control
         ora   #$02                     ; Set bit 1 (track is at rest)
         sta   PlaybackControl,u
         lda   VoiceControl,u           ; read channel nb
@@ -1619,13 +1618,8 @@ cfJumpToGosub
         leax  d,x                      ; gosub
         rts        
 
-cfOpF9     
-        rts          
-
 cfSkip1
         leax  1,x
-        rts 
-
 cfNop 
         rts                                                 
                    
