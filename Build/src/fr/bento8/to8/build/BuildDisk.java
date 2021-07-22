@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PipedWriter;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
@@ -2599,7 +2600,7 @@ public class BuildDisk
 	}
 
 	private static int compile(String asmFile, String option, int mode) throws Exception {
-		Path path = Paths.get(asmFile);
+		Path path = Paths.get(asmFile).toAbsolutePath().normalize();
 		String asmFileName = FileUtil.removeExtension(asmFile);
 		String binFile = asmFileName + ".bin";
 		String lstFile = asmFileName + ".lst";
@@ -2607,19 +2608,25 @@ public class BuildDisk
 		String glbTmpFile = asmFileName + ".tmp";
 
 		logger.debug("\t# Compile "+path.toString());
-		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbTmpFile, option).start();
-		BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
-		String line;
-
-		while((line=br.readLine())!=null){
-			logger.debug("\t"+line);
-		}
-
-		int result = p.waitFor();
-		if (result != 0) {
-			throw new Exception ("Error "+asmFile);
-		}
 		
+		List<String> command = new ArrayList(List.of(game.lwasm,
+				   path.toString(),
+				   "--output=" + binFile,
+				   "--list=" + lstFile,
+				   "--6809",	
+				   "--includedir=.",
+				   "--symbol-dump=" + glbTmpFile,
+				   Game.pragma				   
+				   ));
+		
+		if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+		if (mode==MEGAROM_T2) command.add("--define=T2");
+		if (option != null && option.length() >0) command.add(option);
+			
+		Process p = new ProcessBuilder(command).inheritIO().start();
+		
+		int result = p.waitFor();
+	
 	    Pattern pattern = Pattern.compile("^.*[^\\}]\\sEQU\\s.*$", Pattern.MULTILINE);
 	    FileInputStream input = new FileInputStream(glbTmpFile);
 	    FileChannel channel = input.getChannel();
@@ -2643,21 +2650,32 @@ public class BuildDisk
 	private static int getBINSize(String inAsmFile) {
 		try {
 			String asmFile = duplicateFilePrepend(inAsmFile, "", " SECTION GETSIZE\n");
-			Files.write(Paths.get(asmFile), (" ENDSECTION\n").getBytes(), StandardOpenOption.APPEND);
 			
-			Path path = Paths.get(asmFile);
-			String asmFileName = FileUtil.removeExtension(asmFile);
+			Path asmPath = Paths.get(asmFile).toAbsolutePath().normalize();
+			
+			Files.write(asmPath, (" ENDSECTION\n").getBytes(), StandardOpenOption.APPEND);
+			
+			String asmFileName = FileUtil.removeExtension(asmPath.toFile().toString());
 			String binFile = asmFileName + ".bin";
 			String lstFile = asmFileName + ".lst";
 			
-			logger.debug("\t# Compile "+path.toString());
-			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, "--obj").start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
+			logger.debug("\t# Compile : " + asmPath.toString());
 
-			while((line=br.readLine())!=null){
-				logger.debug("\t"+line);
-			}
+			List<String> command = new ArrayList(List.of(game.lwasm,
+										   asmPath.toString(),
+										   "--output=" + binFile,
+										   "--list=" + lstFile,
+										   "--6809",	
+										   "--includedir=.",
+										   "--obj",
+										   Game.pragma));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+										   
+			
+			Process p = new ProcessBuilder(command)
+					.directory(new File("."))
+					.inheritIO().start();
 
 			int result = p.waitFor();
 			if (result != 0) {

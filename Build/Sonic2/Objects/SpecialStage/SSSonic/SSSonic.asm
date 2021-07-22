@@ -1,4 +1,4 @@
-        INCLUDE "./Engine/Macros.asm"   
+        INCLUDE "Engine/Macros.asm"   
 
 SpecialSonic
         lda   routine,u

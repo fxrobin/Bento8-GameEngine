@@ -5,7 +5,7 @@
 ;
 ; ---------------------------------------------------------------------------
 
-        INCLUDE "./Engine/Macros.asm"   
+        INCLUDE "Engine/Macros.asm"   
         INCLUDE "./Objects/RasterFade/RasterFade.idx"        
 
 RasterFade

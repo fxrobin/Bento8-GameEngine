@@ -6,7 +6,7 @@
 ;
 ; ---------------------------------------------------------------------------
 
-        INCLUDE "./Engine/Macros.asm"   
+        INCLUDE "Engine/Macros.asm"   
 
 TestImageSet
         lda   routine,u

@@ -7,7 +7,7 @@
 * Permet de programmer une MEGAROM T.2 depuis SDDRIVE avec un seul fichier SD
 *
 ********************************************************************************
-        INCLUDE "./Engine/Macros.asm"          
+        INCLUDE "Engine/Macros.asm"          
         
         org   $6200
 

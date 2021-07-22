@@ -8,7 +8,7 @@
 ********************************************************************************
 
         INCLUDE "./GameMode/UNIT_TEST/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"        
+        INCLUDE "Engine/Macros.asm"        
         org   $6100
 
 * ==============================================================================
@@ -204,5 +204,5 @@ Glb_MainCharacter_Is_Dead     fcb   $00
 * ==============================================================================
 * Routines
 * ==============================================================================
-        INCLUDE "./Engine/BgBufferAlloc.asm"
-        INCLUDE "./Engine/EraseSprites.asm"
+        INCLUDE "Engine/BgBufferAlloc.asm"
+        INCLUDE "Engine/EraseSprites.asm"

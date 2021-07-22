@@ -212,17 +212,23 @@ public class SimpleAssemblyGenerator{
 
 			// Delete binary file
 			Files.deleteIfExists(binDFile);
+			
+			List<String> command = new ArrayList<>(List.of(BuildDisk.game.lwasm,
+					asmDrawFileName,
+					   "--output=" + binDrawFileName,
+					   "--list=" + lstDrawFileName,
+					   "--6809",	
+					   "--includedir=.",
+					   "--raw",
+					   Game.pragma				   
+					   ));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+				
+			p = new ProcessBuilder(command).inheritIO().start();
+			
+			int result = p.waitFor();
 
-			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", Game.pragma, Game.define, "--raw");			
-			pb.redirectErrorStream(true);
-			p = pb.start();					
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" +line);
-			}
-			p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binDrawFileName));	

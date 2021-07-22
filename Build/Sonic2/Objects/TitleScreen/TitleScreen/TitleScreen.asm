@@ -61,7 +61,7 @@
 ; Another sprite is used to mask the upper part of the emblem (non linear shape.
 ; ---------------------------------------------------------------------------
 
-        INCLUDE "./Engine/Macros.asm"
+        INCLUDE "Engine/Macros.asm"
         INCLUDE "./Objects/RasterFade/RasterFade.idx"
         INCLUDE "./Objects/PaletteFade/PaletteFade.idx"
 

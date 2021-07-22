@@ -7,8 +7,8 @@
 *
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"        
+        INCLUDE "Engine/Constants.asm"
+        INCLUDE "Engine/Macros.asm"        
         org   $6100
 
         jsr   InitSoundDriver
@@ -48,8 +48,8 @@ Glb_Cur_Wrk_Screen_Id         fcb   $00   ; screen buffer set to write operation
 * ==============================================================================
 * Routines
 * ==============================================================================
-        INCLUDE "./Engine/Graphics/WaitVBL.asm"
-        INCLUDE "./Engine/Joypad/ReadJoypads.asm"
-        INCLUDE "./Engine/Irq/IrqSmpsJoypad.asm"        
-        INCLUDE "./Engine/Sound/Smps.asm"
+        INCLUDE "Engine/Graphics/WaitVBL.asm"
+        INCLUDE "Engine/Joypad/ReadJoypads.asm"
+        INCLUDE "Engine/Irq/IrqSmpsJoypad.asm"        
+        INCLUDE "Engine/Sound/Smps.asm"
 	

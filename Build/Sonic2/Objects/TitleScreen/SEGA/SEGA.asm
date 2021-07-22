@@ -8,7 +8,7 @@
 ;
 ; ---------------------------------------------------------------------------
 
-        INCLUDE "./Engine/Macros.asm"   
+        INCLUDE "Engine/Macros.asm"   
 
 SegaScr_This            equ Object_RAM
 Obj_SEGA                equ SegaScr_This

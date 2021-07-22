@@ -8,7 +8,7 @@
 ********************************************************************************
 
         INCLUDE "./GameMode/TitleScreen/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"        
+        INCLUDE "Engine/Macros.asm"        
         org   $6100
 
         jsr   LoadAct
@@ -155,21 +155,21 @@ Glb_MainCharacter_Is_Dead     fcb   $00
 * ==============================================================================
 * Routines
 * ==============================================================================
-        INCLUDE "./Engine/Graphics/WaitVBL.asm"
-        INCLUDE "./Engine/Graphics/AnimateSprite.asm"	
-        INCLUDE "./Engine/Graphics/DisplaySprite.asm"	
-        INCLUDE "./Engine/Graphics/CheckSpritesRefresh.asm"
-        INCLUDE "./Engine/Graphics/EraseSprites.asm"
-        INCLUDE "./Engine/Graphics/UnsetDisplayPriority.asm"
-        INCLUDE "./Engine/Graphics/DrawSprites.asm"
-        INCLUDE "./Engine/Graphics/BgBufferAlloc.asm"	
-        INCLUDE "./Engine/Joypad/ReadJoypads.asm"
-        INCLUDE "./Engine/ObjectManagement/RunObjects.asm"
-        INCLUDE "./Engine/ObjectManagement/DeleteObject.asm"
-        INCLUDE "./Engine/ObjectManagement/ClearObj.asm"
-        INCLUDE "./Engine/LevelManagement/LoadGameMode.asm"	
-        INCLUDE "./Engine/Ram/ClearDataMemory.asm"
-	INCLUDE "./Engine/Palette/UpdatePalette.asm"
-        INCLUDE "./Engine/Sound/PlayPCM.asm"
-        INCLUDE "./Engine/Sound/PSGlib.asm"
-        INCLUDE "./Engine/Irq/IrqPsgRaster.asm"
+        INCLUDE "Engine/Graphics/WaitVBL.asm"
+        INCLUDE "Engine/Graphics/AnimateSprite.asm"	
+        INCLUDE "Engine/Graphics/DisplaySprite.asm"	
+        INCLUDE "Engine/Graphics/CheckSpritesRefresh.asm"
+        INCLUDE "Engine/Graphics/EraseSprites.asm"
+        INCLUDE "Engine/Graphics/UnsetDisplayPriority.asm"
+        INCLUDE "Engine/Graphics/DrawSprites.asm"
+        INCLUDE "Engine/Graphics/BgBufferAlloc.asm"	
+        INCLUDE "Engine/Joypad/ReadJoypads.asm"
+        INCLUDE "Engine/ObjectManagement/RunObjects.asm"
+        INCLUDE "Engine/ObjectManagement/DeleteObject.asm"
+        INCLUDE "Engine/ObjectManagement/ClearObj.asm"
+        INCLUDE "Engine/LevelManagement/LoadGameMode.asm"	
+        INCLUDE "Engine/Ram/ClearDataMemory.asm"
+	INCLUDE "Engine/Palette/UpdatePalette.asm"
+        INCLUDE "Engine/Sound/PlayPCM.asm"
+        INCLUDE "Engine/Sound/PSGlib.asm"
+        INCLUDE "Engine/Irq/IrqPsgRaster.asm"

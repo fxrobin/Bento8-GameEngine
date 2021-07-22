@@ -9,7 +9,7 @@
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Objects/SpecialStage/SSBomb/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"   
+        INCLUDE "Engine/Macros.asm"   
         
 HalfPipe_Img_Duration equ 5 ; (min value = 5) track maximum refresh rate: 50Hz/HalfPipe_Img_Duration= x fps
 HalfPipe_one_z_step   equ (HalfPipe_Img_z_depth*256)/HalfPipe_Img_Duration

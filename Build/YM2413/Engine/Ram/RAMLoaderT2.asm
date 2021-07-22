@@ -16,12 +16,12 @@
 * en lieu et place de la page T.2
 ********************************************************************************
 
-        INCLUDE "./Engine/Constants.asm"
+        INCLUDE "Engine/Constants.asm"
         
         org   $4000
         opt   c,ct
         setdp $40                      ; dp for exomizer
-        INCLUDE "./Engine/Compression/Exomizer.asm"  
+        INCLUDE "Engine/Compression/Exomizer.asm"  
 
 RAMLoader
         ldx   #RL_RAM_index          

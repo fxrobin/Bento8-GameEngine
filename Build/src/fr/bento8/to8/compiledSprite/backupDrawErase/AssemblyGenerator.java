@@ -244,15 +244,23 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", Game.pragma, Game.define, "--raw");
-			pb.redirectErrorStream(true);
-			p = pb.start();			
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" + line);
-			}
-			p.waitFor();
+			
+			List<String> command = new ArrayList<>(List.of(BuildDisk.game.lwasm,
+					 asmBckDrawFileName,
+					   "--output=" + binBckDrawFileName,
+					   "--list=" + lstBckDrawFileName,
+					   "--6809",	
+					   "--includedir=.",
+					   "--raw",
+					   Game.pragma				   
+					   ));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+				
+			p = new ProcessBuilder(command).inheritIO().start();
+			
+			int result = p.waitFor();
+			
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binBckDrawFileName));	
@@ -299,17 +307,22 @@ public class AssemblyGenerator{
 			
 			// Delete binary file
 			Files.deleteIfExists(binEFile);
-
-			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", Game.pragma, Game.define, "--raw");			
-			pb.redirectErrorStream(true);
-			p = pb.start();					
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" +line);
-			}
-			p.waitFor();
+			command = new ArrayList<>(List.of(BuildDisk.game.lwasm,
+						asmEraseFileName,
+					   "--output=" + binEraseFileName,
+					   "--list=" + lstEraseFileName,
+					   "--6809",	
+					   "--includedir=.",
+					   "--raw",
+					   Game.pragma				   
+					   ));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+				
+			p = new ProcessBuilder(command).inheritIO().start();
+			
+			result = p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binEraseFileName));	

@@ -8,7 +8,7 @@
 ********************************************************************************
 
         INCLUDE "./GameMode/SC_TEST/Constants.asm"
-        INCLUDE "./Engine/Macros.asm"        
+        INCLUDE "Engine/Macros.asm"        
         org   $6100
 
         jsr   LoadAct
@@ -155,24 +155,24 @@ Glb_MainCharacter_Is_Dead     fcb   $00
 * ==============================================================================
 * Routines
 * ==============================================================================
-        INCLUDE "./Engine/WaitVBL.asm"
-        INCLUDE "./Engine/ReadJoypads.asm"
-        INCLUDE "./Engine/RunObjects.asm"
-        INCLUDE "./Engine/LoadGameMode.asm"
-        INCLUDE "./Engine/AnimateSprite.asm"
-        INCLUDE "./Engine/ObjectMove.asm"
-        INCLUDE "./Engine/SingleObjLoad.asm"
-        INCLUDE "./Engine/DeleteObject.asm"
-        INCLUDE "./Engine/DisplaySprite.asm"
-        INCLUDE "./Engine/MarkObjGone.asm"
-        INCLUDE "./Engine/ClearObj.asm"
-        INCLUDE "./Engine/CheckSpritesRefresh.asm"
-        INCLUDE "./Engine/EraseSprites.asm"
-        INCLUDE "./Engine/UnsetDisplayPriority.asm"
-        INCLUDE "./Engine/DrawSprites.asm"
-        INCLUDE "./Engine/BgBufferAlloc.asm"
-        INCLUDE "./Engine/ClearDataMemory.asm"
-		INCLUDE "./Engine/UpdatePalette.asm"
-        INCLUDE "./Engine/PSGlib.asm"
-        INCLUDE "./Engine/DrawFullscreenImage.asm"
+        INCLUDE "Engine/WaitVBL.asm"
+        INCLUDE "Engine/ReadJoypads.asm"
+        INCLUDE "Engine/RunObjects.asm"
+        INCLUDE "Engine/LoadGameMode.asm"
+        INCLUDE "Engine/AnimateSprite.asm"
+        INCLUDE "Engine/ObjectMove.asm"
+        INCLUDE "Engine/SingleObjLoad.asm"
+        INCLUDE "Engine/DeleteObject.asm"
+        INCLUDE "Engine/DisplaySprite.asm"
+        INCLUDE "Engine/MarkObjGone.asm"
+        INCLUDE "Engine/ClearObj.asm"
+        INCLUDE "Engine/CheckSpritesRefresh.asm"
+        INCLUDE "Engine/EraseSprites.asm"
+        INCLUDE "Engine/UnsetDisplayPriority.asm"
+        INCLUDE "Engine/DrawSprites.asm"
+        INCLUDE "Engine/BgBufferAlloc.asm"
+        INCLUDE "Engine/ClearDataMemory.asm"
+		INCLUDE "Engine/UpdatePalette.asm"
+        INCLUDE "Engine/PSGlib.asm"
+        INCLUDE "Engine/DrawFullscreenImage.asm"
         
