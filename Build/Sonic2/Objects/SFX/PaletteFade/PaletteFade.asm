@@ -39,7 +39,7 @@
 ;*******************************************************************************   
 
         INCLUDE "./Engine/Macros.asm"   
-        INCLUDE "./Objects/PaletteFade/PaletteFade.idx"           
+        INCLUDE "./Objects/SFX/PaletteFade/PaletteFade.idx"           
 
 PaletteFade
         lda   routine,u

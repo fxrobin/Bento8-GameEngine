@@ -151,7 +151,7 @@ GoSubStack                   equ   42
 
 ******************************************************************************
 
-Var STRUCT
+SmpsVar STRUCT
 SFXPriorityVal                 rmb   1        
 TempoTimeout                   rmb   1        
 CurrentTempo                   rmb   1                ; Stores current tempo value here
@@ -159,9 +159,7 @@ StopMusic                      rmb   1                ; Set to 7Fh to pause musi
 FadeOutCounter                 rmb   1        
 FadeOutDelay                   rmb   1        
 QueueToPlay                    rmb   1                ; if NOT set to 80h, means new index was requested by 68K
-SFXToPlay                      rmb   1                ; When Genesis wants to play "normal" sound, it writes it here
-SFXStereoToPlay                rmb   1                ; When Genesis wants to play alternating stereo sound, it writes it here
-SFXUnknown                     rmb   1                ; Unknown type of sound queue, but it's in Genesis code like it was once used
+SFXToPlay                      rmb   2                ; When Genesis wants to play "normal" sound, it writes it here
 VoiceTblPtr                    rmb   2                ; address of the voices
 SFXVoiceTblPtr                 rmb   2                ; address of the SFX voices
 FadeInFlag                     rmb   1        
@@ -171,21 +169,19 @@ FadeInCounter                  rmb   1
 TempoMod                       rmb   1        
 TempoTurbo                     rmb   1                ; Stores the tempo if speed shoes are acquired (or 7Bh is played anywho)
 SpeedUpFlag                    rmb   1        
-DACEnabled                     rmb   1        
-MusicBankNumber                rmb   1        
-IsPalFlag                      rmb   1        
+DACEnabled                     rmb   1                
+IsPalFlag                      rmb   1    
  ENDSTRUCT
 
 ******************************************************************************
 
 StructStart
-AbsVar          Var
+Smps          SmpsVar
 
 tracksStart		; This is the beginning of all BGM track memory
 SongDACFMStart
 SongDAC         Track
 SongFMStart
-SongFM0         Track
 SongFM1         Track
 SongFM2         Track
 SongFM3         Track
@@ -194,6 +190,7 @@ SongFM5         Track
 SongFM6         Track
 SongFM7         Track
 SongFM8         Track
+SongFM9         Track
 SongFMEnd
 SongDACFMEnd
 SongPSGStart
@@ -205,22 +202,65 @@ SongPSGEnd
 tracksEnd
 
 tracksSFXStart
-SFX_FMStart
-SFX_FM3         Track
-SFX_FM4         Track
-SFX_FM5         Track
-SFX_FMEnd
-SFX_PSGStart
-SFX_PSG1        Track
-SFX_PSG2        Track
-SFX_PSG3        Track
-SFX_PSGEnd
+SFXFMStart
+SFXFM3          Track
+SFXFM4          Track
+SFXFM5          Track
+SFXFMEnd
+SFXPSGStart
+SFXPSG1         Track
+SFXPSG2         Track
+SFXPSG3         Track
+SFXPSGEnd
 tracksSFXEnd
 StructEnd
 
-        org   StructStart
-        fill  0,(StructEnd-StructStart)     ; I want struct data to be in binary please ...
+        ; I want struct data to be in binary please ...
+        ; VoiceControl is hardcoded
         
+        org   StructStart                
+        fill  0,sizeof{SmpsVar}
+        fdb   $0006
+        fill  0,sizeof{Track}-2
+        fdb   $0000
+        fill  0,sizeof{Track}-2        
+        fdb   $0001
+        fill  0,sizeof{Track}-2
+        fdb   $0002
+        fill  0,sizeof{Track}-2
+        fdb   $0003
+        fill  0,sizeof{Track}-2
+        fdb   $0004
+        fill  0,sizeof{Track}-2
+        fdb   $0005
+        fill  0,sizeof{Track}-2
+        fdb   $0006
+        fill  0,sizeof{Track}-2
+        fdb   $0007
+        fill  0,sizeof{Track}-2
+        fdb   $0008
+        fill  0,sizeof{Track}-2
+        fdb   $0080
+        fill  0,sizeof{Track}-2
+        fdb   $00A0
+        fill  0,sizeof{Track}-2
+        fdb   $00C0
+        fill  0,sizeof{Track}-2
+        fdb   $00E0
+        fill  0,sizeof{Track}-2
+        fdb   $0003
+        fill  0,sizeof{Track}-2
+        fdb   $0004
+        fill  0,sizeof{Track}-2
+        fdb   $0005
+        fill  0,sizeof{Track}-2
+        fdb   $0080
+        fill  0,sizeof{Track}-2
+        fdb   $00A0
+        fill  0,sizeof{Track}-2
+        ;fdb   $00C0
+        ;fill  0,sizeof{Track}-2
+                
 ******************************************************************************
 
 PALUpdTick      fcb   0     ; this counts from 0 to 5 to periodically "double update" for PAL systems (basically every 6 frames you need to update twice to keep up)
@@ -240,8 +280,8 @@ MUSIC_FM_TRACK_COUNT = (SongFMEnd-SongFMStart)/sizeof{Track}
 MUSIC_PSG_TRACK_COUNT = (SongPSGEnd-SongPSGStart)/sizeof{Track}
 
 SFX_TRACK_COUNT = (tracksSFXEnd-tracksSFXStart)/sizeof{Track}
-SFX_FM_TRACK_COUNT = (SFX_FMEnd-SFX_FMStart)/sizeof{Track}
-SFX_PSG_TRACK_COUNT = (SFX_PSGEnd-SFX_PSGStart)/sizeof{Track}
+SFXFM_TRACK_COUNT = (SFXFMEnd-SFXFMStart)/sizeof{Track}
+SFXPSG_TRACK_COUNT = (SFXPSGEnd-SFXPSGStart)/sizeof{Track}
 
 ******************************************************************************
 * writes to YM2413 with required waits
@@ -288,7 +328,7 @@ _YMBusyWait19 MACRO
 InitSoundDriver
         pshs  a
         lda   #$01                     ; 1: play 60hz track at 50hz, 0: do not skip frames
-        sta   AbsVar.IsPalFlag 
+        sta   Smps.IsPalFlag 
         puls  a,pc
 
 ******************************************************************************
@@ -342,7 +382,7 @@ InitMusicPlayback
 FMSilenceAll
         ldd   #$200E
         stb   YM2413_A0
-        ldy   #SongFM0.NoteControl
+        ldy   #SongFM1.NoteControl
         sta   YM2413_D0                ; note off for all drums     
         _YMBusyWait5
                 
@@ -380,23 +420,11 @@ PSGSilenceAll
 * destroys A, B, X, Y
 ******************************************************************************
 
-_InitTrackFM MACRO
-        ldx   #\1
-        lda   #\2
-        jsr   InitTrackFM
- ENDM
- 
-_InitTrackPSG MACRO
-        ldx   #\1
-        lda   #\2
-        jsr   InitTrackPSG
- ENDM
-
 PlayMusic
 BGMLoad
         pshs  d,y,u
         _GetCartPageA
-        sta   ipsg0+1                  ; backup data page
+        sta   BGMLoad_end+1            ; backup data page
         lda   ,x                       ; get memory page that contains track data
         sta   MusicPage
         ldx   1,x                      ; get ptr to track data
@@ -406,104 +434,83 @@ BGMLoad
         jsr   InitMusicPlayback        
         ldd   SMPS_VOICE,x
         addd  MusicData   
-        std   AbsVar.VoiceTblPtr
+        std   Smps.VoiceTblPtr
         
         ldd   SMPS_TEMPO_DELAY,x
         sta   SongDelay
-        stb   AbsVar.TempoMod
-        stb   AbsVar.CurrentTempo
-        stb   AbsVar.TempoTimeout
+        stb   Smps.TempoMod
+        stb   Smps.CurrentTempo
+        stb   Smps.TempoTimeout
         
         lda   #$05
         sta   PALUpdTick
         
         lda   SMPS_NB_FM,x
-        sta   @dyn+1
+        sta   @fm+1
         leau  SMPS_TRK_HEADER,x
-        ldy   SMPS_DAC_FLAG,x
-        bne   @a
-        _InitTrackFM SongDAC,$06       ; drum mode use channel 6-8
-@dyn    lda   #$00                     ; (dynamic)
-        deca                           ; nb fm track - 1 (dac track)      
-@a      asla
-        ldy   #ifmjmp
-        jmp   [a,y]    
-ifmjmp        
-        fdb   ifm
-        fdb   ifm0        
-        fdb   ifm1        
-        fdb   ifm2
-        fdb   ifm3
-        fdb   ifm4
-        fdb   ifm5
-        fdb   ifm6
-        fdb   ifm7
-        fdb   ifm8
-
-ifm8    _InitTrackFM SongFM8,$08
-ifm7    _InitTrackFM SongFM7,$07
-ifm6    _InitTrackFM SongFM6,$06
-ifm5    _InitTrackFM SongFM5,$05
-ifm4    _InitTrackFM SongFM4,$04
-ifm3    _InitTrackFM SongFM3,$03
-ifm2    _InitTrackFM SongFM2,$02
-ifm1    _InitTrackFM SongFM1,$01
-ifm0    _InitTrackFM SongFM0,$00
-ifm
-        ldx   MusicData
+        ldd   SMPS_DAC_FLAG,x
+        bne   @fm                      ; no DRUM track found (should be $0000 to be DRUM)
+        ldy   #SongDAC
+        jsr   InitTrackFM              ; DRUM mode use channel 6-8
+        dec   @fm+1                    ; DAC track is part of FM nb channel count
+@fm
+        lda   #$00                     ; (dynamic) nb of FM tracks to init
+        ldy   #SongFM1                 ; Init all FM tracks
+@fmlp   dec   @fm+1
+        bmi   @psg     
+        jsr   InitTrackFM
+        bra   @fmlp
+@psg    
+        lda   #$C0                     ; set back Tone channel for PSG3 (can be switched to noise by cfSetPSGNoise)
+        sta   SongPSG3.VoiceControl
         lda   SMPS_NB_PSG,x
-@a      asla
-        ldy   #ipsgjmp
-        jmp   [a,y]    
-ipsgjmp    
-        fdb   ipsg0
-        fdb   ipsg1
-        fdb   ipsg2
-        fdb   ipsg3
-        ;fdb   ipsg4        
+        sta   >*+4
+@dyn    lda   #$00                     ; (dynamic) nb of PSG tracks to init
+        ldy   #SongPSG1                ; Init all PSG tracks
+@psglp  dec   @dyn+1
+        bmi   BGMLoad_end     
+        jsr   InitTrackPSG
+        bra   @psglp
 
-;ipsg4   _InitTrackPSG SongPSG4,$E0
-ipsg3   _InitTrackPSG SongPSG1,$80
-ipsg2   _InitTrackPSG SongPSG2,$A0
-ipsg1   _InitTrackPSG SongPSG3,$C0
-ipsg0   lda   #0                       ; (dynamic) set back data page
+BGMLoad_end
+        lda   #0                       ; (dynamic) set back data page
         _SetCartPageA
         puls  d,y,u,pc
 
 InitTrackFM
-        sta   VoiceControl,x
         lda   SongDelay        
-        sta   TempoDivider,x
+        sta   TempoDivider,y
         ldd   #$8201
-        sta   PlaybackControl,x
-        stb   DurationTimeout,x
+        sta   PlaybackControl,y
+        stb   DurationTimeout,y
         ldb   #GoSubStack
-        stb   StackPointer,x
+        stb   StackPointer,y
         ldd   SMPS_TRK_DATA_PTR,u
         addd  MusicData
-        std   DataPointer,x
+        std   DataPointer,y
         ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TranspAndVolume,x
+        std   TranspAndVolume,y
         leau  SMPS_TRK_FM_HDR_LEN,u
+        leay  sizeof{Track},y
         rts       
  
 InitTrackPSG
-        sta   VoiceControl,x
         lda   SongDelay        
-        sta   TempoDivider,x
+        sta   TempoDivider,y
         ldd   #$8201
-        sta   PlaybackControl,x
-        stb   DurationTimeout,x
+        sta   PlaybackControl,y
+        stb   DurationTimeout,y
         ldb   #GoSubStack
-        stb   StackPointer,x        
+        stb   StackPointer,y        
         ldd   SMPS_TRK_DATA_PTR,u
         addd  MusicData
-        std   DataPointer,x
+        std   DataPointer,y
         ldd   SMPS_TRK_TR_VOL_PTR,u
-        std   TranspAndVolume,x
+        std   TranspAndVolume,y
         lda   SMPS_TRK_ENV_PTR,u
-        sta   VoiceIndex,x
+        sta   VoiceIndex,y
         leau  SMPS_TRK_PSG_HDR_LEN,u
+        leay  sizeof{Track},y
         rts        
         
 ******************************************************************************
@@ -528,57 +535,66 @@ a@      equ   *
  ENDM
         
 MusicFrame 
-        lda   MusicPage                 ; page switch to the music
-        beq   @a                       ; no music to play
+        
+        ; simple sound fx implementation with no priority
+        ; TODO upgrade to a queue system like original code
+        ldx   Smps.SFXToPlay         ; get last requested sound effect to play
+        beq   @a                       ; 0 means no sound effect to play
+        jsr   PlaySound
+        ldd   #0                       ; reset to be able to play another effect from now
+        std   Smps.SFXToPlay
+@a       
+        lda   MusicPage                ; page switch to the music
+        lbeq  UpdateSound              ; no music to play
         _SetCartPageA
         clr   DoSFXFlag
-        lda   AbsVar.StopMusic
-        beq   UpdateEverything
-@a      rts
 
 UpdateEverything        
-        lda   AbsVar.IsPalFlag         ; TODO use SMPS relocate to convert timings
-        beq   UpdateMusic              ; to play 60hz songs at 50hz at normal speed
+        lda   Smps.IsPalFlag           ; TODO use SMPS relocate to convert timings
+        beq   @a                       ; to play 60hz songs at 50hz at normal speed
         dec   PALUpdTick               ; this will allow to throw away this code
-        bne   UpdateMusic
+        bne   @a
         lda   #5
         sta   PALUpdTick
         jsr   UpdateMusic              ; play 2 frames in one to keep original speed
+@a      jsr   UpdateMusic              ; play 2 frames in one to keep original speed
+        bra   UpdateSound
 
 UpdateMusic
-        lda   AbsVar.CurrentTempo      ; tempo value
-        adda  AbsVar.TempoTimeout      ; Adds previous value to
-        sta   AbsVar.TempoTimeout      ; Store this as new
-        bcs   @a
-        rts
-@a                
+        lda   Smps.CurrentTempo        ; tempo value
+        adda  Smps.TempoTimeout        ; Adds previous value to
+        sta   Smps.TempoTimeout        ; Store this as new
+        bcc   UpdateSound              ; skip update if tempo need more waits
+             
         _UpdateTrack SongDAC,DACUpdateTrack
-        _UpdateTrack SongFM0,FMUpdateTrack      
         _UpdateTrack SongFM1,FMUpdateTrack
         _UpdateTrack SongFM2,FMUpdateTrack
         _UpdateTrack SongFM3,FMUpdateTrack
         _UpdateTrack SongFM4,FMUpdateTrack
         _UpdateTrack SongFM5,FMUpdateTrack
-        ;_UpdateTrack SongFM6,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit
-        ;_UpdateTrack SongFM7,FMUpdateTrack
-        ;_UpdateTrack SongFM8,FMUpdateTrack                
+        ;_UpdateTrack SongFM6,FMUpdateTrack      ; uncomment to use this channel
+        ;_UpdateTrack SongFM7,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit
+        ;_UpdateTrack SongFM8,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit
+        ;_UpdateTrack SongFM9,FMUpdateTrack      ; uncomment to use tone channel instead of drum kit        
         ;_UpdateTrack SongPSG4,PSGUpdateTrack    ; uncomment to use noise channel as an independent channel from tone 3
         _UpdateTrack SongPSG1,PSGUpdateTrack
         _UpdateTrack SongPSG2,PSGUpdateTrack        
         _UpdateTrack SongPSG3,PSGUpdateTrack
+        rts
 
 UpdateSound        
         lda   SoundPage                ; page switch to the sound
-        beq   @rts                     ; no sound to play
-        _SetCartPageA
+        bne   @a
+        rts
+@a      _SetCartPageA
         lda   #$80
         sta   DoSFXFlag                ; Set zDoSFXFlag = 80h (updating sound effects)
-        _UpdateTrack SFX_FM3,FMUpdateTrack
-        _UpdateTrack SFX_FM4,FMUpdateTrack
-        _UpdateTrack SFX_FM5,FMUpdateTrack
-        _UpdateTrack SFX_PSG1,PSGUpdateTrack
-        _UpdateTrack SFX_PSG2,PSGUpdateTrack        
-        _UpdateTrack SFX_PSG3,PSGUpdateTrack
+        _UpdateTrack SFXFM3,FMUpdateTrack
+        _UpdateTrack SFXFM4,FMUpdateTrack
+        _UpdateTrack SFXFM5,FMUpdateTrack
+        _UpdateTrack SFXPSG1,PSGUpdateTrack
+        _UpdateTrack SFXPSG2,PSGUpdateTrack        
+        _UpdateTrack SFXPSG3,PSGUpdateTrack
 @rts    rts
 
 ******************************************************************************
@@ -1152,14 +1168,14 @@ Flutter13
 ******************************************************************************          
 
 SFXTrackOffs        
-        fdb   SFX_FM3                  ; identified by Track id 8002 in smps sfx file (for Sonic 2 compatibility)
-        fdb   SFX_FM3                  ; identified by Track id 8003 in smps sfx file        
-        fdb   SFX_FM4                  ; identified by Track id 8004 in smps sfx file        
-        fdb   SFX_FM5                  ; identified by Track id 8005 in smps sfx file
-        fdb   SFX_PSG1                 ; identified by Track id 8080 in smps sfx file
-        fdb   SFX_PSG2                 ; identified by Track id 80A0 in smps sfx file
-        fdb   SFX_PSG3                 ; identified by Track id 80C0 in smps sfx file
-        fdb   SFX_PSG3                 ; identified by Track id 80E0 in smps sfx file
+        fdb   SFXFM3                   ; identified by Track id 8002 in smps sfx file (for Sonic 2 compatibility)
+        fdb   SFXFM3                   ; identified by Track id 8003 in smps sfx file        
+        fdb   SFXFM4                   ; identified by Track id 8004 in smps sfx file        
+        fdb   SFXFM5                   ; identified by Track id 8005 in smps sfx file
+        fdb   SFXPSG1                  ; identified by Track id 8080 in smps sfx file
+        fdb   SFXPSG2                  ; identified by Track id 80A0 in smps sfx file
+        fdb   SFXPSG3                  ; identified by Track id 80C0 in smps sfx file
+        fdb   SFXPSG3                  ; identified by Track id 80E0 in smps sfx file
 
 MusicTrackOffs
         fdb   SongFM3
@@ -1172,10 +1188,10 @@ MusicTrackOffs
         fdb   SongPSG3
 
 PlaySound
-        pshs  d,y,u
+        ;pshs  d,y,u
 
-        _GetCartPageA
-        sta   PlaySound_end+1          ; backup data page
+        ;_GetCartPageA
+        ;sta   PlaySound_end+1          ; backup data page
         lda   ,x                       ; get memory page that contains track data
         sta   SoundPage
         ldx   1,x                      ; get ptr to track data
@@ -1184,7 +1200,7 @@ PlaySound
         
         ldd   SMPS_SFX_VOICE,x
         addd  SoundData   
-        std   AbsVar.SFXVoiceTblPtr
+        std   Smps.SFXVoiceTblPtr
 
         ldd   SMPS_SFX_TEMPO_NB_CH,x   ; init process for each track
         sta   @dyna+2        
@@ -1202,9 +1218,9 @@ PlaySound
 @psg    cmpb  #$C0
         bne   @b
         lda   #$DF                     ; set silence on PSG3
-        sta   PSG
+        sta   <PSG
         lda   #$FF
-        sta   PSG
+        sta   <PSG
 @b      lsrb                           ; this is a psg track
         lsrb
         lsrb
@@ -1255,9 +1271,10 @@ PlaySound
         lbne  @a  
 
 PlaySound_end
-        lda   #0
-        _SetCartPageA          
-        puls  d,y,u,pc
+        ;lda   #0
+        ;_SetCartPageA          
+        ;puls  d,y,u,pc
+        rts
 
 PS_cnt  fcb   0
         
@@ -1355,13 +1372,19 @@ cfChangeFMVolume
         lsra                           ; volume attenuation is unsigned
         lsra
         lsra
-        sta   @a+1
+        sta   @dyn1+1
         lda   #$30
         adda  VoiceControl,y
         sta   <YM2413_A0
-        ldb   InstrAndVolume,y         ; apply current track attenuation to voice
-@a      addb  #0                       ; (dynamic)
-        stb   <YM2413_D0        
+        ldb   InstrAndVolume,y         
+        tfr   b,a
+        ora   #$0F                     ; set maximum attenuation for compare        
+        sta   @dyn2+1
+@dyn1   addb  #0                       ; (dynamic) add global volume attenuation to actual voice
+@dyn2   cmpb  #0                       ; (dynamic) test if overflow of attenuation value
+        blo   @write                   ; attenuation < F and no overflow
+        tfr   a,b                      ; set maximum attenuation (F)
+@write  stb   <YM2413_D0        
 @rts    rts     
 
 cfPreventAttack
@@ -1390,7 +1413,7 @@ cfChangeTransposition
 ;
 cfSetTempo 
         lda   ,x+
-        sta   AbsVar.CurrentTempo
+        sta   Smps.CurrentTempo
         rts          
 
 ; (via Saxman's doc): Change Tempo Modifier to xx for ALL channels
@@ -1398,19 +1421,19 @@ cfSetTempo
 cfSetTempoMod
         lda   ,x+
         sta   SongDAC.TempoDivider
-        sta   SongFM0.TempoDivider
         sta   SongFM1.TempoDivider
         sta   SongFM2.TempoDivider
         sta   SongFM3.TempoDivider
         sta   SongFM4.TempoDivider
         sta   SongFM5.TempoDivider
-        sta   SongFM6.TempoDivider
-        sta   SongFM7.TempoDivider
-        sta   SongFM8.TempoDivider
-        ;sta   SongPSG4.TempoDivider
+        ;sta   SongFM6.TempoDivider
+        ;sta   SongFM7.TempoDivider
+        ;sta   SongFM8.TempoDivider
+        ;sta   SongFM9.TempoDivider        
         sta   SongPSG1.TempoDivider
         sta   SongPSG2.TempoDivider
         sta   SongPSG3.TempoDivider
+        ;sta   SongPSG4.TempoDivider        
         rts        
 
 cfChangePSGVolume
@@ -1429,9 +1452,9 @@ cfSetVoice
         bne   @rts                     ; yes skip YM command
         lda   DoSFXFlag
         bmi   @a
-        ldu   AbsVar.VoiceTblPtr
+        ldu   Smps.VoiceTblPtr
         bra   @b
-@a      ldu   AbsVar.SFXVoiceTblPtr
+@a      ldu   Smps.SFXVoiceTblPtr
 @b        
         lda   VoiceControl,y           ; read channel nb   
         adda  #$30
@@ -1444,9 +1467,18 @@ cfSetVoice
         lsrb                           ; volume attenuation is unsigned
         lsrb
         lsrb
-        stb   >*+4
-        adda  #0
-        sta   <YM2413_D0
+        stb   @dyn1+1
+        ldb   #$30
+        addb  VoiceControl,y
+        stb   <YM2413_A0
+        tfr   a,b
+        orb   #$0F                     ; set maximum attenuation for compare        
+        stb   @dyn2+1
+@dyn1   adda  #0                       ; (dynamic) add global volume attenuation
+@dyn2   cmpa  #0                       ; (dynamic) test if overflow of attenuation value
+        blo   @write                   ; attenuation < F and no overflow
+        tfr   b,a                      ; set maximum attenuation (F)
+@write  sta   <YM2413_D0     
 @rts    rts
 
 ; (via Saxman's doc): F0wwxxyyzz - modulation
@@ -1512,7 +1544,7 @@ cfStopTrack
         sta   PlaybackControl,u
         lda   MusicPage
         _SetCartPageA        
-        ldx   AbsVar.VoiceTblPtr       ; Restore Voice to music channel (x can be erased because we are stopping track read)        
+        ldx   Smps.VoiceTblPtr       ; Restore Voice to music channel (x can be erased because we are stopping track read)        
         ldb   VoiceIndex,u
         lda   VoiceControl,u           ; read channel nb  
         adda  #$30
@@ -1525,9 +1557,15 @@ cfStopTrack
         lsrb                           ; volume attenuation is unsigned
         lsrb
         lsrb
-        stb   >*+4
-        adda  #0
-        sta   <YM2413_D0
+        stb   @dyn1+1
+        tfr   a,b
+        orb   #$0F                     ; set maximum attenuation for compare        
+        stb   @dyn2+1
+@dyn1   adda  #0                       ; (dynamic) add global volume attenuation
+@dyn2   cmpa  #0                       ; (dynamic) test if overflow of attenuation value
+        blo   @write                   ; attenuation < F and no overflow
+        tfr   b,a                      ; set maximum attenuation (F)
+@write  sta   <YM2413_D0   
         lda   SoundPage
         _SetCartPageA  
         puls  u                        ; removing return address from stack; will not return to coord flag loop

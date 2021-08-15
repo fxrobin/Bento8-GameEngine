@@ -482,8 +482,8 @@ int Run(int ncyclesmax)
   }
   
   }
-  soundt=(sound+voc[0]*vol[0]+voc[1]*vol[1]+voc[2]*vol[2]+voc[3]*vol[3])&0x3f;
-  
+  soundt=(sound*4+voc[0]*vol[0]*12+voc[1]*vol[1]*12+voc[2]*vol[2]*12+voc[3]*vol[3]*2);
+   
   // end sn76489 emulation
   
   if(opcycles < 0) {Entreesortie(-opcycles); opcycles = 64;}
@@ -620,11 +620,11 @@ void Mputto8d(unsigned short a, char c)
   case 0xa: case 0xb: case 0xc: case 0xd: rambank[a] = c; return;
   case 0xe: switch(a)
   {
-	case 0xe7b0: sn76489(c); return;    // sn76489 emulation
-	case 0xe7b1:
+	case 0xe7ff: sn76489(c); return;    // sn76489 emulation
+	case 0xe7fc:
 		OPLL_writeIO(opll, 0, c);
 	return;
-	case 0xe7b2:
+	case 0xe7fd:
 		OPLL_writeIO(opll, 1, c);
 		return;
    case 0xe7c0: port[0x00] = c; return;

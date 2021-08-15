@@ -6,7 +6,7 @@
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Engine/Macros.asm"   
-        INCLUDE "./Objects/RasterFade/RasterFade.idx"        
+        INCLUDE "./Objects/SFX/RasterFade/RasterFade.idx"        
 
 RasterFade
         lda   routine,u

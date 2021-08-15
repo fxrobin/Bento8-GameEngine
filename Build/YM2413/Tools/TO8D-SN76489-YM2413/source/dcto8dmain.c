@@ -175,10 +175,13 @@ void Playsound(void *udata, Uint8 *stream, int bufferlength)
  extern int mute, soundt, frequency;
  extern int Run(int n);
  extern void Testshiftkey();
+ 
+ Uint16 *stream16 = (Uint16 *) stream;
+ 
  //45 cycles 6809 a 992250 Hz = un echantillon a 22050 Hz
- for(i = 0; i < bufferlength; i++)
+ for(i = 0; i < bufferlength/2; i++)
  {
-  if(pause6809) {stream[i] = 128; continue;}
+  if(pause6809) {stream16[i] = 32767; continue;}
   //calcul et execution du nombre de cycles entre deux echantillons
   //nbre de cycles theoriques pour la periode en cours =
   //nbre theorique + relicat arrondi precedent - cycles en trop precedent
@@ -187,7 +190,7 @@ void Playsound(void *udata, Uint8 *stream, int bufferlength)
   icycles = mcycles / 1000;              //nbre entier de cycles a effectuer
   report = mcycles - 1000 * icycles;     //relicat de l'arrondi a reporter
   report -= 1000 * Run(icycles);         //retrancher les milliemes en trop
-  stream[i] = (mute) ? 128 : soundt + 96+OPLL_calc(opll)/255;
+  stream16[i] = (mute) ? 32767 : 32767 + ((soundt * 16) + OPLL_calc(opll)*1.5)*2; 
  }
  Testshiftkey(); //contournement bug SDL sur l'appui simultane SHIFT, ALT, CTRL
 }
@@ -301,7 +304,7 @@ opll = OPLL_new(MSX_CLK, SAMPLERATE);
  //initialize SDL audio
  if(SDL_Init(SDL_INIT_AUDIO) < 0) SDL_error(3);
  audio.freq = 22050;
- audio.format = AUDIO_U8;
+ audio.format = AUDIO_U16SYS;
  audio.channels = 1;
  audio.samples = 1024;
  audio.callback = Playsound;

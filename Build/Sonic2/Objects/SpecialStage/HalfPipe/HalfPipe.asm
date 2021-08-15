@@ -230,7 +230,7 @@ SpecialStage_Init                                     *SpecialStage:
         jsr   IrqSet50Hz
         
         jsr   YM2413_DrumModeOn
-        ldx   #Smps_MCZ                               *    move.w  #MusID_SpecStage,d0
+        ldx   #Smps_SpecialStage                      *    move.w  #MusID_SpecStage,d0
         jmp   PlayMusic                               *    bsr.w   PlayMusic
                                                       *    move.w  (VDP_Reg1_val).w,d0
                                                       *    ori.b   #$40,d0
@@ -759,7 +759,7 @@ HalfPipe_Init
         abx
         ldd   ,x
         std   anim,u
-        rts
+        jmp   AnimateSprite
         
 HalfPipe_Display
         cmpu  #HalfPipeEven

@@ -7,7 +7,16 @@
 * Additional disassembly work by RAS Oct 2008
 * RAS' work merged into SVN by Flamewing
 *
-* !!! not finished !!!
+* ---------------------------------------------------------------------------
+*
+*
+*
+*                             !!! not finished !!!
+* DO NOT USE DO NOT USE DO NOT USE DO NOT USE DO NOT USE DO NOT USE DO NOT USE
+*
+*
+* ---------------------------------------------------------------------------
+*
 * just a try to play PCM thru 3 FM channels
 * IRQ must be set so quick, it makes no sense
 * Call with:

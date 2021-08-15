@@ -7,11 +7,11 @@
 *
 ********************************************************************************
 
-        INCLUDE "./GameMode/TitleScreen/Constants.asm"
+        INCLUDE "./Engine/Constants.asm"
         INCLUDE "./Engine/Macros.asm"        
         org   $6100
 
-        jsr   LoadAct
+        jsr   LoadAct       
 
 * ==============================================================================
 * Main Loop
@@ -19,7 +19,6 @@
 LevelMainLoop
         jsr   WaitVBL    
         jsr   UpdatePalette
-        jsr   ReadJoypads
         jsr   LoadGameMode                
         jsr   RunObjects
         jsr   CheckSpritesRefresh
@@ -27,6 +26,12 @@ LevelMainLoop
         jsr   UnsetDisplayPriority
         jsr   DrawSprites        
         bra   LevelMainLoop
+
+* ---------------------------------------------------------------------------
+* Game Mode RAM variables
+* ---------------------------------------------------------------------------
+        
+        INCLUDE "./GameMode/TitleScreen/TitleScreenRamData.asm"       
         
 * ==============================================================================
 * Global Data
@@ -124,34 +129,6 @@ buf_Lst_Priority_Unset        equ   Lst_Priority_Unset_0-DPS_buffer_0
 Tbl_Sub_Object_Erase          fill  0,nb_objects*2             ; entries of objects that have erase flag in the order back to front
 Tbl_Sub_Object_Draw           fill  0,nb_objects*2             ; entries of objects that have draw flag in the order back to front
 
-* ---------------------------------------------------------------------------
-* Object Status Table - OST
-* ---------------------------------------------------------------------------
-        
-Object_RAM 
-Reserved_Object_RAM
-MainCharacter                 fcb   ObjID_SEGA
-                              fcb   $01
-                              fill  0,object_size-2
-Sidekick                      fill  0,object_size
-Reserved_Object_RAM_End
-
-Dynamic_Object_RAM            fill  0,nb_dynamic_objects*object_size
-Dynamic_Object_RAM_End
-
-LevelOnly_Object_RAM                              * faire comme pour Dynamic_Object_RAM
-Obj_TailsTails                fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
-Obj_SonicDust                 fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
-Obj_TailsDust                 fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
-LevelOnly_Object_RAM_End
-Object_RAM_End                fdb   *
-
-* ---------------------------------------------------------------------------
-* Lifecycle
-* ---------------------------------------------------------------------------
-
-Glb_MainCharacter_Is_Dead     fcb   $00
-
 * ==============================================================================
 * Routines
 * ==============================================================================
@@ -169,7 +146,7 @@ Glb_MainCharacter_Is_Dead     fcb   $00
         INCLUDE "./Engine/ObjectManagement/ClearObj.asm"
         INCLUDE "./Engine/LevelManagement/LoadGameMode.asm"	
         INCLUDE "./Engine/Ram/ClearDataMemory.asm"
-	INCLUDE "./Engine/Palette/UpdatePalette.asm"
+	    INCLUDE "./Engine/Palette/UpdatePalette.asm"
         INCLUDE "./Engine/Sound/PlayPCM.asm"
-        INCLUDE "./Engine/Sound/PSGlib.asm"
-        INCLUDE "./Engine/Irq/IrqPsgRaster.asm"
+        INCLUDE "./Engine/Sound/Smps.asm"
+        INCLUDE "./Engine/Irq/IrqSmpsRaster.asm"

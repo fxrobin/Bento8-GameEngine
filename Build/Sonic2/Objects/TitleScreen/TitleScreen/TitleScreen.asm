@@ -62,8 +62,8 @@
 ; ---------------------------------------------------------------------------
 
         INCLUDE "./Engine/Macros.asm"
-        INCLUDE "./Objects/RasterFade/RasterFade.idx"
-        INCLUDE "./Objects/PaletteFade/PaletteFade.idx"
+        INCLUDE "./Objects/SFX/RasterFade/RasterFade.idx"
+        INCLUDE "./Objects/SFX/PaletteFade/PaletteFade.idx"
 
 * ---------------------------------------------------------------------------
 * Object Status Table index
@@ -185,6 +185,7 @@ Init                                             *Obj0E_Init:
         * vdp unused                             *        addq.b  #2,routine(a0)  ; useless, because it's overwritten with the subtype below
         * vdp unused                             *        move.l  #Obj0E_MapUnc_136A8,mappings(a0)
         * vdp unused                             *        move.w  #make_art_tile(ArtTile_ArtNem_TitleSprites,0,0),art_tile(a0)
+        
         lda   #4                                 *        move.b  #4,priority(a0)
         sta   priority,u
         lda   subtype,u                          *        move.b  subtype(a0),routine(a0)
@@ -230,12 +231,14 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         std   Cur_palette
         clr   Refresh_palette                    * will call refresh palette after next VBL
 
-        ldd   #IrqPsg
+        jsr   InitSoundDriver
+        jsr   YM2413_DrumModeOn
+        ldd   #IrqSmps
         std   irq_routine
         lda   #139                               ; screen line to sync
         ldx   #irq_one_frame                     ; on every frame
         jsr   IrqSync
-        jsr   IrqOn
+        jsr   IrqOn 
 
         inc   routine_secondary,u                *        addq.b  #2,routine_secondary(a0)
         ldd   #Img_sonic_1
@@ -256,9 +259,9 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
                                                  *        move.b  #ObjID_IntroStars,id(a1) ; load obj0E (flashing intro stars) at $FFFFD140
 
                                                  *        move.b  #6,subtype(a1)                          ; logo top
-        *ldb   #SFX_CHANNEL2
-        *ldx   #Psg_Sparkle                       *        moveq   #SndID_Sparkle,d0
-        *jmp   PSGSFXPlay                         *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        ldx   #Smps_Sparkle                      *        moveq   #SndID_Sparkle,d0
+        stx   Smps.SFXToPlay        
+        ;jmp   PlaySound                          *        jmpto   (PlaySound).l, JmpTo4_PlaySound
         rts
                                                  *; ===========================================================================
                                                  *
@@ -387,9 +390,9 @@ Sonic_PaletteFadeAfterWait                       *+
         ldd   #Pal_TitleScreen
         std   pal_dst,x
         lda   #$FF
-        sta   b_TitleScr_music_is_playing        *        st.b    objoff_30(a0)
-        ldx   #Psg_TitleScreen                    *        moveq   #MusID_Title,d0 ; title music
-        jmp   PSGPlayNoRepeat                    *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
+        sta   b_TitleScr_music_is_playing,u      *        st.b    objoff_30(a0)
+        ldx   #Smps_TitleScreen                  *        moveq   #MusID_Title,d0 ; title music
+        jmp   PlayMusic                          *        jmpto   (PlayMusic).l, JmpTo4_PlayMusic
                                                  *; ===========================================================================
                                                  *
 Sonic_SetPal_TitleScreen                         *loc_12EE8:
@@ -531,7 +534,7 @@ Sonic_FadeInBackground_NotYet                    *+
         jmp   DisplaySprite                      *        bra.w   DisplaySprite
 
 Sonic_FadeInBackground_Continue
-        ldd   #IrqPsgRaster
+        ldd   #IrqSmpsRaster
         std   irq_routine
 
         ldx   #Obj_Island
@@ -850,11 +853,10 @@ LargeStar_MoveContinue
         std   xy_pixel,u                         *        move.w  d0,y_pixel(a0)
                                                  *        swap    d0
                                                  *        move.w  d0,x_pixel(a0)
-        *ldb   #SFX_CHANNEL2
-        *ldx   #Psg_Sparkle                       *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
-        *jmp   PSGSFXPlay                         *        jmpto   (PlaySound).l, JmpTo4_PlaySound
+        ldx   #Smps_Sparkle                      *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
+        stx   Smps.SFXToPlay
+        ;jmp   PlaySound                          *        jmpto   (PlaySound).l, JmpTo4_PlaySound
         rts
-
                                                  *; ===========================================================================
                                                  *; unknown
 LargeStar_xy_data                                *word_131DC:
@@ -1370,10 +1372,6 @@ PressStart_Init
         std   xy_pixel,u
         ldd   Vint_runcount
         std   w_TitleScr_time_frame_count,u
-
-        * ldx   #Psg_MarbleZone
-        * jmp   PSGPlay
-
         jmp   DisplaySprite
 
 PressStart_display
