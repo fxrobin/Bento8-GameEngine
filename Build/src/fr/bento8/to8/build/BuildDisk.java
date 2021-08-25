@@ -83,29 +83,29 @@ public class BuildDisk
 	public static boolean abortT2 = false;
 	
 	/**
-	 * GÃ©nÃ¨re une image de disquette dans les formats .fd et .sd pour 
+	 * Génère une image de disquette dans les formats .fd et .sd pour 
 	 * l'ordinateur Thomson TO8.
-	 * L'image de disquette contient un secteur d'amorÃ§age et le code
-	 * MainGameManager qui sera chargÃ© en mÃ©moire par le code d'amorÃ§age.
-	 * Ce programme n'utilise donc pas de systÃ¨me de fichier.
+	 * L'image de disquette contient un secteur d'amorçage et le code
+	 * MainGameManager qui sera chargé en mémoire par le code d'amorçage.
+	 * Ce programme n'utilise donc pas de système de fichier.
 	 * 
 	 * Plan d'adressage d'une disquette Thomson TO8 ou format .fd (655360 octets ou 640kiB)
 	 * Identifiant des faces: 0-1
 	 * Pour chaque face, identifiant des pistes: 0-79
 	 * Pour chaque piste, identifiant des secteurs: 1-16
 	 * Taille d'un secteur: 256 octets
-	 * face=0 piste=0 secteur=1 : octets=0 Ã  256 (Secteur d'amorÃ§age)
+	 * face=0 piste=0 secteur=1 : octets=0 à 256 (Secteur d'amorçage)
 	 * ...
 	 * 
-	 * Le format .sd (1310720 octets ou 1,25MiB) reprend la mÃªme structure que le format .fd mais ajoute
-	 * 256 octets Ã  la fin de chaque secteur avec la valeur FF
+	 * Le format .sd (1310720 octets ou 1,25MiB) reprend la même structure que le format .fd mais ajoute
+	 * 256 octets à la fin de chaque secteur avec la valeur FF
 	 * 
-	 * Remarque il est posible dans un fichier .fd ou .sd de concatÃ©ner deux disquettes
-	 * Cette fonctionnalitÃ© n'est pas (encore ;-)) implÃ©mentÃ©e ici.
+	 * Remarque il est posible dans un fichier .fd ou .sd de concaténer deux disquettes
+	 * Cette fonctionnalité n'est pas (encore ;-)) implémentée ici.
 	 * 
-	 * Mode graphique utilisÃ©: 160x200 (seize couleurs sans contraintes)
+	 * Mode graphique utilisé: 160x200 (seize couleurs sans contraintes)
 	 * 
-	 * @param args nom du fichier properties contenant les donnÃ©es de configuration
+	 * @param args nom du fichier properties contenant les données de configuration
 	 * @throws Throwable 
 	 */
 	
@@ -217,7 +217,7 @@ public class BuildDisk
 		byte[] InvBINBytes = new byte[BINBytes.length];
         int j = 0;
         
-		// Inversion des donnÃ©es par bloc de 7 octets (simplifie la copie par pul/psh au runtime)
+		// Inversion des données par bloc de 7 octets (simplifie la copie par pul/psh au runtime)
 		for (int i = BINBytes.length-7; i >= 0; i -= 7) {
 			InvBINBytes[j++] = BINBytes[i];			                          
 			InvBINBytes[j++] = BINBytes[i+1];
@@ -236,12 +236,12 @@ public class BuildDisk
 	private static void generateObjectIDs() throws Exception {
 		logger.info("Set Objects Id as Globals ...");
 				
-		// GLOBALS - GÃ©nÃ©ration des identifiants d'objets pour l'ensemble des game modes
-		// - identifiants des objets communs, ils sont identiques pour un mÃªme Game Mode Common
-		// - identifiants des objets de Game Mode (Un id d'un mÃªme objet peut Ãªtre diffÃ©rent selon le game Mode)
-		// L'id objet est utilisÃ© comme index pour accÃ©der Ã  l'adresse du code de l'objet au runtime
+		// GLOBALS - Génération des identifiants d'objets pour l'ensemble des game modes
+		// - identifiants des objets communs, ils sont identiques pour un même Game Mode Common
+		// - identifiants des objets de Game Mode (Un id d'un même objet peut être différent selon le game Mode)
+		// L'id objet est utilisé comme index pour accéder à l'adresse du code de l'objet au runtime
 		// Remarque: le code d'un objet n'est jamais commun, (seules les images et animations le sont)
-		// En effet un code objet fait rÃ©fÃ©rence au MainEngine qui est spÃ©cifique au GameMode
+		// En effet un code objet fait référence au MainEngine qui est spécifique au GameMode
 		// ----------------------------------------------------------------------------------------------------		
 		int objIndex;
 		for(Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
@@ -271,7 +271,7 @@ public class BuildDisk
 		// Sauvegarde de l'id objet pour ce Game Mode
 		gameMode.objectsId.put(object, objIndex);
 		
-		// GÃ©nÃ©ration de la constante ASM
+		// Génération de la constante ASM
 		gameMode.glb.addConstant("ObjID_"+object.name, Integer.toString(objIndex));
 		
 		logger.debug("\t\tObjID_"+object.name+" "+Integer.toString(objIndex));
@@ -291,10 +291,10 @@ public class BuildDisk
 	}
 	
 	private static int generateGameModeIDs(GameMode gameMode, int gmIndex) throws Exception {
-		// GÃ©nÃ©ration de la constante ASM
+		// Génération de la constante ASM
 		game.glb.addConstant("GmID_"+gameMode.name, Integer.toString(gmIndex));
 		
-		// game mode de dÃ©marrage
+		// game mode de démarrage
 		if (gameMode.name.contentEquals(game.gameModeBoot)) {
 			game.glb.addConstant("gmboot", Integer.toString(gmIndex));
 		}
@@ -308,7 +308,7 @@ public class BuildDisk
 	private static void processSounds() throws Exception {
 		logger.info("Process Sounds ...");
 
-		// Chargement des donnÃ©es audio
+		// Chargement des données audio
 		// ---------------------------------------------
 
 		// Parcours de tous les objets de chaque Game Mode
@@ -331,7 +331,7 @@ public class BuildDisk
 	}
 	
 	private static void processSounds(GameMode gameMode, Object object) throws Exception {
-		// Parcours des donnÃ©es audio de l'objet
+		// Parcours des données audio de l'objet
 		for (Entry<String, String[]> soundsProperties : object.soundsProperties.entrySet()) {
 
 			logger.debug("\t\tSound: "+soundsProperties.getKey());
@@ -385,10 +385,10 @@ public class BuildDisk
 	private static void generateSprites() throws Exception {
 		logger.info("Generate Sprites ...");
 
-		// GÃ©nÃ©ration des sprites compilÃ©s pour chaque objet
+		// Génération des sprites compilés pour chaque objet
 		// -------------------------------------------------
 
-		// Parcours de tous les objets de maniÃ¨re unitaire
+		// Parcours de tous les objets de manière unitaire
 		for (Entry<String, Object> object : Game.allObjects.entrySet()) {
 				generateSprites(object.getValue());
 		}
@@ -398,7 +398,7 @@ public class BuildDisk
 		AssemblyGenerator asm;
 		SimpleAssemblyGenerator sasm;
 
-		// gÃ©nÃ©ration du sprite compilÃ©
+		// génération du sprite compilé
 		SubSprite curSubSprite;		
 		
 		// Parcours des images de l'objet et compilation de l'image
@@ -413,11 +413,11 @@ public class BuildDisk
 			if (spriteProperties.getValue().length > 2 && spriteProperties.getValue()[2].equalsIgnoreCase(BuildDisk.RAM))
 				sprite.inRAM = true;					
 
-			// Parcours des diffÃ©rents rendus demandÃ©s pour chaque image
+			// Parcours des différents rendus demandés pour chaque image
 			for (String cur_variant : spriteVariants) {
 				logger.debug("\t"+object.name+" Compile sprite: " + sprite.name + " image:" + sprite.spriteFile + " variant:" + cur_variant);
 
-				// Sauvegarde du code gÃ©nÃ©rÃ© pour la variante
+				// Sauvegarde du code généré pour la variante
 				curSubSprite = new SubSprite(sprite);
 				curSubSprite.setName(cur_variant);
 				
@@ -426,9 +426,9 @@ public class BuildDisk
 					SpriteSheet ss = new SpriteSheet(sprite.name, sprite.spriteFile, 1, cur_variant);
 					asm = new AssemblyGenerator(ss, Game.generatedCodeDirName + object.name, 0);
 					asm.compileCode("A000");
-					// La valeur 64 doit Ãªtre ajustÃ©e dans MainEngine.asm si modifiÃ©e TODO : rendre paramÃ©trable
-					// 16 octets supplÃ©mentaires pour IRQ 12 octets du bckp registres et 4 pour les appels sous programmes
-					// A rendre paramÃ©trable aussi
+					// La valeur 64 doit être ajustée dans MainEngine.asm si modifiée TODO : rendre paramétrable
+					// 16 octets supplémentaires pour IRQ 12 octets du bckp registres et 4 pour les appels sous programmes
+					// A rendre paramétrable aussi
 					curSubSprite.nb_cell = (asm.getEraseDataSize() + 16 + 64 - 1) / 64;
 					curSubSprite.x1_offset = asm.getX1_offset();
 					curSubSprite.y1_offset = asm.getY1_offset();
@@ -474,7 +474,7 @@ public class BuildDisk
 				sprite.subSprites.put(cur_variant, curSubSprite);
 			}
 
-			// Sauvegarde de tous les rendus demandÃ©s pour l'image en cours
+			// Sauvegarde de tous les rendus demandés pour l'image en cours
 			object.sprites.put(sprite.name, sprite);
 			object.imageSet.uncompressedSize += writeImgIndex(asmImgIndex, null, sprite, UNDEFINED);
 		}
@@ -532,10 +532,10 @@ public class BuildDisk
 			rli.ram_page = 1;
 			rli.ram_address = 0x0100;
 			rli.ram_endAddress = 0x0100 + binBytes.length;
-			rli.split = false; // la page 1 n'est pas utilsÃ©e en zone cartouche
+			rli.split = false; // la page 1 n'est pas utilsée en zone cartouche
 			rli.gml.add(gameMode.getValue());
 			
-			// Dans le cas d'une seconde passe on maj les donnÃ©es
+			// Dans le cas d'une seconde passe on maj les données
 			if (gameMode.getValue().code.dataIndex.get(gameMode.getValue()) == null) {
 				gameMode.getValue().code.dataIndex.put(gameMode.getValue(), new DataIndex());
 			}
@@ -719,19 +719,19 @@ public class BuildDisk
 		
 		logger.debug("computeRamAddress ...");
 		
-		// La taille des index fichier du RAMLoader dÃ©pend du nombre de pages utilisÃ©es par chaque Game Loader
-		// premiÃ¨re passe de sac a dos pour determiner le nombre de pages necessaires pour chaque Game Mode
+		// La taille des index fichier du RAMLoader dépend du nombre de pages utilisées par chaque Game Loader
+		// première passe de sac a dos pour determiner le nombre de pages necessaires pour chaque Game Mode
 		int initStartPage = 4;
 		int INDEX_STRUCT_SIZE_FD = 7;
 		int INDEX_STRUCT_SIZE_T2 = 6;
 		int totalIndexSizeFD = 0;
 		int totalIndexSizeT2 = 0;		
 		
-		// Au runtime on a le game mode courant (celui chargÃ© en RAM) et le prochain game Mode
-		// Au moment du chargement une comparaison est effectuÃ©e entre chaque ligne de l'index fichier
+		// Au runtime on a le game mode courant (celui chargé en RAM) et le prochain game Mode
+		// Au moment du chargement une comparaison est effectuée entre chaque ligne de l'index fichier
 		// si ligne identique : pas de chargement de la ligne (a faire jusqu'a la fin de l'index)
 		// Necessite de trier les lignes d'index fichier pour pouvoir faire une comparaison sans tout parcourir
-		// et de positionner les communs en dÃ©but d'index
+		// et de positionner les communs en début d'index
 		GameMode gm;
 		for (Entry<String, GameMode> gameMode : game.gameModes.entrySet()) {
 			gm = gameMode.getValue();
@@ -762,7 +762,7 @@ public class BuildDisk
 					abortFloppyDisk = true;
 			}
 			
-			gm.indexSizeFD += 4; // index supplÃ©mentaire pour ajustement avec RAM Loader Manager et MaineEngine
+			gm.indexSizeFD += 4; // index supplémentaire pour ajustement avec RAM Loader Manager et MaineEngine
 			gm.indexSizeFD *= INDEX_STRUCT_SIZE_FD;
 			gm.indexSizeFD += 2+1; // index + fin
 			totalIndexSizeFD += gm.indexSizeFD;			
@@ -793,7 +793,7 @@ public class BuildDisk
 					abortT2 = true;
 			}
 			
-			gm.indexSizeT2 += 4; // index supplÃ©mentaire pour ajustement avec RAM Loader Manager et MainEngine		
+			gm.indexSizeT2 += 4; // index supplémentaire pour ajustement avec RAM Loader Manager et MainEngine		
 			gm.indexSizeT2 *= INDEX_STRUCT_SIZE_T2;
 			gm.indexSizeT2 += 2+1; // index + fin
 			totalIndexSizeT2 += gm.indexSizeT2;
@@ -804,7 +804,7 @@ public class BuildDisk
 			throw new Exception("Not enough RAM !");
 		}
 		
-		// Positionnement des adresses de dÃ©part du code en RAM
+		// Positionnement des adresses de départ du code en RAM
 		// calcul de la taille des index fichier de RAMLoader/RAMLoaderManager
 		Game.loadManagerSizeFd = getRAMLoaderManagerSizeFd();
 		Game.loadManagerSizeFd += totalIndexSizeFD;
@@ -861,19 +861,19 @@ public class BuildDisk
 	private static Item[] getRAMItems(GameMode gm, HashMap<String, Object> objects, int mode, boolean isCommon) {
 		logger.debug("\t\tCompute " + (isCommon?"Common":"") + " RAM Items for " + MODE_LABEL[mode] + " ...");
 
-		// RÃ©partition des donnÃ©es en RAM
+		// Répartition des données en RAM
 		// -----------------------------------------------
 
-		// mode FLOPPY : Toutes les donnÃ©es sont chargÃ©es en RAM
+		// mode FLOPPY : Toutes les données sont chargées en RAM
 		// mode T.2 : Seul code/sprite/animation/sound des objets qui ont le flag RAM
-		// sont chargÃ©s en RAM
-		// Deux raison pour charger des donnÃ©es en RAM avec la T.2 :
-		// - dans le cas d'un code avec auto modification, ou prÃ©sence de donnÃ©es
+		// sont chargés en RAM
+		// Deux raison pour charger des données en RAM avec la T.2 :
+		// - dans le cas d'un code avec auto modification, ou présence de données
 		// - dans le cas ou l'on souhaite gagner de la place sur la T.2
-		// les donnÃ©es sont alors compressÃ©es sur T.2 et dÃ©compressÃ©es en RAM au runtime
+		// les données sont alors compressées sur T.2 et décompressées en RAM au runtime
 
 		// Gestion d'un game mode "commun" (un seul par Game Mode)
-		// Au runtime, si le commun nÃ©cessaire au nouveau Game Mode est dÃ©jÃ  prÃ©sent, on
+		// Au runtime, si le commun nécessaire au nouveau Game Mode est déjà présent, on
 		// ne le recharge pas.
 
 		// Compte le nombre d'objets a traiter
@@ -912,7 +912,7 @@ public class BuildDisk
 				nbGameModeItems++;
 		}
 
-		// Initialise un item pour chaque Ã©lÃ©ment a Ã©crire en RAM
+		// Initialise un item pour chaque élément a écrire en RAM
 		Item[] items = new Item[nbGameModeItems];
 		int itemIdx = 0;
 
@@ -962,7 +962,7 @@ public class BuildDisk
 		int nbGameModeItems = 0;
 		Item[] newItems;
 
-		// Un code objet ne peut pas Ãªtre commun, il est spÃ©cifique Ã  un GameMode MainEngine
+		// Un code objet ne peut pas être commun, il est spécifique à un GameMode MainEngine
 		// On l'extrait donc des ressources communes pour l'ajouter au GameMode
 
 		// Compte le nombre d'objets a traiter
@@ -1020,9 +1020,9 @@ public class BuildDisk
 				rImg.endAddress[rImg.curPage] = 0;
 			}
 			
-			// les donnÃ©es sont rÃ©parties en pages en fonction de leur taille par un
-			// algorithme "sac Ã  dos"
-			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-rImg.startAddress[rImg.curPage]); // Sac Ã  dos de poids max 16Ko
+			// les données sont réparties en pages en fonction de leur taille par un
+			// algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-rImg.startAddress[rImg.curPage]); // Sac à dos de poids max 16Ko
 			Solution solution = knapsack.solve();
 
 			// Parcours de la solution
@@ -1057,7 +1057,7 @@ public class BuildDisk
 					logger.debug("\t\t\tItem: "+currentItem.name);					
 				}
 
-				// construit la liste des Ã©lÃ©ments restants Ã  organiser
+				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
 					if (items[i].bin == currentItem.bin) {
 						Item[] newItems = new Item[items.length - 1];
@@ -1176,7 +1176,7 @@ public class BuildDisk
 						nbItems += 1;
 		}
 
-		// Initialise un item pour chaque Ã©lÃ©ment a Ã©crire en ROM
+		// Initialise un item pour chaque élément a écrire en ROM
 		Item[] items = new Item[nbItems];
 		int itemIdx = 0;
 
@@ -1217,8 +1217,8 @@ public class BuildDisk
 		game.romT2.curPage = pageStart;
 		game.romT2.curAddress = pageAddress;
 		
-		// les pages rom vont de 0 Ã  127 mais on y accede par les index 128 Ã  255 (80-FF)
-		// pour ne pas interfÃ©rer avec les pages de RAM 0 Ã  31 (60-7F)
+		// les pages rom vont de 0 à 127 mais on y accede par les index 128 à 255 (80-FF)
+		// pour ne pas interférer avec les pages de RAM 0 à 31 (60-7F)
 		
 		while (items.length > 0) {
 
@@ -1231,8 +1231,8 @@ public class BuildDisk
 				}
 			}
 			
-			// les donnÃ©es sont rÃ©parties en pages en fonction de leur taille par un algorithme "sac Ã  dos"
-			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.endAddress[game.romT2.curPage]); // Sac Ã  dos de poids max 16Ko
+			// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.endAddress[game.romT2.curPage]); // Sac à dos de poids max 16Ko
 			Solution solution = knapsack.solve();
 
 			// Parcours de la solution
@@ -1247,7 +1247,7 @@ public class BuildDisk
 				
 				logger.debug("Item: "+currentItem.name+" T2 ROM "+currentItem.bin.t2_page+" "+String.format("$%1$04X", currentItem.bin.t2_address)+" "+String.format("$%1$04X", currentItem.bin.t2_endAddress));
 
-				// construit la liste des Ã©lÃ©ments restants Ã  organiser
+				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
 					if (items[i].bin == currentItem.bin) {
 						Item[] newItems = new Item[items.length - 1];
@@ -1313,13 +1313,13 @@ public class BuildDisk
 		AsmSourceCode asmAniIndex;
 		
 		if (!abortFloppyDisk) {
-			// GÃ©nÃ©ration de l'index ImageSet pour FD	
+			// Génération de l'index ImageSet pour FD	
 			asmImgIndexFd = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirFd));
 			for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
 				writeImgIndex(asmImgIndexFd, gm, sprite.getValue(), FLOPPY_DISK);
 			}
 			
-			// GÃ©nÃ©ration de l'index Animation pour FD				
+			// Génération de l'index Animation pour FD				
 			asmAniIndex = new AsmSourceCode(createFile(obj.animation.fileName, aniDirFd));
 			writeAniIndex(asmAniIndex, obj);
 			
@@ -1347,7 +1347,7 @@ public class BuildDisk
 			compileObjectWithImageRef(gm, obj, imgSetDirFd, aniDirFd, codeData, imgSetData, aniData, objCodePage, objCodeAddress, imgSetPage, imgSetAddress, aniPage, aniAddress, FLOPPY_DISK);
 		}
 		
-		// GÃ©nÃ©ration de l'index ImageSet pour T2
+		// Génération de l'index ImageSet pour T2
 		asmImgIndexT2 = new AsmSourceCode(createFile(obj.imageSet.fileName, imgSetDirT2));
 		for (Entry<String, Sprite> sprite : obj.sprites.entrySet()) {
 			writeImgIndex(asmImgIndexT2, gm, sprite.getValue(), MEGAROM_T2);
@@ -1457,7 +1457,7 @@ public class BuildDisk
 				while (enumFd.hasMoreElements()) {
 					RAMLoaderIndex di = enumFd.nextElement();
 	
-					// Gestion des communs, on n'Ã©crit qu'une seule fois les communs sur disquette
+					// Gestion des communs, on n'écrit qu'une seule fois les communs sur disquette
 					RAMLoaderIndex fdic = null;
 					if (commons.containsKey(di.gmc)) {
 						for (RAMLoaderIndex dic : commons.get(di.gmc)) {
@@ -1535,7 +1535,7 @@ public class BuildDisk
 		}
 		
 		commons.clear();
-		// Initialise un item pour chaque Ã©lÃ©ment a Ã©crire en ROM
+		// Initialise un item pour chaque élément a écrire en ROM
 		Item[] items = new Item[nbItems];
 		int itemIdx = 0;		
 		
@@ -1582,8 +1582,8 @@ public class BuildDisk
 				}
 			}
 			
-			// les donnÃ©es sont rÃ©parties en pages en fonction de leur taille par un algorithme "sac Ã  dos"
-			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.endAddress[game.romT2.curPage]); // Sac Ã  dos de poids max 16Ko
+			// les données sont réparties en pages en fonction de leur taille par un algorithme "sac à dos"
+			Knapsack knapsack = new Knapsack(items, RamImage.PAGE_SIZE-game.romT2.endAddress[game.romT2.curPage]); // Sac à dos de poids max 16Ko
 			Solution solution = knapsack.solve();
 
 			// Parcours de la solution
@@ -1605,7 +1605,7 @@ public class BuildDisk
 					di.t2_endAddress = currentItem.bin.getRAMLoaderIndex().t2_endAddress;
 				}
 
-				// construit la liste des Ã©lÃ©ments restants Ã  organiser
+				// construit la liste des éléments restants à organiser
 				for (int i = 0; i < items.length; i++) {
 					if (items[i].bin == currentItem.bin) {
 						Item[] newItems = new Item[items.length - 1];
@@ -1692,7 +1692,7 @@ public class BuildDisk
 		logger.info("Compile and Write RAM Loader Manager for " + MODE_LABEL[mode] + " ...");
 		int indexSize = 0;
 
-		// Construction des donnÃ©es de chargement disquette pour chaque Game Mode
+		// Construction des données de chargement disquette pour chaque Game Mode
 		// ---------------------------------------------------------------------------------------
 		AsmSourceCode ramLoaderDataIdx;
 		if (mode == FLOPPY_DISK) {
@@ -1727,7 +1727,7 @@ public class BuildDisk
 				while(enumFd.hasMoreElements()) {
 					RAMLoaderIndex di = enumFd.nextElement();
 					
-					// Inversion des demi-pages liÃ©e Ã  la copie de code en zone data qui sera executÃ© depuis la zone cartouche
+					// Inversion des demi-pages liée à la copie de code en zone data qui sera executé depuis la zone cartouche
 					int ram_endDest;
 					if (di.split) {
 						if (di.ram_endAddress <= 0x2000) {
@@ -1755,7 +1755,7 @@ public class BuildDisk
 				while(enumT2.hasMoreElements()) {
 					RAMLoaderIndex di = enumT2.nextElement();
 					
-					// Inversion des demi-pages liÃ©e Ã  la copie de code en zone data qui sera executÃ© depuis la zone cartouche
+					// Inversion des demi-pages liée à la copie de code en zone data qui sera executé depuis la zone cartouche
 					int ram_endDest;
 					if (di.split) {
 						if (di.ram_endAddress <= 0x2000) {
@@ -1833,7 +1833,7 @@ public class BuildDisk
 			game.glb.flush();
 			compileRAW(bootTmpFile, FLOPPY_DISK);
 	
-			// Traitement du binaire issu de la compilation et gÃ©nÃ©ration du secteur d'amorÃ§age
+			// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
 			Bootloader bootLoader = new Bootloader();
 			
 			// Ecriture disquette du boot
@@ -1879,7 +1879,7 @@ public class BuildDisk
 		compileRAW(tmpFile, MEGAROM_T2);
 		byte[] bin;
 		
-		// Traitement du binaire issu de la compilation et gÃ©nÃ©ration du secteur d'amorÃ§age
+		// Traitement du binaire issu de la compilation et génération du secteur d'amorçage
 		Bootloader bootLoader = new Bootloader();
 		
 		t2L.setIndex(0, 0, 1);
@@ -2119,7 +2119,7 @@ public class BuildDisk
 			break;
 		}
 		
-		// assigne les images symÃ©triques vides afin d'empÃªcher les crashs au runtime
+		// assigne les images symétriques vides afin d'empêcher les crashs au runtime
 		int def_value = 0;
 		
 		// search a value by priority
@@ -2599,7 +2599,7 @@ public class BuildDisk
 	}
 
 	private static int compile(String asmFile, String option, int mode) throws Exception {
-		Path path = Paths.get(asmFile);
+		Path path = Paths.get(asmFile).toAbsolutePath().normalize();
 		String asmFileName = FileUtil.removeExtension(asmFile);
 		String binFile = asmFileName + ".bin";
 		String lstFile = asmFileName + ".lst";
@@ -2607,19 +2607,25 @@ public class BuildDisk
 		String glbTmpFile = asmFileName + ".tmp";
 
 		logger.debug("\t# Compile "+path.toString());
-		Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, (mode==MEGAROM_T2?"--define=T2":""), "--symbol-dump=" + glbTmpFile, option).start();
-		BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
-		String line;
-
-		while((line=br.readLine())!=null){
-			logger.debug("\t"+line);
-		}
-
-		int result = p.waitFor();
-		if (result != 0) {
-			throw new Exception ("Error "+asmFile);
-		}
 		
+		List<String> command = new ArrayList(List.of(game.lwasm,
+				   path.toString(),
+				   "--output=" + binFile,
+				   "--list=" + lstFile,
+				   "--6809",	
+				   "--includedir=.",
+				   "--symbol-dump=" + glbTmpFile,
+				   Game.pragma				   
+				   ));
+		
+		if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+		if (mode==MEGAROM_T2) command.add("--define=T2");
+		if (option != null && option.length() >0) command.add(option);
+			
+		Process p = new ProcessBuilder(command).inheritIO().start();
+		
+		int result = p.waitFor();
+	
 	    Pattern pattern = Pattern.compile("^.*[^\\}]\\sEQU\\s.*$", Pattern.MULTILINE);
 	    FileInputStream input = new FileInputStream(glbTmpFile);
 	    FileChannel channel = input.getChannel();
@@ -2643,21 +2649,32 @@ public class BuildDisk
 	private static int getBINSize(String inAsmFile) {
 		try {
 			String asmFile = duplicateFilePrepend(inAsmFile, "", " SECTION GETSIZE\n");
-			Files.write(Paths.get(asmFile), (" ENDSECTION\n").getBytes(), StandardOpenOption.APPEND);
 			
-			Path path = Paths.get(asmFile);
-			String asmFileName = FileUtil.removeExtension(asmFile);
+			Path asmPath = Paths.get(asmFile).toAbsolutePath().normalize();
+			
+			Files.write(asmPath, (" ENDSECTION\n").getBytes(), StandardOpenOption.APPEND);
+			
+			String asmFileName = FileUtil.removeExtension(asmPath.toFile().toString());
 			String binFile = asmFileName + ".bin";
 			String lstFile = asmFileName + ".lst";
 			
-			logger.debug("\t# Compile "+path.toString());
-			Process p = new ProcessBuilder(game.lwasm, path.toString(), "--output=" + binFile, "--list=" + lstFile, "--6809", Game.pragma, Game.define, "--obj").start();
-			BufferedReader br=new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
+			logger.debug("\t# Compile : " + asmPath.toString());
 
-			while((line=br.readLine())!=null){
-				logger.debug("\t"+line);
-			}
+			List<String> command = new ArrayList(List.of(game.lwasm,
+										   asmPath.toString(),
+										   "--output=" + binFile,
+										   "--list=" + lstFile,
+										   "--6809",	
+										   "--includedir=.",
+										   "--obj",
+										   Game.pragma));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+										   
+			
+			Process p = new ProcessBuilder(command)
+					.directory(new File("."))
+					.inheritIO().start();
 
 			int result = p.waitFor();
 			if (result != 0) {
@@ -2687,7 +2704,7 @@ public class BuildDisk
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
 		String destFileName = Game.generatedCodeDirName+subDir+"/"+basename+".asm";
 
-		// Creation du chemin si les rÃ©pertoires sont manquants
+		// Creation du chemin si les répertoires sont manquants
 		File file = new File (destFileName);
 		file.getParentFile().mkdirs();
 		
@@ -2701,7 +2718,7 @@ public class BuildDisk
 		String basename = FileUtil.removeExtension(Paths.get(fileName).getFileName().toString());
 		String destFileName = Game.generatedCodeDirName+subDir+"/"+basename+".asm";
 
-		// Creation du chemin si les rÃ©pertoires sont manquants
+		// Creation du chemin si les répertoires sont manquants
 		File file = new File (destFileName);
 		file.getParentFile().mkdirs();
 		
@@ -2732,7 +2749,7 @@ public class BuildDisk
 		
 		String newFileName = Game.generatedCodeDirName + subDir + "/" + fileName;
 		
-		// Creation du chemin si les rÃ©pertoires sont manquants
+		// Creation du chemin si les répertoires sont manquants
 		File file = new File (newFileName);
 		file.getParentFile().mkdirs();
 		file.createNewFile();

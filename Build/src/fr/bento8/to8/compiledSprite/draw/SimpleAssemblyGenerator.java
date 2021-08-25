@@ -2,7 +2,6 @@ package fr.bento8.to8.compiledSprite.draw;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -114,11 +113,11 @@ public class SimpleAssemblyGenerator{
 		binDrawFileName = destDir+"_"+spriteSheet.variant+".bin";
 		binDFile = Paths.get(binDrawFileName);
 
-		// Si l'option d'utilisation du cache est activÃ©e et qu'on trouve les fichiers .bin et .asm
-		// on passe la gÃ©nÃ©ration du code de sprite compilÃ©
+		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .bin et .asm
+		// on passe la génération du code de sprite compilé
 		if (!(BuildDisk.game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile))) {
 
-			//logger.debug("RAM 0 (val hex 0 Ã  f par pixel, . Transparent):");
+			//logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())
 				//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));
 			
@@ -136,7 +135,7 @@ public class SimpleAssemblyGenerator{
 			cyclesSpriteCode1 = regOpt.getAsmCodeCycles();
 			sizeSpriteCode1 = regOpt.getAsmCodeSize();
 
-			//logger.debug("\t\t\tRAM 1 (val hex 0  Ã  f par pixel, . Transparent):");
+			//logger.debug("\t\t\tRAM 1 (val hex 0  à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())
 				//logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
@@ -212,17 +211,23 @@ public class SimpleAssemblyGenerator{
 
 			// Delete binary file
 			Files.deleteIfExists(binDFile);
+			
+			List<String> command = new ArrayList<>(List.of(BuildDisk.game.lwasm,
+					asmDrawFileName,
+					   "--output=" + binDrawFileName,
+					   "--list=" + lstDrawFileName,
+					   "--6809",	
+					   "--includedir=.",
+					   "--raw",
+					   Game.pragma				   
+					   ));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+				
+			p = new ProcessBuilder(command).inheritIO().start();
+			
+			int result = p.waitFor();
 
-			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmDrawFileName, "--output=" + binDrawFileName, "--list=" + lstDrawFileName, "--6809", Game.pragma, Game.define, "--raw");			
-			pb.redirectErrorStream(true);
-			p = pb.start();					
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" +line);
-			}
-			p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binDrawFileName));	
@@ -236,11 +241,11 @@ public class SimpleAssemblyGenerator{
 			logger.debug("\t\t\t" +lstDrawFileName + " lwasm.exe DRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
 			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-				throw new Exception("\t\t\t" +lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilÃ©e par lwasm et la valeur calculÃ©e par le gÃ©nÃ©rateur de code.", new Exception("PrÃ©requis."));
+				throw new Exception("\t\t\t" +lstDrawFileName + " Ecart de cycles ou de taille entre la version Draw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
-				throw new Exception("\t\t\t" +lstDrawFileName + " Le code gÃ©nÃ©rÃ© ("+compilerDSize+" octets) dÃ©passe la taille d'une page", new Exception("PrÃ©requis."));
+				throw new Exception("\t\t\t" +lstDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
 			}			
 		} 
 		catch (Exception e)

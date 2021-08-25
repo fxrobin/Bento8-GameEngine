@@ -230,7 +230,6 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
         ldd   #Pal_TitleScreen
         std   Cur_palette
         clr   Refresh_palette                    * will call refresh palette after next VBL
-
         jsr   InitSoundDriver
         jsr   YM2413_DrumModeOn
         ldd   #IrqSmps
@@ -261,8 +260,7 @@ Sonic_Init                                       *Obj0E_Sonic_Init:
                                                  *        move.b  #6,subtype(a1)                          ; logo top
         ldx   #Smps_Sparkle                      *        moveq   #SndID_Sparkle,d0
         stx   Smps.SFXToPlay        
-        ;jmp   PlaySound                          *        jmpto   (PlaySound).l, JmpTo4_PlaySound
-        rts
+        rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
                                                  *
 Sonic_PaletteFade                                *loc_12EC2:
@@ -855,8 +853,7 @@ LargeStar_MoveContinue
                                                  *        move.w  d0,x_pixel(a0)
         ldx   #Smps_Sparkle                      *        moveq   #SndID_Sparkle,d0 ; play intro sparkle sound
         stx   Smps.SFXToPlay
-        ;jmp   PlaySound                          *        jmpto   (PlaySound).l, JmpTo4_PlaySound
-        rts
+        rts                                      *        jmpto   (PlaySound).l, JmpTo4_PlaySound
                                                  *; ===========================================================================
                                                  *; unknown
 LargeStar_xy_data                                *word_131DC:

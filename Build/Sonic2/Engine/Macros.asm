@@ -20,6 +20,7 @@ _lds MACRO
  
 _SetCartPageA MACRO
  IFDEF T2
+        tsta
         bpl   RAMPg@
         sta   Glb_Page
         
@@ -58,6 +59,7 @@ _GetCartPageA MACRO
 
 _SetCartPageB MACRO
  IFDEF T2
+        tstb
         bpl   RAMPg@
         stb   Glb_Page
         

@@ -20,7 +20,7 @@ ss_shadow_tilt                equ ext_variables+5  ; 0:flat 1:diagonal 2:side
 ss_self_delete                equ ext_variables+6  ; flag usually set by parent to tell to child to self delete
 collision_property            equ ext_variables+7
 mapping_frame                 equ ext_variables+8
-ss_z_pos_img_start            equ ext_variables+9  ; and ext_variables+10  ; distance from camera to half-pipe segment end (0: front) a start of last image
+ss_z_pos_img_start            equ ext_variables+9  ; and ext_variables+10  ; distance from camera to half-pipe segment end (0: front) at start of last image
 
 ;ss_dplc_timer = $23
 ;ss_x_pos = objoff_2A

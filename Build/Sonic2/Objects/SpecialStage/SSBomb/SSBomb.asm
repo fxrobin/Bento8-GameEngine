@@ -855,6 +855,7 @@ SSB_CC_FVisibleArea                                                       *loc_3
                                                                           *
 																		  
 SSB_InitShadow                                                            *loc_3529C:
+        rts
         jsr   SSSingleObjLoad2                                            *    jsrto   (SSSingleObjLoad2).l, JmpTo_SSSingleObjLoad2
         bne   SSB_InitShadow_return                                       *    bne.w   return_3532C
         stu   ss_parent,x                                                 *    move.l  a0,objoff_34(a1)

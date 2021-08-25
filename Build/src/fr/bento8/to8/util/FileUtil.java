@@ -2,25 +2,12 @@ package fr.bento8.to8.util;
 
 public class FileUtil {
 	
-	public static String removeExtension(String s) {
-
-		String separator = System.getProperty("file.separator");
-		String filename;
-
-		// Remove the path upto the filename.
-		int lastSeparatorIndex = s.lastIndexOf(separator);
-		if (lastSeparatorIndex == -1) {
-			filename = s;
-		} else {
-			filename = s.substring(lastSeparatorIndex + 1);
-		}
+	public static String removeExtension(String filename) {
 
 		// Remove the extension.
 		int extensionIndex = filename.lastIndexOf(".");
-		if (extensionIndex == -1)
-			return filename;
+        return (extensionIndex < 0 ) ? filename :filename.substring(0, extensionIndex);				
 
-		return filename.substring(0, extensionIndex);
 	}
 
 }

@@ -2,7 +2,6 @@ package fr.bento8.to8.compiledSprite.backupDrawErase;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -96,11 +95,11 @@ public class AssemblyGenerator{
 		binEraseFileName = destDir+"_"+spriteSheet.variant+"_Erase.bin";
 		binEFile = Paths.get(binEraseFileName);
 
-		// Si l'option d'utilisation du cache est activÃ©e et qu'on trouve les fichiers .BIN et .ASM
-		// on passe la gÃ©nÃ©ration du code de sprite compilÃ©
+		// Si l'option d'utilisation du cache est activée et qu'on trouve les fichiers .BIN et .ASM
+		// on passe la génération du code de sprite compilé
 		if (!(BuildDisk.game.useCache && Files.exists(binDFile) && Files.exists(asmDFile) && Files.exists(lstDFile) && Files.exists(binEFile) && Files.exists(asmEFile) && Files.exists(lstEFile))) {
 			
-			//logger.debug("RAM 0 (val hex 0 Ã  f par pixel, . Transparent):");
+			//logger.debug("RAM 0 (val hex 0 à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())
 			//	logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 0)));			
 
@@ -125,7 +124,7 @@ public class AssemblyGenerator{
 			sizeSpriteEData1 = regOpt.getDataSize();
 
 			logger.debug("\t\t\tTaille de la zone data 1: "+sizeSpriteEData1);
-			//logger.debug("RAM 1 (val hex 0  Ã  f par pixel, . Transparent):");
+			//logger.debug("RAM 1 (val hex 0  à f par pixel, . Transparent):");
 			//if (logger.isDebugEnabled())			
 			//	logger.debug(debug80Col(spriteSheet.getSubImagePixels(imageNum, 1)));
 
@@ -180,7 +179,7 @@ public class AssemblyGenerator{
 			// Utilisation du .lst existant
 			cycleECache = LWASMUtil.countCycles(lstEraseFileName);		
 			
-			// Lecture de la taille des donnÃ©es de la routine erase
+			// Lecture de la taille des données de la routine erase
 			Path path = Paths.get(lstEraseFileName);
 			String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
 			
@@ -244,15 +243,23 @@ public class AssemblyGenerator{
 			Files.deleteIfExists(binDFile);
 
 			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmBckDrawFileName, "--output=" + binBckDrawFileName, "--list=" + lstBckDrawFileName, "--6809", Game.pragma, Game.define, "--raw");
-			pb.redirectErrorStream(true);
-			p = pb.start();			
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" + line);
-			}
-			p.waitFor();
+			
+			List<String> command = new ArrayList<>(List.of(BuildDisk.game.lwasm,
+					 asmBckDrawFileName,
+					   "--output=" + binBckDrawFileName,
+					   "--list=" + lstBckDrawFileName,
+					   "--6809",	
+					   "--includedir=.",
+					   "--raw",
+					   Game.pragma				   
+					   ));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+				
+			p = new ProcessBuilder(command).inheritIO().start();
+			
+			int result = p.waitFor();
+			
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binBckDrawFileName));	
@@ -266,11 +273,11 @@ public class AssemblyGenerator{
 			logger.debug("\t\t\t" +lstBckDrawFileName + " lwasm.exe BCKDRAW size: " + compilerDSize + " computed size: " + computedDSize);
 
 			if (computedDCycles != compilerDCycles || compilerDSize != computedDSize) {
-				throw new Exception("\t\t\t" +lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilÃ©e par lwasm et la valeur calculÃ©e par le gÃ©nÃ©rateur de code.", new Exception("PrÃ©requis."));
+				throw new Exception("\t\t\t" +lstBckDrawFileName + " Ecart de cycles ou de taille entre la version BckDraw compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
-				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code gÃ©nÃ©rÃ© ("+compilerDSize+" octets) dÃ©passe la taille d'une page", new Exception("PrÃ©requis."));
+				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
 			}			
 
 			// Process Erase Code
@@ -299,17 +306,22 @@ public class AssemblyGenerator{
 			
 			// Delete binary file
 			Files.deleteIfExists(binEFile);
-
-			// Generate binary code from assembly code
-			pb = new ProcessBuilder(BuildDisk.game.lwasm, asmEraseFileName, "--output=" + binEraseFileName, "--list=" + lstEraseFileName, "--6809", Game.pragma, Game.define, "--raw");			
-			pb.redirectErrorStream(true);
-			p = pb.start();					
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			
-			while((line=br.readLine())!=null){
-				logger.debug("\t\t\t" +line);
-			}
-			p.waitFor();
+			command = new ArrayList<>(List.of(BuildDisk.game.lwasm,
+						asmEraseFileName,
+					   "--output=" + binEraseFileName,
+					   "--list=" + lstEraseFileName,
+					   "--6809",	
+					   "--includedir=.",
+					   "--raw",
+					   Game.pragma				   
+					   ));
+			
+			if (Game.define != null && Game.define.length()>0) command.add(Game.define);
+				
+			p = new ProcessBuilder(command).inheritIO().start();
+			
+			result = p.waitFor();
 
 			// Load binary code
 			content = Files.readAllBytes(Paths.get(binEraseFileName));	
@@ -323,11 +335,11 @@ public class AssemblyGenerator{
 			logger.debug("\t\t\t" +lstEraseFileName + " lwasm.exe ERASE size: " + compilerESize + " computed size: " + computedESize);
 
 			if (computedECycles != compilerECycles || compilerESize != computedESize) {
-				throw new Exception("\t\t\t" +lstEraseFileName + " Ecart de cycles ou de taille entre la version compilÃ©e par lwasm et la valeur calculÃ©e par le gÃ©nÃ©rateur de code.", new Exception("PrÃ©requis."));
+				throw new Exception("\t\t\t" +lstEraseFileName + " Ecart de cycles ou de taille entre la version compilée par lwasm et la valeur calculée par le générateur de code.", new Exception("Prérequis."));
 			}
 			
 			if (compilerDSize > 16384) {
-				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code gÃ©nÃ©rÃ© ("+compilerDSize+" octets) dÃ©passe la taille d'une page", new Exception("PrÃ©requis."));
+				throw new Exception("\t\t\t" +lstBckDrawFileName + " Le code généré ("+compilerDSize+" octets) dépasse la taille d'une page", new Exception("Prérequis."));
 			}			
 			
 		} 

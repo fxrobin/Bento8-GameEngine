@@ -426,7 +426,7 @@ SSObjectsManager                                      *SSObjectsManager:
         bne   SSObjectsManager_return                 *    bne.w   return_55DC
 
         ; Run only each time a new segment is loaded
-        ; testing LSB is ok 
+        ; testing LSB only is ok 
                                                       *    moveq   #0,d0
         ldb   SpecialStage_CurrentSegment+1           *    move.b  (SpecialStage_CurrentSegment).w,d0
         cmpb  SpecialStage_LastSegment2+1             *    cmp.b   (SpecialStage_LastSegment2).w,d0
@@ -638,12 +638,18 @@ SSInitPalAndData                                      *SSInitPalAndData:
                                                       *; End of function SSInitPalAndData     
 
 Ani_SSTrack_Len
-        fdb (24*4)+HalfPipe_Img_z_depth ; 0
-        fdb (24*4)+HalfPipe_Img_z_depth ; 1
-        fdb (12*4)+HalfPipe_Img_z_depth ; 2
-        fdb (16*4)+HalfPipe_Img_z_depth ; 3
-        fdb (11*4)+HalfPipe_Img_z_depth ; 4
-        fdb 0    ; 5
+;        fdb (24*4)+HalfPipe_Img_z_depth ; 0
+;        fdb (24*4)+HalfPipe_Img_z_depth ; 1
+;        fdb (12*4)+HalfPipe_Img_z_depth ; 2
+;        fdb (16*4)+HalfPipe_Img_z_depth ; 3
+;        fdb (11*4)+HalfPipe_Img_z_depth ; 4
+;        fdb 0    ; 5
+         fdb (24*4) ; 0
+         fdb (24*4) ; 1
+         fdb (12*4) ; 2
+         fdb (16*4) ; 3
+         fdb (11*4) ; 4
+         fdb 0    ; 5
 
 SpecialLevelLayout
         INCLUDEBIN "./GameMode/SpecialStage/Special stage level layouts.bin"
@@ -889,10 +895,14 @@ HalfPipe_Continue
         lda   status,u
         ora   #status_x_orientation         ; set flip - left orientation
         sta   status,u
+        lda   #$FF
+        sta   SSTrack_Orientation
         bra   @c
 @b      lda   status,u
         anda   #^status_x_orientation       ; unset flip - right orientation
         sta   status,u
+        lda   #0
+        sta   SSTrack_Orientation
 @c      com   HalfPipe_Seq_UpdFlip
 @a      ldd   image_set,u                   ; orientation can only change on specific frames
         cmpd  #Img_tk_036

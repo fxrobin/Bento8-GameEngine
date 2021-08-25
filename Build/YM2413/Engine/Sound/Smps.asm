@@ -151,7 +151,7 @@ GoSubStack                   equ   42
 
 ******************************************************************************
 
-Var STRUCT
+SmpsVar STRUCT
 SFXPriorityVal                 rmb   1        
 TempoTimeout                   rmb   1        
 CurrentTempo                   rmb   1                ; Stores current tempo value here
@@ -159,9 +159,7 @@ StopMusic                      rmb   1                ; Set to 7Fh to pause musi
 FadeOutCounter                 rmb   1        
 FadeOutDelay                   rmb   1        
 QueueToPlay                    rmb   1                ; if NOT set to 80h, means new index was requested by 68K
-SFXToPlay                      rmb   1                ; When Genesis wants to play "normal" sound, it writes it here
-SFXStereoToPlay                rmb   1                ; When Genesis wants to play alternating stereo sound, it writes it here
-SFXUnknown                     rmb   1                ; Unknown type of sound queue, but it's in Genesis code like it was once used
+SFXToPlay                      rmb   2                ; When Genesis wants to play "normal" sound, it writes it here
 VoiceTblPtr                    rmb   2                ; address of the voices
 SFXVoiceTblPtr                 rmb   2                ; address of the SFX voices
 FadeInFlag                     rmb   1        
@@ -171,15 +169,14 @@ FadeInCounter                  rmb   1
 TempoMod                       rmb   1        
 TempoTurbo                     rmb   1                ; Stores the tempo if speed shoes are acquired (or 7Bh is played anywho)
 SpeedUpFlag                    rmb   1        
-DACEnabled                     rmb   1        
-MusicBankNumber                rmb   1        
-IsPalFlag                      rmb   1        
+DACEnabled                     rmb   1                
+IsPalFlag                      rmb   1    
  ENDSTRUCT
 
 ******************************************************************************
 
 StructStart
-AbsVar          Var
+Smps          SmpsVar
 
 tracksStart		; This is the beginning of all BGM track memory
 SongDACFMStart
@@ -200,7 +197,7 @@ SongPSGStart
 SongPSG1        Track
 SongPSG2        Track
 SongPSG3        Track
-SongPSG4        Track
+;SongPSG4        Track
 SongPSGEnd
 tracksEnd
 
@@ -222,7 +219,7 @@ StructEnd
         ; VoiceControl is hardcoded
         
         org   StructStart                
-        fill  0,sizeof{Var}
+        fill  0,sizeof{SmpsVar}
         fdb   $0006
         fill  0,sizeof{Track}-2
         fdb   $0000
@@ -261,8 +258,8 @@ StructEnd
         fill  0,sizeof{Track}-2
         fdb   $00A0
         fill  0,sizeof{Track}-2
-        fdb   $00C0
-        fill  0,sizeof{Track}-2
+        ;fdb   $00C0
+        ;fill  0,sizeof{Track}-2
                 
 ******************************************************************************
 
@@ -331,7 +328,7 @@ _YMBusyWait19 MACRO
 InitSoundDriver
         pshs  a
         lda   #$01                     ; 1: play 60hz track at 50hz, 0: do not skip frames
-        sta   AbsVar.IsPalFlag 
+        sta   Smps.IsPalFlag 
         puls  a,pc
 
 ******************************************************************************
@@ -437,13 +434,13 @@ BGMLoad
         jsr   InitMusicPlayback        
         ldd   SMPS_VOICE,x
         addd  MusicData   
-        std   AbsVar.VoiceTblPtr
+        std   Smps.VoiceTblPtr
         
         ldd   SMPS_TEMPO_DELAY,x
         sta   SongDelay
-        stb   AbsVar.TempoMod
-        stb   AbsVar.CurrentTempo
-        stb   AbsVar.TempoTimeout
+        stb   Smps.TempoMod
+        stb   Smps.CurrentTempo
+        stb   Smps.TempoTimeout
         
         lda   #$05
         sta   PALUpdTick
@@ -538,28 +535,36 @@ a@      equ   *
  ENDM
         
 MusicFrame 
-        lda   MusicPage                 ; page switch to the music
-        beq   @a                       ; no music to play
+        
+        ; simple sound fx implementation with no priority
+        ; TODO upgrade to a queue system like original code
+        ldx   Smps.SFXToPlay         ; get last requested sound effect to play
+        beq   @a                       ; 0 means no sound effect to play
+        jsr   PlaySound
+        ldd   #0                       ; reset to be able to play another effect from now
+        std   Smps.SFXToPlay
+@a       
+        lda   MusicPage                ; page switch to the music
+        lbeq  UpdateSound              ; no music to play
         _SetCartPageA
         clr   DoSFXFlag
-        lda   AbsVar.StopMusic
-        beq   UpdateEverything
-@a      rts
 
 UpdateEverything        
-        lda   AbsVar.IsPalFlag         ; TODO use SMPS relocate to convert timings
-        beq   UpdateMusic              ; to play 60hz songs at 50hz at normal speed
+        lda   Smps.IsPalFlag           ; TODO use SMPS relocate to convert timings
+        beq   @a                       ; to play 60hz songs at 50hz at normal speed
         dec   PALUpdTick               ; this will allow to throw away this code
-        bne   UpdateMusic
+        bne   @a
         lda   #5
         sta   PALUpdTick
         jsr   UpdateMusic              ; play 2 frames in one to keep original speed
+@a      jsr   UpdateMusic              ; play 2 frames in one to keep original speed
+        bra   UpdateSound
 
 UpdateMusic
-        lda   AbsVar.CurrentTempo      ; tempo value
-        adda  AbsVar.TempoTimeout      ; Adds previous value to
-        sta   AbsVar.TempoTimeout      ; Store this as new
-        bcc   UpdateSound
+        lda   Smps.CurrentTempo        ; tempo value
+        adda  Smps.TempoTimeout        ; Adds previous value to
+        sta   Smps.TempoTimeout        ; Store this as new
+        bcc   UpdateSound              ; skip update if tempo need more waits
              
         _UpdateTrack SongDAC,DACUpdateTrack
         _UpdateTrack SongFM1,FMUpdateTrack
@@ -575,11 +580,13 @@ UpdateMusic
         _UpdateTrack SongPSG1,PSGUpdateTrack
         _UpdateTrack SongPSG2,PSGUpdateTrack        
         _UpdateTrack SongPSG3,PSGUpdateTrack
+        rts
 
 UpdateSound        
         lda   SoundPage                ; page switch to the sound
-        beq   @rts                     ; no sound to play
-        _SetCartPageA
+        bne   @a
+        rts
+@a      _SetCartPageA
         lda   #$80
         sta   DoSFXFlag                ; Set zDoSFXFlag = 80h (updating sound effects)
         _UpdateTrack SFXFM3,FMUpdateTrack
@@ -1181,10 +1188,10 @@ MusicTrackOffs
         fdb   SongPSG3
 
 PlaySound
-        pshs  d,y,u
+        ;pshs  d,y,u
 
-        _GetCartPageA
-        sta   PlaySound_end+1          ; backup data page
+        ;_GetCartPageA
+        ;sta   PlaySound_end+1          ; backup data page
         lda   ,x                       ; get memory page that contains track data
         sta   SoundPage
         ldx   1,x                      ; get ptr to track data
@@ -1193,7 +1200,7 @@ PlaySound
         
         ldd   SMPS_SFX_VOICE,x
         addd  SoundData   
-        std   AbsVar.SFXVoiceTblPtr
+        std   Smps.SFXVoiceTblPtr
 
         ldd   SMPS_SFX_TEMPO_NB_CH,x   ; init process for each track
         sta   @dyna+2        
@@ -1211,9 +1218,9 @@ PlaySound
 @psg    cmpb  #$C0
         bne   @b
         lda   #$DF                     ; set silence on PSG3
-        sta   PSG
+        sta   <PSG
         lda   #$FF
-        sta   PSG
+        sta   <PSG
 @b      lsrb                           ; this is a psg track
         lsrb
         lsrb
@@ -1264,9 +1271,10 @@ PlaySound
         lbne  @a  
 
 PlaySound_end
-        lda   #0
-        _SetCartPageA          
-        puls  d,y,u,pc
+        ;lda   #0
+        ;_SetCartPageA          
+        ;puls  d,y,u,pc
+        rts
 
 PS_cnt  fcb   0
         
@@ -1405,7 +1413,7 @@ cfChangeTransposition
 ;
 cfSetTempo 
         lda   ,x+
-        sta   AbsVar.CurrentTempo
+        sta   Smps.CurrentTempo
         rts          
 
 ; (via Saxman's doc): Change Tempo Modifier to xx for ALL channels
@@ -1444,9 +1452,9 @@ cfSetVoice
         bne   @rts                     ; yes skip YM command
         lda   DoSFXFlag
         bmi   @a
-        ldu   AbsVar.VoiceTblPtr
+        ldu   Smps.VoiceTblPtr
         bra   @b
-@a      ldu   AbsVar.SFXVoiceTblPtr
+@a      ldu   Smps.SFXVoiceTblPtr
 @b        
         lda   VoiceControl,y           ; read channel nb   
         adda  #$30
@@ -1536,7 +1544,7 @@ cfStopTrack
         sta   PlaybackControl,u
         lda   MusicPage
         _SetCartPageA        
-        ldx   AbsVar.VoiceTblPtr       ; Restore Voice to music channel (x can be erased because we are stopping track read)        
+        ldx   Smps.VoiceTblPtr       ; Restore Voice to music channel (x can be erased because we are stopping track read)        
         ldb   VoiceIndex,u
         lda   VoiceControl,u           ; read channel nb  
         adda  #$30

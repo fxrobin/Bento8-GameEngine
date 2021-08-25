@@ -417,7 +417,7 @@ PSGSilenceAll
 * PlayMusic - Load a new music and init all tracks
 *
 * receives in X the address of the song
-* destroys A, B, X, Y
+* destroys X
 ******************************************************************************
 
 PlayMusic
@@ -425,13 +425,14 @@ BGMLoad
         pshs  d,y,u
         _GetCartPageA
         sta   BGMLoad_end+1            ; backup data page
+                
         lda   ,x                       ; get memory page that contains track data
         sta   MusicPage
         ldx   1,x                      ; get ptr to track data
         stx   MusicData
         _SetCartPageA
 
-        jsr   InitMusicPlayback        
+        jsr   InitMusicPlayback
         ldd   SMPS_VOICE,x
         addd  MusicData   
         std   Smps.VoiceTblPtr
@@ -453,7 +454,7 @@ BGMLoad
         ldy   #SongDAC
         jsr   InitTrackFM              ; DRUM mode use channel 6-8
         dec   @fm+1                    ; DAC track is part of FM nb channel count
-@fm
+@fm      
         lda   #$00                     ; (dynamic) nb of FM tracks to init
         ldy   #SongFM1                 ; Init all FM tracks
 @fmlp   dec   @fm+1
@@ -1164,7 +1165,7 @@ Flutter13
 * PlaySound - Load and play a new sound effect
 *
 * receives in X the address of the sound
-* destroys A, B, X, Y
+* destroys X
 ******************************************************************************          
 
 SFXTrackOffs        
@@ -1188,10 +1189,10 @@ MusicTrackOffs
         fdb   SongPSG3
 
 PlaySound
-        ;pshs  d,y,u
+        pshs  d,y,u
 
-        ;_GetCartPageA
-        ;sta   PlaySound_end+1          ; backup data page
+        _GetCartPageA
+        sta   PlaySound_end+1          ; backup data page
         lda   ,x                       ; get memory page that contains track data
         sta   SoundPage
         ldx   1,x                      ; get ptr to track data
@@ -1271,10 +1272,9 @@ PlaySound
         lbne  @a  
 
 PlaySound_end
-        ;lda   #0
-        ;_SetCartPageA          
-        ;puls  d,y,u,pc
-        rts
+        lda   #0
+        _SetCartPageA          
+        puls  d,y,u,pc
 
 PS_cnt  fcb   0
         
