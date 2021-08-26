@@ -31,6 +31,4 @@ Obj_TailsTails                fill  0,object_size * Positionnement et nommage a 
 Obj_SonicDust                 fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
 Obj_TailsDust                 fill  0,object_size * Positionnement et nommage a mettre dans objet Tails
 LevelOnly_Object_RAM_End
-Object_RAM_End                fdb   *
-
-
+Object_RAM_End
